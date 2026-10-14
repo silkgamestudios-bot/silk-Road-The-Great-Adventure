@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: silk-road-server
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /
+    plan: free          # free: se duerme a los 15 min y NO guarda disco (se pierden saldos al reiniciar). Producción: starter + disk
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: https://TU-SITIO.netlify.app
+      - key: MASTER_KEY          # clave secreta (12+ caracteres) para reclamar el rol master dentro del juego. Ponla en el panel de Render.
+        sync: false
+      - key: DATA_DIR            # con plan de pago: monta un disco en /data y deja esto así
+        value: .

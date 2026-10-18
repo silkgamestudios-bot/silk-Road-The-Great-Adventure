@@ -4,9 +4,24 @@ const cat=S.cat,SK=cat.SKINS,EVK=E.EVK;
 const GEMP={lt:3,ap:2,bl:4,es:3,cmb:5,lic:10,vipm:15,vipj:6,vip:11},GMON=['cmb','es','lic','vipm','vipj'],GEMSKIN=12,LIC_LV=15,GCMB=['lt','ap'],PRMK=['lt','ap','bl','es'],DAY=864e5;
 const price=(k,d)=>{const b=GEMP[k]||0;if(GMON.includes(k)){if(k==='es'||d>=30)return b;return Math.min(b-1,Math.max(1,Math.round(b*d/30*1.3)))}if(d<=10)return b;return Math.max(1,Math.round(b*(d/10)*.8))};
 const blGold=lv=>Math.round(2000*Math.pow(1.28,Math.min(29,Math.max(0,lv-1))));
-const err=e=>({e});const ops={};
+const NAME_GOLD=2000,err=e=>({e});const ops={};
 ops['me.get']=(u)=>({ok:1,ent:E.ent(u)});
 ops['name.claim']=(u,m)=>{const r=E.claimName(u,m.name);if(r.e)return r;E.pushEnt(u);return{ok:1,nm:r.nm}};
+/* ---- Ranking: los 100 mejores por nivel o por habilidad, global o por clase. Lo calcula el servidor con datos ya validados ---- */
+const RKC={};
+function rkList(cc,k){const key=cc+'|'+k,h=RKC[key],t=Date.now();if(h&&t-h.t<45e3)return h.l;
+ const l=[];for(const u in S.ECO.acc){const a=S.ECO.acc[u];if(!a||!a.nm||!(a.cls>=0)||(cc>=0&&a.cls!==cc)||(a.strikes|0)>=3)continue;let mst=false;try{mst=S.isMaster(u)}catch(e){}if(mst)continue;
+  const sx=Array.isArray(a.sx)?a.sx:[1,1,1];l.push({u,n:a.nm,c:a.cls|0,l:a.lv|0,x:a.xp||0,s:[sx[0]|0||1,sx[1]|0||1,sx[2]|0||1],g:(S.tagOf&&S.tagOf(u))||''})}
+ const v=k==='lv'?(x=>0):k==='st'?(x=>x.s[0]+x.s[1]+x.s[2]):(x=>x.s[+k[1]]);
+ l.sort((p,q)=>k==='lv'?(q.l-p.l||q.x-p.x):(v(q)-v(p)||q.l-p.l||q.x-p.x));RKC[key]={t,l};return l}
+ops['rank.get']=(u,m)=>{const c=Math.floor(+m.c),cc=c>=0&&c<=7?c:-1,k=['lv','s0','s1','s2','st'].includes(m.k)?m.k:'lv',l=rkList(cc,k);
+ const i=l.findIndex(x=>x.u===u);return{ok:1,n:l.length,me:i>=0?i+1:0,l:l.slice(0,100).map(x=>({n:x.n,c:x.c,l:x.l,s:x.s,g:x.g,me:x.u===u?1:0}))}};
+ops['name.change']=(u,m)=>{const a=E.acct(u),first=(a.nch|0)===0,n=String(m.name||'').trim().replace(/\s+/g,' ');
+ if(!/^[\p{L}\p{N} _-]{3,14}$/u.test(n))return err('Usa de 3 a 14 letras, números, espacios, - o _');
+ if(a.nm&&a.nm===n)return err('Ese ya es tu nombre');const o=E.uidByName(n);if(o&&o!==u)return err('Ese nombre ya está en uso');
+ if(first){if(E.avail(a,'gold')<NAME_GOLD)return err('Te faltan '+(NAME_GOLD-E.avail(a,'gold'))+' 🪙')}else if(E.gTot(a)<1)return err('Necesitas 1 💎');
+ if(first)E.deliver(u,{gold:-NAME_GOLD,note:'✏️ Cambio de nombre'});else if(!E.spendGems(a,1,false))return err('Saldo insuficiente');
+ const r=E.claimName(u,n,1);if(r.e)return r;a.nch=(a.nch|0)+1;S.dirty();E.pushEnt(u);S.log('[nombre] '+u+' → '+n);return{ok:1,nm:r.nm,ent:E.ent(u)}};
 ops['skin.buy']=(u,m)=>{const q=SK[String(m.id||'')],a=E.acct(u);if(!q)return err('Apariencia desconocida');if(a.sk.includes(q.id))return err('Ya la tienes');
  if(E.gTot(a)<q.g)return err('Te faltan '+(q.g-E.gTot(a))+' 💎');if(!E.spendGems(a,q.g,false))return err('Saldo insuficiente');a.sk.push(q.id);S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+q.id);return{ok:1,ent:E.ent(u)}};
 ops['evskin.gem']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k))return err('Evento desconocido');if(a.ev.includes(k))return err('Ya lo tienes');

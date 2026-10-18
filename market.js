@@ -4,7 +4,7 @@ module.exports=function(S,E){
 const {DB}=S;const RM=E.RM;
 const PVL=['carne','cocida','pasto','hierba','pocion','lazo','ec_hl','ec_nv','ec_lu','ec_am','ec_nz'];
 const int=(v,a,b,d)=>{v=Math.floor(+v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d};
-const iv=it=>Math.round(720*RM[it.r]*(1+it.t*.6));
+const iv=it=>Math.round(720*RM[it.r]*(1+it.t*.6)*(it.dv?.05:1));
 const tax=(p)=>({pay:Math.round(p*1.03),get:Math.round(p*.97)});
 const col=c=>(DB[c]=DB[c]||{});
 const setDoc=(c,id,d)=>{const o=col(c)[id]||null;col(c)[id]=d;S.dirty();S.bc(c,id,o,d)};

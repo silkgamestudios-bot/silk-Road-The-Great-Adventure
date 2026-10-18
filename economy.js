@@ -19,7 +19,7 @@ const rid=n=>crypto.randomBytes(n||8).toString('hex');
 function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev:[],px:{au:0,ap:0,lt:0,bl:0,es:0},vip:0,lic:0,
   res:{gold:0,g:[0,0,0,0,0],fd:{carne:0,cocida:0,pasto:0,hierba:0,lazo:0},ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0},
   ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}return a}
-const ent=u=>{const a=acct(u);return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,px:a.px,vip:a.vip,lic:a.lic,nm:a.nm,gld:a.gld}};
+const ent=u=>{const a=acct(u);return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,px:a.px,vip:a.vip,lic:a.lic,nm:a.nm,gld:a.gld,nch:a.nch|0}};
 const pushEnt=u=>S.push(u,{t:'ent',ent:ent(u)});
 function flag(u,why,w){const a=acct(u);a.strikes+=w==null?1:w;a.flags.push([Date.now(),String(why).slice(0,120)]);if(a.flags.length>30)a.flags.shift();S.dirty();
  log('[antitrampas] '+u+' ('+(a.nm||'?')+'): '+why+' · strikes '+a.strikes);
@@ -44,19 +44,19 @@ const BASE={0:{dm:5},1:{hp:8},2:{hp:4,dm:1},3:{dm:2,hp:2},4:{hp:5},5:{sp:2}};
 function itemMax(it,k){const m=RM[it.r]*(1+it.t*.6)*2.6;let b;if(it.sl<6)b=BASE[it.sl];else b=(it.k===2||it.k===4||it.k===6)?{mp:8}:{hp:3,gd:4};return Math.ceil((b[k]||0)*m)+1}
 function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0,6,-1),t=int(x.t,0,4,-1),r=int(x.r,0,3,-1);if(sl<0||t<0||r<0)return null;
  const o={sl,t,r,li:int(x.li,0,9,0),du:int(x.du,0,100,100)};if(x.k!=null){const k=int(x.k,0,7,-1);if(k<0)return null;o.k=k}
- o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
+ o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
  for(const k of['dm','hp','sp','gd','mp']){if(x[k]==null||+x[k]===0)continue;const mx=itemMax(o,k);if(!mx||mx<=1&&k!=='hp')return null;const v=int(x[k],0,1e7,0);if(v>mx*(x.u?1:1))return null;if(v)o[k]=v}
  return o}
 function cleanPetS(x){if(!x||typeof x!=='object')return null;const t=String(x.t||'');if(!/^[a-z]{2,12}$/.test(t))return null;
  const o={t,nm:String(x.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t,lv:int(x.lv,1,30,1),xp:int(x.xp,0,1e8,0),q:int(x.q,0,3,0),fd:int(x.fd,0,100,80),ill:0,hp:num(x.hp,1,1e5,1),en:num(x.en,0,1e5,0)};
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}return o}
-const MINT={i:[[60,5e3],[25,40e3],[8,300e3],[3,1800e3]],p:[[6,600e3]]};
+const MINT={i:[[60,5e3],[25,40e3],[8,300e3],[3,1800e3]],p:[[8,300e3]]};
 function mintOk(a,kind,idx,now){const cfg=(MINT[kind]||MINT.i)[idx],b=a.mint[kind+idx]||(a.mint[kind+idx]={v:cfg[0],t:now});b.v=Math.min(cfg[0],b.v+(now-b.t)/cfg[1]);b.t=now;if(b.v>=1){b.v-=1;return 1}return 0}
 /* ---------- nombres ---------- */
-function claimName(u,raw){const n=String(raw||'').trim().replace(/\s+/g,' ');if(!/^[\p{L}\p{N} _-]{3,14}$/u.test(n))return{e:'Usa de 3 a 14 letras, números, espacios, - o _'};
+function claimName(u,raw,force){const n=String(raw||'').trim().replace(/\s+/g,' ');if(!/^[\p{L}\p{N} _-]{3,14}$/u.test(n))return{e:'Usa de 3 a 14 letras, números, espacios, - o _'};
  const k=n.toLowerCase(),a=acct(u);if(ECO.names[k]&&ECO.names[k]!==u)return{e:'Ese nombre ya está en uso'};
- if(a.nm&&a.nm.toLowerCase()!==k&&Date.now()-a.nmts<6e5)return{e:'Espera unos minutos para cambiar de nombre'};
+ if(a.nm&&a.nm.toLowerCase()!==k&&!force)return{e:'Cambiar el nombre cuesta 2.000 🪙 la primera vez y 1 💎 las siguientes (menú ⚙️ Sistema)'};
  if(a.nm&&ECO.names[a.nm.toLowerCase()]===u)delete ECO.names[a.nm.toLowerCase()];
  ECO.names[k]=u;a.nm=n;a.nmts=Date.now();S.dirty();if(a.gld&&S.guildName)S.guildName(u,n);return{nm:n}}
 const uidByName=n=>ECO.names[String(n||'').trim().toLowerCase()]||null;
@@ -69,6 +69,11 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  /* entregas confirmadas: el cliente dice que ya las aplicó */
  const acked=[];if(Array.isArray(ack))for(const id of ack.slice(0,60)){const i=a.dl.findIndex(d=>d.id===String(id));if(i>=0){acked.push(a.dl[i]);a.dl.splice(i,1)}}
  const dt=a.ts?Math.min(CFG.dtMax,Math.max(1,(now-a.ts)/1000)):CFG.dtMax;const first=a.first;
+ /* tras un reinicio (o cuenta nueva) no se importa progreso viejo del navegador: se parte desde cero */
+ const preBad=[];if(first&&!master&&process.env.FIRST_IMPORT!=='1'){const cnt=(Array.isArray(v.bag)?v.bag.length:0)+(v.eq&&typeof v.eq==='object'?Object.keys(v.eq).length:0)+(Array.isArray(v.pets)?v.pets.length:0);
+  if((+v.lv||1)>5||(+v.g||0)>2000||cnt>6){const ids=[];const add=x=>{if(x&&x.id)ids.push(String(x.id))};if(v.eq&&typeof v.eq==='object')for(const k in v.eq)add(v.eq[k]);(Array.isArray(v.bag)?v.bag:[]).forEach(add);(Array.isArray(v.lb)?v.lb:[]).forEach(add);(Array.isArray(v.pets)?v.pets:[]).forEach(add);
+   Object.assign(v,{g:0,i:[0,0,0,0,0],cb:[0,0,0,0,0],lv:1,xp:0,eq:{},bag:[],lb:[],bu:[],pets:[],sx:[1,1,1],fd:{},bgc:25,lgc:25});fix.rz=1;fix.g=0;fix.lv=1;fix.xp=0;fix.i=[0,0,0,0,0];fix.fd={};preBad.push(...ids);notes.push('reinicio: progreso viejo descartado')}}
+ v.bgc=(+v.bgc)>=40?40:25;v.lgc=(+v.lgc)>=40?40:25;v.bu=(Array.isArray(v.bu)?v.bu.filter(x=>+x===40).map(()=>40):[]).slice(0,Math.max(0,2-(v.bgc>=40?1:0)-(v.lgc>=40?1:0)));
  /* clase y nombre */
  let cl=int(v.cl,0,7,0);if(a.cls>=0&&v.ch&&a.cls!==cl){flag(u,'cambio de clase '+a.cls+'→'+cl);cl=a.cls;v.cl=cl;fix.cl=cl}
  if(v.ch&&a.cls<0)a.cls=cl;
@@ -99,13 +104,14 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  v.p=int(v.p,0,99,0);if(v.mpp!=null)v.mpp=int(v.mpp,0,99,0);
  /* ---- objetos ---- */
  const seen=new Set(),idSet=new Set();let dropped=0;
- const bad=[];const chk=(it,slot)=>{const r=chk0(it,slot);if(!r&&it&&it.id)bad.push(String(it.id));return r};const chk0=(it,slot)=>{const c=cleanItem(it);if(!c){dropped++;flag(u,'objeto inválido '+JSON.stringify(it).slice(0,90));return null}
+ const bad=preBad.slice();const chk=(it,slot)=>{const r=chk0(it,slot);if(!r&&it&&it.id)bad.push(String(it.id));return r};const chk0=(it,slot)=>{const c=cleanItem(it);if(!c){dropped++;flag(u,'objeto inválido '+JSON.stringify(it).slice(0,90));return null}
   if(c.id){if(seen.has(c.id)){dropped++;flag(u,'objeto duplicado en la misma cuenta');return null}seen.add(c.id);const r=ECO.reg[c.id];
    if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'objeto de otro jugador/duplicado '+c.id,2);return null}
    if(!r){if(!first&&!master&&!mintOk(a,'i',c.r,now)){dropped++;flag(u,'demasiados objetos nuevos de rareza '+c.r);return null}ECO.reg[c.id]={o:u,k:'i',t:now};S.dirty()}else if(r.o!==u&&master){ECO.reg[c.id]={o:u,k:'i',t:now}}}
   return c};
  if(v.eq&&typeof v.eq==='object'){const e={};for(const k of Object.keys(v.eq).slice(0,7)){const c=chk(v.eq[k]);if(c)e[k]=c}v.eq=e}
- if(Array.isArray(v.bag))v.bag=v.bag.slice(0,60).map(x=>chk(x)).filter(Boolean);
+ if(Array.isArray(v.bag))v.bag=v.bag.slice(0,v.bgc).map(x=>chk(x)).filter(Boolean);
+ if(Array.isArray(v.lb))v.lb=v.lb.slice(0,v.lgc).map(x=>chk(x)).filter(Boolean);else v.lb=[];
  if(Array.isArray(v.pets)){const ids=[];v.pets=v.pets.slice(0,12).map(p=>{const c=cleanPetS(p);if(!c){dropped++;return null}if(c.id){if(seen.has(c.id)){dropped++;return null}seen.add(c.id);const r=ECO.reg[c.id];if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'mascota de otro jugador '+c.id,2);return null}if(!r){if(!first&&!master&&!mintOk(a,'p',0,now)){dropped++;flag(u,'demasiadas mascotas nuevas');return null}ECO.reg[c.id]={o:u,k:'p',t:now};S.dirty()}}return c}).filter(Boolean)}
  if(dropped)fix.items=dropped;
  /* limpieza del registro: lo que ya no está en el guardado ni en el mercado deja de ser tuyo */

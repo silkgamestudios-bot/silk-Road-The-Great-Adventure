@@ -71,11 +71,13 @@ const match=(d,w)=>!!d&&w.every(x=>x[1]==='=='&&d[x[0]]===x[2]);
 /* ===== El servidor también entrega el juego (carpeta public/): sirve de respaldo si Netlify no está disponible ===== */
 const path=require('path'),zlib=require('zlib'),PUB=path.join(__dirname,'public'),FC={};
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.webp':'image/webp','.mp3':'audio/mpeg','.ogg':'audio/ogg'};
+const RAIZ=new Set(['index.html','play.html','privacidad.html','terminos.html','wiki.html','wiki-data.json','sw.js','config.js','claude-shim.js','heroes.js','world-client.js','catalog.js','site.css','site2.css','manifest.webmanifest']);
 const TXT=new Set(['.html','.js','.css','.json','.webmanifest','.svg','.txt']);
 function statusText(){return 'Silk Road server OK'+(world?' '+JSON.stringify(world.stats()):'')+' · cuentas:'+(AC?'si':'no')+(REQ?' · solo con cuenta':'')+(AC&&AC.mailOn()?' · correo:si':' · correo:no')}
 function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').split('?')[0])}catch(e){return false}
  if(p==='/status'||p==='/health'||(q.method!=='GET'&&q.method!=='HEAD'))return false;if(p.endsWith('/'))p+='index.html';
- const f=path.normalize(path.join(PUB,p));if(f.indexOf(PUB+path.sep)!==0)return false;
+ let f=path.normalize(path.join(PUB,p));if(f.indexOf(PUB+path.sep)!==0)return false;
+ if(!FC[f]&&!fs.existsSync(f)){const b=p.slice(1);if(RAIZ.has(b)||/^[\w.-]+\.(png|jpg|jpeg)$/i.test(b))f=path.join(__dirname,b);else return false}   /* respaldo: si no hay carpeta public/, sirve el cliente suelto en la raíz (solo archivos del juego, nunca los del servidor) */
  let c=FC[f];if(!c){let st;try{st=fs.statSync(f)}catch(e){return false}if(!st.isFile())return false;const buf=fs.readFileSync(f),ext=path.extname(f).toLowerCase();
   c=FC[f]={buf,gz:TXT.has(ext)&&buf.length>1400?zlib.gzipSync(buf,{level:9}):null,type:MIME[ext]||'application/octet-stream',etag:'"'+crypto.createHash('md5').update(buf).digest('hex').slice(0,16)+'"',ext}}
  const h={'content-type':c.type,etag:c.etag,'cache-control':(TXT.has(c.ext)||p==='/sw.js')?'no-cache':'public, max-age=86400','x-content-type-options':'nosniff'};

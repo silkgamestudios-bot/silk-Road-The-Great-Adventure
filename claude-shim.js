@@ -8,7 +8,7 @@ let ws,q=[],subs={},rq={},sid=0,rid=0,ok=0;
 const raw=m=>{const s=JSON.stringify(m);if(ws&&ws.readyState==1&&ok)ws.send(s);else q.push(s)};
 function conn(){ws=new WebSocket(SERVER);ok=0;
  ws.onopen=()=>{ws.send(JSON.stringify(GATED?(ses?{t:'hi',ses}:{t:'hi',noauth:1}):{t:'hi',uid,tok}))};
- ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
+ ws.onmessage=e=>{got=1;let m;try{m=JSON.parse(e.data)}catch(x){return}
   if(m.t&&m.t[0]=='w'){SRNET.onmsg&&SRNET.onmsg(m)}
   else if(m.t=='ent'){G(g=>g.ent(m.ent))}
   else if(m.t=='dl'){G(g=>g.dl(m.list))}
@@ -22,7 +22,7 @@ function conn(){ws=new WebSocket(SERVER);ok=0;
   else if(m.t=='snap'){const b=subs[m.sid];if(b){b.docs=m.docs||{};b.cb(snap(b.docs))}}
   else if(m.t=='ch'){const b=subs[m.sid];if(b){if(m.d)b.docs[m.id]=m.d;else delete b.docs[m.id];b.cb(snap(b.docs))}}
   else if(m.t=='r'){const p=rq[m.rid];if(p){delete rq[m.rid];m.ok?p.ok(m):p.no(new Error(m.e||'error'))}}};
- ws.onclose=()=>{ok=0;cl++;if(wt){stopWt();loginMsg('El servidor cerró la conexión. Probablemente todavía tiene la versión vieja: sube server.js y accounts.js a GitHub y haz Deploy en Render.')}setTimeout(conn,2000)};ws.onerror=()=>{try{ws.close()}catch(e){}}}
+ ws.onclose=()=>{ok=0;cl++;if(wt){stopWt();loginMsg('Se perdió la conexión un momento. Reconectando…')}setTimeout(conn,2000)};ws.onerror=()=>{try{ws.close()}catch(e){}}}
 const G=f=>{try{window.SR_GAME&&f(window.SR_GAME)}catch(e){}};
 const rpc=m=>new Promise((ok2,no)=>{m.rid=++rid;rq[m.rid]={ok:ok2,no};raw(m);setTimeout(()=>{if(rq[m.rid]){delete rq[m.rid];no(new Error('timeout'))}},10000)});
 const snap=docs=>({docs:Object.keys(docs).map(id=>({id,data:()=>docs[id]})),size:Object.keys(docs).length});
@@ -40,7 +40,7 @@ window.SRNET={flush:flushNow,rpc,send:m=>{if(ws&&ws.readyState==1&&ok)ws.send(JS
 window.claude=window.claude||{use:async k=>k=='db'?db:k=='user'?{id:()=>idP}:null};
 window.SRACC={get:()=>me,logout:()=>{LS.del('sr_ses');LS.del('sr_acc');location.reload()},open:()=>accOpen()};
 /* ---- Inicio de sesión: usuario y contraseña (+ Google si está configurado) ---- */
-let ov=null,tab='in';let wt=null,cl=0;const stopWt=()=>{if(wt){clearTimeout(wt);wt=null}};
+let ov=null,tab='in';let wt=null,cl=0;let got=0,cov=null,cT0=0;const stopWt=()=>{if(wt){clearTimeout(wt);wt=null}};
 const pre=m=>{if(ws&&ws.readyState==1){ws.send(JSON.stringify(m));return true}return false};
 const CSS='width:100%;box-sizing:border-box;padding:11px 12px;margin:5px 0;border-radius:10px;border:2px solid #6b4a17;background:#0b1224;color:#f5e6c4;font:16px Georgia,serif';
 const BTN='width:100%;padding:12px;margin:8px 0 2px;border-radius:10px;border:0;background:linear-gradient(#e0434a,#b3262e);color:#fff;font:700 17px Georgia,serif;cursor:pointer;box-shadow:0 3px 0 #6f1319';
@@ -57,7 +57,7 @@ function loginMsg(t,good){const e=$$('srge');if(e){e.textContent=t||'';e.style.c
 function loginRender(msg,good){if(!ov)return;ov.querySelector('#srb').innerHTML=loginBody()+(GID?'<div style="margin:12px 0 0;color:#b9a97f;font-size:13px">o</div><div id="srg" style="display:flex;justify-content:center;min-height:44px"></div>':'');
  ov.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;loginRender()});
  ov.querySelectorAll('input').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')$$('sgo').click()}));
- $$('sgo').onclick=()=>{const v=id=>($$(id)||{}).value||'';loginMsg('');const go=m=>{if(!pre(m)){loginMsg(cl>=2?'El servidor no acepta la conexión. Si Render ya está "Live", probablemente tiene la versión vieja: sube server.js y accounts.js a GitHub (carpeta server) y haz Manual Deploy.':'Todavía no hay conexión con el servidor. Espera unos segundos y vuelve a intentar.');return}loginMsg('Un momento…',1);stopWt();wt=setTimeout(()=>loginMsg('El servidor no respondió. Si el problema sigue, el servidor puede estar actualizándose o no tener las cuentas activas todavía.'),8000)};
+ $$('sgo').onclick=()=>{const v=id=>($$(id)||{}).value||'';loginMsg('');const go=m=>{if(!pre(m)){loginMsg('Conectando con el servidor… un momento.',1);return}loginMsg('Un momento…',1);stopWt();wt=setTimeout(()=>loginMsg('El servidor tardó en responder. Intenta de nuevo en unos segundos.'),8000)};
   if(tab=='in')go({t:'hi',lg:{n:v('su'),p:v('sp')}});else if(tab=='up')go({t:'hi',reg:{n:v('su'),e:v('se'),p:v('sp')}});
   else if(tab=='rq')go({t:'hi',rq:{n:v('su'),e:v('se')}});else go({t:'hi',rs:{n:v('su'),e:v('se'),c:v('sc'),p:v('sp')}})};
  loginMsg(msg,good);if(GID)gbtn()}
@@ -68,6 +68,18 @@ function showLogin(err){stopWt();if(!GATED)return;if(ov){loginMsg(err);return}ov
  document.body.appendChild(ov);loginRender(err)}
 function recMsg(m){stopWt();if(m.done){tab='in';loginRender(m.m,1)}else loginMsg(m.m,m.ok)}
 if(GATED)addEventListener('DOMContentLoaded',()=>{if(!ses)showLogin()});
+/* ===== Pantalla de carga profesional: barra de progreso hasta que el servidor responde ===== */
+function covShow(){if(cov||got||!GATED)return;cT0=Date.now();cov=document.createElement('div');
+ cov.style.cssText='position:fixed;inset:0;z-index:100000;background:radial-gradient(900px 500px at 50% 0,#24396b,#0d1526);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Georgia,serif;color:#f5e6c4;text-align:center';
+ cov.innerHTML='<div style="max-width:400px;width:100%"><img src="logo.jpg" style="width:100%;border-radius:12px;border:2px solid #6b4a17;box-shadow:0 12px 40px #000c"><h2 style="color:#ffd66b;margin:18px 0 6px;font-size:22px">Conectando con el reino…</h2><div style="height:12px;border-radius:8px;background:#0b1224;border:2px solid #6b4a17;overflow:hidden"><div id="srcb" style="height:100%;width:3%;background:linear-gradient(90deg,#d9a441,#ffd66b);transition:width .4s"></div></div><p id="srct" style="font-size:14px;color:#b9a97f;margin:12px 0 0;min-height:36px">Despertando el servidor, un momento.</p><button id="srcr" style="display:none;margin-top:10px;padding:10px 18px;border-radius:10px;border:2px solid #6b4a17;background:#3b2a10;color:#ffd66b;font:inherit;cursor:pointer" onclick="location.reload()">Reintentar</button></div>';
+ document.body.appendChild(cov);
+ const iv=setInterval(()=>{const t=(Date.now()-cT0)/1000;
+  if(got||!cov){clearInterval(iv);const b=$$('srcb');if(b)b.style.width='100%';setTimeout(()=>{if(cov){cov.style.transition='opacity .4s';cov.style.opacity='0';const c=cov;cov=null;setTimeout(()=>c.remove(),450)}},250);return}
+  const b=$$('srcb'),x=$$('srct');if(b)b.style.width=Math.round(92*(1-Math.exp(-t/22)))+'%';
+  if(x)x.textContent=t<10?'Despertando el servidor, un momento.':t<40?'El servidor se está iniciando. Puede tardar hasta un minuto la primera vez.':t<100?'Casi listo… gracias por la paciencia.':'Está tardando más de lo normal. Pulsa Reintentar.';
+  if(t>=100){const r=$$('srcr');if(r)r.style.display='inline-block'}},400)}
+if(GATED){if(document.body)covShow();else addEventListener('DOMContentLoaded',covShow)}
+
 /* ---- Cuenta: cambiar contraseña, cerrar sesión y (master) restablecer la de un jugador ---- */
 function accOpen(){if(!me||!me.uid)return;const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:99998;background:#000a;display:flex;align-items:center;justify-content:center;padding:14px;font-family:Georgia,serif';
  const I=(id,ph,t)=>'<input id="'+id+'" placeholder="'+ph+'" type="'+(t||'password')+'" maxlength="64" style="'+CSS+'">';

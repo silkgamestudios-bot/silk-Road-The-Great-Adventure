@@ -3,14 +3,34 @@ services:
     name: silk-road-server
     runtime: node
     rootDir: server
+    plan: starter            # de pago: no se duerme y permite disco persistente
     buildCommand: npm install
     startCommand: node server.js
     healthCheckPath: /
-    plan: free          # free: se duerme a los 15 min y NO guarda disco (se pierden saldos al reiniciar). Producción: starter + disk
+    disk:
+      name: silk-data
+      mountPath: /data       # aquí se guardan mercado, billeteras y ledger de gemas (db.json)
+      sizeGB: 1
     envVars:
+      - key: DATA_DIR
+        value: /data
       - key: ALLOWED_ORIGINS
-        value: https://TU-SITIO.netlify.app
-      - key: MASTER_KEY          # clave secreta (12+ caracteres) para reclamar el rol master dentro del juego. Ponla en el panel de Render.
-        sync: false
-      - key: DATA_DIR            # con plan de pago: monta un disco en /data y deja esto así
-        value: .
+        value: "https://stately-pudding-e80d07.netlify.app"   # tu URL de Netlify (varias separadas por coma)
+      - key: MASTER_EMAIL
+        value: "crazzyminnd@gmail.com"                              # TU Gmail: la cuenta de Google con este correo es el MASTER (aprueba pagos y concede gemas)
+      - key: GOOGLE_CLIENT_ID
+        value: ""                              # ID de cliente de Google (ver README). Con esto, solo entran jugadores con Google
+      - key: BINANCE_PAY_ID
+        value: "748095851"
+      - key: MASTER_WHATSAPP
+        value: "18093965707"                   # a este WhatsApp llegan los avisos de pagos de gemas
+      - key: CALLMEBOT_KEY
+        value: ""                              # clave de CallMeBot (gratis) para enviar los WhatsApp; ver README
+      - key: MASTER_UID
+        value: ""                              # opcional (alternativa al Gmail)
+      - key: FIRST_IMPORT
+        value: "1"                             # 1 = el primer guardado de cada cuenta importa su progreso local (con topes). 0 = todos empiezan desde cero
+      - key: IMPORT_GOLD_PER_LV
+        value: "150000"                        # tope de oro importado por nivel en ese primer guardado
+      - key: AUDIT_SLACK
+        value: "1.5"                           # holgura del antitrampas (más alto = más permisivo)

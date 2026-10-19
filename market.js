@@ -62,8 +62,8 @@ ops['shop.set']=(u,m)=>{const a=E.acct(u);if(!isMerc(a))return{e:'Necesitas ser 
  const old=col('shops')[u]||{};const s={u,nm:a.nm||'Jugador',sh:String(m.sh||'').replace(/[^\p{L}\p{N} '._-]/gu,'').slice(0,24)||(a.nm+' Shop'),buy:ar(m.buy),sell:ar(m.sell),pb:mp(m.pb),ps:mp(m.ps),ib:int(m.ib,0,1000,0),tr:old.tr|0,st:[0,0,0,0,0],pst:{},bud:0,ts:now()};
  col('shops')[u]=s;shopView(u);return{ok:1}};
 ops['item.up']=(u,m)=>{const id=String(m.id||''),r=E.reg()[id],a=E.acct(u);if(!r||r.o!==u)return{e:'Sincroniza primero (el objeto aún no está registrado). Inténtalo de nuevo en unos segundos.'};const L=(r.up|0)+1;if(L>12)return{e:'Ya está al máximo (+12)'};const c=E.UPC[L];
- if(E.avail(a,'gold')<c.g)return{e:'Oro insuficiente'};for(const k in c.m)if(E.avail(a,'prov',k)<c.m[k])return{e:'Faltan minerales'};
- E.deliver(u,{gold:-c.g,note:'⚒️ Potenciación a +'+L+': −'+c.g+' 🪙'});for(const k in c.m)E.deliver(u,{prov:{pk:k,q:-c.m[k]}});
+ const cg=c.g+Math.ceil(c.g*.03);if(E.avail(a,'gold')<cg)return{e:'Oro insuficiente (precio + 3% de impuesto)'};for(const k in c.m)if(E.avail(a,'prov',k)<c.m[k])return{e:'Faltan minerales'};
+ E.deliver(u,{gold:-cg,note:'⚒️ Potenciación a +'+L+': −'+cg+' 🪙 (con 3% de impuesto)'});for(const k in c.m)E.deliver(u,{prov:{pk:k,q:-c.m[k]}});
  const win=Math.random()<c.p;if(win){r.up=L;S.dirty()}return{ok:1,up:r.up|0,won:win?1:0}};
 
 /* ===== misiones diarias y cofres (el servidor tira los dados) ===== */

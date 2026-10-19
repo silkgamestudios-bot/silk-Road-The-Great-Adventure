@@ -117,6 +117,8 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   const lim=(cur,base)=>{const inc=cur-base;if(inc<=0)return cur;const a1=Math.min(inc,cr);cr-=a1;let rest=inc-a1;const a2=Math.min(rest,Math.floor(pb.v));pb.v-=a2;rest-=a2;return rest>0?cur-rest:cur};
   const np=lim(v.p,Math.max(0,R.pot+dAck('pot')));if(np!==v.p){v.p=np;fix.pp=np}
   if(v.mpp!=null){if(a.mpok){const nm=lim(v.mpp,Math.max(0,R.mpot|0));if(nm!==v.mpp){v.mpp=nm;fix.pm=nm}}}}
+ /* mochila de loot: cuántas unidades de cada provisión están en la bolsa de loot (solo es una etiqueta, nunca da recursos) */
+ if(v.fl&&typeof v.fl==='object'&&!Array.isArray(v.fl)){const o={};let n=0;for(const k of Object.keys(v.fl)){if(!/^[a-z0-9]{2,5}$/.test(k)||++n>80)continue;const q=int(v.fl[k],0,1e6,0);if(q)o[k]=q}v.fl=o}else if('fl' in v)delete v.fl;
  /* ---- objetos ---- */
  const seen=new Set(),idSet=new Set();let dropped=0;
  const bad=preBad.slice();const chk=(it,slot)=>{const r=chk0(it,slot);if(!r&&it&&it.id)bad.push(String(it.id));return r};const chk0=(it,slot)=>{const c=cleanItem(it);if(!c){dropped++;flag(u,'objeto inválido '+JSON.stringify(it).slice(0,90));return null}

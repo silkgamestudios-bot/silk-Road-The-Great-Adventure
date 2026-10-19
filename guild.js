@@ -88,7 +88,7 @@ ops['g.chat']=(u,m)=>{const g=myG(u);if(!g)return err('No tienes gremio');const 
  for(const id of Object.keys(g.mem))if(S.online(id))S.push(id,{t:'gc',gid:g.id,m:msg});return{ok:1}};
 ops['g.dep']=(u,m)=>{const g=myG(u);if(!g)return err('No tienes gremio');const q=int(m.q,1,1e12,0);if(!q)return err('Cantidad inválida');const a=E.acct(u);
  if(E.avail(a,'gold')<q)return err('Oro insuficiente (sincroniza e inténtalo)');
- E.deliver(u,{gold:-q,note:'🏰 Depositaste '+q+' 🪙 en el tesoro'});g.bank+=q;log(g,'💰 '+g.mem[u].nm+' depositó '+q+' 🪙');S.dirty();pushG(g);return{ok:1}};
+ const tx=Math.ceil(q*.03),net=q-tx;E.deliver(u,{gold:-q,note:'🏰 Depositaste '+q+' 🪙 en el tesoro (comisión 3%: '+tx+')'});g.bank+=net;log(g,'💰 '+g.mem[u].nm+' depositó '+q+' 🪙 (llegan '+net+' tras la comisión 3%)');S.dirty();pushG(g);return{ok:1}};
 ops['g.wd']=(u,m)=>{const g=myG(u);if(!g||g.leader!==u)return err('Solo el líder retira del tesoro');const q=int(m.q,1,1e12,0);if(!q||q>g.bank)return err('Cantidad inválida');
  g.bank-=q;E.deliver(u,{gold:q,note:'🏰 Retiraste '+q+' 🪙 del tesoro'});log(g,'🏧 '+g.mem[u].nm+' retiró '+q+' 🪙');S.dirty();pushG(g);return{ok:1}};
 return{ops,tagOf,myG,full,summary}};

@@ -2,7 +2,7 @@
    el servidor comprueba oro/mercancía/objeto, mueve la propiedad y entrega a cada parte (idempotente). El cliente no decide nada. */
 module.exports=function(S,E){
 const {DB}=S;const RM=E.RM;
-const PVL=['carne','cocida','pasto','hierba','pocion','lazo','ec_hl','ec_nv','ec_lu','ec_am','ec_nz'];
+const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','ec_hl','ec_nv','ec_lu','ec_am','ec_nz'];
 const int=(v,a,b,d)=>{v=Math.floor(+v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d};
 const iv=it=>Math.round(720*RM[it.r]*(1+it.t*.6)*(it.dv?.05:1));
 const tax=(p)=>({pay:Math.round(p*1.03),get:Math.round(p*.97)});
@@ -55,12 +55,16 @@ setInterval(()=>{try{const t=now();for(const id in col('offers')){const o=col('o
 /* ---------- TIENDAS DE MERCADERES ---------- */
 function shopView(u){const a=E.acct(u),s=col('shops')[u];if(!s)return;const R=a.res;
  const n=Object.assign({},s,{nm:a.nm||s.nm,st:R.g.map((_,i)=>E.avail(a,'g',i)),bud:Math.floor(E.avail(a,'gold')),
-  pst:{carne:E.avail(a,'prov','carne'),cocida:E.avail(a,'prov','cocida'),pasto:E.avail(a,'prov','pasto'),hierba:E.avail(a,'prov','hierba'),lazo:E.avail(a,'prov','lazo'),pocion:E.avail(a,'pot'),ec_hl:E.avail(a,'ec','hl'),ec_nv:E.avail(a,'ec','nv'),ec_lu:E.avail(a,'ec','lu'),ec_am:E.avail(a,'ec','am'),ec_nz:E.avail(a,'ec','nz')},ts:now()});
+  pst:(()=>{const o={};for(const k of PVL){const [t,s]=provRes(k);o[k]=t==='pot'?E.avail(a,'pot'):t==='ec'?E.avail(a,'ec',s):E.avail(a,'prov',s)}return o})(),ts:now()});
  col('shops')[u]=n;S.dirty();S.bc('shops',u,s,n)}
 ops['shop.set']=(u,m)=>{const a=E.acct(u);if(!isMerc(a))return{e:'Necesitas ser Mercader con la Licencia activa'};
  const ar=(x)=>Array.isArray(x)?[0,1,2,3,4].map(i=>int(x[i],0,1e12,0)):[0,0,0,0,0],mp=(x)=>{const o={};if(x&&typeof x==='object')for(const k of PVL){const v=int(x[k],0,1e12,0);if(v)o[k]=v}return o};
  const old=col('shops')[u]||{};const s={u,nm:a.nm||'Jugador',sh:String(m.sh||'').replace(/[^\p{L}\p{N} '._-]/gu,'').slice(0,24)||(a.nm+' Shop'),buy:ar(m.buy),sell:ar(m.sell),pb:mp(m.pb),ps:mp(m.ps),ib:int(m.ib,0,1000,0),tr:old.tr|0,st:[0,0,0,0,0],pst:{},bud:0,ts:now()};
  col('shops')[u]=s;shopView(u);return{ok:1}};
+ops['item.up']=(u,m)=>{const id=String(m.id||''),r=E.reg()[id],a=E.acct(u);if(!r||r.o!==u)return{e:'Sincroniza primero (el objeto aún no está registrado). Inténtalo de nuevo en unos segundos.'};const L=(r.up|0)+1;if(L>10)return{e:'Ya está al máximo (+10)'};const c=E.UPC[L];
+ if(E.avail(a,'gold')<c.g)return{e:'Oro insuficiente'};for(const k in c.m)if(E.avail(a,'prov',k)<c.m[k])return{e:'Faltan minerales'};
+ E.deliver(u,{gold:-c.g,note:'⚒️ Potenciación a +'+L+': −'+c.g+' 🪙'});for(const k in c.m)E.deliver(u,{prov:{pk:k,q:-c.m[k]}});
+ const win=Math.random()<c.p;if(win){r.up=L;S.dirty()}return{ok:1,up:r.up|0,won:win?1:0}};
 ops['shop.close']=(u)=>{delDoc('shops',u);return{ok:1}};
 function shopOf(m,u){const sid=String(m.s||''),s=col('shops')[sid];if(!s)return{e:'La tienda ya no existe'};if(sid===u)return{e:'Es tu tienda'};const sa=E.acct(sid);if(!isMerc(sa))return{e:'Esa tienda está inactiva'};return{s,sid,sa}}
 ops['shop.buy']=(u,m)=>{const r=shopOf(m,u);if(r.e)return r;const {s,sid,sa}=r,b=E.acct(u),q=int(m.q,1,1000,0);if(!q)return{e:'Cantidad inválida'};

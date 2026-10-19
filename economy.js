@@ -15,10 +15,13 @@ const xpNeed=l=>Math.round((30+90*l+3*l*l)*(1.3+.05*l)*1.6);
 const xpTot=(lv,xp)=>{let t=xp;for(let l=1;l<lv;l++)t+=xpNeed(l);return t};
 const xpInv=t=>{let l=1;while(l<CFG.lvMax&&t>=xpNeed(l)){t-=xpNeed(l);l++}return[l,Math.floor(t)]};
 const rid=n=>crypto.randomBytes(n||8).toString('hex');
+/* ---------- minerales (se comercian como provisiones) y potenciación ---------- */
+const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia'];
+const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13500,m:{cob:12,hie:6},p:1},{g:24000,m:{hie:12,pla:4},p:.9},{g:37500,m:{hie:16,pla:8},p:.8},{g:54000,m:{pla:14,aur:4},p:.66},{g:73500,m:{pla:18,aur:8,rub:1},p:.52},{g:96000,m:{aur:12,mit:4,esm:2},p:.4},{g:121500,m:{aur:14,mit:8,dia:1},p:.28},{g:150000,m:{mit:14,dia:3,zaf:2},p:.18}];
 /* ---------- cuentas ---------- */
 function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev:[],px:{au:0,ap:0,lt:0,bl:0,es:0},vip:0,lic:0,
-  res:{gold:0,g:[0,0,0,0,0],fd:{carne:0,cocida:0,pasto:0,hierba:0,lazo:0},ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0},
-  ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}return a}
+  res:{gold:0,g:[0,0,0,0,0],fd:Object.assign({carne:0,cocida:0,pasto:0,hierba:0,lazo:0},Object.fromEntries(MNK.map(k=>[k,0]))),ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0},
+  ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}for(const k of MNK)if(a.res&&a.res.fd&&a.res.fd[k]==null)a.res.fd[k]=0;return a}
 const ent=u=>{const a=acct(u);return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,px:a.px,vip:a.vip,lic:a.lic,nm:a.nm,gld:a.gld,nch:a.nch|0}};
 const pushEnt=u=>S.push(u,{t:'ent',ent:ent(u)});
 function flag(u,why,w){const a=acct(u);a.strikes+=w==null?1:w;a.flags.push([Date.now(),String(why).slice(0,120)]);if(a.flags.length>30)a.flags.shift();S.dirty();
@@ -46,6 +49,7 @@ function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0
  const o={sl,t,r,li:int(x.li,0,9,0),du:int(x.du,0,100,100)};if(x.k!=null){const k=int(x.k,0,7,-1);if(k<0)return null;o.k=k}
  o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
+ if(x.up!=null){const up=int(x.up,0,10,0);if(up)o.up=up}
  for(const k of['dm','hp','sp','gd','mp']){if(x[k]==null||+x[k]===0)continue;const mx=itemMax(o,k);if(!mx||mx<=1&&k!=='hp')return null;const v=int(x[k],0,1e7,0);if(v>mx*(x.u?1:1))return null;if(v)o[k]=v}
  return o}
 function cleanPetS(x){if(!x||typeof x!=='object')return null;const t=String(x.t||'');if(!/^[a-z]{2,12}$/.test(t))return null;
@@ -108,6 +112,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   if(c.id){if(seen.has(c.id)){dropped++;flag(u,'objeto duplicado en la misma cuenta');return null}seen.add(c.id);const r=ECO.reg[c.id];
    if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'objeto de otro jugador/duplicado '+c.id,2);return null}
    if(!r){if(!first&&!master&&!mintOk(a,'i',c.r,now)){dropped++;flag(u,'demasiados objetos nuevos de rareza '+c.r);return null}ECO.reg[c.id]={o:u,k:'i',t:now};S.dirty()}else if(r.o!==u&&master){ECO.reg[c.id]={o:u,k:'i',t:now}}}
+  if(c.up){const rr=c.id&&ECO.reg[c.id],mx=(rr&&rr.up)|0;if(c.up>mx&&!master){flag(u,'potenciación falsa +'+c.up+' (permitido +'+mx+')');c.up=mx}if(!c.up)delete c.up}
   return c};
  if(v.eq&&typeof v.eq==='object'){const e={};for(const k of Object.keys(v.eq).slice(0,7)){const c=chk(v.eq[k]);if(c)e[k]=c}v.eq=e}
  if(Array.isArray(v.bag))v.bag=v.bag.slice(0,v.bgc).map(x=>chk(x)).filter(Boolean);
@@ -127,4 +132,4 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  a.lv=lv;a.xp=xp;if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
  /* lo que sigue sin aplicar (entregas pendientes) se descuenta del esperado para que no se aplique dos veces */
  return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl}:null,acked:acked.map(d=>d.id)}}
-return{acct,ent,pushEnt,audit,deliver,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM}};
+return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,audit,deliver,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM}};

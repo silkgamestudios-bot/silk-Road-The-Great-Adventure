@@ -40,7 +40,7 @@ const num=(v,a,b,d)=>Number.isFinite(+v)?Math.min(b,Math.max(a,+v)):d;
 function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
  if(m.t==='wj'){const old=p;p={uid:u,ws,nm:String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,20)||'Viajero',c:num(m.c,0,5,0)|0,lv:num(m.lv,1,9999,1)|0,gt:String(m.gt||'').slice(0,4),bs:String(m.bs||'').slice(0,12),cz:Array.isArray(m.cz)?m.cz:[0,0,0],x:num(m.x,0,W*T,0),y:num(m.y,0,H*T,0),hp:100,mhp:100,mt:now,tok:0,tt:now,rc:[],ct:old?old.ct:{dm:0,tk:0,ut:0}};p.city=inCity(p.x,p.y);PL.set(u,p);send(ws,{t:'wi',tick:CFG.tick,n:J.mobs.length,sg:WSIG});return}
  if(!p||p.ws!==ws)return;
- if(m.t==='wm'){const x=num(m.x,0,W*T,p.x),y=num(m.y,0,H*T,p.y),dt=Math.min(2,Math.max(.05,(now-p.mt)/1000)),d=Math.hypot(x-p.x,y-p.y),tp=m.tp&&inCity(x,y)&&now-(p.tpT||0)>3000;
+ if(m.t==='wm'){const x=num(m.x,0,W*T,p.x),y=num(m.y,0,H*T,p.y),dt=Math.min(2,Math.max(.05,(now-p.mt)/1000)),d=Math.hypot(x-p.x,y-p.y),tp=m.tp&&(inCity(x,y)||(J.tpd||[]).some(t=>Math.hypot(x-t.x,y-t.y)<300))&&now-(p.tpT||0)>3000;
   if(m.dg){p.dg=1;p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);return}const wasDg=p.dg;p.dg=0;
   if(wasDg&&!solid(x,y)){p.x=x;p.y=y;p.mt=now;return}
   if((d>CFG.speed*dt+48&&!tp)||solid(x,y)){send(ws,{t:'wp',x:p.x,y:p.y});return}if(tp)p.tpT=now;

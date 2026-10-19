@@ -2,7 +2,7 @@
    el servidor comprueba oro/mercancía/objeto, mueve la propiedad y entrega a cada parte (idempotente). El cliente no decide nada. */
 module.exports=function(S,E){
 const {DB}=S;const RM=E.RM;
-const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','ec_hl','ec_nv','ec_lu','ec_am','ec_nz'];
+const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','ec_hl','ec_nv','ec_lu','ec_am','ec_nz'];
 const int=(v,a,b,d)=>{v=Math.floor(+v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d};
 const iv=it=>Math.round(720*RM[it.r]*(1+it.t*.6)*(it.dv?.05:1));
 const tax=(p)=>({pay:Math.round(p*1.03),get:Math.round(p*.97)});
@@ -61,7 +61,7 @@ ops['shop.set']=(u,m)=>{const a=E.acct(u);if(!isMerc(a))return{e:'Necesitas ser 
  const ar=(x)=>Array.isArray(x)?[0,1,2,3,4].map(i=>int(x[i],0,1e12,0)):[0,0,0,0,0],mp=(x)=>{const o={};if(x&&typeof x==='object')for(const k of PVL){const v=int(x[k],0,1e12,0);if(v)o[k]=v}return o};
  const old=col('shops')[u]||{};const s={u,nm:a.nm||'Jugador',sh:String(m.sh||'').replace(/[^\p{L}\p{N} '._-]/gu,'').slice(0,24)||(a.nm+' Shop'),buy:ar(m.buy),sell:ar(m.sell),pb:mp(m.pb),ps:mp(m.ps),ib:int(m.ib,0,1000,0),tr:old.tr|0,st:[0,0,0,0,0],pst:{},bud:0,ts:now()};
  col('shops')[u]=s;shopView(u);return{ok:1}};
-ops['item.up']=(u,m)=>{const id=String(m.id||''),r=E.reg()[id],a=E.acct(u);if(!r||r.o!==u)return{e:'Sincroniza primero (el objeto aún no está registrado). Inténtalo de nuevo en unos segundos.'};const L=(r.up|0)+1;if(L>10)return{e:'Ya está al máximo (+10)'};const c=E.UPC[L];
+ops['item.up']=(u,m)=>{const id=String(m.id||''),r=E.reg()[id],a=E.acct(u);if(!r||r.o!==u)return{e:'Sincroniza primero (el objeto aún no está registrado). Inténtalo de nuevo en unos segundos.'};const L=(r.up|0)+1;if(L>12)return{e:'Ya está al máximo (+12)'};const c=E.UPC[L];
  if(E.avail(a,'gold')<c.g)return{e:'Oro insuficiente'};for(const k in c.m)if(E.avail(a,'prov',k)<c.m[k])return{e:'Faltan minerales'};
  E.deliver(u,{gold:-c.g,note:'⚒️ Potenciación a +'+L+': −'+c.g+' 🪙'});for(const k in c.m)E.deliver(u,{prov:{pk:k,q:-c.m[k]}});
  const win=Math.random()<c.p;if(win){r.up=L;S.dirty()}return{ok:1,up:r.up|0,won:win?1:0}};

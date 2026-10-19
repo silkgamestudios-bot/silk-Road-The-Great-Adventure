@@ -1,7 +1,7 @@
 /* Tienda del servidor: apariencias, servicios (buffs), gemas, nombres y entitlements. Precios y reglas SOLO viven aquí. */
 module.exports=function(S,E){
 const cat=S.cat,SK=Object.assign({},cat.SKINS,cat.TRAJES||{}),EVK=E.EVK;
-const GEMP={lt:3,ap:2,bl:4,es:3,cmb:5,lic:10,vipm:15,vipj:6,vip:11},GMON=['cmb','es','lic','vipm','vipj'],GEMSKIN=12,LIC_LV=15,GCMB=['lt','ap'],PRMK=['lt','ap','bl','es'],DAY=864e5;
+const GEMP={lt:3,ap:2,bl:4,es:3,cmb:6,lic:10,vipm:15,vipj:7,vip:11},GMON=['cmb','es','lic','vipm','vipj'],GEMSKIN=12,LIC_LV=15,GCMB=['lt','ap'],PRMK=['lt','ap','bl','es'],DAY=864e5;
 const price=(k,d)=>{const b=GEMP[k]||0;if(GMON.includes(k)){if(k==='es'||d>=30)return b;return Math.min(b-1,Math.max(1,Math.round(b*d/30*1.3)))}if(d<=10)return b;return Math.max(1,Math.round(b*(d/10)*.8))};
 const blGold=lv=>Math.round(2000*Math.pow(1.28,Math.min(29,Math.max(0,lv-1))));
 const NAME_GOLD=2000,err=e=>({e});const ops={};

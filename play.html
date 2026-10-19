@@ -555,7 +555,7 @@ const carve=(x,y)=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=
  for(let k=0;k<=n;k++){const t=k/n,off=Math.sin(t*Math.PI*fr)*amp*Math.min(1,t*8,(1-t)*8);carve(a.tx+(b.tx-a.tx)*t+px*off,a.ty+(b.ty-a.ty)*t+py*off)}});
 C.forEach(c=>{for(let dy=-30;dy<=30;dy++)for(let dx=-34;dx<=34;dx++){const r=M[c.ty+dy];if(!r||r[c.tx+dx]===undefined)continue;const t=r[c.tx+dx];if(t==2||t==3)r[c.tx+dx]=0}
  for(let dy=-18;dy<=15;dy++)for(let dx=-24;dx<=23;dx++){const r=M[c.ty+dy];if(r&&r[c.tx+dx]!==undefined){r[c.tx+dx]=5;const st=Math.abs(dx)<=2||(dy>=-12&&dy<=-8)||(dy>=-4&&dy<=0)||dy>=4&&dy<=13||TBL.some(b=>dx>=b[0]+1&&dx<=b[0]+3&&dy>=b[1]+3&&dy<=b[1]+4);TL[(c.ty+dy)*W+c.tx+dx]=st?0:1}}
- for(const [lx,ly] of TLAMP){const r=M[c.ty+ly];if(r)r[c.tx+lx]=6}
+ /* los postes de luz ya no bloquean el paso (eran un tile entero invisible) */
  for(let dy=-18;dy<=15;dy++)for(const dx of [-24,23]){const r=M[c.ty+dy];if(r&&TL[(c.ty+dy)*W+c.tx+dx]==1&&(dy&1)==0)r[c.tx+dx]=1}
  for(const [fx,fy,fw,fh] of TBL.map(b=>[b[0],b[1],5,3]).concat(TSTALL.map(b=>[b[0],b[1]+1,2,1]),[[0,0,1,1],[-1,-1,1,1],[1,-1,1,1],[0,1,1,1]]))for(let dy=0;dy<fh;dy++)for(let dx=0;dx<fw;dx++){const r=M[c.ty+fy+dy];if(r&&r[c.tx+fx+dx]!==undefined)r[c.tx+fx+dx]=6}});
 const LM=[];{const P1=['Oasis','Ruinas','Templo','Torre','Altar','Cripta','Mirador','Fortaleza','Santuario','Tumba'],S1=['de la Luna','del Viento','de Jade','del Halcón','de Ceniza','de Sangre','Perdido','Silente','Caído','Olvidado','del Sol','de Hielo'];let tries=0;while(LM.length<24&&tries++<4000){const x=20+Math.floor(R()*(W-40)),y=20+Math.floor(R()*(H-40));if(ncity(x,y,25)||LM.some(l=>Math.hypot(l.tx-x,l.ty-y)<70))continue;const i=LM.length;LM.push({n:P1[i%10]+' '+S1[(i*5+i%3)%12],tx:x,ty:y})}}
@@ -595,7 +595,11 @@ const SRCAT={"CLASES":["Mercader","Caballero","Mago","Arquero","Sanador","Monje"
 const BCAP=()=>(P.bgc|0)>=40?40:25,LCAP=()=>(P.lgc|0)>=40?40:25;let LV=0;
 const P={bgc:25,lgc:25,lb:[],bu:[],bsk:'',tj:'',bown:[],cz:{s:0,h:0,o:0},bx:[0,0,0,0],sx:[1,1,1],sxp:[0,0,0],tn:null,tch:{n:2,on:0,fuel:0},ss:[[0,1,2],[-1,-1,-1]],sw:0,ssk:null,sno:0,wxo:0,wxs:null,x:C[0].tx*T+16,y:(C[0].ty+3)*T+16,hp:100,mhp:100,lv:1,xp:0,auto:1,st:{all:0,k:[0,0,0,0,0,0,0,0,0],sold:0},tt:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],eq:{},bag:[],cls:0,chosen:0,pq:{},hz:{},evo:0,dbo:0,ann:{},qs:['feedC','mount','sneak','petmode'],ub:['','',''],uh:[0,0,0],ec:{hl:0,nv:0,lu:0,am:0,nz:0},sk:[],skin:'',bg2:0,rest:0,sta:100,mnm:0,pcv:1,pcm:0,fd:{carne:0,cocida:0,pasto:0,hierba:0,lazo:0},dy:{},mu:1,mvol:.5,pets:[],ac:null,am:null,tk:{au:0,lt:0,ap:0,bl:0,es:0},gem:0,gemT:0,gh:[],gpr:[],vip:0,mL:0,tut:99,tc:{mv:0,sp:0,tk:0,tr:0,mn:0,lt:0},dl:'',ds:0,bg:0,bm:[0,0,0,0,0,0,0,0],bkc:[0,0,0,0,0,0,0,0],bt:[0,0,0,0,0,0,0,0],drgk:{},drgm:[],ppid:'',pppl:0,cf:0,cfa:0,cfh:1,cfr:100,dc:{c0:1},cb:[0,0,0,0,0],lic:0,mr:1,mx:0,gd:0,gt:0,mk:{L:[],M:{},fees:0,tot:0},mkt:{bp:{},esc:{},tr:0,shop:'',buy:[0,0,0,0,0],sell:[0,0,0,0,0],pb:{},ps:{},ib:0},sc:[0,0,0],mp:60,get mmp(){return Math.max(10,Math.round((CLS[this.cls|0].mp+4*(this.lv-1)+eqT().mp)*(1+TJB().mp)))},b:{gd:0,sp:0,rg:0},sh:0,tr:0,spin:0,name:'',prem:{au:0,ap:0,lt:0,bl:0,es:0},gold:100,pot:5,mpot:3,bn:0,inv:[0,0,0,0,0],cd:0,fx:0,hit:0,face:1};
 const load=()=>P.inv.reduce((a,b)=>a+b,0);
-const E=[];let NR=[],NT=0;
+const E=[];let NR=[],NT=0,MP_DONE=0;
+const nmAt=(o,m)=>NMS.some(z=>Math.abs(o.x-z.x)<(24+(m||0))*T&&Math.abs(o.y-z.y)<(19+(m||0))*T);
+const inTown=(o,m)=>C.some(c=>Math.abs(o.x/T-c.tx-.5)<24.6+(m||0)&&o.y/T-c.ty-.5>-18.6-(m||0)&&o.y/T-c.ty-.5<15.6+(m||0));
+/* Los monstruos comunes no pueden vivir dentro de pueblos, ferias ni muros: ahí no se les puede dañar y quedan 'atascados' */
+function mobPurge(){for(let i=E.length-1;i>=0;i--){const e=E[i];if(e.boss||e.guard||e.drg||e.zb||e.pred||e.tmp||e.dg||e.hx==null)continue;const tx=Math.floor(e.hx/T),ty=Math.floor(e.hy/T),r=M[ty];if(!r||solid(r[tx])||inTown({x:e.hx,y:e.hy},3)||nmAt({x:e.hx,y:e.hy},4))E.splice(i,1)}}
 const HPT=[20,60,105,170,260,520,800,1200,1800],mobHP=t=>HPT[Math.max(0,Math.min(8,t|0))];
 function placeE(e,tx,ty,ti){e.hx=tx*T+16+(R()-.5)*40;e.hy=ty*T+16+(R()-.5)*40;e.x=e.hx;e.y=e.hy;e.ty=ti;e.mx=e.hp=mobHP(ti);e.sp=(66+ti*2.5)*.75;e.t=0;e.dead=0;e.stun=0}
 function respawn(e){if(e.guard){guardReset(e);return}if(e.boss){bossReset(e);e.dead=0;return}e.x=e.hx;e.y=e.hy;e.hp=e.mx;e.dead=0;e.stun=0}
@@ -867,6 +871,7 @@ function upd(dt){
   if(e.zb){zbAI(e,dt,safe);continue}
   if(e.stun>0){e.stun-=dt;e.mov=0;continue}
   if(!WSLEEP&&Math.abs(P.x-e.x)>(e.dg?2600:1200)&&e.hp>=e.mx){e.mov=0;continue}
+  if(!e.dg&&(inTown(e)||nmAt(e))){e.x=e.hx;e.y=e.hy;e.hp=e.mx;e.ch=0;e.mov=0;e.stun=0;continue}
   const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy);
   if(WSLEEP&&Math.abs(e.x-WPX)<260&&Math.abs(e.y-WPY)<260){const wd=Math.hypot(e.x-WPX,e.y-WPY);if(wd>30){mv(e,(WPX-e.x)/wd*e.sp*dt,(WPY-e.y)/wd*e.sp*dt,9);e.mov=1;e.dir=Math.abs(WPX-e.x)>Math.abs(WPY-e.y)?(WPX>e.x?'right':'left'):(WPY>e.y?'down':'up')}else{e.t-=dt;if(e.t<=0){e.t=.8;OH-=edm(e);WUA=10}e.mov=0}continue}
   if(d>(e.dg?2600:1100)&&e.hp>=e.mx){e.mov=0;continue}e.mov=0;if(e.nsl&&!safe&&d<125&&d>1){const sg=(e.sa||0)>3.14?1:-1,tx=-dy/d*sg,ty=dx/d*sg,rd=d<66?-.7:(d>80?.5:0);mv(e,(tx*.45+dx/d*rd)*e.sp*dt,(ty*.45+dy/d*rd)*e.sp*dt,9);e.mov=1;e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');continue}if(SLOT(e,dt,dx,dy,d,safe)){}else if(dgChase(e,dt,dx,dy,d,safe)||AIx(e,dt,dx,dy,d,safe)){}else if(d<(e.chase||60)&&d>20&&!safe){if(e.pk){e.pk.al=NOWM+(e.pk.big?9000:2500);if(e.pk.big&&NOWM>(e.pk.w||0)){e.pk.w=NOWM+25000;toast('⚠️ ¡Una horda te ha visto! Huye o prepárate.',3500)}}const vg=.55+.45*Math.max(0,e.hp/e.mx);mv(e,dx/d*e.sp*vg*dt,dy/d*e.sp*vg*dt,9);e.mov=1;e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')}else if(e.pk&&e.pk.al>NOWM&&d<(e.pk.big?750:330)&&d>20&&!safe){const vg=.55+.45*Math.max(0,e.hp/e.mx);mv(e,dx/d*e.sp*vg*dt,dy/d*e.sp*vg*dt,9);e.mov=1;e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')}else if(e.hx!=null&&Math.hypot(e.x-e.hx,e.y-e.hy)>12){const hx=e.hx-e.x,hy=e.hy-e.y,hd=Math.hypot(hx,hy);mv(e,hx/hd*55*dt,hy/hd*55*dt,9);e.mov=1;e.dir=Math.abs(hx)>Math.abs(hy)?(hx>0?'right':'left'):(hy>0?'down':'up');if(hd<60)e.hp=Math.min(e.mx,e.hp+e.mx*.25*dt)}else if(e.hp<e.mx)e.hp=Math.min(e.mx,e.hp+e.mx*.25*dt)
@@ -1734,9 +1739,12 @@ function nudge(o){const tx=Math.floor(o.x/T),ty=Math.floor(o.y/T);if(tFree(tx,ty
 function unstick(){if(!blk(P.x,P.y,9))return;for(let r=1;r<12;r++)for(let a=0;a<16;a++){const nx=P.x+Math.cos(a/16*6.283)*r*T*.7,ny=P.y+Math.sin(a/16*6.283)*r*T*.7;if(!blk(nx,ny,9)){P.x=nx;P.y=ny;return}}}
 function buildTrees(){TREE.fill(0);const near=(x,y)=>(TMP&&Math.hypot(TMP.x-x,TMP.y-y)<28)||C.some(c=>Math.abs(c.tx-x)<17&&Math.abs(c.ty-y)<17)||LAIRS.some(l=>Math.hypot(l.x-x,l.y-y)<9)||ALTARS.some(l=>Math.hypot(l.x-x,l.y-y)<9)||BOSS.some(b=>Math.hypot(b.ax-x,b.ay-y)<10)||LM.some(l=>Math.hypot(l.tx-x,l.ty-y)<3);
  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){if(M[y][x]!=0)continue;const h=hsh(x,y),b=RG[RGI[y*W+x]].b;if(((b=='f'&&h<3)||(b=='g'&&h<1)||(h<3&&(M[y][x+1]==3||M[y][x-1]==3||M[y+1][x]==3||M[y-1][x]==3)))&&!near(x,y)&&(((x*374761393)+(y*668265263))>>>0)%10<4)TREE[y*W+x]=1}
+ for(const c of C)for(let dy=-21;dy<=18;dy++)for(let dx=-27;dx<=27;dx++){const x=c.tx+dx,y=c.ty+dy;if(x>0&&y>0&&x<W&&y<H)TREE[y*W+x]=0}
+ for(const z of NMS)for(let dy=-21;dy<=21;dy++)for(let dx=-27;dx<=27;dx++){const x=z.tx+dx,y=z.ty+dy;if(x>0&&y>0&&x<W&&y<H)TREE[y*W+x]=0}
  for(const e of E)if(!e.boss&&!e.guard)nudge(e);for(const w of WL)nudge(w);for(const w of WM)nudge(w)}
 /* mobs -50%: se quita la mitad (de forma determinista) de los enemigos comunes del mundo */
 (function(){for(let i=E.length-1;i>=0;i--){const e=E[i];if(e.boss||e.guard||e.cap||e.zb||e.drg||e.alpha||e.dg||e.hunt)continue;if(((i*2654435761)>>>0)%100<50)E.splice(i,1)}})();
+mobPurge();/* mismo orden en cliente y servidor: el mundo se exporta DESPUÉS de esto (world.json) */
 buildTrees();unstick();
 const VAR={jackal:['an-jackal',0],rdog:['an-dog',0],bat:['bat',0],spider:['sp',0],wolf:['an-wolf',0],thief:['thief',0],assassin:['assassin',1],bandit:['bandit',0],raider:['raider',0],scorp:['sc',0],scorpb:['scb',0],ghost:['ghost',0],zomb:['zomb',0],skel:['skel',0],reap:['reap',0],snow:['snowscamp',1],jack:['jack',0],elf:['elf',0],reno:['reno',0],lion:['lion',0],cupid:['cupid',0],silk:['silk',0]};
 Object.assign(VAR,Object.fromEntries(Object.entries(XV).map(([k,x])=>[k,[x.b,x.dr?1:0,x.tn||null]])));
@@ -2049,7 +2057,7 @@ function grab(rad,q){let n=0,g=0;const its=[];for(let i=LT.length-1;i>=0;i--){co
   if(!l.it)LT.splice(i,1)}
  if(n&&(g||its.length)){P.tc.lt++;if(q!==0){const a=[];if(g)a.push(['gd','+'+g+' 🪙','#ffd666']);its.forEach(it=>a.push(['it','+ '+it.n,RC[it.r],it]));a.forEach((z,i)=>FT.push({x:P.x,y:P.y-22,t:1.6,d:i*.14,o:i*15,k:z[0],s:z[1],c:z[2],it:z[3]}))}vib(15);chk()}return n}
 /* ===== GEMAS: pago de Premium/VIP, atuendos, transferencias y usuario master ===== */
-const GEMP={lt:3,ap:2,bl:4,es:3,cmb:5,lic:10,vipm:15,vipj:6,vip:11},GMON=['cmb','es','lic','vipm','vipj'],GEMSKIN=12,GPK=[{g:1,b:0},{g:3,b:0},{g:5,b:0},{g:10,b:0}],GMIN=1,GMAX=5000,BNID='PON_AQUI_TU_BINANCE_PAY_ID',PAYWA=''/* tu WhatsApp con código de país, solo números, ej: 18095551234 */;
+const GEMP={lt:3,ap:2,bl:4,es:3,cmb:6,lic:10,vipm:15,vipj:7,vip:11},GMON=['cmb','es','lic','vipm','vipj'],GEMSKIN=12,GPK=[{g:1,b:0},{g:3,b:0},{g:5,b:0},{g:10,b:0}],GMIN=1,GMAX=5000,BNID='PON_AQUI_TU_BINANCE_PAY_ID',PAYWA=''/* tu WhatsApp con código de país, solo números, ej: 18095551234 */;
 const GM={u:'',g:'',ref:'',img:'',tc:'',tq:'',pw:'',cc:'',cq:'',pid:'',mp:0},GPAY={id:''},PGS={};
 let GMST=null,GREQ={},GREQM={},GGR={},GMW=0;
 try{GPAY.id=localStorage.getItem('srk_pid')||''}catch(e){}

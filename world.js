@@ -6,7 +6,7 @@ if(!fs.existsSync(FILE)){log('mundo: falta world.json (node tools/export-world.j
 const J=JSON.parse(fs.readFileSync(FILE,'utf8')),W=J.W,H=J.H,T=J.T,bits=Buffer.from(J.bits,'base64');
 const CFG={tick:100,aggro:60,leash:600,view:700,pview:1800,rng:900,rez:30000,hitMax:14,gcap:25000,shareMin:.5,speed:480,dmg0:J.dmg0||40}; // balance: aquí se ajusta todo
 const solid=(x,y)=>{const tx=Math.floor(x/T),ty=Math.floor(y/T);if(tx<0||ty<0||tx>=W||ty>=H)return true;const i=ty*W+tx;return(bits[i>>3]>>(i&7)&1)===1};
-const inCity=(x,y)=>J.cities.some(c=>Math.abs(x/T-c.tx-.5)<7.6&&Math.abs(y/T-c.ty-.5)<7.6);
+const inCity=(x,y)=>J.cities.some(c=>Math.abs(x/T-c.tx-.5)<24.6&&y/T-c.ty-.5>-18.6&&y/T-c.ty-.5<15.6);
 const L=[];J.mobs.forEach((a,i)=>{if(a)L.push({id:i,x:a[0],y:a[1],ty:a[2],mx:a[3],hp:a[3],sp:a[4],hx:a[5],hy:a[6],rw:a[7],dm:a[8],dead:0,rt:0,t:0,tg:null,dmg:{}})});
 const BY=new Map(L.map(m=>[m.id,m])),CS=512,G=new Map(),key=(a,b)=>a+','+b;
 for(const m of L){const k=key(Math.floor(m.hx/CS),Math.floor(m.hy/CS));if(!G.has(k))G.set(k,[]);G.get(k).push(m)}

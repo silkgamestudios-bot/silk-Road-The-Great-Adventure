@@ -2,7 +2,7 @@
    Si el servidor no tiene mundo (falta world.json), el juego sigue en modo local sin cambios. */
 (function(){
 const N=window.SRNET;if(!N)return;
-let WBAD=0,on=0,OT={},WQ=[],lx=0,ly=0,ft=0;
+let WBAD=0,on=0,OT={},WQ=[],lx=0,ly=0,ft=0,OFX=[];
 const ready=()=>P&&P.chosen&&P.name;
 const SKIP=e=>e.boss||e.guard||e.wild||e.tmp||e.alpha||e.vec;
 function freeze(){E.forEach((e,i)=>{if(SKIP(e))return;e.sid=i;e.sync=1;e.stun=1e9})}   // la IA local se apaga: manda el servidor
@@ -21,7 +21,9 @@ function snap(m){const seen={};
  for(const u in OT)if(!seen[u])delete OT[u];
  for(const b of m.mb){const e=E[b[0]];if(!e||!e.sync)continue;if(b[4]){e.hp=0;e.dead=1e9;continue}
   if(e.dead>0)e.dead=0;e.stun=1e9;const dx=b[1]-e.x,dy=b[2]-e.y;e.mov=Math.abs(dx)+Math.abs(dy)>.5?1:0;
-  if(e.mov)e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');e.x=b[1];e.y=b[2];e.hp=b[3]}}
+  if(e.mov)e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');if(Math.abs(dx)+Math.abs(dy)>220){e.x=b[1];e.y=b[2]}else{e.gx=b[1];e.gy=b[2];e.gs=1}e.hp=b[3]}
+ if(m.hv)for(const h of m.hv){if(FT.length>=60)break;FT.push({x:h[3]+Math.random()*14-7,y:h[4]-14,t:.9,d:0,o:0,k:'dm',s:String(h[1]),c:'#8fd8ff'})}
+ if(m.at){const n=Date.now();for(const a of m.at)OFX.push({u:a[0],k:a[1],a:a[2],x:a[3],y:a[4],t:n});if(OFX.length>60)OFX.splice(0,OFX.length-60)}}
 function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100));
  if(g>0){P.gold+=g;t.push('+'+g+' 🪙')}if(m.x>0){gainXp(m.x);t.push('+'+m.x+' XP')}
  if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty)}catch(e){}}
@@ -32,10 +34,16 @@ function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100));
 const _h=hitE;hitE=function(e,dm){if(!on||!e.sync)return _h(e,dm);if(e.dead>0)return;dm=Math.max(1,Math.round(dm));WQ.push([e.sid,dm]);e.hp=Math.max(1,e.hp-dm);
  if(FT.length<60)FT.push({x:e.x+Math.random()*14-7,y:e.y-14,t:.9,d:0,o:0,k:'dm',s:String(dm),c:'#ffe9a8'})};
 if(typeof drawTemple=='function'){const _t=drawTemple;drawTemple=function(cx,cy,now){_t(cx,cy,now);others(cx,cy,now)}}
-function others(cx,cy,now){if(!on)return;const VHn=typeof VH=='number'?VH:900;
- for(const u in OT){const o=OT[u];o.rx+=(o.x-o.rx)*.35;o.ry+=(o.y-o.ry)*.35;const x=o.rx-cx,y=o.ry-cy;if(typeof PP!='undefined'&&PP.o&&PP.o[u]&&Date.now()-(PP.o[u].t||0)<30000&&!!PP.o[u].dg==!!DG.f)continue; // la party ya se dibuja en ppDraw: evita verlos dos veces
+function drawOFX(cx,cy){const n=Date.now();OFX=OFX.filter(f=>n-f.t<520);for(const f of OFX){const q=OT[f.u],bx=q?q.rx:f.x,by=q?q.ry:f.y,k=(n-f.t)/520,x=bx-cx,y=by-cy;if(x<-300||x>VW+300||y<-300||y>VH+300)continue;const c=f.k,ca=Math.cos(f.a),sa=Math.sin(f.a);g.save();g.globalAlpha=1-k*.8;
+  if(c==3){const d=40+420*Math.min(1,k*1.6);g.strokeStyle='#e8d9a8';g.lineWidth=2;g.beginPath();g.moveTo(x+ca*(d-26),y+sa*(d-26));g.lineTo(x+ca*d,y+sa*d);g.stroke()}
+  else if(c==2||c==6){const d=30+300*Math.min(1,k*1.5);g.fillStyle=c==2?'#b07dff':'#7fe06a';g.beginPath();g.arc(x+ca*d,y+sa*d,6+3*Math.sin(k*20),0,7);g.fill();g.globalAlpha*=.4;g.beginPath();g.arc(x+ca*(d-14),y+sa*(d-14),4,0,7);g.fill()}
+  else if(c==4){g.strokeStyle='#7fffb0';g.lineWidth=3;g.beginPath();g.arc(x,y,12+50*k,0,7);g.stroke();const d=30+250*Math.min(1,k*1.5);g.fillStyle='#bfffd8';g.beginPath();g.arc(x+ca*d,y+sa*d,5,0,7);g.fill()}
+  else{g.strokeStyle=c==1?'#ffd9a0':'#fff';g.lineWidth=5-3*k;g.beginPath();g.arc(x,y,34+6*k,f.a-1.1+k*.5,f.a+1.1+k*.5);g.stroke();g.strokeStyle='#ffffff88';g.lineWidth=2;g.beginPath();g.arc(x,y,28,f.a-.9+k*.5,f.a+.9+k*.5);g.stroke()}
+  g.restore()}}
+function others(cx,cy,now){if(!on)return;const VHn=typeof VH=='number'?VH:900;drawOFX(cx,cy);
+ for(const u in OT){const o=OT[u];const px=o.rx,py=o.ry;o.rx+=(o.x-o.rx)*.35;o.ry+=(o.y-o.ry)*.35;const mx=o.rx-px,my=o.ry-py;if(Math.abs(mx)+Math.abs(my)>.15){o.mv=1;o.dr=Math.abs(mx)>Math.abs(my)?(mx>0?'right':'left'):(my>0?'down':'up')}else o.mv=0;const x=o.rx-cx,y=o.ry-cy;if(typeof PP!='undefined'&&PP.o&&PP.o[u]&&Date.now()-(PP.o[u].t||0)<30000&&!!PP.o[u].dg==!!DG.f)continue; // la party ya se dibuja en ppDraw: evita verlos dos veces
 if(x<-40||x>VW+40||y<-60||y>VHn+40)continue;
-  g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(x,y+10,9,3,0,0,7);g.fill();if(!(o.bs&&typeof spBS=='function'&&spBS(o.bs,x,y,2,0,0)))sp('c'+o.c+'-down-1',x,y,2);
+  g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(x,y+10,9,3,0,0,7);g.fill();if(!(o.bs&&typeof spBS=='function'&&spBS(o.bs,x,y,2,0,0)))sp('c'+o.c+'-'+(o.dr||'down')+'-'+(o.mv?[1,2,1,3][Math.floor(Date.now()/130)%4]:1),x,y,2);
   g.font='bold 11px Georgia,serif';g.textAlign='center';const lb=(o.gt?'['+o.gt+'] ':'')+o.nm+' · Nv '+o.lv;g.fillStyle='#000';g.fillText(lb,x+1,y-23);g.fillStyle=o.pt?'#7fffa0':'#fff';g.fillText(lb,x,y-24);
   g.fillStyle='#0008';g.fillRect(x-12,y-19,24,3);g.fillStyle='#4cd964';g.fillRect(x-12,y-19,24*Math.max(0,Math.min(1,o.hp/Math.max(1,o.mhp))),3)}}
 setInterval(()=>{if(!ready()||!N.up())return;
@@ -44,5 +52,7 @@ setInterval(()=>{if(!ready()||!N.up())return;
  N.send({t:'wm',x:Math.round(P.x),y:Math.round(P.y),hp:Math.round(P.hp),mhp:Math.round(P.mhp),lv:P.lv,tp:tp?1:0,dg:(typeof DG!=='undefined'&&DG.f)?1:0});
  if(typeof DG!=='undefined'&&DG.f)WQ.length=0;
  if(WQ.length)N.send({t:'wh',h:WQ.splice(0,12)})},100);
-window.SRWORLD={on:()=>on,others:()=>OT};
+setInterval(()=>{if(!on)return;for(const e of E){if(!e.gs)continue;const dx=e.gx-e.x,dy=e.gy-e.y;if(Math.abs(dx)+Math.abs(dy)<1.5){e.x=e.gx;e.y=e.gy;e.gs=0}else{e.x+=dx*.4;e.y+=dy*.4}}},33);
+const _atk=atk;atk=function(auto){const c0=P.cd;_atk(auto);if(on&&!(c0>0)&&P.cd>0){let b=null,bd=560;for(const e of E){if(!e.sync||e.dead>0)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;b=e}}const fd={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[P.dir||'down'];N.send({t:'wa',k:P.cls|0,a:b?Math.atan2(b.y-P.y,b.x-P.x):fd})}};
+window.SRWORLD={on:()=>on,others:()=>OT,ofx:()=>OFX.length};
 })();

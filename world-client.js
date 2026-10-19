@@ -33,7 +33,8 @@ const _h=hitE;hitE=function(e,dm){if(!on||!e.sync)return _h(e,dm);if(e.dead>0)re
  if(FT.length<60)FT.push({x:e.x+Math.random()*14-7,y:e.y-14,t:.9,d:0,o:0,k:'dm',s:String(dm),c:'#ffe9a8'})};
 if(typeof drawTemple=='function'){const _t=drawTemple;drawTemple=function(cx,cy,now){_t(cx,cy,now);others(cx,cy,now)}}
 function others(cx,cy,now){if(!on)return;const VHn=typeof VH=='number'?VH:900;
- for(const u in OT){const o=OT[u];o.rx+=(o.x-o.rx)*.35;o.ry+=(o.y-o.ry)*.35;const x=o.rx-cx,y=o.ry-cy;if(x<-40||x>VW+40||y<-60||y>VHn+40)continue;
+ for(const u in OT){const o=OT[u];o.rx+=(o.x-o.rx)*.35;o.ry+=(o.y-o.ry)*.35;const x=o.rx-cx,y=o.ry-cy;if(typeof PP!='undefined'&&PP.o&&PP.o[u]&&Date.now()-(PP.o[u].t||0)<30000&&!!PP.o[u].dg==!!DG.f)continue; // la party ya se dibuja en ppDraw: evita verlos dos veces
+if(x<-40||x>VW+40||y<-60||y>VHn+40)continue;
   g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(x,y+10,9,3,0,0,7);g.fill();if(!(o.bs&&typeof spBS=='function'&&spBS(o.bs,x,y,2,0,0)))sp('c'+o.c+'-down-1',x,y,2);
   g.font='bold 11px Georgia,serif';g.textAlign='center';const lb=(o.gt?'['+o.gt+'] ':'')+o.nm+' · Nv '+o.lv;g.fillStyle='#000';g.fillText(lb,x+1,y-23);g.fillStyle=o.pt?'#7fffa0':'#fff';g.fillText(lb,x,y-24);
   g.fillStyle='#0008';g.fillRect(x-12,y-19,24,3);g.fillStyle='#4cd964';g.fillRect(x-12,y-19,24*Math.max(0,Math.min(1,o.hp/Math.max(1,o.mhp))),3)}}

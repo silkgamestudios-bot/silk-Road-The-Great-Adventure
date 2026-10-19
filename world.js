@@ -12,7 +12,7 @@ let WSIG=0;for(const a of J.mobs)WSIG=a?(Math.imul(WSIG,31)+(a[5]|0)*7+(a[6]|0)*
 const BY=new Map(L.map(m=>[m.id,m])),CS=512,G=new Map(),key=(a,b)=>a+','+b;
 for(const m of L){const k=key(Math.floor(m.hx/CS),Math.floor(m.hy/CS));if(!G.has(k))G.set(k,[]);G.get(k).push(m)}
 const near=(x,y,r)=>{const o=[];for(let a=Math.floor((x-r)/CS);a<=Math.floor((x+r)/CS);a++)for(let b=Math.floor((y-r)/CS);b<=Math.floor((y+r)/CS);b++){const g=G.get(key(a,b));if(g)for(const m of g)o.push(m)}return o};
-const PL=new Map(),pid=u=>(DB.pmem&&DB.pmem[u]&&DB.pmem[u].pid)||'',sc=p=>p.ct.dm+1.5*p.ct.tk+6*p.ct.ut;
+const PL=new Map(),pid=u=>{const r=DB.pres&&DB.pres[u];if(r&&r.p&&Date.now()-(+r.t||0)<30000)return String(r.p);return(DB.pmem&&DB.pmem[u]&&DB.pmem[u].pid)||''},sc=p=>p.ct.dm+1.5*p.ct.tk+6*p.ct.ut;
 const send=(ws,m)=>{if(ws.readyState===1)ws.send(JSON.stringify(m))},mvM=(m,dx,dy)=>{if(!solid(m.x+dx,m.y))m.x+=dx;if(!solid(m.x,m.y+dy))m.y+=dy};
 function step(dt,now){const act=new Set();for(const p of PL.values())for(const m of near(p.x,p.y,CFG.view+CFG.leash))act.add(m);
  for(const m of act){if(m.dead){if(now>=m.rt){m.dead=0;m.hp=m.mx;m.x=m.hx;m.y=m.hy;m.tg=null;m.dmg={}}continue}

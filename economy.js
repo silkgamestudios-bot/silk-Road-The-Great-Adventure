@@ -72,7 +72,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  /* tras un reinicio (o cuenta nueva) no se importa progreso viejo del navegador: se parte desde cero */
  const preBad=[];if(first&&!master&&process.env.FIRST_IMPORT!=='1'){const cnt=(Array.isArray(v.bag)?v.bag.length:0)+(v.eq&&typeof v.eq==='object'?Object.keys(v.eq).length:0)+(Array.isArray(v.pets)?v.pets.length:0);
   if((+v.lv||1)>5||(+v.g||0)>2000||cnt>6){const ids=[];const add=x=>{if(x&&x.id)ids.push(String(x.id))};if(v.eq&&typeof v.eq==='object')for(const k in v.eq)add(v.eq[k]);(Array.isArray(v.bag)?v.bag:[]).forEach(add);(Array.isArray(v.lb)?v.lb:[]).forEach(add);(Array.isArray(v.pets)?v.pets:[]).forEach(add);
-   Object.assign(v,{g:0,i:[0,0,0,0,0],cb:[0,0,0,0,0],lv:1,xp:0,eq:{},bag:[],lb:[],dep:[],bu:[],pets:[],sx:[1,1,1],fd:{},bgc:25,lgc:25});fix.rz=1;fix.g=0;fix.lv=1;fix.xp=0;fix.i=[0,0,0,0,0];fix.fd={};preBad.push(...ids);notes.push('reinicio: progreso viejo descartado')}}
+   Object.assign(v,{g:0,i:[0,0,0,0,0],cb:[0,0,0,0,0],lv:1,xp:0,eq:{},bag:[],lb:[],dep:[],bk:0,bu:[],pets:[],sx:[1,1,1],fd:{},bgc:25,lgc:25});fix.rz=1;fix.g=0;fix.lv=1;fix.xp=0;fix.i=[0,0,0,0,0];fix.fd={};preBad.push(...ids);notes.push('reinicio: progreso viejo descartado')}}
  v.bgc=(+v.bgc)>=40?40:25;v.lgc=(+v.lgc)>=40?40:25;v.bu=(Array.isArray(v.bu)?v.bu.filter(x=>+x===40).map(()=>40):[]).slice(0,Math.max(0,2-(v.bgc>=40?1:0)-(v.lgc>=40?1:0)));
  /* clase y nombre */
  let cl=int(v.cl,0,7,0);if(a.cls>=0&&v.ch&&a.cls!==cl){flag(u,'cambio de clase '+a.cls+'→'+cl);cl=a.cls;v.cl=cl;fix.cl=cl}
@@ -89,7 +89,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  /* ---- oro, mercancías, provisiones y monedas ---- */
  forceExpired(a);
  const R=a.res,dAck=(key,sub)=>{let cr=0,db=0;for(const d of acked)for(const [k,s2,q] of dKeys(d))if(k===key&&(sub==null||s2===sub)){if(q>0)cr+=q;else if(!d.forced)db+=q}return cr+db};
- let g=num(v.g,0,1e14,0);const rate=(CFG.goldRate+CFG.goldPerLv*lv)*dt*CFG.slack,baseG=Math.max(0,R.gold+dAck('gold'));let saleAllow=0;
+ const bk0=int(v.bk,0,1e14,0);let g=num(v.g,0,1e14,0)+bk0;const rate=(CFG.goldRate+CFG.goldPerLv*lv)*dt*CFG.slack,baseG=Math.max(0,R.gold+dAck('gold'))+(R.bk|0);let saleAllow=0;
  const gi=Array.isArray(v.i)?[0,1,2,3,4].map(i=>int(v.i[i],0,CFG.goodsCap,0)):R.g.slice();
  if(!master){for(let i=0;i<5;i++){const b=Math.max(0,R.g[i]+dAck('g',i));if(gi[i]<b)saleAllow+=(b-gi[i])*CFG.goodsBase[i]*2.2}
   const gb=a.gb,cap=bossBudget(lv)*CFG.bossUp*CFG.slack+400000;gb.v=Math.min(cap,(gb.v||0)+(bossBudget(lv)/900+300)*(a.ts?dt:60)*CFG.slack);
@@ -98,7 +98,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   /* comprar mercancía cuesta oro: lo que sube sin entrega debe estar pagado (mín. 50% del precio base) */
   const spent=Math.max(0,baseG-g)+rate;
   for(let i=0;i<5;i++){const b=Math.max(0,R.g[i]+dAck('g',i));if(gi[i]>b&&!first){const can=Math.floor(Math.max(0,spent)/(CFG.goodsBase[i]*.5));if(gi[i]-b>can){flag(u,'mercancía '+i+' sin pagar: '+b+'→'+gi[i]);gi[i]=b+can;fix.i=1}}}}
- v.g=Math.floor(g);v.i=gi;if(Array.isArray(v.cb))v.cb=gi.map((_,i)=>num(v.cb[i],0,1e15,0));
+ v.bk=Math.min(bk0,Math.floor(g));v.g=Math.floor(g)-v.bk;v.i=gi;if(Array.isArray(v.cb))v.cb=gi.map((_,i)=>num(v.cb[i],0,1e15,0));
  if(v.fd&&typeof v.fd==='object'){const o={};for(const k of Object.keys(R.fd)){let q=int(v.fd[k],0,CFG.provCap,0);if(!master&&!first){const mx=Math.max(0,R.fd[k]+dAck('prov',k))+Math.ceil(CFG.provRate*dt*CFG.slack)+20;if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
  if(v.ec&&typeof v.ec==='object'){const o={};for(const k of EVK){let q=int(v.ec[k],0,1e6,0);if(!master&&!first){const mx=Math.max(0,R.ec[k]+dAck('ec',k))+Math.ceil(CFG.ecRate*dt*CFG.slack+CFG.ecBurst);if(q>mx){flag(u,'monedas '+k+' '+R.ec[k]+'→'+q);q=mx;fix.ec=1}}o[k]=q}v.ec=o}
  v.p=int(v.p,0,99,0);if(v.mpp!=null)v.mpp=int(v.mpp,0,99,0);
@@ -123,8 +123,8 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  if(v.bsk&&!a.sk.includes(v.bsk))v.bsk='';
  v.ml=0;/* el master lo decide el servidor */
  /* ---- aceptar ---- */
- a.res.gold=v.g;a.res.g=v.i.slice();if(v.fd)a.res.fd=Object.assign({},v.fd);if(v.ec)a.res.ec=Object.assign({},v.ec);a.res.pot=v.p;
+ a.res.gold=v.g;a.res.bk=v.bk;a.res.g=v.i.slice();if(v.fd)a.res.fd=Object.assign({},v.fd);if(v.ec)a.res.ec=Object.assign({},v.ec);a.res.pot=v.p;
  a.lv=lv;a.xp=xp;if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
  /* lo que sigue sin aplicar (entregas pendientes) se descuenta del esperado para que no se aplique dos veces */
- return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl}:null,acked:acked.map(d=>d.id)}}
+ return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl}:null,acked:acked.map(d=>d.id)}}
 return{acct,ent,pushEnt,audit,deliver,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM}};

@@ -8,6 +8,7 @@ const CFG={tick:100,aggro:60,leash:600,view:700,pview:1800,rng:900,rez:30000,hit
 const solid=(x,y)=>{const tx=Math.floor(x/T),ty=Math.floor(y/T);if(tx<0||ty<0||tx>=W||ty>=H)return true;const i=ty*W+tx;return(bits[i>>3]>>(i&7)&1)===1};
 const inCity=(x,y)=>J.cities.some(c=>Math.abs(x/T-c.tx-.5)<24.6&&y/T-c.ty-.5>-18.6&&y/T-c.ty-.5<15.6);
 const L=[];J.mobs.forEach((a,i)=>{if(a)L.push({id:i,x:a[0],y:a[1],ty:a[2],mx:a[3],hp:a[3],sp:a[4],hx:a[5],hy:a[6],rw:a[7],dm:a[8],dead:0,rt:0,t:0,tg:null,dmg:{}})});
+let WSIG=0;for(const a of J.mobs)WSIG=a?(Math.imul(WSIG,31)+(a[5]|0)*7+(a[6]|0)*13+(a[2]|0)*17+1)|0:(Math.imul(WSIG,31)+3)|0;
 const BY=new Map(L.map(m=>[m.id,m])),CS=512,G=new Map(),key=(a,b)=>a+','+b;
 for(const m of L){const k=key(Math.floor(m.hx/CS),Math.floor(m.hy/CS));if(!G.has(k))G.set(k,[]);G.get(k).push(m)}
 const near=(x,y,r)=>{const o=[];for(let a=Math.floor((x-r)/CS);a<=Math.floor((x+r)/CS);a++)for(let b=Math.floor((y-r)/CS);b<=Math.floor((y+r)/CS);b++){const g=G.get(key(a,b));if(g)for(const m of g)o.push(m)}return o};
@@ -37,12 +38,14 @@ function hits(p,list){const now=Date.now();p.tok=Math.min(CFG.hitMax*2,(p.tok||0
   m.hp-=dm;m.dmg[p.uid]=(m.dmg[p.uid]||0)+dm;p.ct.dm+=dm;if(!m.tg&&!p.city)m.tg=p.uid;if(m.hp<=0)kill(m)}}
 const num=(v,a,b,d)=>Number.isFinite(+v)?Math.min(b,Math.max(a,+v)):d;
 function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
- if(m.t==='wj'){const old=p;p={uid:u,ws,nm:String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,20)||'Viajero',c:num(m.c,0,5,0)|0,lv:num(m.lv,1,9999,1)|0,gt:String(m.gt||'').slice(0,4),bs:String(m.bs||'').slice(0,12),cz:Array.isArray(m.cz)?m.cz:[0,0,0],x:num(m.x,0,W*T,0),y:num(m.y,0,H*T,0),hp:100,mhp:100,mt:now,tok:0,tt:now,rc:[],ct:old?old.ct:{dm:0,tk:0,ut:0}};p.city=inCity(p.x,p.y);PL.set(u,p);send(ws,{t:'wi',tick:CFG.tick});return}
+ if(m.t==='wj'){const old=p;p={uid:u,ws,nm:String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,20)||'Viajero',c:num(m.c,0,5,0)|0,lv:num(m.lv,1,9999,1)|0,gt:String(m.gt||'').slice(0,4),bs:String(m.bs||'').slice(0,12),cz:Array.isArray(m.cz)?m.cz:[0,0,0],x:num(m.x,0,W*T,0),y:num(m.y,0,H*T,0),hp:100,mhp:100,mt:now,tok:0,tt:now,rc:[],ct:old?old.ct:{dm:0,tk:0,ut:0}};p.city=inCity(p.x,p.y);PL.set(u,p);send(ws,{t:'wi',tick:CFG.tick,n:J.mobs.length,sg:WSIG});return}
  if(!p||p.ws!==ws)return;
  if(m.t==='wm'){const x=num(m.x,0,W*T,p.x),y=num(m.y,0,H*T,p.y),dt=Math.min(2,Math.max(.05,(now-p.mt)/1000)),d=Math.hypot(x-p.x,y-p.y),tp=m.tp&&inCity(x,y)&&now-(p.tpT||0)>3000;
+  if(m.dg){p.dg=1;p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);return}const wasDg=p.dg;p.dg=0;
+  if(wasDg&&!solid(x,y)){p.x=x;p.y=y;p.mt=now;return}
   if((d>CFG.speed*dt+48&&!tp)||solid(x,y)){send(ws,{t:'wp',x:p.x,y:p.y});return}if(tp)p.tpT=now;
   p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);p.lv=X.lv&&X.lv(u)?X.lv(u):num(m.lv,1,9999,p.lv)|0;p.city=inCity(x,y);return}
- if(m.t==='wh')hits(p,m.h)}
+ if(m.t==='wh'){if(!p.dg)hits(p,m.h)}}
 setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);
  for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||''])}
   const mb=[];for(const m of near(p.x,p.y,CFG.view+CFG.leash))if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.view)mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);send(p.ws,{t:'ws',pl,mb})}},CFG.tick);

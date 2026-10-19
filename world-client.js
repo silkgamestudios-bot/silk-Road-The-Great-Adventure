@@ -2,13 +2,15 @@
    Si el servidor no tiene mundo (falta world.json), el juego sigue en modo local sin cambios. */
 (function(){
 const N=window.SRNET;if(!N)return;
-let on=0,OT={},WQ=[],lx=0,ly=0,ft=0;
+let WBAD=0,on=0,OT={},WQ=[],lx=0,ly=0,ft=0;
 const ready=()=>P&&P.chosen&&P.name;
 const SKIP=e=>e.boss||e.guard||e.wild||e.tmp||e.alpha||e.vec;
 function freeze(){E.forEach((e,i)=>{if(SKIP(e))return;e.sid=i;e.sync=1;e.stun=1e9})}   // la IA local se apaga: manda el servidor
-N.onopen=()=>{on=0};
+N.onopen=()=>{on=0;WBAD=0};
 N.onmsg=m=>{
- if(m.t=='wi'){on=1;freeze();toast('🌐 Mundo online conectado',2200)}
+ if(m.t=='wi'){let sg=0,n=m.n|0;if(m.sg!=null&&n>0&&E.length>=n){for(let i=0;i<n;i++){const e=E[i];sg=(!e||SKIP(e)||e.dg)?(Math.imul(sg,31)+3)|0:(Math.imul(sg,31)+Math.round(e.hx)*7+Math.round(e.hy)*13+(e.ty|0)*17+1)|0}}
+  if(m.sg!=null&&(E.length<n||sg!==(m.sg|0))){on=0;WBAD=1;console.log('mundo: versión distinta',n,E.length,sg,m.sg);toast('⚠️ El servidor tiene una versión vieja del mundo. Sube TODOS los archivos a GitHub y haz Manual Deploy; mientras tanto juegas en modo local.',9000)}
+  else{on=1;WBAD=0;freeze();toast('🌐 Mundo online conectado',2200)}}
  else if(m.t=='wx'){on=0}
  else if(m.t=='wp'){P.x=m.x;P.y=m.y}
  else if(m.t=='wd'){if(on&&P.hp>0&&!modal){P.hp-=mountAbs(m.d*(P.sh>0?.3:1)*(P.cls==1?knRes():1));if(P.hp<=0)die()}}
@@ -36,9 +38,10 @@ function others(cx,cy,now){if(!on)return;const VHn=typeof VH=='number'?VH:900;
   g.font='bold 11px Georgia,serif';g.textAlign='center';const lb=(o.gt?'['+o.gt+'] ':'')+o.nm+' · Nv '+o.lv;g.fillStyle='#000';g.fillText(lb,x+1,y-23);g.fillStyle=o.pt?'#7fffa0':'#fff';g.fillText(lb,x,y-24);
   g.fillStyle='#0008';g.fillRect(x-12,y-19,24,3);g.fillStyle='#4cd964';g.fillRect(x-12,y-19,24*Math.max(0,Math.min(1,o.hp/Math.max(1,o.mhp))),3)}}
 setInterval(()=>{if(!ready()||!N.up())return;
- if(!on){if(Date.now()-ft>2000){ft=Date.now();N.send({t:'wj',nm:P.name,c:P.cls|0,lv:P.lv,x:Math.round(P.x),y:Math.round(P.y)})}return}
+ if(!on){if(WBAD)return;if(Date.now()-ft>2000){ft=Date.now();N.send({t:'wj',nm:P.name,c:P.cls|0,lv:P.lv,x:Math.round(P.x),y:Math.round(P.y)})}return}
  const tp=Math.hypot(P.x-lx,P.y-ly)>300;lx=P.x;ly=P.y;
- N.send({t:'wm',x:Math.round(P.x),y:Math.round(P.y),hp:Math.round(P.hp),mhp:Math.round(P.mhp),lv:P.lv,tp:tp?1:0});
+ N.send({t:'wm',x:Math.round(P.x),y:Math.round(P.y),hp:Math.round(P.hp),mhp:Math.round(P.mhp),lv:P.lv,tp:tp?1:0,dg:(typeof DG!=='undefined'&&DG.f)?1:0});
+ if(typeof DG!=='undefined'&&DG.f)WQ.length=0;
  if(WQ.length)N.send({t:'wh',h:WQ.splice(0,12)})},100);
 window.SRWORLD={on:()=>on,others:()=>OT};
 })();

@@ -16,6 +16,7 @@ const xpTot=(lv,xp)=>{let t=xp;for(let l=1;l<lv;l++)t+=xpNeed(l);return t};
 const xpInv=t=>{let l=1;while(l<CFG.lvMax&&t>=xpNeed(l)){t-=xpNeed(l);l++}return[l,Math.floor(t)]};
 const rid=n=>crypto.randomBytes(n||8).toString('hex');
 /* ---------- minerales (se comercian como provisiones) y potenciación ---------- */
+const COOK={carne:'cocida',car2:'coc2',car3:'coc3',car4:'coc4',car5:'coc5',fi1:'fc1',fi2:'fc2',fi3:'fc3',fi4:'fc4'};/* crudo → cocido */
 const KEYK=new Set(['kl1','kl2','kl3','kl4','kl5','kl6','cf1','cf2','cf3','cf4','cf5','cf6']);
 const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6'];
 const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13500,m:{cob:12,hie:6},p:1},{g:24000,m:{hie:12,pla:4},p:.9},{g:37500,m:{hie:16,pla:8},p:.8},{g:54000,m:{pla:14,aur:4},p:.66},{g:73500,m:{pla:18,aur:8,rub:1},p:.52},{g:96000,m:{aur:12,mit:4,esm:2},p:.4},{g:121500,m:{aur:14,mit:8,dia:1},p:.28},{g:150000,m:{mit:14,dia:3,zaf:2},p:.18},{g:220000,m:{mit:20,dia:4,des:6},p:.1},{g:320000,m:{dia:8,des:12,dco:1},p:.05}];
@@ -104,7 +105,10 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   const spent=Math.max(0,baseG-g)+rate;
   for(let i=0;i<5;i++){const b=Math.max(0,R.g[i]+dAck('g',i));if(gi[i]>b&&!first){const can=Math.floor(Math.max(0,spent)/(CFG.goodsBase[i]*.5));if(gi[i]-b>can){flag(u,'mercancía '+i+' sin pagar: '+b+'→'+gi[i]);gi[i]=b+can;fix.i=1}}}}
  v.bk=Math.min(bk0,Math.floor(g));v.g=Math.floor(g)-v.bk;v.i=gi;if(Array.isArray(v.cb))v.cb=gi.map((_,i)=>num(v.cb[i],0,1e15,0));
- if(v.fd&&typeof v.fd==='object'){const o={};for(const k of Object.keys(R.fd)){let q=int(v.fd[k],0,CFG.provCap,0);if(!master&&!first){const mx=Math.max(0,R.fd[k]+dAck('prov',k))+(KEYK.has(k)?0:Math.ceil(CFG.provRate*dt*CFG.slack)+20);if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
+ if(v.fd&&typeof v.fd==='object'){const o={},qv={},cv={},ra=Math.ceil(CFG.provRate*dt*CFG.slack)+20;for(const k of Object.keys(R.fd))qv[k]=int(v.fd[k],0,CFG.provCap,0);
+  /* cocinar: lo crudo que baja en este guardado se convierte en cocido (hasta +25% con la licencia del mercader); antes el cocido se recortaba y la carne desaparecía */
+  if(!master&&!first)for(const rk in COOK){const ck=COOK[rk];if(!(ck in R.fd)||!(rk in R.fd))continue;const drop=Math.max(0,Math.max(0,R.fd[rk]+dAck('prov',rk))-qv[rk]);if(drop>0)cv[ck]=Math.ceil((drop+Math.min(drop,ra))*1.25)}
+  for(const k of Object.keys(R.fd)){let q=qv[k];if(!master&&!first){const mx=Math.max(0,R.fd[k]+dAck('prov',k))+(KEYK.has(k)?0:ra)+(cv[k]||0);if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
  if(v.ec&&typeof v.ec==='object'){const o={};for(const k of EVK){let q=int(v.ec[k],0,1e6,0);if(!master&&!first){const mx=Math.max(0,R.ec[k]+dAck('ec',k))+Math.ceil(CFG.ecRate*dt*CFG.slack+CFG.ecBurst);if(q>mx){flag(u,'monedas '+k+' '+R.ec[k]+'→'+q);q=mx;fix.ec=1}}o[k]=q}v.ec=o}
  v.p=int(v.p,0,99,0);if(v.mpp!=null)v.mpp=int(v.mpp,0,99,0);
  /* pociones básicas: solo suben si se pagaron con oro (la más barata cuesta 113 🪙) o por el goteo de botines; ya no se rellenan gratis editando el guardado */
@@ -139,4 +143,6 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  a.lv=lv;a.xp=xp;if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
  /* lo que sigue sin aplicar (entregas pendientes) se descuenta del esperado para que no se aplique dos veces */
  return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl,p:fix.pp,mp:fix.pm}:null,acked:acked.map(d=>d.id)}}
+/* migración única: quita los strikes falsos que el antitrampas daba por cocinar carne/pescado (ya no ocurre) */
+try{if(!ECO.fixCook){ECO.fixCook=1;let n=0;for(const id in ECO.acc){const a=ECO.acc[id];if(!a||!Array.isArray(a.flags)||!a.flags.length)continue;const bad=a.flags.filter(f=>/^provisi.n (cocida|coc\d|fc\d) /.test(String(f&&f[1])));if(!bad.length)continue;a.flags=a.flags.filter(f=>!bad.includes(f));a.strikes=Math.max(0,(a.strikes|0)-bad.length);if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) sin strikes falsos por cocinar')}}}catch(e){log('migración cocinar: '+e.message)}
 return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,audit,deliver,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM}};

@@ -56,15 +56,33 @@ AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},i
 const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,AC.ops);
 setInterval(()=>{for(const u in ECO.acc){const a=ECO.acc[u];if(a.dl&&a.dl.length)E.forceExpired(a)}},30000);
 /* REGLAS de las colecciones libres: quién puede crear/editar (u = jugador autenticado, id, d = doc nuevo, o = doc anterior) */
+/* Blindaje contra claves peligrosas (__proto__, constructor, toString…): ningún id/colección/operación del cliente puede tocar el prototipo ni funciones nativas */
+const hasOwn=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+const PKSKIP=new Set(['text','note','msg','nm','name','q','t','m','body','d']);
+function protoBad(o,dep,k){if(dep>6)return true;if(o==null)return false;
+ if(typeof o==='string')return !PKSKIP.has(k)&&o.length<40&&(o in Object.prototype);
+ if(typeof o!=='object')return false;
+ if(Array.isArray(o)){for(let i=0;i<o.length&&i<400;i++)if(protoBad(o[i],dep+1,k))return true;return false}
+ let n=0;for(const x in o){if(x==='__proto__'||++n>400)return true;if(protoBad(o[x],dep+1,x))return true}return false}
 const SRV_ONLY=new Set(['offers','shops','orders','wallets','loot','gemtx']);   // solo el servidor escribe; el cliente las lee y pide operaciones
 const small=(d,n)=>JSON.stringify(d).length<=n;
+/* Daño a dragones/centinelas: cada jugador solo escribe SU documento, el daño solo sube y no puede crecer más rápido que un máximo creíble */
+const DRW={};
+function dragonRule(u,id,d,o){if(!d||typeof d!=='object'||!small(d,2000))return false;
+ if(d.u!==u||typeof d.ev!=='string'||d.ev.length>40||id!==d.ev+'_'+u)return false;
+ let v=+d.d;if(!Number.isFinite(v)||v<0)return false;
+ const mz=/^Z(\d+)-/.exec(d.ev),cap=mz?1e8+5e6*(+mz[1]):1e8;   // nadie puede aportar más que la vida total del celestial
+ const t=Date.now(),prev=o?Math.max(0,+o.d||0):0;
+ const last=DRW[id]||t-5000,gap=Math.min(Math.max(0,t-last),15*60e3)/1000;
+ d.d=Math.round(Math.max(prev,Math.min(v,cap,prev+gap*1200+5e4)));   // el daño solo sube, con un ritmo máximo creíble; lo que sobra se recorta
+ DRW[id]=t;return true}
 const RULES={
  pmem:(u,id,d)=>id===u&&small(d,2500), wagons:(u,id,d)=>id===u&&small(d,800), pmsg:(u,id,d)=>d.from===u&&small(d,1200), hits:(u,id,d)=>d.a===u&&Number.isFinite(+d.d)&&+d.d>=0&&+d.d<=600,
  cfg:(u,id,d,o)=>(MASTER||MASTER_EMAIL)?isMaster(u):(!o||o.u===u),
  gemgrant:(u,id,d,o)=>!o&&isMaster(u)&&d.by===u&&Number.isInteger(d.q)&&d.q>0&&d.q<=1e6&&typeof d.to==='string',
  gemreq:(u,id,d,o)=>o?(isMaster(u)&&d.u===o.u&&o.st==='p'&&d.st!=='p'):(d.u===u&&d.st==='p'&&Number.isFinite(+d.usdt)&&+d.usdt>=1&&+d.usdt<=5000&&small(d,260000)),
  pres:(u,id,d)=>id===u&&small(d,1200), pinv:(u,id,d,o)=>(o?(o.to===u||o.from===u):d.from===u)&&small(d,800), pkill:(u,id,d,o)=>(o?o.from===u:d.from===u)&&small(d,800),
- offers:()=>false,shops:()=>false,orders:()=>false,wallets:()=>false,loot:()=>false,gemtx:()=>false,dragon:(u,id,d)=>small(d,2000)};
+ offers:()=>false,shops:()=>false,orders:()=>false,wallets:()=>false,loot:()=>false,gemtx:()=>false,dragon:dragonRule};
 const INBOX={pinv:['to'],pmsg:['to'],hits:['w']};   // solo puedes escuchar tu propio buzón
 const canDel=(c,u,id,o)=>{if(SRV_ONLY.has(c))return false;return !o||id===u||[o.u,o.to,o.w,o.from,o.a].includes(u)};
 const match=(d,w)=>!!d&&w.every(x=>x[1]==='=='&&d[x[0]]===x[2]);
@@ -109,6 +127,7 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
    const u=String(m.uid||''),k=sha(m.tok);if(!/^[\w-]{3,40}$/.test(u)||!m.tok){ws.close();return}
    if(TOK[u]&&TOK[u]!==k){rep({t:'bad'});ws.close();return}if(!TOK[u]){TOK[u]=k;dirty=1}done(u);return}
   if(!ws.uid)return;const u=ws.uid;
+  if(m.t!=='sv'&&protoBad(m,0,'')){err('datos no válidos');return}
   if(m.t==='sv'){if(typeof m.d!=='string'||m.d.length>400000||now-(ws.sv||0)<1500){err('guardado rechazado');return}ws.sv=now;
    let r;try{r=E.audit(u,m.d,m.ack)}catch(e){log('audit error '+e.stack);err('error de validación');return}
    if(r.rej){E.flag(u,'guardado rechazado: '+r.rej);err(r.rej);return}
@@ -117,14 +136,14 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
    rep({t:'r',rid:m.rid,ok:1,ts:Date.now(),fix:r.fix,acked:r.acked,ent:E.ent(u)});E.flushDl(u);return}
   if(m.t==='ld'){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}rep({t:'r',rid:m.rid,ok:1,wp:WIPE_ID,d:o?o.d:null,ts:o?o.ts:0,ent:E.ent(u)});setTimeout(()=>E.flushDl(u),300);return}
   if(m.t==='x'){if(now-ws.xt>1000){ws.xt=now;ws.xn=0}if(++ws.xn>12){err('demasiadas peticiones');return}
-   const f=OPS[String(m.op||'')];if(!f){err('operación desconocida');return}
+   const opn=String(m.op||''),f=hasOwn(OPS,opn)?OPS[opn]:null;if(typeof f!=='function'){err('operación desconocida');return}
    let r;try{r=f(u,m)}catch(e){log('op '+m.op+' error '+e.stack);r={e:'error del servidor'}}
    const fin=r=>{r=r||{e:'sin respuesta'};if(r.e)rep({t:'r',rid:m.rid,ok:0,e:r.e});else rep(Object.assign({t:'r',rid:m.rid,ok:1},r))};
    if(r&&typeof r.then==='function')r.then(fin,e=>{log('op '+m.op+' error '+(e&&e.stack));fin({e:'error del servidor'})});else fin(r);return}
   if(m.t&&m.t[0]==='w'){if(world){/* el nivel y la apariencia los pone el servidor, no el cliente */const a=E.acct(u);if(m.t==='wj'||m.t==='wm'){m.lv=a.lv;m.gt=GD.tagOf(u);m.bs=(typeof m.bs==='string'&&a.sk.includes(m.bs))?m.bs:'';m.cz=Array.isArray(m.cz)?m.cz.slice(0,3).map(x=>Math.max(0,Math.min(9,x|0))):[0,0,0]}world.handle(ws,m)}else rep({t:'wx'});return}
   const c=String(m.col||''),id=String(m.id||''),w=Array.isArray(m.w)?m.w.slice(0,4):[];
   if(m.t==='unsub'){delete ws.subs[m.sid];return}
-  if(!RULES[c]&&!(DB[c]&&SRV_ONLY.has(c))&&!SRV_ONLY.has(c)){err('colección no permitida');return}
+  if(!hasOwn(RULES,c)&&!SRV_ONLY.has(c)){err('colección no permitida');return}
   if(m.t==='sub'||m.t==='q'){const need=INBOX[c];if(need&&!w.some(x=>x[1]==='=='&&need.includes(x[0])&&x[2]===u)){err('buzón privado');return}
    if(c==='wallets'||c==='orders'||c==='loot'||c==='gemtx'){if(m.t==='sub')ws.subs[m.sid]={c,w};rep(m.t==='sub'?{t:'snap',sid:m.sid,docs:{}}:{t:'r',rid:m.rid,ok:1,docs:{}});return}
    const docs={};for(const k in DB[c]||{})if(match(DB[c][k],w))docs[k]=DB[c][k];
@@ -132,7 +151,7 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
   if(m.t==='get'){rep({t:'r',rid:m.rid,ok:1,d:(DB[c]||{})[id]||null});return}
   if(!id||id.length>80){err('id inválido');return}const old=(DB[c]||{})[id]||null;
   if(m.t==='del'){if(!canDel(c,u,id,old)){err('prohibido');return}if(old){delete DB[c][id];dirty=1;bc(c,id,old,null)}rep({t:'r',rid:m.rid,ok:1});return}
-  if(m.t==='set'||m.t==='upd'){if(!RULES[c]){err('prohibido por las reglas');return}let d=m.d;if(!d||typeof d!=='object'||JSON.stringify(d).length>260000){err('doc inválido');return}
+  if(m.t==='set'||m.t==='upd'){if(!hasOwn(RULES,c)||typeof RULES[c]!=='function'){err('prohibido por las reglas');return}let d=m.d;if(!d||typeof d!=='object'||JSON.stringify(d).length>260000){err('doc inválido');return}
    if(m.t==='upd'&&old)d=Object.assign({},old,d);if(!RULES[c](u,id,d,old)){err('prohibido por las reglas');return}
    if(c==='gemgrant'&&!old){E.grantGems(d.to,d.q,'own','concedidas por master '+u)}
    if(c==='pmsg'&&d.k==='bf'&&world)world.credit(u,'ut',12);

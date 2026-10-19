@@ -48,7 +48,7 @@ ops['buff.gold']=(u,m)=>{const a=E.acct(u),now=Date.now(),c=blGold(a.lv);if(m.k!
  if(Math.max(now,a.px.bl||0)-now+10*DAY>90*DAY)return err('Máximo 90 días acumulados');if(E.avail(a,'gold')<c)return err('Te faltan '+(c-E.avail(a,'gold'))+' 🪙');
  E.deliver(u,{gold:-c,note:'🙏 Bendición +10 días'});a.px.bl=Math.max(now,a.px.bl||0)+10*DAY;S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u),cost:c}};
 ops['gem.tx']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=1e6))return err('Cantidad inválida');let to=String(m.to||'').trim();
- const t=S.ECO.acc[to]?to:E.uidByName(to);if(!t||t===u)return err('Jugador no encontrado (usa su nombre exacto o su código)');
+ const t=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?to:E.uidByName(to);if(!t||t===u)return err('Jugador no encontrado (usa su nombre exacto o su código)');
  if(E.gTot(a)<q)return err('Saldo insuficiente');E.spendGems(a,q,false);const b=E.acct(t);b.gem.tr+=q;S.dirty();E.pushEnt(u);E.pushEnt(t);
  S.push(t,{t:'note',m:'💎 '+(a.nm||'Un jugador')+' te envió '+q+' gemas (solo para apariencias)'});S.log('[gemas] '+(a.nm||u)+' → '+(b.nm||t)+' '+q);return{ok:1,ent:E.ent(u)}};
 return{ops,price,GEMP}};

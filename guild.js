@@ -3,6 +3,7 @@ module.exports=function(S,E){
 const {ECO,cat}=S,GC=cat.GUILD;
 ECO.guilds=ECO.guilds||{};ECO.ginv=ECO.ginv||{};ECO.gtag=ECO.gtag||{};ECO.gname=ECO.gname||{};
 const G=ECO.guilds,now=()=>Date.now();
+const GH=id=>Object.prototype.hasOwnProperty.call(G,id)?G[id]:undefined;   // búsqueda segura: ids como 'constructor' no existen
 const clean=(t,n)=>String(t==null?'':t).replace(/[\u0000-\u001f\u007f<>]/g,'').replace(/\s+/g,' ').trim().slice(0,n);
 const int=(v,a,b,d)=>{v=Math.floor(+v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d};
 const CH={};/* chat reciente en memoria */
@@ -42,7 +43,7 @@ function addMember(g,u,why){const a=E.acct(u);if(count(g)>=GC.max)return err('El
  log(g,'➕ '+(a.nm||'Jugador')+' '+(why||'se unió'));S.dirty();E.pushEnt(u);return{ok:1}}
 ops['g.list']=(u,m)=>{const q=clean(m.q,20).toLowerCase();
  const L=Object.values(G).filter(g=>!q||g.name.toLowerCase().includes(q)||g.tag.toLowerCase().includes(q)).sort((a,b)=>count(b)-count(a)).slice(0,30).map(summary);return{ok:1,list:L}};
-ops['g.join']=(u,m)=>{const g=G[String(m.id||'')];if(!g)return err('Ese gremio ya no existe');const a=E.acct(u);if(a.gld&&G[a.gld])return err('Ya perteneces a un gremio');
+ops['g.join']=(u,m)=>{const g=GH(String(m.id||''));if(!g)return err('Ese gremio ya no existe');const a=E.acct(u);if(a.gld&&G[a.gld])return err('Ya perteneces a un gremio');
  if(g.mode==='open'){const r=addMember(g,u,'se unió');if(r.e)return r;pushG(g,u);return{ok:1,g:full(g,u)}}
  if(g.mode==='app'){if(Object.keys(g.app).length>=100)return err('Demasiadas solicitudes pendientes');g.app[u]={nm:a.nm,c:Math.max(0,a.cls),lv:a.lv,ts:now()};S.dirty();pushG(g);return{ok:1,pending:1}}
  return err('Este gremio solo entra por invitación')};
@@ -51,9 +52,9 @@ ops['g.invite']=(u,m)=>{const g=myG(u);if(!g||rank(g,u)<1)return err('Solo ofici
  if(Object.keys(g.inv).length>=200)return err('Demasiadas invitaciones pendientes');
  g.inv[t]={nm:ta.nm,by:g.mem[u].nm,ts:now()};(ECO.ginv[t]=ECO.ginv[t]||{})[g.id]={by:g.mem[u].nm,ts:now()};
  log(g,'✉️ '+g.mem[u].nm+' invitó a '+ta.nm);S.dirty();S.push(t,{t:'ginv',g:summary(g),by:g.mem[u].nm});pushG(g);return{ok:1}};
-ops['g.accept']=(u,m)=>{const id=String(m.id||''),g=G[id],inv=ECO.ginv[u]&&ECO.ginv[u][id];if(!g||!inv||now()-inv.ts>3*864e5)return err('La invitación ya no es válida');
+ops['g.accept']=(u,m)=>{const id=String(m.id||''),g=GH(id),inv=ECO.ginv[u]&&Object.prototype.hasOwnProperty.call(ECO.ginv[u],id)&&ECO.ginv[u][id];if(!g||!inv||now()-inv.ts>3*864e5)return err('La invitación ya no es válida');
  const r=addMember(g,u,'aceptó la invitación');if(r.e)return r;pushG(g,u);return{ok:1,g:full(g,u)}};
-ops['g.decline']=(u,m)=>{const id=String(m.id||'');if(ECO.ginv[u])delete ECO.ginv[u][id];if(G[id])delete G[id].inv[u];S.dirty();return{ok:1}};
+ops['g.decline']=(u,m)=>{const id=String(m.id||'');if(ECO.ginv[u])delete ECO.ginv[u][id];if(GH(id)&&G[id].inv)delete G[id].inv[u];S.dirty();return{ok:1}};
 ops['g.cancelinv']=(u,m)=>{const g=myG(u);if(!g||rank(g,u)<1)return err('Sin permiso');const t=String(m.u||'');delete g.inv[t];if(ECO.ginv[t])delete ECO.ginv[t][g.id];S.dirty();pushG(g);return{ok:1}};
 ops['g.app']=(u,m)=>{const g=myG(u);if(!g||rank(g,u)<1)return err('Sin permiso');const t=String(m.u||''),ap=g.app[t];if(!ap)return err('La solicitud ya no existe');
  if(m.ok){const r=addMember(g,t,'fue aceptado');if(r.e){delete g.app[t];S.dirty();return r}pushG(g)}

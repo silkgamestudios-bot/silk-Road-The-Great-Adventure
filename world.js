@@ -34,7 +34,7 @@ function kill(m){m.dead=1;m.hp=0;m.rt=Date.now()+CFG.rez;m.tg=null;let o=null,b=
  const ro=R.get(o.uid);ro.pot=t[2];ro.meat=t[3];for(const p of E)send(p.ws,R.get(p.uid))}
 function hits(p,list){const now=Date.now();p.tok=Math.min(CFG.hitMax*2,(p.tok||0)+(now-p.tt)/1000*CFG.hitMax);p.tt=now;
  for(const h of Array.isArray(list)?list.slice(0,12):[]){if(p.tok<1)break;const m=BY.get(h[0]|0);if(!m||m.dead||Math.hypot(p.x-m.x,p.y-m.y)>620)continue;
-  const dm=Math.min(CFG.dmg0*75*(1+.12*(p.lv-1)),Math.max(0,+h[1]||0));if(!(dm>0))continue;p.tok--;EV.push([m.id,Math.round(dm),p.uid,Math.round(m.x),Math.round(m.y)]);EV.push([m.id,Math.round(dm),p.uid,m.x,m.y]);
+  const dm=Math.min(CFG.dmg0*75*(1+.12*(p.lv-1)),Math.max(0,+h[1]||0));if(!(dm>0))continue;p.tok--;EV.push([m.id,Math.round(dm),p.uid,Math.round(m.x),Math.round(m.y)]);
   m.hp-=dm;m.dmg[p.uid]=(m.dmg[p.uid]||0)+dm;p.ct.dm+=dm;if(!m.tg&&!p.city)m.tg=p.uid;if(m.hp<=0)kill(m)}}
 const num=(v,a,b,d)=>Number.isFinite(+v)?Math.min(b,Math.max(a,+v)):d;
 function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);

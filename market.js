@@ -99,7 +99,7 @@ const trChanged=t=>{t.v++;t.sa.ok=0;t.sb.ok=0;t.ts=now();t.exp=now()+10*60e3;S.d
 const trGet=(u,m)=>{const t=TR()[String(m.id||'')];if(!t||(t.a!==u&&t.b!==u))return null;return t};
 setInterval(()=>{const T=TR(),n=now();for(const id in T)if(T[id].exp<n)trEnd(T[id],'expiró')},15e3).unref();
 ops['trade.me']=(u)=>{const t=trOf(u);return{ok:1,v:t?trView(t,u):null}};
-ops['trade.req']=(u,m)=>{const to=String(m.to||''),a=E.acct(u),b=S.ECO.acc[to];if(!b||to===u)return{e:'Jugador no válido'};if(!S.online(to))return{e:'Ese jugador no está conectado'};
+ops['trade.req']=(u,m)=>{const to=String(m.to||''),a=E.acct(u),b=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?S.ECO.acc[to]:null;if(!b||to===u)return{e:'Jugador no válido'};if(!S.online(to))return{e:'Ese jugador no está conectado'};
  if((a.lv|0)<TLV||(b.lv|0)<TLV)return{e:'Para comerciar los dos necesitan Nv '+TLV+' o más'};if(trOf(u))return{e:'Ya tienes un trato abierto'};if(trOf(to))return{e:'Ese jugador está en otro trato'};
  const sc=S.ECO.soc&&S.ECO.soc[to];if(sc&&sc.bl&&sc.bl.includes(u))return{e:'Ese jugador no acepta tratos tuyos'};
  const t={id:'t'+E.rid(5),a:u,b:to,st:'req',v:0,sa:mkSide(),sb:mkSide(),ts:now(),exp:now()+60e3};TR()[t.id]=t;S.dirty();trPush(t);return{ok:1,v:trView(t,u)}};
@@ -132,13 +132,14 @@ ops['trade.ok']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El tra
 /* ---------- ZODÍACO: recompensa por participar en la derrota de un centinela (verifica calendario y daños compartidos) ---------- */
 const h32=n=>{n=Math.imul(n^61,0x9e3779b1)^(n>>>15);n=Math.imul(n^(n>>>13),0x85ebca6b);return(n^(n>>>16))>>>0};
 const drh=st=>{let n=0;for(let i=0;i<st.length;i++)n=Math.imul(n^st.charCodeAt(i),16777619)>>>0;return h32(n)};
-const ZZW=60*60e3,ZZHP=i=>1e8+5e6*i;
-ops['zz.claim']=(u,m)=>{const key=String(m.k||''),mt=/^Z(\d+)-(\d{4})-(\d{1,2})$/.exec(key);if(!mt)return{e:'Evento no válido'};const i=+mt[1],y=+mt[2],mo=+mt[3]-1;if(i<0||i>11||mo<0||mo>11||int(m.i,0,11,-1)!==i)return{e:'Evento no válido'};
+const ZZW=4*3600e3,ZZHP=i=>1e8+5e6*i;
+ops['zz.claim']=(u,m)=>{const key=String(m.k||''),mt=/^Z(\d+)-(\d{4})-(\d{1,2})$/.exec(key);if(!mt)return{e:'Evento no válido'};const i=+mt[1],y=+mt[2],mo=+mt[3]-1;if(![1,4,8].includes(i)||mo<0||mo>11||int(m.i,0,11,-1)!==i)return{e:'Evento no válido'};
  const day=1+i*2+drh('zd'+key)%2,hr=13+drh('zh'+key)%10,mi=drh('zm'+key)%60,start=Date.UTC(y,mo,day,hr,mi,0),t=now();if(t<start||t>start+ZZW+15*60e3)return{e:'Ese evento ya no está activo'};
- const a=E.acct(u);a.zzc=a.zzc||{};if(a.zzc[key])return{e:'Ya reclamaste este evento'};const hp=ZZHP(i),cap=hp*.4;let tot=0,mine=0;
- for(const id in col('dragon')){const d=col('dragon')[id];if(!d||d.ev!==key)continue;const v=Math.min(cap,Math.max(0,+d.d||0));tot+=v;if(d.u===u)mine=v}
- if(tot<hp)return{e:'El centinela aún no ha caído'};if(mine<hp*.005)return{e:'Tu daño fue muy bajo para recibir recompensa'};
- a.zzc[key]=1;S.dirty();const x=Math.random(),c=x<.10?5:x<.45?4:3;E.deliver(u,{prov:{pk:'cf'+(c+1),q:1},note:'📦 Cofre '+KNMS[c]+' del Zodiaco'});return{ok:1,c}};
+ const a=E.acct(u);a.zzc=a.zzc||{};if(a.zzc[key])return{e:'Ya reclamaste este evento'};const hp=ZZHP(i);let tot=0,mine=0;const seen=new Set();
+ for(const id in col('dragon')){const d=col('dragon')[id];if(!d||d.ev!==key||typeof d.u!=='string'||id!==key+'_'+d.u||seen.has(d.u)||!Object.prototype.hasOwnProperty.call(S.ECO.acc,d.u)||!S.ECO.acc[d.u].nm)continue;seen.add(d.u);const v=Math.min(hp,Math.max(0,+d.d||0));tot+=v;if(d.u===u)mine=v}
+ if(tot<hp)return{e:'El centinela aún no ha caído'};if(mine<hp*.0005)return{e:'Tu daño fue muy bajo para recibir recompensa'};
+ a.zzc[key]=1;S.dirty();const sh=mine/hp,p5=Math.min(.3,.01+sh*12),p4=Math.min(.5,.1+sh*30),x=Math.random(),c=x<p5?5:x<p5+p4?4:3;   // quien más aporta, más probabilidad de un cofre mejor (siempre con azar)
+ E.deliver(u,{prov:{pk:'cf'+(c+1),q:1},note:'📦 Cofre '+KNMS[c]+' del Zodiaco'});return{ok:1,c}};
 ops['shop.close']=(u)=>{delDoc('shops',u);return{ok:1}};
 function shopOf(m,u){const sid=String(m.s||''),s=col('shops')[sid];if(!s)return{e:'La tienda ya no existe'};if(sid===u)return{e:'Es tu tienda'};const sa=E.acct(sid);if(!isMerc(sa))return{e:'Esa tienda está inactiva'};return{s,sid,sa}}
 ops['shop.buy']=(u,m)=>{const r=shopOf(m,u);if(r.e)return r;const {s,sid,sa}=r,b=E.acct(u),q=int(m.q,1,1000,0);if(!q)return{e:'Cantidad inválida'};

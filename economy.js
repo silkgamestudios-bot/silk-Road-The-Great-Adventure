@@ -72,7 +72,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  /* tras un reinicio (o cuenta nueva) no se importa progreso viejo del navegador: se parte desde cero */
  const preBad=[];if(first&&!master&&process.env.FIRST_IMPORT!=='1'){const cnt=(Array.isArray(v.bag)?v.bag.length:0)+(v.eq&&typeof v.eq==='object'?Object.keys(v.eq).length:0)+(Array.isArray(v.pets)?v.pets.length:0);
   if((+v.lv||1)>5||(+v.g||0)>2000||cnt>6){const ids=[];const add=x=>{if(x&&x.id)ids.push(String(x.id))};if(v.eq&&typeof v.eq==='object')for(const k in v.eq)add(v.eq[k]);(Array.isArray(v.bag)?v.bag:[]).forEach(add);(Array.isArray(v.lb)?v.lb:[]).forEach(add);(Array.isArray(v.pets)?v.pets:[]).forEach(add);
-   Object.assign(v,{g:0,i:[0,0,0,0,0],cb:[0,0,0,0,0],lv:1,xp:0,eq:{},bag:[],lb:[],bu:[],pets:[],sx:[1,1,1],fd:{},bgc:25,lgc:25});fix.rz=1;fix.g=0;fix.lv=1;fix.xp=0;fix.i=[0,0,0,0,0];fix.fd={};preBad.push(...ids);notes.push('reinicio: progreso viejo descartado')}}
+   Object.assign(v,{g:0,i:[0,0,0,0,0],cb:[0,0,0,0,0],lv:1,xp:0,eq:{},bag:[],lb:[],dep:[],bu:[],pets:[],sx:[1,1,1],fd:{},bgc:25,lgc:25});fix.rz=1;fix.g=0;fix.lv=1;fix.xp=0;fix.i=[0,0,0,0,0];fix.fd={};preBad.push(...ids);notes.push('reinicio: progreso viejo descartado')}}
  v.bgc=(+v.bgc)>=40?40:25;v.lgc=(+v.lgc)>=40?40:25;v.bu=(Array.isArray(v.bu)?v.bu.filter(x=>+x===40).map(()=>40):[]).slice(0,Math.max(0,2-(v.bgc>=40?1:0)-(v.lgc>=40?1:0)));
  /* clase y nombre */
  let cl=int(v.cl,0,7,0);if(a.cls>=0&&v.ch&&a.cls!==cl){flag(u,'cambio de clase '+a.cls+'→'+cl);cl=a.cls;v.cl=cl;fix.cl=cl}
@@ -112,6 +112,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  if(v.eq&&typeof v.eq==='object'){const e={};for(const k of Object.keys(v.eq).slice(0,7)){const c=chk(v.eq[k]);if(c)e[k]=c}v.eq=e}
  if(Array.isArray(v.bag))v.bag=v.bag.slice(0,v.bgc).map(x=>chk(x)).filter(Boolean);
  if(Array.isArray(v.lb))v.lb=v.lb.slice(0,v.lgc).map(x=>chk(x)).filter(Boolean);else v.lb=[];
+ if(Array.isArray(v.dep))v.dep=v.dep.slice(0,60).map(x=>chk(x)).filter(Boolean);else v.dep=[];
  if(Array.isArray(v.pets)){const ids=[];v.pets=v.pets.slice(0,12).map(p=>{const c=cleanPetS(p);if(!c){dropped++;return null}if(c.id){if(seen.has(c.id)){dropped++;return null}seen.add(c.id);const r=ECO.reg[c.id];if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'mascota de otro jugador '+c.id,2);return null}if(!r){if(!first&&!master&&!mintOk(a,'p',0,now)){dropped++;flag(u,'demasiadas mascotas nuevas');return null}ECO.reg[c.id]={o:u,k:'p',t:now};S.dirty()}}return c}).filter(Boolean)}
  if(dropped)fix.items=dropped;
  /* limpieza del registro: lo que ya no está en el guardado ni en el mercado deja de ser tuyo */

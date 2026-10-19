@@ -16,7 +16,8 @@ const xpTot=(lv,xp)=>{let t=xp;for(let l=1;l<lv;l++)t+=xpNeed(l);return t};
 const xpInv=t=>{let l=1;while(l<CFG.lvMax&&t>=xpNeed(l)){t-=xpNeed(l);l++}return[l,Math.floor(t)]};
 const rid=n=>crypto.randomBytes(n||8).toString('hex');
 /* ---------- minerales (se comercian como provisiones) y potenciación ---------- */
-const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco'];
+const KEYK=new Set(['kl1','kl2','kl3','kl4','kl5','kl6','cf1','cf2','cf3','cf4','cf5','cf6']);
+const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6'];
 const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13500,m:{cob:12,hie:6},p:1},{g:24000,m:{hie:12,pla:4},p:.9},{g:37500,m:{hie:16,pla:8},p:.8},{g:54000,m:{pla:14,aur:4},p:.66},{g:73500,m:{pla:18,aur:8,rub:1},p:.52},{g:96000,m:{aur:12,mit:4,esm:2},p:.4},{g:121500,m:{aur:14,mit:8,dia:1},p:.28},{g:150000,m:{mit:14,dia:3,zaf:2},p:.18},{g:220000,m:{mit:20,dia:4,des:6},p:.1},{g:320000,m:{dia:8,des:12,dco:1},p:.05}];
 /* ---------- cuentas ---------- */
 function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev:[],px:{au:0,ap:0,lt:0,bl:0,es:0},vip:0,lic:0,
@@ -49,11 +50,11 @@ function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0
  const o={sl,t,r,li:int(x.li,0,9,0),du:int(x.du,0,100,100)};if(x.k!=null){const k=int(x.k,0,7,-1);if(k<0)return null;o.k=k}
  o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
- if(x.up!=null){const up=int(x.up,0,10,0);if(up)o.up=up}
+ if(x.up!=null){const up=int(x.up,0,12,0);if(up)o.up=up}
  for(const k of['dm','hp','sp','gd','mp']){if(x[k]==null||+x[k]===0)continue;const mx=itemMax(o,k);if(!mx||mx<=1&&k!=='hp')return null;const v=int(x[k],0,1e7,0);if(v>mx*(x.u?1:1))return null;if(v)o[k]=v}
  return o}
 function cleanPetS(x){if(!x||typeof x!=='object')return null;const t=String(x.t||'');if(!/^[a-z]{2,12}$/.test(t))return null;
- const o={t,nm:String(x.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t,lv:int(x.lv,1,30,1),xp:int(x.xp,0,1e8,0),q:int(x.q,0,3,0),fd:int(x.fd,0,100,80),ill:0,hp:num(x.hp,1,1e5,1),en:num(x.en,0,1e5,0)};
+ const o={t,nm:String(x.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t,lv:int(x.lv,1,30,1),xp:int(x.xp,0,1e8,0),q:int(x.q,0,3,0),fd:int(x.fd,0,100,80),ill:0,hp:num(x.hp,1,4e8,1),en:num(x.en,0,2e5,0)};
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}return o}
 const MINT={i:[[60,5e3],[25,40e3],[8,300e3],[3,1800e3]],p:[[8,300e3]]};
 function mintOk(a,kind,idx,now){const cfg=(MINT[kind]||MINT.i)[idx],b=a.mint[kind+idx]||(a.mint[kind+idx]={v:cfg[0],t:now});b.v=Math.min(cfg[0],b.v+(now-b.t)/cfg[1]);b.t=now;if(b.v>=1){b.v-=1;return 1}return 0}
@@ -103,7 +104,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   const spent=Math.max(0,baseG-g)+rate;
   for(let i=0;i<5;i++){const b=Math.max(0,R.g[i]+dAck('g',i));if(gi[i]>b&&!first){const can=Math.floor(Math.max(0,spent)/(CFG.goodsBase[i]*.5));if(gi[i]-b>can){flag(u,'mercancía '+i+' sin pagar: '+b+'→'+gi[i]);gi[i]=b+can;fix.i=1}}}}
  v.bk=Math.min(bk0,Math.floor(g));v.g=Math.floor(g)-v.bk;v.i=gi;if(Array.isArray(v.cb))v.cb=gi.map((_,i)=>num(v.cb[i],0,1e15,0));
- if(v.fd&&typeof v.fd==='object'){const o={};for(const k of Object.keys(R.fd)){let q=int(v.fd[k],0,CFG.provCap,0);if(!master&&!first){const mx=Math.max(0,R.fd[k]+dAck('prov',k))+Math.ceil(CFG.provRate*dt*CFG.slack)+20;if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
+ if(v.fd&&typeof v.fd==='object'){const o={};for(const k of Object.keys(R.fd)){let q=int(v.fd[k],0,CFG.provCap,0);if(!master&&!first){const mx=Math.max(0,R.fd[k]+dAck('prov',k))+(KEYK.has(k)?0:Math.ceil(CFG.provRate*dt*CFG.slack)+20);if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
  if(v.ec&&typeof v.ec==='object'){const o={};for(const k of EVK){let q=int(v.ec[k],0,1e6,0);if(!master&&!first){const mx=Math.max(0,R.ec[k]+dAck('ec',k))+Math.ceil(CFG.ecRate*dt*CFG.slack+CFG.ecBurst);if(q>mx){flag(u,'monedas '+k+' '+R.ec[k]+'→'+q);q=mx;fix.ec=1}}o[k]=q}v.ec=o}
  v.p=int(v.p,0,99,0);if(v.mpp!=null)v.mpp=int(v.mpp,0,99,0);
  /* ---- objetos ---- */

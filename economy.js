@@ -17,22 +17,27 @@ const xpInv=t=>{let l=1;while(l<CFG.lvMax&&t>=xpNeed(l)){t-=xpNeed(l);l++}return
 const rid=n=>crypto.randomBytes(n||8).toString('hex');
 /* ---------- minerales (se comercian como provisiones) y potenciación ---------- */
 const COOK={carne:'cocida',car2:'coc2',car3:'coc3',car4:'coc4',car5:'coc5',fi1:'fc1',fi2:'fc2',fi3:'fc3',fi4:'fc4'};/* crudo → cocido */
+/* fletchería (v139): lote de 20 flechas = 1 punta de mineral + madera; las básicas ar0 solo se compran con oro (5 c/u) */
+const ARQ={ar1:['pie',1,1],ar2:['cob',1,1],ar3:['hie',1,2],ar4:['pla',1,2],ar5:['aur',1,3],ar6:['mit',1,3],ar7:['dia',1,4]};
 const KEYK=new Set(['kl1','kl2','kl3','kl4','kl5','kl6','cf1','cf2','cf3','cf4','cf5','cf6']);
-const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6'];
+const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6'];
 const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13500,m:{cob:12,hie:6},p:1},{g:24000,m:{hie:12,pla:4},p:.9},{g:37500,m:{hie:16,pla:8},p:.8},{g:54000,m:{pla:14,aur:4},p:.66},{g:73500,m:{pla:18,aur:8,rub:1},p:.52},{g:96000,m:{aur:12,mit:4,esm:2},p:.4},{g:121500,m:{aur:14,mit:8,dia:1},p:.28},{g:150000,m:{mit:14,dia:3,zaf:2},p:.18},{g:220000,m:{mit:20,dia:4,des:6},p:.1},{g:320000,m:{dia:8,des:12,dco:1},p:.05}];
 /* ---------- cuentas ---------- */
 function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev:[],px:{au:0,ap:0,lt:0,bl:0,es:0},vip:0,lic:0,
   res:{gold:0,g:[0,0,0,0,0],fd:Object.assign({carne:0,cocida:0,pasto:0,hierba:0,lazo:0},Object.fromEntries(MNK.map(k=>[k,0]))),ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0},
-  ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}for(const k of MNK)if(a.res&&a.res.fd&&a.res.fd[k]==null)a.res.fd[k]=0;return a}
-const ent=u=>{const a=acct(u);return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,px:a.px,vip:a.vip,lic:a.lic,nm:a.nm,gld:a.gld,nch:a.nch|0}};
+  ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}for(const k of MNK)if(a.res&&a.res.fd&&a.res.fd[k]==null)a.res.fd[k]=0;if(!a.bxl)a.bxl={t:[0,0,0,0],a:[0,0,0,0],x:[0,0,0,0],m:0};if(!Array.isArray(a.gl))a.gl=[];return a}
+const ent=u=>{const a=acct(u),L=a.bxl;return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,px:a.px,vip:a.vip,lic:a.lic,nm:a.nm,gld:a.gld,nch:a.nch|0,bx:L.x.map((x,i)=>x+Math.max(0,L.t[i]-L.a[i])),bxt:L.t.slice()}};
 const pushEnt=u=>S.push(u,{t:'ent',ent:ent(u)});
 function flag(u,why,w){const a=acct(u);a.strikes+=w==null?1:w;a.flags.push([Date.now(),String(why).slice(0,120)]);if(a.flags.length>30)a.flags.shift();S.dirty();
  log('[antitrampas] '+u+' ('+(a.nm||'?')+'): '+why+' · strikes '+a.strikes);
  if(a.strikes>=3&&!a.notified){a.notified=Date.now();S.notify('⚠️ SILK ROAD · Posible trampa\nJugador: '+(a.nm||u)+'\nMotivo: '+why+'\nStrikes: '+a.strikes)}}
 /* ---------- gemas ---------- */
 const gTot=a=>a.gem.own+a.gem.tr;
-function spendGems(a,n,ownOnly){n=Math.floor(n);if(!(n>0))return 0;if(ownOnly){if(a.gem.own<n)return 0;a.gem.own-=n}else{if(gTot(a)<n)return 0;const t=Math.min(a.gem.tr,n);a.gem.tr-=t;a.gem.own-=n-t}S.dirty();return 1}
-function grantGems(u,q,ownTr,why){const a=acct(u);if(ownTr==='tr')a.gem.tr+=q;else a.gem.own+=q;S.dirty();pushEnt(u);log('[gemas] +'+q+' a '+u+' '+(why||''))}
+const glAdd=(a,d,why)=>{if(!Array.isArray(a.gl))a.gl=[];a.gl.push([Date.now(),d,String(why||'').slice(0,48),a.gem.own,a.gem.tr]);if(a.gl.length>40)a.gl.shift()};
+function spendGems(a,n,ownOnly,why){n=Math.floor(n);if(!(n>0))return 0;if(ownOnly){if(a.gem.own<n)return 0;a.gem.own-=n}else{if(gTot(a)<n)return 0;const t=Math.min(a.gem.tr,n);a.gem.tr-=t;a.gem.own-=n-t}glAdd(a,-n,why);S.dirty();return 1}
+function grantGems(u,q,ownTr,why){const a=acct(u);if(ownTr==='tr')a.gem.tr+=q;else a.gem.own+=q;glAdd(a,q,(ownTr==='tr'?'(transferidas) ':'')+(why||'recarga'));S.dirty();pushEnt(u);log('[gemas] +'+q+' a '+u+' '+(why||''))}
+/* Bonus premium (⭐🪙🛡️❤️): lo COMPRADO lo decide el servidor; el cliente solo gasta el tiempo mientras juega */
+const BX={ms:4*36e5,max:20*36e5,cost:2};
 /* ---------- entregas (idempotentes) ---------- */
 function deliver(u,d){const a=acct(u);d.id=d.id||'d'+rid(6);d.ts=Date.now();d.sent=0;a.dl.push(d);if(a.dl.length>200)a.dl.shift();S.dirty();if(S.onDeliver)S.onDeliver(u);flushDl(u);return d}
 function flushDl(u){const a=acct(u);if(!a.dl.length||!S.online(u))return;const now=Date.now();a.dl.forEach(d=>{if(!d.sent)d.sent=now});S.push(u,{t:'dl',list:a.dl.slice(0,40)})}
@@ -105,15 +110,18 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   const spent=Math.max(0,baseG-g)+rate;
   for(let i=0;i<5;i++){const b=Math.max(0,R.g[i]+dAck('g',i));if(gi[i]>b&&!first){const can=Math.floor(Math.max(0,spent)/(CFG.goodsBase[i]*.5));if(gi[i]-b>can){flag(u,'mercancía '+i+' sin pagar: '+b+'→'+gi[i]);gi[i]=b+can;fix.i=1}}}}
  v.bk=Math.min(bk0,Math.floor(g));v.g=Math.floor(g)-v.bk;v.i=gi;if(Array.isArray(v.cb))v.cb=gi.map((_,i)=>num(v.cb[i],0,1e15,0));
+ let gsp=Math.max(0,baseG-g);
  if(v.fd&&typeof v.fd==='object'){const o={},qv={},cv={},ra=Math.ceil(CFG.provRate*dt*CFG.slack)+20;for(const k of Object.keys(R.fd))qv[k]=int(v.fd[k],0,CFG.provCap,0);
   /* cocinar: lo crudo que baja en este guardado se convierte en cocido (hasta +25% con la licencia del mercader); antes el cocido se recortaba y la carne desaparecía */
   if(!master&&!first)for(const rk in COOK){const ck=COOK[rk];if(!(ck in R.fd)||!(rk in R.fd))continue;const drop=Math.max(0,Math.max(0,R.fd[rk]+dAck('prov',rk))-qv[rk]);if(drop>0)cv[ck]=Math.ceil((drop+Math.min(drop,ra))*1.25)}
+  if(!master&&!first){for(const ak in ARQ){const [mk,mc,wc]=ARQ[ak];if(!(ak in R.fd)||!(mk in R.fd)||!('mad' in R.fd))continue;const dm=Math.max(0,Math.max(0,R.fd[mk]+dAck('prov',mk))-qv[mk]),dw=Math.max(0,Math.max(0,R.fd.mad+dAck('prov','mad'))-qv.mad),bt=Math.min(Math.floor(dm/mc),Math.floor(dw/wc));if(bt>0)cv[ak]=bt*20}
+   if('ar0' in R.fd){const inc=qv.ar0-Math.max(0,R.fd.ar0+dAck('prov','ar0'));if(inc>ra){const nb=Math.min(inc-ra,Math.floor(gsp/5));if(nb>0){cv.ar0=nb;gsp-=nb*5}}}}
   for(const k of Object.keys(R.fd)){let q=qv[k];if(!master&&!first){const mx=Math.max(0,R.fd[k]+dAck('prov',k))+(KEYK.has(k)?0:ra)+(cv[k]||0);if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
  if(v.ec&&typeof v.ec==='object'){const o={};for(const k of EVK){let q=int(v.ec[k],0,1e6,0);if(!master&&!first){const mx=Math.max(0,R.ec[k]+dAck('ec',k))+Math.ceil(CFG.ecRate*dt*CFG.slack+CFG.ecBurst);if(q>mx){flag(u,'monedas '+k+' '+R.ec[k]+'→'+q);q=mx;fix.ec=1}}o[k]=q}v.ec=o}
  v.p=int(v.p,0,99,0);if(v.mpp!=null)v.mpp=int(v.mpp,0,99,0);
- /* pociones básicas: solo suben si se pagaron con oro (la más barata cuesta 113 🪙) o por el goteo de botines; ya no se rellenan gratis editando el guardado */
+ /* pociones básicas: solo suben si se pagaron con oro (la más barata cuesta unos 39 🪙 en la feria) o por el goteo de botines; ya no se rellenan gratis editando el guardado */
  if(!master&&!first){const pb=a.pb&&typeof a.pb==='object'?a.pb:(a.pb={v:30,t:now});pb.v=Math.min(30,(+pb.v||0)+Math.max(0,now-(+pb.t||now))/6000);pb.t=now;
-  let cr=Math.floor(Math.max(0,baseG-g)/110);
+  let cr=Math.floor(gsp/34);
   const lim=(cur,base)=>{const inc=cur-base;if(inc<=0)return cur;const a1=Math.min(inc,cr);cr-=a1;let rest=inc-a1;const a2=Math.min(rest,Math.floor(pb.v));pb.v-=a2;rest-=a2;return rest>0?cur-rest:cur};
   const np=lim(v.p,Math.max(0,R.pot+dAck('pot')));if(np!==v.p){v.p=np;fix.pp=np}
   if(v.mpp!=null){if(a.mpok){const nm=lim(v.mpp,Math.max(0,R.mpot|0));if(nm!==v.mpp){v.mpp=nm;fix.pm=nm}}}}
@@ -137,14 +145,20 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  const pendIds=new Set();for(const d of a.dl){if(d.item&&d.item.id)pendIds.add(d.item.id);if(d.pet&&d.pet.id)pendIds.add(d.pet.id)}
  for(const id in ECO.reg){const r=ECO.reg[id];if(r.o===u&&!seen.has(id)&&!pendIds.has(id)&&now-(r.t||0)>6e4){delete ECO.reg[id]}}
  /* ---- lo que paga el jugador con dinero real: SIEMPRE manda el servidor ---- */
- v.gm=a.gem.own;v.gx=a.gem.tr;v.vp=a.vip;v.pr=Object.assign({},v.pr&&typeof v.pr==='object'?v.pr:{},a.px);v.lic=a.lic;v.bo=a.sk.slice();v.sk=a.ev.slice();
+ v.gm=a.gem.own;v.gx=a.gem.tr;
+ {const L=a.bxl,hasK=Array.isArray(v.bxt),rp=Array.isArray(v.bx)?v.bx:[0,0,0,0],ck=hasK?v.bxt:[0,0,0,0],o4=[0,0,0,0],first=!L.m;
+  if(!hasK){/* cliente nuevo/sin sincronizar (o versión vieja): su tiempo de Bonus no vale; manda el servidor hasta que sincronice */v.bx=L.x.map((x,i)=>x+Math.max(0,L.t[i]-L.a[i]));v.bxt=L.t.slice()}else{
+  for(let i=0;i<4;i++){const rb=int(rp[i],0,BX.max,0),cl=Math.min(int(ck[i],0,1e13,0),L.t[i]);let ok=rb;
+   if(!master){const cap=L.x[i]+Math.max(0,cl-L.a[i]);if(rb>cap+2000){if(!first)flag(u,'bonus '+i+' imposible: '+Math.round(L.x[i]/6e4)+'→'+Math.round(rb/6e4)+' min',2);ok=cap;fix.bx=1}}
+   o4[i]=ok;L.x[i]=ok;L.a[i]=Math.max(L.a[i],cl)}
+  L.m=1;v.bx=o4;v.bxt=L.t.slice()}}v.vp=a.vip;v.pr=Object.assign({},v.pr&&typeof v.pr==='object'?v.pr:{},a.px);v.lic=a.lic;v.bo=a.sk.slice();v.sk=a.ev.slice();
  if(v.bsk&&!a.sk.includes(v.bsk))v.bsk='';
  v.ml=0;/* el master lo decide el servidor */
  /* ---- aceptar ---- */
  a.res.gold=v.g;a.res.bk=v.bk;a.res.g=v.i.slice();if(v.fd)a.res.fd=Object.assign({},v.fd);if(v.ec)a.res.ec=Object.assign({},v.ec);a.res.pot=v.p;if(v.mpp!=null){a.res.mpot=v.mpp;a.mpok=1}
  a.lv=lv;a.xp=xp;if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
  /* lo que sigue sin aplicar (entregas pendientes) se descuenta del esperado para que no se aplique dos veces */
- return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl,p:fix.pp,mp:fix.pm}:null,acked:acked.map(d=>d.id)}}
+ return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl,p:fix.pp,mp:fix.pm,bx:fix.bx?v.bx:undefined}:null,acked:acked.map(d=>d.id)}}
 /* migración única: quita los strikes falsos que el antitrampas daba por cocinar carne/pescado (ya no ocurre) */
 try{if(!ECO.fixCook){ECO.fixCook=1;let n=0;for(const id in ECO.acc){const a=ECO.acc[id];if(!a||!Array.isArray(a.flags)||!a.flags.length)continue;const bad=a.flags.filter(f=>/^provisi.n (cocida|coc\d|fc\d) /.test(String(f&&f[1])));if(!bad.length)continue;a.flags=a.flags.filter(f=>!bad.includes(f));a.strikes=Math.max(0,(a.strikes|0)-bad.length);if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) sin strikes falsos por cocinar')}}}catch(e){log('migración cocinar: '+e.message)}
-return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,audit,deliver,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM}};
+return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,audit,deliver,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,glAdd,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM,BX}};

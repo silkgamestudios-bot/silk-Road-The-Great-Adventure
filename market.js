@@ -2,7 +2,7 @@
    el servidor comprueba oro/mercancía/objeto, mueve la propiedad y entrega a cada parte (idempotente). El cliente no decide nada. */
 module.exports=function(S,E){
 const {DB}=S;const RM=E.RM;
-const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','ec_hl','ec_nv','ec_lu','ec_am','ec_nz'];
+const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','ec_hl','ec_nv','ec_lu','ec_am','ec_nz'];
 const int=(v,a,b,d)=>{v=Math.floor(+v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d};
 const iv=it=>Math.round(720*RM[it.r]*(1+it.t*.6)*(it.dv?.05:1));
 const tax=(p)=>({pay:Math.round(p*1.03),get:Math.round(p*.97)});
@@ -67,7 +67,7 @@ ops['item.up']=(u,m)=>{const id=String(m.id||''),r=E.reg()[id],a=E.acct(u);if(!r
  const win=Math.random()<c.p;if(win){r.up=L;S.dirty()}return{ok:1,up:r.up|0,won:win?1:0}};
 
 /* ===== misiones diarias y cofres (el servidor tira los dados) ===== */
-const KNMS=['común','poco común','rara','épica','legendaria','mítica'],DQKS=[.02,.05,.10,.18],DQRS=[[100],[80,20],[55,30,15],[35,30,20,10,4,1]];
+const KNMS=['común','poco común','rara','épica','legendaria','mítica'],DQKS=[0,.03,.08,.18],DQRS=[[100],[80,20],[55,30,15],[35,30,20,10,4,1]];
 const dayKey=()=>new Date(Date.now()-4*36e5).toISOString().slice(0,10);
 ops['dq.claim']=(u,m)=>{const a=E.acct(u),d=int(m.d,0,3,0),day=dayKey();const q=(a.dq&&a.dq.day===day)?a.dq:(a.dq={day,n:0});if(q.n>=4)return{e:'Ya cobraste las 4 misiones de hoy'};q.n++;S.dirty();
  let key=-1;if(Math.random()<DQKS[d]){const rl=DQRS[d];let pk=Math.random()*100,k=0;for(let j=0;j<rl.length;j++){if(pk<rl[j]){k=j;break}pk-=rl[j]}key=k;E.deliver(u,{prov:{pk:'kl'+(k+1),q:1},note:'🗝️ Llave '+KNMS[k]+' recibida'})}

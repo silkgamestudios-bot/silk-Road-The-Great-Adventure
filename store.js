@@ -20,10 +20,10 @@ ops['name.change']=(u,m)=>{const a=E.acct(u),first=(a.nch|0)===0,n=String(m.name
  if(!/^[\p{L}\p{N} _-]{3,14}$/u.test(n))return err('Usa de 3 a 14 letras, números, espacios, - o _');
  if(a.nm&&a.nm===n)return err('Ese ya es tu nombre');const o=E.uidByName(n);if(o&&o!==u)return err('Ese nombre ya está en uso');
  if(first){const nt=NAME_GOLD+TAXP(NAME_GOLD);if(E.avail(a,'gold')<nt)return err('Te faltan '+(nt-E.avail(a,'gold'))+' 🪙 (con 3% de impuesto)')}else if(E.gTot(a)<1)return err('Necesitas 1 💎');
- if(first)E.deliver(u,{gold:-(NAME_GOLD+TAXP(NAME_GOLD)),note:'✏️ Cambio de nombre (+3% impuesto)'});else if(!E.spendGems(a,1,false))return err('Saldo insuficiente');
+ if(first)E.deliver(u,{gold:-(NAME_GOLD+TAXP(NAME_GOLD)),note:'✏️ Cambio de nombre (+3% impuesto)'});else if(!E.spendGems(a,1,false,'Cambio de nombre'))return err('Saldo insuficiente');
  const r=E.claimName(u,n,1);if(r.e)return r;a.nch=(a.nch|0)+1;S.dirty();E.pushEnt(u);S.log('[nombre] '+u+' → '+n);return{ok:1,nm:r.nm,ent:E.ent(u)}};
 ops['skin.buy']=(u,m)=>{const q=SK[String(m.id||'')],a=E.acct(u);if(!q)return err('Apariencia desconocida');if(a.sk.includes(q.id))return err('Ya la tienes');
- if(E.gTot(a)<q.g)return err('Te faltan '+(q.g-E.gTot(a))+' 💎');if(!E.spendGems(a,q.g,false))return err('Saldo insuficiente');a.sk.push(q.id);S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+q.id);return{ok:1,ent:E.ent(u)}};
+ if(E.gTot(a)<q.g)return err('Te faltan '+(q.g-E.gTot(a))+' 💎');if(!E.spendGems(a,q.g,false,'Apariencia '+q.id))return err('Saldo insuficiente');a.sk.push(q.id);S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+q.id);return{ok:1,ent:E.ent(u)}};
 
 /* ---- Herramientas del master: renombrar jugadores e insignias de staff ---- */
 const BADGES=['adm','mod','gm','tst','inf'];
@@ -69,7 +69,7 @@ ops['adm.rename']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const o
 ops['adm.badge']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const o=E.uidByName(m.name);if(!o)return err('No hay ningún jugador con ese nombre');const code=String(m.code||'');if(code&&!BADGES.includes(code))return err('Insignia desconocida');
  const cfg=S.DB.cfg=S.DB.cfg||{},old=cfg.badges||{},nw=Object.assign({},old);if(code)nw[o]=code;else delete nw[o];cfg.badges=nw;S.dirty();S.bc('cfg','badges',old,nw);S.log('[master] insignia '+(code||'ninguna')+' → '+m.name);gmLogAdd(nmOf(u),'badge',nmOf(o),0,code?('insignia '+code):'sin insignia');return{ok:1}};
 ops['evskin.gem']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k))return err('Evento desconocido');if(a.ev.includes(k))return err('Ya lo tienes');
- if(!E.spendGems(a,GEMSKIN,false))return err('Te faltan '+(GEMSKIN-E.gTot(a))+' 💎');a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
+ if(!E.spendGems(a,GEMSKIN,false,'Atuendo de evento '+k))return err('Te faltan '+(GEMSKIN-E.gTot(a))+' 💎');a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
 ops['evskin.coin']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k))return err('Evento desconocido');if(a.ev.includes(k))return err('Ya lo tienes');
  if(E.avail(a,'ec',k)<300)return err('Te faltan monedas de evento (sincroniza e inténtalo de nuevo)');E.deliver(u,{ec:{k,q:-300},note:'🎭 Atuendo de evento comprado'});a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
 ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d=+m.d||null;if(!GEMP[k]||k==='vip')return err('Servicio desconocido');
@@ -78,14 +78,19 @@ ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d
  if(!cost||!ks.every(z=>PRMK.includes(z)))return err('Servicio no válido');
  if((vm||lc)&&(a.cls!==0||a.lv<LIC_LV))return err(a.cls!==0?'Solo disponible para la clase Mercader':'Necesitas nivel '+LIC_LV);
  if(ks.some(z=>Math.max(now,a.px[z]||0)-now+d*DAY>90*DAY)||((vm||lc)&&Math.max(now,a.lic||0)-now+d*DAY>90*DAY)||(vip&&Math.max(now,a.vip||0)-now+d*DAY>90*DAY))return err('Máximo 90 días acumulados');
- if(!E.spendGems(a,cost,true))return err('Te faltan '+(cost-a.gem.own)+' 💎 propias (las transferidas solo valen para apariencias)');
+ if(!E.spendGems(a,cost,true,'Servicio '+k+' '+d+' d'))return err('Te faltan '+(cost-a.gem.own)+' 💎 propias (las transferidas solo valen para apariencias)');
  ks.forEach(z=>{a.px[z]=Math.max(now,a.px[z]||0)+d*DAY});if(vm||lc)a.lic=Math.max(now,a.lic||0)+d*DAY;if(vip)a.vip=Math.max(now,a.vip||0)+d*DAY;
  S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+k+' '+d+'d');return{ok:1,ent:E.ent(u),cost}};
+ops['bonus.buy']=(u,m)=>{const a=E.acct(u),L=a.bxl,i=Math.floor(+m.i),BX=E.BX;if(!(i>=0&&i<4))return err('Bonus desconocido');
+ if(L.x[i]+Math.max(0,L.t[i]-L.a[i])+BX.ms>BX.max+2*36e5)return err('Máximo 20 h acumuladas');
+ if(!E.spendGems(a,BX.cost,true,'Bonus '+['XP','oro','defensa','vida'][i]+' +4 h'))return err('Te faltan '+(BX.cost-a.gem.own)+' 💎 propias (las transferidas solo valen para apariencias)');
+ L.t[i]+=BX.ms;S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró bonus '+i);return{ok:1,ent:E.ent(u),cost:BX.cost}};
+ops['gem.log']=(u)=>{const a=E.acct(u);return{ok:1,own:a.gem.own,tr:a.gem.tr,l:(a.gl||[]).slice(-25).reverse()}};
 ops['buff.gold']=(u,m)=>{const a=E.acct(u),now=Date.now(),c0=blGold(a.lv),c=c0+TAXP(c0);if(m.k!=='bl')return err('Servicio no válido');
  if(Math.max(now,a.px.bl||0)-now+10*DAY>90*DAY)return err('Máximo 90 días acumulados');if(E.avail(a,'gold')<c)return err('Te faltan '+(c-E.avail(a,'gold'))+' 🪙');
  E.deliver(u,{gold:-c,note:'🙏 Bendición +10 días (+3% impuesto)'});a.px.bl=Math.max(now,a.px.bl||0)+10*DAY;S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u),cost:c}};
 ops['gem.tx']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=1e6))return err('Cantidad inválida');let to=String(m.to||'').trim();
  const t=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?to:E.uidByName(to);if(!t||t===u)return err('Jugador no encontrado (usa su nombre exacto o su código)');
- if(E.gTot(a)<q)return err('Saldo insuficiente');E.spendGems(a,q,false);const b=E.acct(t);b.gem.tr+=q;S.dirty();E.pushEnt(u);E.pushEnt(t);
+ if(E.gTot(a)<q)return err('Saldo insuficiente');E.spendGems(a,q,false,'Envío a '+((E.acct(t)||{}).nm||t));const b=E.acct(t);b.gem.tr+=q;E.glAdd(b,q,'(transferidas) de '+(a.nm||u));S.dirty();E.pushEnt(u);E.pushEnt(t);
  S.push(t,{t:'note',m:'💎 '+(a.nm||'Un jugador')+' te envió '+q+' gemas (solo para apariencias)'});S.log('[gemas] '+(a.nm||u)+' → '+(b.nm||t)+' '+q);return{ok:1,ent:E.ent(u)}};
 return{ops,price,GEMP}};

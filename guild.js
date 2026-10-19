@@ -34,7 +34,7 @@ ops['g.create']=(u,m)=>{const a=E.acct(u);if(a.gld&&G[a.gld])return err('Ya pert
  if(ECO.gname[name.toLowerCase()])return err('Ese nombre de gremio ya existe');
  if(ECO.gtag[tag])return err('Ese tag ya está en uso');
  if(a.gem.own<GC.precio)return err('Necesitas '+GC.precio+' 💎 propias (las transferidas no valen)');
- E.spendGems(a,GC.precio,true);const id='G'+E.rid(5);
+ E.spendGems(a,GC.precio,true,'Crear gremio');const id='G'+E.rid(5);
  const g=G[id]={id,name,tag,desc:clean(m.desc,140),motd:'',emb:{i:int(m.ei,0,11,0),c:int(m.ec,0,7,0)},mode:['inv','app','open'].includes(m.mode)?m.mode:'inv',leader:u,created:now(),mem:{},inv:{},app:{},bank:0,log:[]};
  g.mem[u]={r:2,nm:a.nm,c:Math.max(0,a.cls),lv:a.lv,jt:now(),ls:now()};a.gld=id;ECO.gname[name.toLowerCase()]=id;ECO.gtag[tag]=id;
  log(g,'🏰 '+a.nm+' fundó el gremio');S.dirty();E.pushEnt(u);return{ok:1,g:full(g,u)}};
@@ -80,7 +80,7 @@ ops['g.edit']=(u,m)=>{const g=myG(u);if(!g)return err('No tienes gremio');const 
  if(r>=2){if(m.desc!=null)g.desc=clean(m.desc,140);if(m.mode&&['inv','app','open'].includes(m.mode))g.mode=m.mode;
   if(m.ei!=null||m.ec!=null)g.emb={i:int(m.ei,0,11,g.emb.i),c:int(m.ec,0,7,g.emb.c)};
   if(m.tag!=null){const tag=clean(m.tag,GC.tagMax).toUpperCase();if(tag!==g.tag){if(!TAGRE().test(tag))return err('Tag no válido');if(ECO.gtag[tag])return err('Ese tag ya está en uso');
-   const a=E.acct(u);if(!E.spendGems(a,2,true))return err('Cambiar el tag cuesta 2 💎 propias');delete ECO.gtag[g.tag];ECO.gtag[tag]=g.id;g.tag=tag;log(g,'🏷️ Nuevo tag: ['+tag+']');E.pushEnt(u)}}}
+   const a=E.acct(u);if(!E.spendGems(a,2,true,'Cambiar tag del gremio'))return err('Cambiar el tag cuesta 2 💎 propias');delete ECO.gtag[g.tag];ECO.gtag[tag]=g.id;g.tag=tag;log(g,'🏷️ Nuevo tag: ['+tag+']');E.pushEnt(u)}}}
  S.dirty();pushG(g);return{ok:1}};
 ops['g.chat']=(u,m)=>{const g=myG(u);if(!g)return err('No tienes gremio');const t=clean(m.text,140);if(!t)return err('Mensaje vacío');const a=E.acct(u),n=now();
  if(n-(a.lastChat||0)<1200)return err('Más despacio');a.lastChat=n;

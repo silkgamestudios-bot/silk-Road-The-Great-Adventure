@@ -1,6 +1,6 @@
 /* Tienda del servidor: apariencias, servicios (buffs), gemas, nombres y entitlements. Precios y reglas SOLO viven aquí. */
 module.exports=function(S,E){
-const cat=S.cat,SK=cat.SKINS,EVK=E.EVK;
+const cat=S.cat,SK=Object.assign({},cat.SKINS,cat.TRAJES||{}),EVK=E.EVK;
 const GEMP={lt:3,ap:2,bl:4,es:3,cmb:5,lic:10,vipm:15,vipj:6,vip:11},GMON=['cmb','es','lic','vipm','vipj'],GEMSKIN=12,LIC_LV=15,GCMB=['lt','ap'],PRMK=['lt','ap','bl','es'],DAY=864e5;
 const price=(k,d)=>{const b=GEMP[k]||0;if(GMON.includes(k)){if(k==='es'||d>=30)return b;return Math.min(b-1,Math.max(1,Math.round(b*d/30*1.3)))}if(d<=10)return b;return Math.max(1,Math.round(b*(d/10)*.8))};
 const blGold=lv=>Math.round(2000*Math.pow(1.28,Math.min(29,Math.max(0,lv-1))));
@@ -24,6 +24,13 @@ ops['name.change']=(u,m)=>{const a=E.acct(u),first=(a.nch|0)===0,n=String(m.name
  const r=E.claimName(u,n,1);if(r.e)return r;a.nch=(a.nch|0)+1;S.dirty();E.pushEnt(u);S.log('[nombre] '+u+' → '+n);return{ok:1,nm:r.nm,ent:E.ent(u)}};
 ops['skin.buy']=(u,m)=>{const q=SK[String(m.id||'')],a=E.acct(u);if(!q)return err('Apariencia desconocida');if(a.sk.includes(q.id))return err('Ya la tienes');
  if(E.gTot(a)<q.g)return err('Te faltan '+(q.g-E.gTot(a))+' 💎');if(!E.spendGems(a,q.g,false))return err('Saldo insuficiente');a.sk.push(q.id);S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+q.id);return{ok:1,ent:E.ent(u)}};
+
+/* ---- Herramientas del master: renombrar jugadores e insignias de staff ---- */
+const BADGES=['adm','mod','gm'];
+ops['adm.find']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const q=String(m.q||'').trim().toLowerCase().slice(0,24),L=[];for(const id in S.ECO.acc){const x=S.ECO.acc[id];if(!x||!x.nm)continue;if(q&&!x.nm.toLowerCase().includes(q))continue;L.push({nm:x.nm,lv:x.lv|0,c:x.cls|0,t:x.created||0})}L.sort((a,b)=>q?a.nm.length-b.nm.length:b.t-a.t);return{ok:1,l:L.slice(0,20).map(x=>({nm:x.nm,lv:x.lv,c:x.c}))}};
+ops['adm.rename']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const o=E.uidByName(m.from);if(!o)return err('No hay ningún jugador con ese nombre');const old=(E.acct(o)||{}).nm;const r=E.claimName(o,m.to,1);if(r.e)return r;S.dirty();E.pushEnt(o);S.log('[master] '+u+' renombró a '+old+' → '+r.nm);return{ok:1,nm:r.nm}};
+ops['adm.badge']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const o=E.uidByName(m.name);if(!o)return err('No hay ningún jugador con ese nombre');const code=String(m.code||'');if(code&&!BADGES.includes(code))return err('Insignia desconocida');
+ const cfg=S.DB.cfg=S.DB.cfg||{},old=cfg.badges||{},nw=Object.assign({},old);if(code)nw[o]=code;else delete nw[o];cfg.badges=nw;S.dirty();S.bc('cfg','badges',old,nw);S.log('[master] insignia '+(code||'ninguna')+' → '+m.name);return{ok:1}};
 ops['evskin.gem']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k))return err('Evento desconocido');if(a.ev.includes(k))return err('Ya lo tienes');
  if(!E.spendGems(a,GEMSKIN,false))return err('Te faltan '+(GEMSKIN-E.gTot(a))+' 💎');a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
 ops['evskin.coin']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k))return err('Evento desconocido');if(a.ev.includes(k))return err('Ya lo tienes');

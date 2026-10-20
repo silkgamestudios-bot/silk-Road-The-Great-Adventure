@@ -54,9 +54,7 @@ if(KEEP){for(const u in KEEP){try{Object.assign(E.acct(u),KEEP[u])}catch(e){}}di
 S.onDeliver=u=>{try{if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}};
 AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster});
 const TR=require('./terr')(S,E);
-const SD=require('./seda')(S,E);
-const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops);
-for(const k of ['gmk.sell','gmk.buy','gmk.cancel'])OPS[k]=()=>({e:'Este mercado se renovó: usa el 🏛️ Mercado de Gemas nuevo (recarga con Ctrl+Shift+R)'});
+const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,AC.ops);
 setInterval(()=>{for(const u in ECO.acc){const a=ECO.acc[u];if(a.dl&&a.dl.length)E.forceExpired(a)}},30000);
 /* REGLAS de las colecciones libres: quién puede crear/editar (u = jugador autenticado, id, d = doc nuevo, o = doc anterior) */
 /* Blindaje contra claves peligrosas (__proto__, constructor, toString…): ningún id/colección/operación del cliente puede tocar el prototipo ni funciones nativas */
@@ -67,7 +65,7 @@ function protoBad(o,dep,k){if(dep>6)return true;if(o==null)return false;
  if(typeof o!=='object')return false;
  if(Array.isArray(o)){for(let i=0;i<o.length&&i<400;i++)if(protoBad(o[i],dep+1,k))return true;return false}
  let n=0;for(const x in o){if(x==='__proto__'||++n>400)return true;if(protoBad(o[x],dep+1,x))return true}return false}
-const SRV_ONLY=new Set(['offers','shops','orders','wallets','loot','gemtx','sm']);   // solo el servidor escribe; el cliente las lee y pide operaciones
+const SRV_ONLY=new Set(['offers','shops','orders','wallets','loot','gemtx']);   // solo el servidor escribe; el cliente las lee y pide operaciones
 const small=(d,n)=>JSON.stringify(d).length<=n;
 /* Daño a dragones/centinelas: cada jugador solo escribe SU documento, el daño solo sube y no puede crecer más rápido que un máximo creíble */
 const DRW={};

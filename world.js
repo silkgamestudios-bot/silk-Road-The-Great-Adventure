@@ -38,7 +38,7 @@ function hits(p,list){const now=Date.now();p.tok=Math.min(CFG.hitMax*2,(p.tok||0
   m.hp-=dm;m.dmg[p.uid]=(m.dmg[p.uid]||0)+dm;p.ct.dm+=dm;if(!m.tg&&!p.city)m.tg=p.uid;if(m.hp<=0)kill(m)}}
 const num=(v,a,b,d)=>Number.isFinite(+v)?Math.min(b,Math.max(a,+v)):d;
 function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
- if(m.t==='wj'){const old=p;p={uid:u,ws,nm:String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,20)||'Viajero',c:num(m.c,0,5,0)|0,lv:num(m.lv,1,9999,1)|0,gt:String(m.gt||'').slice(0,4),bs:String(m.bs||'').slice(0,12),cz:Array.isArray(m.cz)?m.cz:[0,0,0],x:num(m.x,0,W*T,0),y:num(m.y,0,H*T,0),hp:100,mhp:100,mt:now,tok:0,tt:now,rc:[],ct:old?old.ct:{dm:0,tk:0,ut:0}};p.city=inCity(p.x,p.y);PL.set(u,p);send(ws,{t:'wi',tick:CFG.tick,n:J.mobs.length,sg:WSIG});return}
+ if(m.t==='wj'){const old=p;p={uid:u,ws,nm:String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,20)||'Viajero',c:num(m.c,0,7,0)|0,lv:num(m.lv,1,9999,1)|0,gt:String(m.gt||'').slice(0,4),bs:String(m.bs||'').slice(0,12),cz:Array.isArray(m.cz)?m.cz:[0,0,0],x:num(m.x,0,W*T,0),y:num(m.y,0,H*T,0),hp:100,mhp:100,mt:now,tok:0,tt:now,rc:[],ct:old?old.ct:{dm:0,tk:0,ut:0}};p.city=inCity(p.x,p.y);PL.set(u,p);send(ws,{t:'wi',tick:CFG.tick,n:J.mobs.length,sg:WSIG});return}
  if(!p||p.ws!==ws)return;
  if(m.t==='wm'){const x=num(m.x,0,W*T,p.x),y=num(m.y,0,H*T,p.y),dt=Math.min(2,Math.max(.05,(now-p.mt)/1000)),d=Math.hypot(x-p.x,y-p.y),tp=m.tp&&(inCity(x,y)||(J.tpd||[]).some(t=>Math.hypot(x-t.x,y-t.y)<300))&&now-(p.tpT||0)>3000;
   if(m.dg){p.dg=1;p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);return}const wasDg=p.dg;p.dg=0;
@@ -46,11 +46,11 @@ function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
   if((d>CFG.speed*dt+48&&!tp)||solid(x,y)){send(ws,{t:'wp',x:p.x,y:p.y});return}if(tp)p.tpT=now;
   p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);p.lv=X.lv&&X.lv(u)?X.lv(u):num(m.lv,1,9999,p.lv)|0;p.city=inCity(x,y);return}
  if(m.t==='wh'){if(!p.dg)hits(p,m.h)}
- if(m.t==='wa'){if(p.dg||now-(p.atT||0)<110)return;p.atT=now;AT.push([u,num(m.k,0,7,0)|0,Math.round(num(m.a,-7,7,0)*100)/100,Math.round(p.x),Math.round(p.y)])}}
+ if(m.t==='wa'){if(now-(p.atT||0)<80)return;p.atT=now;AT.push([u,num(m.k,0,7,0)|0,Math.round(num(m.a,-7,7,0)*100)/100,Math.round(p.x),Math.round(p.y),p.dg?1:0,String(m.ty||'').replace(/[^a-z]/g,'').slice(0,8),num(m.r,0,400,0)|0])}}   /* v145: también habilidades y también dentro de mazmorras (solo para tu party) */
 setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);
  for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||''])}
   const mb=[];for(const m of near(p.x,p.y,CFG.sview+CFG.leash))if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview)mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);
-  const hv=EV.filter(e=>e[2]!==p.uid&&Math.hypot(e[3]-p.x,e[4]-p.y)<=CFG.sview).slice(0,30),at=AT.filter(a=>a[0]!==p.uid&&Math.hypot(a[3]-p.x,a[4]-p.y)<=CFG.pview).slice(0,24);
+  const hv=EV.filter(e=>e[2]!==p.uid&&Math.hypot(e[3]-p.x,e[4]-p.y)<=CFG.sview).slice(0,30),at=AT.filter(a=>a[0]!==p.uid&&(a[5]?(p.dg&&pid(a[0])&&pid(a[0])===pid(p.uid)):!p.dg)&&Math.hypot(a[3]-p.x,a[4]-p.y)<=CFG.pview).slice(0,40);
   const o={t:'ws',pl,mb};if(hv.length)o.hv=hv;if(at.length)o.at=at;send(p.ws,o)}EV=[];AT=[]},CFG.tick);
 log('mundo cargado: '+L.length+' enemigos, '+W+'x'+H+' casillas');
 return{handle,leave:(u,ws)=>{const p=PL.get(u);if(p&&p.ws===ws)PL.delete(u)},credit:(u,k,v)=>{const p=PL.get(u);if(p)p.ct[k]+=v},stats:()=>({players:PL.size,mobs:L.length})}};

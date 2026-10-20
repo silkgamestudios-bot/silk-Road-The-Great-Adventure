@@ -8,10 +8,10 @@ const NAME_GOLD=2000,TAXP=c=>Math.ceil(Math.round(c)*.03),err=e=>({e});/* impues
 ops['me.get']=(u)=>({ok:1,ent:E.ent(u)});
 ops['name.claim']=(u,m)=>{const r=E.claimName(u,m.name);if(r.e)return r;E.pushEnt(u);return{ok:1,nm:r.nm}};
 /* ---- Ranking: los 100 mejores por nivel o por habilidad, global o por clase. Lo calcula el servidor con datos ya validados ---- */
-const RKC={};
-function rkList(cc,k){const key=cc+'|'+k,h=RKC[key],t=Date.now();if(h&&t-h.t<45e3)return h.l;
- const l=[];for(const u in S.ECO.acc){const a=S.ECO.acc[u];if(!a||!a.nm||!(a.cls>=0)||(cc>=0&&a.cls!==cc)||(a.strikes|0)>=3)continue;let mst=false;try{mst=S.isMaster(u)}catch(e){}if(mst)continue;
-  const sx=Array.isArray(a.sx)?a.sx:[1,1,1];l.push({u,n:a.nm,c:a.cls|0,l:a.lv|0,x:a.xp||0,s:[sx[0]|0||1,sx[1]|0||1,sx[2]|0||1],g:(S.tagOf&&S.tagOf(u))||''})}
+const RKC={},RKTTL=+process.env.RK_TTL||8e3;/* ranking: se recalcula cada 8 s (antes 45 s: un héroe nuevo o que subía de nivel tardaba casi un minuto en aparecer) */
+function rkList(cc,k){const key=cc+'|'+k,h=RKC[key],t=Date.now();if(h&&t-h.t<RKTTL)return h.l;
+ const l=[];for(const u in S.ECO.acc){const a=S.ECO.acc[u];if(!a||!(a.nm||a.pn)||!(a.cls>=0)||(cc>=0&&a.cls!==cc)||(a.strikes|0)>=8)continue;let mst=false;try{mst=S.isMaster(u)}catch(e){}if(mst)continue;
+  const sx=Array.isArray(a.sx)?a.sx:[1,1,1];l.push({u,n:a.nm||a.pn,c:a.cls|0,l:a.lv|0,x:a.xp||0,s:[sx[0]|0||1,sx[1]|0||1,sx[2]|0||1],g:(S.tagOf&&S.tagOf(u))||''})}
  const v=k==='lv'?(x=>0):k==='st'?(x=>x.s[0]+x.s[1]+x.s[2]):(x=>x.s[+k[1]]);
  l.sort((p,q)=>k==='lv'?(q.l-p.l||q.x-p.x):(v(q)-v(p)||q.l-p.l||q.x-p.x));RKC[key]={t,l};return l}
 ops['rank.get']=(u,m)=>{const c=Math.floor(+m.c),cc=c>=0&&c<=7?c:-1,k=['lv','s0','s1','s2','st'].includes(m.k)?m.k:'lv',l=rkList(cc,k);
@@ -85,6 +85,19 @@ ops['bonus.buy']=(u,m)=>{const a=E.acct(u),L=a.bxl,i=Math.floor(+m.i),BX=E.BX;if
  if(L.x[i]+Math.max(0,L.t[i]-L.a[i])+BX.ms>BX.max+2*36e5)return err('Máximo 20 h acumuladas');
  if(!E.spendGems(a,BX.cost,true,'Bonus '+['XP','oro','defensa','vida'][i]+' +4 h'))return err('Te faltan '+(BX.cost-a.gem.own)+' 💎 propias (las transferidas solo valen para apariencias)');
  L.t[i]+=BX.ms;S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró bonus '+i);return{ok:1,ent:E.ent(u),cost:BX.cost}};
+/* Halloween: el oro y las gemas de los cofres del tesoro los entrega el servidor (cuotas de la tabla: 3 cofres de 1.000.000, 24 de 2 💎, 30 de oro). Si el cliente se los sumara, el antitrampas los borraría. */
+const HALQ={G1:3,M:24,g:30},halOn=()=>{const d=new Date(Date.now()-4*36e5),mo=d.getUTCMonth()+1,dy=d.getUTCDate();return(mo===10&&dy>=15)||(mo===11&&dy<=3)};
+ops['hal.find']=(u,m)=>{const a=E.acct(u),j=Math.floor(+m.j),p=String(m.p||''),v=Math.floor(+m.v)||0;
+ if(!halOn())return err('El evento de Halloween no está activo');
+ if(!(j>=0&&j<100)||!HALQ[p])return err('Tesoro no válido');
+ const H=a.hl||(a.hl={f:{},n:{},ts:0});if(H.f[j])return{ok:1,dup:1};
+ if((H.n[p]|0)>=HALQ[p])return err('Ya abriste todos los cofres de ese tipo');
+ const now=Date.now();if(now-(H.ts||0)<2000)return err('Cavando demasiado rápido: espera un momento');
+ let gold=0,gem=0;if(p==='G1')gold=1e6;else if(p==='M')gem=2;else{if(!(v>=5e4&&v<=3e5&&v%5000===0))return err('Premio no válido');gold=v}
+ H.f[j]=gold||gem;H.n[p]=(H.n[p]|0)+1;H.ts=now;S.dirty();
+ if(gold)E.deliver(u,{gold,note:'🎃 Tesoro de Halloween: +'+gold.toLocaleString('es')+' 🪙'});
+ if(gem)E.grantGems(u,gem,'own','tesoro de Halloween');
+ S.log('[halloween] '+(a.nm||u)+' abrió el tesoro #'+j+' ('+p+')');return{ok:1,g:gold,m:gem}};
 ops['gem.log']=(u)=>{const a=E.acct(u);return{ok:1,own:a.gem.own,tr:a.gem.tr,l:(a.gl||[]).slice(-25).reverse()}};
 ops['buff.gold']=(u,m)=>{const a=E.acct(u),now=Date.now(),c0=blGold(a.lv),c=c0+TAXP(c0);if(m.k!=='bl')return err('Servicio no válido');
  if(Math.max(now,a.px.bl||0)-now+10*DAY>90*DAY)return err('Máximo 90 días acumulados');if(E.avail(a,'gold')<c)return err('Te faltan '+(c-E.avail(a,'gold'))+' 🪙');
@@ -93,4 +106,25 @@ ops['gem.tx']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=1e6))re
  const t=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?to:E.uidByName(to);if(!t||t===u)return err('Jugador no encontrado (usa su nombre exacto o su código)');
  if(E.gTot(a)<q)return err('Saldo insuficiente');E.spendGems(a,q,false,'Envío a '+((E.acct(t)||{}).nm||t));const b=E.acct(t);b.gem.tr+=q;E.glAdd(b,q,'(transferidas) de '+(a.nm||u));S.dirty();E.pushEnt(u);E.pushEnt(t);
  S.push(t,{t:'note',m:'💎 '+(a.nm||'Un jugador')+' te envió '+q+' gemas (solo para apariencias)'});S.log('[gemas] '+(a.nm||u)+' → '+(b.nm||t)+' '+q);return{ok:1,ent:E.ent(u)}};
+/* ---------- 💎 MERCADO DE GEMAS (jugador a jugador, v145) ----------
+   Se vende por ORO (por gema). El servidor retiene las gemas del vendedor (custodia) y las entrega al comprador al instante.
+   Regla: las gemas que se compran aquí llegan como TRANSFERIDAS (solo atuendos, nunca Premium/VIP). Comisión 3% (compra +3%, venta −3%). */
+const GK=()=>{const d=S.DB.gmk=S.DB.gmk||{};return d},GKH=()=>{const e=S.ECO;e.gmkh=e.gmkh||[];return e.gmkh};
+ops['gmk.list']=(u)=>{const L=Object.entries(GK()).map(([id,o])=>({id,nm:o.nm,q:o.q|0,p:o.p|0,mine:o.u===u?1:0,ts:o.ts|0})).sort((a,b)=>a.p-b.p||a.ts-b.ts).slice(0,250);
+ return{ok:1,l:L,h:GKH().slice(-8).reverse(),own:E.acct(u).gem.own|0,tr:E.acct(u).gem.tr|0}};
+ops['gmk.sell']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q),p=Math.floor(+m.p);if(!(q>=1&&q<=1e6))return err('Cantidad inválida (1 a 1.000.000)');if(!(p>=1&&p<=1e9))return err('Precio por gema inválido (1 a 1.000.000.000 🪙)');
+ if(Object.values(GK()).filter(o=>o.u===u).length>=10)return err('Máximo 10 anuncios activos');if(E.gTot(a)<q)return err('No tienes tantas gemas');
+ const tr=Math.min(a.gem.tr,q),ow=q-tr;if(!E.spendGems(a,q,false,'Puestas en el Mercado de Gemas'))return err('Saldo insuficiente');
+ const id='g'+E.rid(6);GK()[id]={u,nm:a.nm||'Jugador',q,ow,tr,p,ts:Date.now()};S.dirty();E.pushEnt(u);S.log('[mercado-gemas] '+(a.nm||u)+' ofrece '+q+' a '+p+' 🪙 c/u');return{ok:1,id,ent:E.ent(u)}};
+ops['gmk.cancel']=(u,m)=>{const id=String(m.id||''),o=GK()[id];if(!o||o.u!==u)return err('No es tu anuncio');const a=E.acct(u);delete GK()[id];a.gem.own+=o.ow|0;a.gem.tr+=o.tr|0;E.glAdd(a,o.q|0,'Anuncio del Mercado de Gemas retirado');S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
+ops['gmk.buy']=(u,m)=>{const id=String(m.id||''),o=GK()[id];if(!o)return err('El anuncio ya no existe');if(o.u===u)return err('Es tu propio anuncio');const n=Math.floor(+m.n);if(!(n>=1&&n<=o.q))return err('Cantidad no disponible (quedan '+o.q+')');
+ const b=E.acct(u),cost=n*o.p,pay=Math.round(cost*1.03),get=Math.round(cost*.97);if(E.avail(b,'gold')<pay)return err('Te faltan '+(pay-E.avail(b,'gold'))+' 🪙');
+ const t=Math.min(o.tr|0,n);o.tr=(o.tr|0)-t;o.ow=(o.ow|0)-(n-t);o.q-=n;if(o.q<=0)delete GK()[id];
+ E.deliver(u,{gold:-pay,note:'💎 Compraste '+n+' gemas en el Mercado de Gemas (−'+pay+' 🪙, +3% impuesto)'});E.deliver(o.u,{gold:get,note:'💎 Vendiste '+n+' gemas a '+(b.nm||'un jugador')+' (+'+get+' 🪙)',tr:1});
+ b.gem.tr+=n;E.glAdd(b,n,'(transferidas) Mercado de Gemas a '+o.p+' 🪙');const h=GKH();h.push([Date.now(),o.p,n]);if(h.length>30)h.shift();S.dirty();E.pushEnt(u);E.pushEnt(o.u);
+ if(S.online(o.u))S.push(o.u,{t:'note',m:'💎 Vendiste '+n+' gemas a '+(b.nm||'un jugador')+': +'+get+' 🪙'});S.log('[mercado-gemas] '+(b.nm||u)+' compró '+n+' a '+(o.nm||o.u)+' por '+cost);return{ok:1,ent:E.ent(u)}};
+/* ---------- 🏷️ Revendedores con descuento (los elige el master a mano) ---------- */
+ops['adm.reseller']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const o=E.uidByName(m.name);if(!o)return err('No hay ningún jugador con ese nombre');const d=Math.floor(+m.d);if(!(d>=0&&d<=50))return err('El descuento va de 0 a 50 %');
+ const cfg=S.DB.cfg=S.DB.cfg||{},old=cfg.res||{},nw=Object.assign({},old);if(d>0)nw[o]=d;else delete nw[o];cfg.res=nw;S.dirty();S.bc('cfg','res',old,nw);S.log('[master] revendedor '+(d||'quitado')+'% → '+m.name);gmLogAdd(nmOf(u),'reseller',nmOf(o),d,d?('descuento '+d+'%'):'sin descuento');return{ok:1,nm:nmOf(o),d}};
+ops['adm.reslist']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const r=((S.DB.cfg||{}).res)||{};return{ok:1,l:Object.keys(r).map(id=>({nm:nmOf(id),d:r[id]|0,on:S.online(id)?1:0}))}};
 return{ops,price,GEMP}};

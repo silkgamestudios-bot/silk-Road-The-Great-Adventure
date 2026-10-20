@@ -28,16 +28,19 @@ ops['offer.new']=(u,m)=>{const a=E.acct(u),p=int(m.p,1,1e12,0);if(!p)return{e:'P
  if(m.kind==='pet'){const pt=E.cleanPetS(m.pet);if(!pt||!pt.id)return{e:'Mascota no válida'};const r=S.ECO.reg[pt.id];if(!r||r.o!==u)return{e:'Esa mascota no es tuya'};holdReg(pt.id,'M:'+id,1,'p');setDoc('offers',id,Object.assign(base,{pet:pt}));return{ok:1,id}}
  if(m.kind==='ec'){const k=String(m.ec||''),q=int(m.q,1,1e6,0);if(!E.EVK.includes(k)||!q)return{e:'Monedas inválidas'};if(E.avail(a,'ec',k)<q)return{e:'No tienes tantas monedas (sincroniza e inténtalo de nuevo)'};
   E.deliver(u,{ec:{k,q:-q},note:'🪙 Monedas puestas en oferta'});setDoc('offers',id,Object.assign(base,{ec:k,q}));return{ok:1,id}}
+ if(m.kind==='pv'){const pk=String(m.pk||''),q=int(m.q,1,1e6,0);if(!PVL.includes(pk)||!q)return{e:'Producto no válido'};if(provAv(a,pk)<q)return{e:'No tienes tantas (sincroniza e inténtalo de nuevo)'};
+  E.deliver(u,Object.assign({note:'📢 Puesto en oferta: '+q+' de '+pk},provDl(pk,-q)));setDoc('offers',id,Object.assign(base,{pv:pk,q}));return{ok:1,id}}
  return{e:'Tipo de oferta no válido'}};
 ops['offer.cancel']=(u,m)=>{const id=String(m.id||''),o=col('offers')[id];if(!o||o.u!==u)return{e:'No es tu oferta'};if(o.auc&&o.bid>0)return{e:'Tiene pujas: espera al cierre'};
  giveBack(o);delDoc('offers',id);return{ok:1}};
 function giveBack(o){if(o.it){holdReg(o.it.id,o.u,0);E.deliver(o.u,{item:o.it,note:'↩️ Oferta retirada'})}
  else if(o.pet){holdReg(o.pet.id,o.u,0,'p');E.deliver(o.u,{pet:o.pet,note:'↩️ Mascota devuelta'})}
+ else if(o.pv)E.deliver(o.u,Object.assign({note:'↩️ Oferta retirada'},provDl(o.pv,o.q|0)))
  else if(o.ec)E.deliver(o.u,{ec:{k:o.ec,q:o.q|0},note:'↩️ Monedas devueltas'})}
 ops['offer.buy']=(u,m)=>{const id=String(m.id||''),o=col('offers')[id];if(!o||o.auc)return{e:'La oferta ya no existe'};if(o.u===u)return{e:'Es tu propia oferta'};
  const b=E.acct(u),t=tax(o.p);if(E.avail(b,'gold')<t.pay)return{e:'Oro insuficiente: te faltan '+(t.pay-E.avail(b,'gold'))};
  delDoc('offers',id);
- const bd={gold:-t.pay,note:'🛒 Compraste'};if(o.it){bd.item=o.it;bd.note+=' '+o.it.n;holdReg(o.it.id,u,0)}else if(o.pet){bd.pet=o.pet;bd.note+=' una mascota';holdReg(o.pet.id,u,0,'p')}else if(o.ec){bd.ec={k:o.ec,q:o.q|0};bd.note+=' '+o.q+' monedas'}
+ const bd={gold:-t.pay,note:'🛒 Compraste'};if(o.it){bd.item=o.it;bd.note+=' '+o.it.n;holdReg(o.it.id,u,0)}else if(o.pet){bd.pet=o.pet;bd.note+=' una mascota';holdReg(o.pet.id,u,0,'p')}else if(o.pv){Object.assign(bd,provDl(o.pv,o.q|0));bd.note+=' '+o.q+' de '+o.pv}else if(o.ec){bd.ec={k:o.ec,q:o.q|0};bd.note+=' '+o.q+' monedas'}
  E.deliver(u,bd);E.deliver(o.u,{gold:t.get,note:'💰 Vendiste a '+(b.nm||'un jugador')+' (+'+t.get+' 🪙)',tr:1});return{ok:1}};
 /* ---------- SUBASTAS (mascotas) ---------- */
 ops['auc.new']=(u,m)=>{const a=E.acct(u),pt=E.cleanPetS(m.pet),p=int(m.p,1,1e12,0),h=int(m.h,1,48,6);if(!pt||!pt.id||!p)return{e:'Datos inválidos'};const r=S.ECO.reg[pt.id];if(!r||r.o!==u)return{e:'Esa mascota no es tuya'};
@@ -89,11 +92,13 @@ const TFEE=.03,TMAXI=6,TMAXP=4,TLV=5,TLOCK=1500;
 const TR=()=>S.ECO.trd||(S.ECO.trd={});
 const trOf=u=>{const T=TR();for(const id in T){const t=T[id];if(t.a===u||t.b===u)return t}return null};
 const nmOf=u=>(E.acct(u).nm)||'Jugador';
-const mkSide=()=>({items:[],gold:0,prov:{},ok:0});
-function trView(t,u,why){const me=t.a===u?'a':'b',th=me==='a'?'b':'a',o=x=>({items:x.items,gold:x.gold|0,prov:x.prov,ok:x.ok?1:0});
+const mkSide=()=>({items:[],pets:[],gold:0,prov:{},ok:0});
+const TMAXPET=3;
+function trView(t,u,why){const me=t.a===u?'a':'b',th=me==='a'?'b':'a',o=x=>({items:x.items,pets:x.pets||[],gold:x.gold|0,prov:x.prov,ok:x.ok?1:0});
  return{id:t.id,st:why?'end':t.st,why:why||'',v:t.v,me:o(t['s'+me]),th:Object.assign(o(t['s'+th]),{u:t[th],nm:nmOf(t[th])}),ini:t.a===u?1:0,fee:TFEE,exp:t.exp}}
 function trPush(t,why){for(const u of [t.a,t.b])if(S.online(u))S.push(u,{t:'dm',tr:1,v:trView(t,u,why)})}
 function trEnd(t,why){for(const [u,sd] of [[t.a,t.sa],[t.b,t.sb]])for(const it of sd.items){holdReg(it.id,u,0);E.deliver(u,{item:it,note:'↩️ Trato cancelado: objeto devuelto'})}
+ for(const [u,sd] of [[t.a,t.sa],[t.b,t.sb]])for(const pt of (sd.pets||[])){holdReg(pt.id,u,0,'p');E.deliver(u,{pet:pt,note:'↩️ Trato cancelado: mascota devuelta'})}
  delete TR()[t.id];S.dirty();trPush(t,why||'cancel')}
 const trChanged=t=>{t.v++;t.sa.ok=0;t.sb.ok=0;t.ts=now();t.exp=now()+10*60e3;S.dirty();trPush(t)};
 const trGet=(u,m)=>{const t=TR()[String(m.id||'')];if(!t||(t.a!==u&&t.b!==u))return null;return t};
@@ -110,6 +115,11 @@ ops['trade.item']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El t
  const c=claimItem(u,m.item);if(c.e)return c;if(sd.items.some(x=>x.id===c.it.id))return{e:'Ya está en el trato'};holdReg(c.it.id,'T:'+t.id,1);sd.items.push(c.it);trChanged(t);return{ok:1,v:trView(t,u)}};
 ops['trade.unitem']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const sd=trSide(t,u),i=sd.items.findIndex(x=>x.id===String(m.iid||''));if(i<0)return{e:'Ese objeto no está en el trato'};
  const it=sd.items.splice(i,1)[0];holdReg(it.id,u,0);E.deliver(u,{item:it,note:'↩️ Objeto retirado del trato'});trChanged(t);return{ok:1,v:trView(t,u)}};
+ops['trade.pet']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const sd=trSide(t,u);sd.pets=sd.pets||[];if(sd.pets.length>=TMAXPET)return{e:'Máximo '+TMAXPET+' mascotas/monturas por trato'};
+ const pt=E.cleanPetS(m.pet);if(!pt||!pt.id)return{e:'Mascota no válida'};const r=S.ECO.reg[pt.id];if(!r||r.o!==u)return{e:'Esa mascota no es tuya (o aún no está sincronizada)'};if(sd.pets.some(x=>x.id===pt.id))return{e:'Ya está en el trato'};
+ holdReg(pt.id,'T:'+t.id,1,'p');sd.pets.push(pt);trChanged(t);return{ok:1,v:trView(t,u)}};
+ops['trade.unpet']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const sd=trSide(t,u),i=(sd.pets||[]).findIndex(x=>x.id===String(m.pid||''));if(i<0)return{e:'Esa mascota no está en el trato'};
+ const pt=sd.pets.splice(i,1)[0];holdReg(pt.id,u,0,'p');E.deliver(u,{pet:pt,note:'↩️ Mascota retirada del trato'});trChanged(t);return{ok:1,v:trView(t,u)}};
 ops['trade.gold']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const a=E.acct(u),g=int(m.g,0,1e12,0);if(g>E.avail(a,'gold'))return{e:'No tienes tanto oro (sincroniza e inténtalo de nuevo)'};trSide(t,u).gold=g;trChanged(t);return{ok:1,v:trView(t,u)}};
 ops['trade.prov']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const pk=String(m.pk||''),a=E.acct(u),q=int(m.q,0,1e6,0);if(!PVL.includes(pk))return{e:'Producto no válido'};
  if(KEYK_BLOCK.has(pk))return{e:'Eso no se puede'};const sd=trSide(t,u);if(q&&!sd.prov[pk]&&Object.keys(sd.prov).length>=TMAXP)return{e:'Máximo '+TMAXP+' tipos de provisión'};if(q>provAv(a,pk))return{e:'No tienes tantas'};
@@ -126,7 +136,8 @@ ops['trade.ok']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El tra
   if(sd2.gold)E.deliver(from,{gold:-sd2.gold,note:'🤝 Trato: enviaste '+sd2.gold+' 🪙 (comisión 3%)'});
   if(get)E.deliver(to,{gold:get,note:'🤝 Trato con '+nmOf(from)+': +'+get+' 🪙'});
   for(const pk in sd2.prov){E.deliver(from,Object.assign({note:'🤝 Trato: entregaste '+sd2.prov[pk]+' de '+pk},provDl(pk,-sd2.prov[pk])));E.deliver(to,Object.assign({note:'🤝 Trato con '+nmOf(from)+': +'+sd2.prov[pk]+' de '+pk},provDl(pk,sd2.prov[pk])))}
-  for(const it of sd2.items){holdReg(it.id,to,0);E.deliver(to,{item:it,note:'🤝 Trato con '+nmOf(from)+': recibiste '+it.n})}}
+  for(const it of sd2.items){holdReg(it.id,to,0);E.deliver(to,{item:it,note:'🤝 Trato con '+nmOf(from)+': recibiste '+it.n})}
+  for(const pt of (sd2.pets||[])){holdReg(pt.id,to,0,'p');E.deliver(to,{pet:pt,note:'🤝 Trato con '+nmOf(from)+': recibiste una mascota'})}}
  trPush(t,'done');return{ok:1,done:1}};
 
 /* ---------- ZODÍACO: recompensa por participar en la derrota de un centinela (verifica calendario y daños compartidos) ---------- */

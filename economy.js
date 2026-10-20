@@ -25,7 +25,7 @@ const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13
 /* ---------- cuentas ---------- */
 function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev:[],px:{au:0,ap:0,lt:0,bl:0,es:0},vip:0,lic:0,
   res:{gold:0,g:[0,0,0,0,0],fd:Object.assign({carne:0,cocida:0,pasto:0,hierba:0,lazo:0},Object.fromEntries(MNK.map(k=>[k,0]))),ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0},
-  ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}for(const k of MNK)if(a.res&&a.res.fd&&a.res.fd[k]==null)a.res.fd[k]=0;if(!a.bxl)a.bxl={t:[0,0,0,0],a:[0,0,0,0],x:[0,0,0,0],m:0};if(!Array.isArray(a.gl))a.gl=[];return a}
+  ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}for(const k of MNK)if(a.res&&a.res.fd&&a.res.fd[k]==null)a.res.fd[k]=0;if(!a.bxl)a.bxl={t:[0,0,0,0],a:[0,0,0,0],x:[0,0,0,0],m:0};if(!Array.isArray(a.gl))a.gl=[];if(!a.hl)a.hl={f:{},n:{},ts:0};return a}
 const ent=u=>{const a=acct(u),L=a.bxl;return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,px:a.px,vip:a.vip,lic:a.lic,nm:a.nm,gld:a.gld,nch:a.nch|0,bx:L.x.map((x,i)=>x+Math.max(0,L.t[i]-L.a[i])),bxt:L.t.slice()}};
 const pushEnt=u=>S.push(u,{t:'ent',ent:ent(u)});
 function flag(u,why,w){const a=acct(u);a.strikes+=w==null?1:w;a.flags.push([Date.now(),String(why).slice(0,120)]);if(a.flags.length>30)a.flags.shift();S.dirty();
@@ -115,7 +115,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   /* cocinar: lo crudo que baja en este guardado se convierte en cocido (hasta +25% con la licencia del mercader); antes el cocido se recortaba y la carne desaparecía */
   if(!master&&!first)for(const rk in COOK){const ck=COOK[rk];if(!(ck in R.fd)||!(rk in R.fd))continue;const drop=Math.max(0,Math.max(0,R.fd[rk]+dAck('prov',rk))-qv[rk]);if(drop>0)cv[ck]=Math.ceil((drop+Math.min(drop,ra))*1.25)}
   if(!master&&!first){for(const ak in ARQ){const [mk,mc,wc]=ARQ[ak];if(!(ak in R.fd)||!(mk in R.fd)||!('mad' in R.fd))continue;const dm=Math.max(0,Math.max(0,R.fd[mk]+dAck('prov',mk))-qv[mk]),dw=Math.max(0,Math.max(0,R.fd.mad+dAck('prov','mad'))-qv.mad),bt=Math.min(Math.floor(dm/mc),Math.floor(dw/wc));if(bt>0)cv[ak]=bt*20}
-   if('ar0' in R.fd){const inc=qv.ar0-Math.max(0,R.fd.ar0+dAck('prov','ar0'));if(inc>ra){const nb=Math.min(inc-ra,Math.floor(gsp/5));if(nb>0){cv.ar0=nb;gsp-=nb*5}}}}
+   if('ar0' in R.fd){const inc=qv.ar0-Math.max(0,R.fd.ar0+dAck('prov','ar0'));if(inc>ra){const nb=Math.min(inc-ra,Math.floor(gsp*.6));if(nb>0){cv.ar0=nb;gsp-=Math.ceil(nb/.6)}}}}
   for(const k of Object.keys(R.fd)){let q=qv[k];if(!master&&!first){const mx=Math.max(0,R.fd[k]+dAck('prov',k))+(KEYK.has(k)?0:ra)+(cv[k]||0);if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
  if(v.ec&&typeof v.ec==='object'){const o={};for(const k of EVK){let q=int(v.ec[k],0,1e6,0);if(!master&&!first){const mx=Math.max(0,R.ec[k]+dAck('ec',k))+Math.ceil(CFG.ecRate*dt*CFG.slack+CFG.ecBurst);if(q>mx){flag(u,'monedas '+k+' '+R.ec[k]+'→'+q);q=mx;fix.ec=1}}o[k]=q}v.ec=o}
  v.p=int(v.p,0,99,0);if(v.mpp!=null)v.mpp=int(v.mpp,0,99,0);
@@ -156,7 +156,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  v.ml=0;/* el master lo decide el servidor */
  /* ---- aceptar ---- */
  a.res.gold=v.g;a.res.bk=v.bk;a.res.g=v.i.slice();if(v.fd)a.res.fd=Object.assign({},v.fd);if(v.ec)a.res.ec=Object.assign({},v.ec);a.res.pot=v.p;if(v.mpp!=null){a.res.mpot=v.mpp;a.mpok=1}
- a.lv=lv;a.xp=xp;if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
+ a.lv=lv;a.xp=xp;if(typeof v.nm==='string'&&v.nm)a.pn=v.nm.replace(/[^\p{L}\p{N} '_-]/gu,'').slice(0,18);if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
  /* lo que sigue sin aplicar (entregas pendientes) se descuenta del esperado para que no se aplique dos veces */
  return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl,p:fix.pp,mp:fix.pm,bx:fix.bx?v.bx:undefined}:null,acked:acked.map(d=>d.id)}}
 /* migración única: quita los strikes falsos que el antitrampas daba por cocinar carne/pescado (ya no ocurre) */

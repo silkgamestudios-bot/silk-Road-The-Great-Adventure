@@ -57,27 +57,6 @@ const TR=require('./terr')(S,E);
 const SD=require('./seda')(S,E);
 const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops);
 for(const k of ['gmk.sell','gmk.buy','gmk.cancel'])OPS[k]=()=>({e:'Este mercado se renovó: usa el 🏛️ Mercado de Gemas nuevo (recarga con Ctrl+Shift+R)'});
-/* ===== RESTAURAR jugadores desde la copia del reinicio (clientes prioritarios) + diagnóstico de ranking ===== */
-function bkList(){const d=(process.env.DATA_DIR||'.')+'/backups';let L=[];try{L=fs.readdirSync(d).filter(x=>/^pre-/.test(x)).map(x=>d+'/'+x).filter(x=>fs.existsSync(x+'/data.json'))}catch(e){}return L.sort().reverse()}
-function restorePlayer(name,clear){const q=String(name||'').trim().toLowerCase();if(!q)return{e:'Escribe el nombre exacto del jugador'};
- for(const dir of bkList()){let j;try{j=JSON.parse(fs.readFileSync(dir+'/data.json','utf8'))}catch(e){continue}const acc=(j.eco&&j.eco.acc)||{};
-  const uid=Object.keys(acc).find(id=>acc[id]&&String(acc[id].nm||'').toLowerCase()===q);if(!uid)continue;const old=acc[uid],cur=E.acct(uid);
-  if((cur.lv|0)>(old.lv|0)&&cur.cls>=0)return{e:'Ese jugador ya tiene nivel '+cur.lv+' (más que la copia: '+old.lv+'). No lo toco.'};
-  const keep={gem:cur.gem,sk:cur.sk,px:cur.px,vip:cur.vip,lic:cur.lic,tk:cur.tk};
-  const nw=JSON.parse(JSON.stringify(old));Object.assign(nw,JSON.parse(JSON.stringify(keep)));if(nw.tk===undefined)delete nw.tk;if(clear){nw.strikes=0;nw.flags=[];delete nw.notified}
-  ECO.acc[uid]=nw;let items=0;const reg=(j.eco&&j.eco.reg)||{};for(const id in reg){const r=reg[id];if(r&&r.o===uid&&!ECO.reg[id]){ECO.reg[id]=r;items++}}
-  if(old.nm){ECO.names=ECO.names||{};ECO.names[String(old.nm).toLowerCase()]=uid}
-  let sv=0;const f=String(uid).replace(/[^\w-]/g,'')+'.json';try{if(fs.existsSync(dir+'/'+f)){fs.copyFileSync(dir+'/'+f,savePath(uid));sv=1}}catch(e){}
-  const w=ONL.get(uid);if(w){try{w.send(JSON.stringify({t:'kick',e:'Tu personaje fue restaurado: vuelve a entrar'}));w.close(4001)}catch(e){}}
-  dirty=1;try{save(1)}catch(e){}log('[RESTAURAR] '+old.nm+' ('+uid+') nivel '+old.lv+' desde '+dir+' · objetos '+items+' · partida '+(sv?'sí':'no'));
-  return{ok:1,nm:old.nm,lv:old.lv|0,items,save:sv,from:dir.split('/').pop()}}
- return{e:'No encontré a "'+name+'" en ninguna copia del reinicio'}}
-OPS['adm.restore']=(u,m)=>{if(!isMaster(u))return{e:'Solo el master'};return restorePlayer(m.name,m.clear!==0)};
-OPS['adm.rankwhy']=(u,m)=>{if(!isMaster(u))return{e:'Solo el master'};const id=E.uidByName(String(m.name||''));if(!id)return{e:'No existe ese nombre'};const a=E.acct(id),why=[];
- if(!(a.nm||a.pn))why.push('sin nombre');if(!(a.cls>=0))why.push('sin clase (nunca sincronizó su personaje tras el reinicio)');if((a.strikes|0)>=8)why.push('excluido por antitrampas: '+a.strikes+' strikes');if(isMaster(id))why.push('es master (no sale en el ranking)');
- return{ok:1,nm:a.nm,lv:a.lv|0,xp:a.xp|0,cls:a.cls,strikes:a.strikes|0,flags:(a.flags||[]).slice(-5).map(f=>f[1]),why:why.length?why:['Cumple todo: debería salir']}};
-/* al arrancar: RESTORE_NAMES="Artoria,Otro" restaura una sola vez a cada uno */
-setTimeout(()=>{try{const L=String(process.env.RESTORE_NAMES||'').split(',').map(x=>x.trim()).filter(Boolean);DB.cfg=DB.cfg||{};DB.cfg.restored=DB.cfg.restored||{};for(const n of L){const k=n.toLowerCase();if(DB.cfg.restored[k])continue;const r=restorePlayer(n,true);log('[RESTAURAR al arrancar] '+n+': '+JSON.stringify(r));if(r.ok){DB.cfg.restored[k]=Date.now();dirty=1}}}catch(e){log('restore boot: '+e.message)}},3000);
 setInterval(()=>{for(const u in ECO.acc){const a=ECO.acc[u];if(a.dl&&a.dl.length)E.forceExpired(a)}},30000);
 /* REGLAS de las colecciones libres: quién puede crear/editar (u = jugador autenticado, id, d = doc nuevo, o = doc anterior) */
 /* Blindaje contra claves peligrosas (__proto__, constructor, toString…): ningún id/colección/operación del cliente puede tocar el prototipo ni funciones nativas */

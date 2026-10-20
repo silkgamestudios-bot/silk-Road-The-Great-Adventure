@@ -153,7 +153,7 @@ ops['zz.claim']=(u,m)=>{const key=String(m.k||''),mt=/^Z(\d+)-(\d{4})-(\d{1,2})$
  E.deliver(u,{prov:{pk:'cf'+(c+1),q:1},note:'📦 Cofre '+KNMS[c]+' del Zodiaco'});return{ok:1,c}};
 ops['shop.close']=(u)=>{delDoc('shops',u);return{ok:1}};
 function shopOf(m,u){const sid=String(m.s||''),s=col('shops')[sid];if(!s)return{e:'La tienda ya no existe'};if(sid===u)return{e:'Es tu tienda'};const sa=E.acct(sid);if(!isMerc(sa))return{e:'Esa tienda está inactiva'};return{s,sid,sa}}
-ops['shop.buy']=(u,m)=>{const r=shopOf(m,u);if(r.e)return r;const {s,sid,sa}=r,b=E.acct(u),q=int(m.q,1,1000,0);if(!q)return{e:'Cantidad inválida'};
+ops['shop.buy']=(u,m)=>{const r=shopOf(m,u);if(r.e)return r;const {s,sid,sa}=r,b=E.acct(u),q=int(m.q,1,1000000,0);if(!q)return{e:'Cantidad inválida'};
  if(m.k==='g'){const i=int(m.i,0,4,-1);if(i<0)return{e:'Mercancía inválida'};const unit=s.sell[i]|0;if(!unit)return{e:'Ya no vende eso'};if(E.avail(sa,'g',i)<q)return{e:'Sin stock'};
   const t=tax(unit*q);if(E.avail(b,'gold')<t.pay)return{e:'Oro insuficiente'};
   E.deliver(u,{gold:-t.pay,goods:{g:i,q,cost:t.pay},note:'📦 Compraste '+q+' de mercancía'});E.deliver(sid,{gold:t.get,goods:{g:i,q:-q},note:'💰 Vendiste '+q+' a '+(b.nm||'un jugador')+' (+'+t.get+' 🪙)',tr:1});shopTr(sid);return{ok:1}}

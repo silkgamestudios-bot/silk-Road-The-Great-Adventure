@@ -83,25 +83,26 @@ ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d
  S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+k+' '+d+'d');return{ok:1,ent:E.ent(u),cost}};
 ops['bonus.buy']=(u,m)=>{const a=E.acct(u),L=a.bxl,i=Math.floor(+m.i),BX=E.BX;if(!(i>=0&&i<4))return err('Bonus desconocido');
  if(L.x[i]+Math.max(0,L.t[i]-L.a[i])+BX.ms>BX.max+2*36e5)return err('Máximo 20 h acumuladas');
- if(!E.spendGems(a,BX.cost,true,'Bonus '+['XP','oro','defensa','vida'][i]+' +4 h'))return err('Te faltan '+(BX.cost-a.gem.own)+' 💎 propias (las transferidas solo valen para apariencias)');
+ if(E.gTot(a)<BX.cost)return err('⚠️ Gemas insuficientes: te faltan '+(BX.cost-E.gTot(a))+' 💎');if(!E.spendGems(a,BX.cost,false,'Bonus '+['XP','oro','defensa','vida'][i]+' +4 h'))return err('Gemas insuficientes');
  L.t[i]+=BX.ms;S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró bonus '+i);return{ok:1,ent:E.ent(u),cost:BX.cost}};
-/* Halloween: el oro y las gemas de los cofres del tesoro los entrega el servidor (cuotas de la tabla: 3 cofres de 1.000.000, 24 de 2 💎, 30 de oro). Si el cliente se los sumara, el antitrampas los borraría. */
-const HALQ={G1:3,M:24,g:30},halOn=()=>{const d=new Date(Date.now()-4*36e5),mo=d.getUTCMonth()+1,dy=d.getUTCDate();return(mo===10&&dy>=15)||(mo===11&&dy<=3)};
+/* Halloween: el oro y las gemas de los cofres del tesoro los entrega el servidor (cuotas de la tabla: 3 cofres de 250.000, 12 de 2 💎, 20 de oro). Si el cliente se los sumara, el antitrampas los borraría. */
+const HALQ={G1:3,M:12,g:20},halOn=()=>{const d=new Date(Date.now()-4*36e5),mo=d.getUTCMonth()+1,dy=d.getUTCDate();return(mo===10&&dy>=15)||(mo===11&&dy<=3)};
 ops['hal.find']=(u,m)=>{const a=E.acct(u),j=Math.floor(+m.j),p=String(m.p||''),v=Math.floor(+m.v)||0;
  if(!halOn())return err('El evento de Halloween no está activo');
  if(!(j>=0&&j<100)||!HALQ[p])return err('Tesoro no válido');
  const H=a.hl||(a.hl={f:{},n:{},ts:0});if(H.f[j])return{ok:1,dup:1};
  if((H.n[p]|0)>=HALQ[p])return err('Ya abriste todos los cofres de ese tipo');
  const now=Date.now();if(now-(H.ts||0)<2000)return err('Cavando demasiado rápido: espera un momento');
- let gold=0,gem=0;if(p==='G1')gold=1e6;else if(p==='M')gem=2;else{if(!(v>=5e4&&v<=3e5&&v%5000===0))return err('Premio no válido');gold=v}
+ let gold=0,gem=0;if(p==='G1')gold=25e4;else if(p==='M')gem=2;else{if(!(v>=2e4&&v<=1e5&&v%5000===0))return err('Premio no válido');gold=v}
  H.f[j]=gold||gem;H.n[p]=(H.n[p]|0)+1;H.ts=now;S.dirty();
  if(gold)E.deliver(u,{gold,note:'🎃 Tesoro de Halloween: +'+gold.toLocaleString('es')+' 🪙'});
  if(gem)E.grantGems(u,gem,'own','tesoro de Halloween');
  S.log('[halloween] '+(a.nm||u)+' abrió el tesoro #'+j+' ('+p+')');return{ok:1,g:gold,m:gem}};
 ops['gem.log']=(u)=>{const a=E.acct(u);return{ok:1,own:a.gem.own,tr:a.gem.tr,l:(a.gl||[]).slice(-25).reverse()}};
 ops['buff.gold']=(u,m)=>{const a=E.acct(u),now=Date.now(),c0=blGold(a.lv),c=c0+TAXP(c0);if(m.k!=='bl')return err('Servicio no válido');
- if(Math.max(now,a.px.bl||0)-now+10*DAY>90*DAY)return err('Máximo 90 días acumulados');if(E.avail(a,'gold')<c)return err('Te faltan '+(c-E.avail(a,'gold'))+' 🪙');
- E.deliver(u,{gold:-c,note:'🙏 Bendición +10 días (+3% impuesto)'});a.px.bl=Math.max(now,a.px.bl||0)+10*DAY;S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u),cost:c}};
+ if((a.px.bl||0)>now)return err('Ya tienes una Bendición activa');if(E.avail(a,'gold')<c)return err('⚠️ Oro insuficiente: te faltan '+(c-E.avail(a,'gold'))+' 🪙');
+ E.deliver(u,{gold:-c,note:'🙏 Bendición (hasta tu próxima muerte, +3% impuesto)'});a.px.bl=now+365*DAY;S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u),cost:c}};
+ops['bl.lose']=(u)=>{const a=E.acct(u);if((a.px.bl||0)-Date.now()>150*DAY){a.px.bl=0;S.dirty();E.pushEnt(u)}return{ok:1,ent:E.ent(u)}};
 ops['gem.tx']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=1e6))return err('Cantidad inválida');let to=String(m.to||'').trim();
  const t=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?to:E.uidByName(to);if(!t||t===u)return err('Jugador no encontrado (usa su nombre exacto o su código)');
  if(E.gTot(a)<q)return err('Saldo insuficiente');E.spendGems(a,q,false,'Envío a '+((E.acct(t)||{}).nm||t));const b=E.acct(t);b.gem.tr+=q;E.glAdd(b,q,'(transferidas) de '+(a.nm||u));S.dirty();E.pushEnt(u);E.pushEnt(t);

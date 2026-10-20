@@ -44,4 +44,6 @@ ops['soc.block']=(u,m)=>{const t=resolve(m);if(!t||t===u||!has(ECO.acc,t))return
 ops['soc.unblock']=(u,m)=>{const t=String(m.u||''),s=so(u);s.bl=s.bl.filter(x=>x!==t);S.dirty();return{ok:1,s:state(u)}};
 /* presencia: avisa a tus amigos cuando entras o sales */
 const presence=(u,on)=>{const s=ECO.soc[u];if(!s)return;for(const f of s.fr)if(S.online(f))S.push(f,{t:'fp',u,nm:nm(u),on:on?1:0})};
-return{ops,presence,state,tagOf:null}};
+/* mensaje de sistema en el chat global (avisos de reinicio, etc.) */
+const sys=t=>{const msg={u:'sys',nm:'📢 Servidor',gt:'',t:String(t).slice(0,200),ts:now(),sys:1};GLOB.push(msg);if(GLOB.length>GMAX)GLOB.shift();for(const id of Object.keys(ECO.acc))if(S.online(id))S.push(id,{t:'cg',m:msg})};
+return{ops,presence,state,sys,tagOf:null}};

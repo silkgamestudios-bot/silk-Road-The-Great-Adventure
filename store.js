@@ -1,8 +1,8 @@
 /* Tienda del servidor: apariencias, servicios (buffs), gemas, nombres y entitlements. Precios y reglas SOLO viven aquí. */
 module.exports=function(S,E){
 const cat=S.cat,SK=Object.assign({},cat.SKINS,cat.TRAJES||{}),EVK=E.EVK;
-const GEMP={lt:3,ap:2,bl:4,es:3,cmb:6,lic:10,vipm:15,vipj:7,vip:11},GMON=['cmb','es','lic','vipm','vipj'],GEMSKIN=12,LIC_LV=15,GCMB=['lt','ap'],PRMK=['lt','ap','bl','es'],DAY=864e5;
-const price=(k,d)=>{const b=GEMP[k]||0;if(GMON.includes(k)){if(k==='es'||d>=30)return b;return Math.min(b-1,Math.max(1,Math.round(b*d/30*1.3)))}if(d<=10)return b;return Math.max(1,Math.round(b*(d/10)*.8))};
+const GEMP={lt:3,ap:2,bl:4,es:3,cmb:6,lic:10,vipm:15,vipj:7,vip:11,pv:7,bh:5},GMON=['cmb','es','lic','vipm','vipj','pv','bh'],GEMSKIN=12,LIC_LV=1,GCMB=['lt','ap'],PRMK=['lt','ap','bl','es','pv','bh'],DAY=864e5;
+const price=(k,d)=>{const b=GEMP[k]||0;if(GMON.includes(k)){if(k==='es'||k==='pv'||k==='bh'||d>=30)return b;return Math.min(b-1,Math.max(1,Math.round(b*d/30*1.3)))}if(d<=10)return b;return Math.max(1,Math.round(b*(d/10)*.8))};
 const blGold=lv=>Math.round(2000*Math.pow(1.28,Math.min(29,Math.max(0,lv-1))));
 const NAME_GOLD=2000,TAXP=c=>Math.ceil(Math.round(c)*.03),err=e=>({e});/* impuesto 3% sobre todo lo que se paga con oro */const ops={};
 ops['me.get']=(u)=>({ok:1,ent:E.ent(u)});
@@ -73,7 +73,7 @@ ops['evskin.gem']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k
 ops['evskin.coin']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k))return err('Evento desconocido');if(a.ev.includes(k))return err('Ya lo tienes');
  if(E.avail(a,'ec',k)<300)return err('Te faltan monedas de evento (sincroniza e inténtalo de nuevo)');E.deliver(u,{ec:{k,q:-300},note:'🎭 Atuendo de evento comprado'});a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
 ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d=+m.d||null;if(!GEMP[k]||k==='vip')return err('Servicio desconocido');
- if(d==null)d=GMON.includes(k)?30:10;if(![10,20,30].includes(d))d=GMON.includes(k)?30:10;if(k==='es')d=30;
+ if(d==null)d=GMON.includes(k)?30:10;if(![10,20,30].includes(d))d=GMON.includes(k)?30:10;if(k==='es'||k==='pv'||k==='bh')d=30;
  const vm=k==='vipm',vj=k==='vipj',vip=vm||vj,cmb=k==='cmb',lc=k==='lic',ks=vm?['lt','ap','bl','es']:vj?['lt','ap','bl']:cmb?GCMB:lc?[]:[k],cost=price(k,d);
  if(!cost||!ks.every(z=>PRMK.includes(z)))return err('Servicio no válido');
  if((vm||lc)&&(a.cls!==0||a.lv<LIC_LV))return err(a.cls!==0?'Solo disponible para la clase Mercader':'Necesitas nivel '+LIC_LV);
@@ -81,6 +81,25 @@ ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d
  if(!E.spendGems(a,cost,true,'Servicio '+k+' '+d+' d'))return err('Te faltan '+(cost-a.gem.own)+' 💎 propias (las transferidas solo valen para apariencias)');
  ks.forEach(z=>{a.px[z]=Math.max(now,a.px[z]||0)+d*DAY});if(vm||lc)a.lic=Math.max(now,a.lic||0)+d*DAY;if(vip)a.vip=Math.max(now,a.vip||0)+d*DAY;
  S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+k+' '+d+'d');return{ok:1,ent:E.ent(u),cost}};
+/* ---------- 🎟️ BOLETOS VIP (v154): el mismo servicio, pero como objeto que se puede enviar o intercambiar ---------- */
+const TKN={cmb:'🎯 Combo Cazador',es:'🐗 Escolta de caravana',lic:'📜 Licencia de Mercader',vipm:'👑 VIP Mercader',vipj:'👑 VIP Jugador',pv:'⚔️ Cazador PvP',bh:'🎯 Licencia de Cazador'};
+const tkOf=a=>(a.tk&&typeof a.tk==='object')?a.tk:(a.tk={});
+const tkRes=u=>{const r=((S.DB.cfg||{}).res||{})[u];return +r>0};
+ops['tk.buy']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),q=Math.floor(+m.q)||1;if(!TKN[k])return err('Boleto desconocido');if(q<1||q>50)return err('Cantidad de 1 a 50');
+ if(!(S.isMaster(u)||a.cls===0||tkRes(u)))return err('Los boletos los compran los Mercaderes y Revendedores');
+ const cost=GEMP[k]*q;if(!E.spendGems(a,cost,true,'Boleto '+k+' ×'+q))return err('Te faltan '+(cost-a.gem.own)+' 💎 propias');
+ const t=tkOf(a);t[k]=(t[k]|0)+q;S.dirty();E.pushEnt(u);S.log('[boletos] '+(a.nm||u)+' compró '+q+' '+k);return{ok:1,ent:E.ent(u),cost}};
+ops['tk.send']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),q=Math.floor(+m.q)||1;if(!TKN[k])return err('Boleto desconocido');if(q<1||q>50)return err('Cantidad de 1 a 50');let to=String(m.to||'').trim();
+ const id=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?to:E.uidByName(to);if(!id||id===u)return err('Jugador no encontrado (usa su nombre exacto)');
+ const t=tkOf(a);if((t[k]|0)<q)return err('No tienes tantos boletos');const b=E.acct(id);t[k]-=q;const tb=tkOf(b);tb[k]=(tb[k]|0)+q;S.dirty();E.pushEnt(u);E.pushEnt(id);
+ const msg='🎟️ '+(a.nm||'Un jugador')+' te envía '+(q>1?q+' boletos':'un boleto')+' '+TKN[k];if(S.online(id))S.push(id,{t:'note',m:msg,tk:1});else E.deliver(id,{note:msg});
+ S.log('[boletos] '+(a.nm||u)+' → '+(b.nm||id)+' '+q+' '+k);return{ok:1,ent:E.ent(u)}};
+ops['tk.use']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),now=Date.now(),d=30;if(!TKN[k])return err('Boleto desconocido');const t=tkOf(a);if((t[k]|0)<1)return err('No tienes ese boleto');
+ const vm=k==='vipm',vj=k==='vipj',vip=vm||vj,cmb=k==='cmb',lc=k==='lic',ks=vm?['lt','ap','bl','es']:vj?['lt','ap','bl']:cmb?GCMB:lc?[]:[k];
+ if((vm||lc)&&(a.cls!==0||a.lv<LIC_LV))return err(a.cls!==0?'Ese boleto solo lo canjea un Mercader (puedes enviarlo o intercambiarlo)':'Necesitas nivel '+LIC_LV);
+ if(ks.some(z=>Math.max(now,a.px[z]||0)-now+d*DAY>90*DAY)||((vm||lc)&&Math.max(now,a.lic||0)-now+d*DAY>90*DAY)||(vip&&Math.max(now,a.vip||0)-now+d*DAY>90*DAY))return err('Máximo 90 días acumulados: canjéalo más tarde');
+ t[k]--;ks.forEach(z=>{a.px[z]=Math.max(now,a.px[z]||0)+d*DAY});if(vm||lc)a.lic=Math.max(now,a.lic||0)+d*DAY;if(vip)a.vip=Math.max(now,a.vip||0)+d*DAY;
+ S.dirty();E.pushEnt(u);S.log('[boletos] '+(a.nm||u)+' canjeó '+k);return{ok:1,ent:E.ent(u)}};
 ops['bonus.buy']=(u,m)=>{const a=E.acct(u),L=a.bxl,i=Math.floor(+m.i),BX=E.BX;if(!(i>=0&&i<4))return err('Bonus desconocido');
  if(L.x[i]+Math.max(0,L.t[i]-L.a[i])+BX.ms>BX.max+2*36e5)return err('Máximo 20 h acumuladas');
  if(E.gTot(a)<BX.cost)return err('⚠️ Gemas insuficientes: te faltan '+(BX.cost-E.gTot(a))+' 💎');if(!E.spendGems(a,BX.cost,false,'Bonus '+['XP','oro','defensa','vida'][i]+' +4 h'))return err('Gemas insuficientes');

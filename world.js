@@ -4,8 +4,12 @@ module.exports=function(DB,log,X){X=X||{};
 const FILE=process.env.WORLD_FILE||__dirname+'/world.json';
 if(!fs.existsSync(FILE)){log('mundo: falta world.json (node tools/export-world.js) → mundo desactivado');return null}
 const J=JSON.parse(fs.readFileSync(FILE,'utf8')),W=J.W,H=J.H,T=J.T,bits=Buffer.from(J.bits,'base64');
-const CFG={tick:100,aggro:60,leash:600,view:700,pview:1800,rng:900,sview:1300,rez:30000,hitMax:14,gcap:25000,shareMin:.5,speed:480,dmg0:J.dmg0||40}; // balance: aquí se ajusta todo
-const solid=(x,y)=>{const tx=Math.floor(x/T),ty=Math.floor(y/T);if(tx<0||ty<0||tx>=W||ty>=H)return true;const i=ty*W+tx;return(bits[i>>3]>>(i&7)&1)===1};
+const CFG={tick:100,aggro:60,leash:600,view:700,pview:1800,rng:900,sview:1300,rez:30000,hitMax:14,gcap:25000,shareMin:.5,prng:600,phMax:6,pct:.035,pvMin:+process.env.PVP_MIN_LV||20,speed:480,dmg0:J.dmg0||40}; // balance: aquí se ajusta todo
+const solid0=(x,y)=>{const tx=Math.floor(x/T),ty=Math.floor(y/T);if(tx<0||ty<0||tx>=W||ty>=H)return true;const i=ty*W+tx;return(bits[i>>3]>>(i&7)&1)===1};
+/* v155: piezas de territorios de gremio (muros, torres…): bloquean a monstruos y jugadores; las puertas dejan pasar a los miembros del gremio dueño */
+const STRS=new Map();
+const solid=(x,y)=>{if(solid0(x,y))return true;return STRS.size?STRS.has(Math.floor(y/T)*W+Math.floor(x/T)):false};
+const psolid=(x,y,u)=>{if(solid0(x,y))return true;if(!STRS.size)return false;const s=STRS.get(Math.floor(y/T)*W+Math.floor(x/T));if(!s)return false;return!(s.pass&&X.gid&&X.gid(u)===s.g)};
 const inCity=(x,y)=>J.cities.some(c=>Math.abs(x/T-c.tx-.5)<24.6&&y/T-c.ty-.5>-18.6&&y/T-c.ty-.5<15.6);
 const L=[];J.mobs.forEach((a,i)=>{if(a)L.push({id:i,x:a[0],y:a[1],ty:a[2],mx:a[3],hp:a[3],sp:a[4],hx:a[5],hy:a[6],rw:a[7],dm:a[8],dead:0,rt:0,t:0,tg:null,dmg:{}})});
 let WSIG=0;for(const a of J.mobs)WSIG=a?(Math.imul(WSIG,31)+(a[5]|0)*7+(a[6]|0)*13+(a[2]|0)*17+1)|0:(Math.imul(WSIG,31)+3)|0;
@@ -14,18 +18,18 @@ for(const m of L){const k=key(Math.floor(m.hx/CS),Math.floor(m.hy/CS));if(!G.has
 const near=(x,y,r)=>{const o=[];for(let a=Math.floor((x-r)/CS);a<=Math.floor((x+r)/CS);a++)for(let b=Math.floor((y-r)/CS);b<=Math.floor((y+r)/CS);b++){const g=G.get(key(a,b));if(g)for(const m of g)o.push(m)}return o};
 let EV=[],AT=[];const PL=new Map(),pid=u=>{const r=DB.pres&&DB.pres[u];if(r&&r.p&&Date.now()-(+r.t||0)<30000)return String(r.p);return(DB.pmem&&DB.pmem[u]&&DB.pmem[u].pid)||''},sc=p=>p.ct.dm+1.5*p.ct.tk+6*p.ct.ut;
 const send=(ws,m)=>{if(ws.readyState===1)ws.send(JSON.stringify(m))},mvM=(m,dx,dy)=>{if(!solid(m.x+dx,m.y))m.x+=dx;if(!solid(m.x,m.y+dy))m.y+=dy};
-function step(dt,now){const act=new Set();for(const p of PL.values())for(const m of near(p.x,p.y,CFG.view+CFG.leash))act.add(m);
- for(const m of act){if(m.dead){if(now>=m.rt){m.dead=0;m.hp=m.mx;m.x=m.hx;m.y=m.hy;m.tg=null;m.dmg={}}continue}
-  let tg=m.tg&&PL.get(m.tg);if(tg&&(tg.city||tg.hp<=0||Math.hypot(tg.x-m.x,tg.y-m.y)>CFG.view||Math.hypot(m.x-m.hx,m.y-m.hy)>CFG.leash))tg=null;
-  if(!tg){let bd=CFG.aggro;for(const p of PL.values()){if(p.city||p.hp<=0)continue;const d=Math.hypot(p.x-m.x,p.y-m.y);if(d<bd){bd=d;tg=p}}}
+function step(dt,now){const act=new Set();for(const p of PL.values())for(const m of near(p.x,p.y,CFG.view+CFG.leash))act.add(m);for(const m of DYL)act.add(m);
+ for(const m of act){if(m.dead){if(now>=m.rt){if(m.dyn&&!m.rz){dyDel(m);continue}m.dead=0;m.hp=m.mx;m.x=m.hx;m.y=m.hy;m.tg=null;m.dmg={}}continue}
+  let tg=m.tg&&PL.get(m.tg);if(tg&&(tg.city||tg.dg||tg.hp<=0||Math.hypot(tg.x-m.x,tg.y-m.y)>(m.vw||CFG.view)||Math.hypot(m.x-m.hx,m.y-m.hy)>(m.ls||CFG.leash)))tg=null;
+  if(!tg){let bd=m.ag||CFG.aggro;for(const p of PL.values()){if(p.city||p.dg||p.hp<=0)continue;const d=Math.hypot(p.x-m.x,p.y-m.y);if(d<bd){bd=d;tg=p}}}
   m.tg=tg?tg.uid:null;m.t-=dt;
-  if(tg){const dx=tg.x-m.x,dy=tg.y-m.y,d=Math.hypot(dx,dy)||1,vg=.55+.45*Math.max(0,m.hp/m.mx);if(d>20){const s=m.sp*vg*dt;mvM(m,dx/d*s,dy/d*s)}
-   if(d<24&&m.t<=0){m.t=.8;const dm=m.dm*(.6+.4*Math.max(0,m.hp/m.mx));tg.ct.tk+=dm;send(tg.ws,{t:'wd',d:Math.round(dm*10)/10,mid:m.id})}}
-  else{const hx=m.hx-m.x,hy=m.hy-m.y,hd=Math.hypot(hx,hy);if(hd>12){mvM(m,hx/hd*55*dt,hy/hd*55*dt);if(hd<60)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}else if(m.hp<m.mx)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}}
- for(const p of PL.values()){p.ct.dm*=.9985;p.ct.tk*=.9985;p.ct.ut*=.9985}}
-function kill(m){m.dead=1;m.hp=0;m.rt=Date.now()+CFG.rez;m.tg=null;let o=null,b=0;for(const u in m.dmg){const p=PL.get(u);if(p&&m.dmg[u]>b){b=m.dmg[u];o=p}}m.dmg={};if(!o)return;
- const TY=J.types[Math.min(8,m.ty)],t=TY.loot[Math.floor(Math.random()*TY.loot.length)],gd=Math.round(t[0]*m.rw),xp0=Math.max(1,Math.round(TY.xp*m.rw)),pd=pid(o.uid),E=[o];
- if(pd)for(const p of PL.values())if(p!==o&&pid(p.uid)===pd&&p.hp>0&&!p.city&&sc(p)>0&&Math.hypot(p.x-m.x,p.y-m.y)<=CFG.rng)E.push(p);
+  if(tg){const dx=tg.x-m.x,dy=tg.y-m.y,d=Math.hypot(dx,dy)||1,vg=.55+.45*Math.max(0,m.hp/m.mx);if(d>(m.rg?m.rg*.6:20)){const s=m.sp*vg*dt;mvM(m,dx/d*s,dy/d*s)}
+   if(d<(m.rg||24)&&m.t<=0){m.t=.8;const dm=m.dm*(m.sf?sD(tg.lv,m):1)*(.6+.4*Math.max(0,m.hp/m.mx));tg.ct.tk+=dm;send(tg.ws,{t:'wd',d:Math.round(dm*10)/10,mid:m.id})}}
+  else{if(m.k==='hunt')continue;const hx=m.hx-m.x,hy=m.hy-m.y,hd=Math.hypot(hx,hy);if(hd>12){mvM(m,hx/hd*55*dt,hy/hd*55*dt);if(hd<60)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}else if(m.hp<m.mx)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}}
+ for(const p of PL.values()){if(p.pvp&&(p.city||p.dg)){p.pvp=0;p.lp=null;send(p.ws,{t:'wpv',on:0,e:'PvP apagado: zona segura'})}p.ct.dm*=.9985;p.ct.tk*=.9985;p.ct.ut*=.9985}}
+function kill(m){m.dead=1;m.hp=0;m.rt=Date.now()+(m.dyn?(m.rz||15000):CFG.rez);m.tg=null;let o=null,b=0;for(const u in m.dmg){const p=PL.get(u);if(p&&m.dmg[u]>b){b=m.dmg[u];o=p}}m.dmg={};if(!o)return;
+ const TY=J.types[Math.min(8,m.ty)],t=TY.loot[Math.floor(Math.random()*TY.loot.length)],gd=m.gx?Math.round(m.gx*(.7+Math.random()*.6)):Math.round(t[0]*m.rw),xp0=Math.max(1,Math.round(TY.xp*m.rw)),pd=pid(o.uid),E=[o];
+ if(pd)for(const p of PL.values())if(p!==o&&pid(p.uid)===pd&&p.hp>0&&!p.city&&!p.dg&&sc(p)>0&&Math.hypot(p.x-m.x,p.y-m.y)<=CFG.rng)E.push(p);
  const R=new Map(E.map(p=>[p.uid,{t:'wk',g:0,x:0,it:null,pot:0,meat:0,mid:m.id,ty:m.ty,own:p===o?1:0}]));
  if(E.length<2){const r=R.get(o.uid);r.g=gd;r.x=xp0;r.it=t[1]||null}
  else{const n=E.length,sum=E.reduce((a,p)=>a+sc(p),0),w=E.map(p=>Math.min(2/n,Math.max(CFG.shareMin/n,.5/n+.5*(sum>0?sc(p)/sum:1/n)))),tw=w.reduce((a,b)=>a+b,0),k=new Set(E.map(p=>p.c)).size,pool=xp0*(1+.03*(k-1)),now=Date.now();let sg=0;
@@ -37,20 +41,98 @@ function hits(p,list){const now=Date.now();p.tok=Math.min(CFG.hitMax*2,(p.tok||0
   const dm=Math.min(CFG.dmg0*75*(1+.12*(p.lv-1)),Math.max(0,+h[1]||0));if(!(dm>0))continue;p.tok--;EV.push([m.id,Math.round(dm),p.uid,Math.round(m.x),Math.round(m.y)]);
   m.hp-=dm;m.dmg[p.uid]=(m.dmg[p.uid]||0)+dm;p.ct.dm+=dm;if(!m.tg&&!p.city)m.tg=p.uid;if(m.hp<=0)kill(m)}}
 const num=(v,a,b,d)=>Number.isFinite(+v)?Math.min(b,Math.max(a,+v)):d;
+/* ===== PvP abierto (v148): solo con el Premium Cazador PvP, fuera de ciudades y mazmorras. Daño = % de la vida del rival, ajustado por poder. ===== */
+function pvSet(p,m){const now=Date.now();
+ if(m.on){if(!(X.pv&&X.pv(p.uid)))return send(p.ws,{t:'wpv',on:0,e:'Necesitas el Premium Cazador PvP (💎 en Boutique › VIP y planes)'});
+  if(p.lv<CFG.pvMin)return send(p.ws,{t:'wpv',on:0,e:'El PvP se abre en el nivel '+CFG.pvMin});
+  if(p.city||p.dg)return send(p.ws,{t:'wpv',on:0,e:'No puedes activar el PvP en ciudades ni mazmorras'});
+  p.pvp=1;return send(p.ws,{t:'wpv',on:1})}
+ if(now-(p.pvc||0)<15000)return send(p.ws,{t:'wpv',on:1,e:'En combate: espera 15 s sin pelear para apagar el PvP'});
+ p.pvp=0;p.lp=null;send(p.ws,{t:'wpv',on:0})}
+function pvHit(p,m){const now=Date.now();if(!p.pvp||p.hp<=0||p.city||p.dg)return;const q=PL.get(String(m.u||''));
+ if(!q||q===p||!q.pvp||q.hp<=0||q.city||q.dg)return;if(Math.hypot(p.x-q.x,p.y-q.y)>CFG.prng)return;
+ p.ptok=Math.min(CFG.phMax*2,(p.ptok||CFG.phMax)+(now-(p.ptt||now))/1000*CFG.phMax);p.ptt=now;if(p.ptok<1)return;p.ptok--;
+ const w=num(m.w,.3,4,1),k=Math.min(2,Math.max(.5,Math.sqrt(Math.max(1,p.pw||1)/Math.max(1,q.pw||1)))),dm=Math.max(1,Math.round(q.mhp*CFG.pct*w*k));
+ q.hp-=dm;p.pvc=q.pvc=now;q.lp={by:p.uid,t:now};send(q.ws,{t:'wpd',d:dm,by:p.uid,nm:p.nm});send(p.ws,{t:'wph',u:q.uid,d:dm})}
+const PVPAIR=new Map();
+function pvDie(p){const now=Date.now(),lp=p.lp;if(!lp||now-lp.t>20000||now-(p.pvdT||0)<5000)return;p.pvdT=now;p.lp=null;
+ const kp=PL.get(lp.by),pk=lp.by+'>'+p.uid,fresh=now-(PVPAIR.get(pk)||0)>600000;PVPAIR.set(pk,now);let r=null;
+ if(X.kill)try{r=X.kill(lp.by,p.uid,fresh,kp?kp.nm:'')}catch(e){log('pvp kill error '+e.message)}
+ if(kp)send(kp.ws,{t:'wpk',v:p.nm,r});send(p.ws,{t:'wpk',by:kp?kp.nm:'un cazador',me:1})}
 function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
- if(m.t==='wj'){const old=p;p={uid:u,ws,nm:String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,20)||'Viajero',c:num(m.c,0,7,0)|0,lv:num(m.lv,1,9999,1)|0,gt:String(m.gt||'').slice(0,4),bs:String(m.bs||'').slice(0,12),cz:Array.isArray(m.cz)?m.cz:[0,0,0],x:num(m.x,0,W*T,0),y:num(m.y,0,H*T,0),hp:100,mhp:100,mt:now,tok:0,tt:now,rc:[],ct:old?old.ct:{dm:0,tk:0,ut:0}};p.city=inCity(p.x,p.y);PL.set(u,p);send(ws,{t:'wi',tick:CFG.tick,n:J.mobs.length,sg:WSIG});return}
+ if(m.t==='wj'){const old=p;p={uid:u,ws,nm:String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,20)||'Viajero',c:num(m.c,0,7,0)|0,lv:num(m.lv,1,9999,1)|0,gt:String(m.gt||'').slice(0,4),bs:String(m.bs||'').slice(0,12),cz:Array.isArray(m.cz)?m.cz:[0,0,0],x:num(m.x,0,W*T,0),y:num(m.y,0,H*T,0),hp:100,mhp:100,mt:now,tok:0,tt:now,rc:[],dk:new Set(),ct:old?old.ct:{dm:0,tk:0,ut:0}};p.city=inCity(p.x,p.y);PL.set(u,p);send(ws,{t:'wi',tick:CFG.tick,n:J.mobs.length,sg:WSIG});try{X.tjoin&&X.tjoin(u)}catch(e){}return}
  if(!p||p.ws!==ws)return;
  if(m.t==='wm'){const x=num(m.x,0,W*T,p.x),y=num(m.y,0,H*T,p.y),dt=Math.min(2,Math.max(.05,(now-p.mt)/1000)),d=Math.hypot(x-p.x,y-p.y),tp=m.tp&&(inCity(x,y)||(J.tpd||[]).some(t=>Math.hypot(x-t.x,y-t.y)<300))&&now-(p.tpT||0)>3000;
   if(m.dg){p.dg=1;p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);return}const wasDg=p.dg;p.dg=0;
-  if(wasDg&&!solid(x,y)){p.x=x;p.y=y;p.mt=now;return}
-  if((d>CFG.speed*dt+48&&!tp)||solid(x,y)){send(ws,{t:'wp',x:p.x,y:p.y});return}if(tp)p.tpT=now;
-  p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);p.lv=X.lv&&X.lv(u)?X.lv(u):num(m.lv,1,9999,p.lv)|0;p.city=inCity(x,y);return}
+  if(wasDg&&!psolid(x,y,u)){p.x=x;p.y=y;p.mt=now;return}
+  const fly=!!(m.fl&&X.gm&&X.gm(u));if(!fly&&((d>CFG.speed*dt+48&&!tp)||psolid(x,y,u))){send(ws,{t:'wp',x:p.x,y:p.y});return}if(tp)p.tpT=now;
+  p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);p.lv=X.lv&&X.lv(u)?X.lv(u):num(m.lv,1,9999,p.lv)|0;p.city=inCity(x,y);p.pw=num(m.pw,1,1e13,p.pw||1);if(p.hp<=0&&p.lp)pvDie(p);return}
  if(m.t==='wh'){if(!p.dg)hits(p,m.h)}
+ if(m.t==='wpv')return pvSet(p,m);
+ if(m.t==='wph')return pvHit(p,m);
+ if(m.t==='wdie')return pvDie(p);
  if(m.t==='wa'){if(now-(p.atT||0)<80)return;p.atT=now;AT.push([u,num(m.k,0,7,0)|0,Math.round(num(m.a,-7,7,0)*100)/100,Math.round(p.x),Math.round(p.y),p.dg?1:0,String(m.ty||'').replace(/[^a-z]/g,'').slice(0,8),num(m.r,0,400,0)|0])}}   /* v145: también habilidades y también dentro de mazmorras (solo para tu party) */
+
+/* ===== v153: MOBS DINÁMICOS COMPARTIDOS (cazadores de la noche, hordas de evento, Hombres Lobo). Los crea y mueve el servidor: todos ven lo mismo. ===== */
+const DYL=[],HPT=[30,100,220,420,750,1600,2800,4600,7500],REC=t=>Math.round(t*3.5)+1;
+const DYV={ /* variante: [mult. vida, mult. velocidad, mult. daño, recompensa, nivel extra, nombre] (copiado de las tablas del cliente) */
+ wolfN:[2.4,1.55,2,2.5,2,'Lobo nocturno'],wolfA:[6,1.6,2.8,4,4,'Lobo alfa'],vampH:[4,1.25,3,4,4,'Vampiro cazador'],vampL:[8,1.35,4,6,6,'Vampiro ancestral'],assN:[2,1.5,3.4,3,3,'Asesino de la noche'],batN:[1,1.7,1.8,1.5,1,'Murciélago de sangre'],
+ ghostR:[1.8,1.25,2,2.5,2,'Espectro sangriento'],zombP:[3.5,.8,1.6,2,1,'Zombi pútrido'],skelB:[2.2,1.1,1.8,2,1,'Esqueleto gélido'],jackM:[3,1.5,2.1,3,2,'Calabaza asesina'],jackG:[7,.85,3,5,4,'Calabaza gigante'],jackS:[4.5,1.3,2.8,4,3,'Calabaza espectral'],
+ batV:[1.2,1.15,1.5,1.5,0,'Murciélago vampiro'],devil:[4.5,1.4,3.2,4,4,'Diablillo infernal'],reapB:[3,1.15,2.4,3,3,'Segador abisal'],cwardenR:[5,.95,2.2,3,3,'Guardián carmesí'],wwolf:[1,1.25,3.6,30,9,'Hombre Lobo'],
+ reap:[2.5,1.1,2,1,0,''],jack:[1.3,1,1.2,1,0,''],ghost:[.7,1.1,1,1,0,''],zomb:[1.4,.8,1.1,1,0,''],skel:[1,1,1.2,1,0,''],snow:[1,1.05,1,1,0,''],elf:[.7,1.2,.9,1,0,''],reno:[1.2,1.3,1.1,1,0,''],lion:[1.5,1.1,1.4,1,0,''],cupid:[.6,1.3,1,1,0,''],silk:[.5,.8,.7,1,0,''],thief:[.8,1.15,.9,1,0,''],bandit:[1,1,1,1,0,''],assassin:[.6,1.25,1.7,1,0,'']};
+const HWD=[['zombP',.3],['skelB',.24],['ghostR',.18],['jackM',.2],['jackS',.08],['batV',.08]],HWN=[['vampH',.14],['devil',.16],['reapB',.09],['vampL',.05],['cwardenR',.04],['zombP',.15],['jackM',.15],['jackG',.06],['ghostR',.12],['wolfN',.1]];
+const EVV={nv:[['snow',.4],['elf',.35],['reno',.25]],lu:[['lion',.6],['assassin',.4]],am:[['cupid',.7],['thief',.3]],nz:[['silk',.85],['bandit',.15]]};
+const LNY={2026:[2,17],2027:[2,6],2028:[1,26],2029:[2,13],2030:[2,3],2031:[1,23],2032:[2,11]};
+const pick=l=>{let r=Math.random();for(const[v,q]of l){if(r<q)return v;r-=q}return l[0][0]};
+const dr=()=>new Date(Date.now()-4*36e5),drH=()=>{const d=dr();return d.getUTCHours()+d.getUTCMinutes()/60};
+const nightF=h=>(h>=19.5||h<5.5)?1:h>=17.5?Math.pow((h-17.5)/2,1.3):h<7?Math.pow((7-h)/1.5,1.3):0;
+function evNow(){const d=dr(),y=d.getUTCFullYear(),t=d.getTime(),M=(m,dd,h)=>Date.UTC(y,m-1,dd,h||0),inr=(a,b)=>a[0]>b[0]?(t>=M(a[0],a[1])||t<=M(b[0],b[1],23)):(t>=M(a[0],a[1])&&t<=M(b[0],b[1],23));
+ if(process.env.DY_EV)return process.env.DY_EV==='off'?'':process.env.DY_EV;if(inr([10,16],[11,2]))return'hl';if(inr([12,15],[1,6]))return'nv';if(inr([2,10],[2,15]))return'am';if(inr([3,18],[3,25]))return'nz';const l=LNY[y];if(l){const c=M(l[0],l[1]);if(t>=c-2*864e5&&t<c+15*864e5)return'lu'}return''}
+const hlFull=()=>{const d=dr(),m=d.getUTCMonth()+1,dd=d.getUTCDate();return process.env.DY_NIGHT?1:((m===10&&dd>=30)||(m===11&&dd<=2))};
+const egCap=L=>L<=8?L+1:L<=24?L+1+Math.floor((L-8)*.75):1e9;
+const sD=(lv,m)=>{lv=lv|0||1;const nb=m.nv||REC(Math.min(8,m.ty|0)),c=egCap(lv);return(.45+.55*Math.max(0,Math.min(1,(lv-1)/19)))*(c>=nb?1:Math.pow(c/nb,.6))};
+let dyN=0;const dyId=()=>{for(let k=0;k<6000;k++){dyN=(dyN+1)%6000;const id=J.mobs.length+dyN;if(!BY.has(id))return id}return-1};
+function dyDel(m){const i=DYL.indexOf(m);if(i>=0)DYL.splice(i,1);BY.delete(m.id)}
+function dyAdd(v,ty,x,y,o){o=o||{};if(DYL.length>=260)return null;const id=dyId();if(id<0)return null;const q=DYV[v]||[1,1,1,1,0,''];ty=Math.max(0,Math.min(8,ty|0));
+ const m={id,x,y,ty,mx:o.hp||Math.max(1,Math.round(HPT[ty]*q[0])),sp:(66+ty*2.5)*.75*q[1]*(o.spm||1),hx:x,hy:y,rw:o.rw||q[3],dm:o.dm!=null?o.dm:(5+3*ty)*q[2],dead:0,rt:0,t:0,tg:null,dmg:{},dyn:1,v,nm:o.nm!=null?o.nm:q[5],sc:o.sc||0,nv:REC(ty)+q[4],k:o.k||'wave',sf:o.sf?1:0,ag:o.ag,vw:o.vw,ls:o.ls,rg:o.rg,rz:o.rz||0,gx:o.gx||0,exp:o.exp||0};m.hp=m.mx;DYL.push(m);BY.set(id,m);return m}
+const tierNear=(x,y)=>{let b=1e9,t=0;for(const m of near(x,y,500)){const d=Math.hypot(m.x-x,m.y-y);if(d<b){b=d;t=m.ty}}return t};
+function ringPos(p,r){for(let k=0;k<24;k++){const a=Math.random()*6.283,rr=r*(.7+Math.random()*.5),x=p.x+Math.cos(a)*rr,y=p.y+Math.sin(a)*rr;if(!solid(x,y)&&!inCity(x,y)&&!solid(x+14,y)&&!solid(x-14,y))return[x,y]}return null}
+const wwPos=(()=>{let o=null;return()=>{if(o)return o;o=[];let s=(31101981+new Date().getFullYear()*7919)>>>0;const rn=()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
+ for(let k=0;k<60000&&o.length<30;k++){const m=L[Math.floor(rn()*L.length)];if(!m||m.ty<2||inCity(m.hx,m.hy)||solid(m.hx,m.hy))continue;if(o.some(q=>Math.hypot(q.x-m.hx,q.y-m.hy)<(k<30000?34:18)*T))continue;o.push({x:m.hx,y:m.hy,ty:m.ty})}return o}})();
+const wwOn=()=>{if(process.env.WW_FORCE)return true;if(evNow()!=='hl')return false;const h=drH();return h>=20||h<2};
+function wwSync(){const on=wwOn(),cur=DYL.filter(m=>m.k==='ww');if(!on){for(const m of cur)dyDel(m);return}if(cur.length)return;
+ for(const q of wwPos())dyAdd('wwolf',q.ty,q.x,q.y,{k:'ww',hp:20000,sc:10,rz:900000,gx:900+q.ty*350+350,ag:380,vw:900,ls:800,rg:70})}
+function hunters(p,now){if(p.dg||p.city||p.hp<=0||p.lv<1)return;const f=Math.max(0,Math.min(1,((p.lv|0)-5)/32));
+ if(now<(p.nht||0))return;p.nht=now+((60-34*f)+Math.random()*(30-8*f))*1000;
+ let al=0;for(const m of DYL)if(m.k==='hunt'&&!m.dead&&Math.hypot(m.x-p.x,m.y-p.y)<1800)al++;if(al>=(f<.25?4:14))return;
+ const ti=Math.min(8,tierNear(p.x,p.y)+1,Math.max(1,Math.round(((p.lv|0)-1)/3.5)+1)),kind=ti>=4&&Math.random()<.5?'v':Math.random()<.3?'a':'w',HM=2.4+ti*.25,HD=1.5+ti*.08;
+ let list=kind==='w'?['wolfA','wolfA','wolfN','wolfN','wolfN','wolfN']:kind==='v'?['vampH','vampH','vampH','batN','batN','batN']:['assN','assN','assN','ghostR','ghostR','batN'];list=list.slice(0,f<.25?3:f<.6?4:6);
+ const pos=ringPos(p,1020);if(!pos)return;let n=0;
+ list.forEach((v,i)=>{const q=DYV[v],ty=Math.min(8,ti),bh=HPT[ty]*q[0],fh=Math.round(bh*HM*(i===0?1.8:1)),wh=Math.round(HPT[0]*(i===0?2.2:1.3)),hp=Math.round(wh+(fh-wh)*f),fdm=q[2]*HD*(i===0?1.3:1),wd=.25*(i===0?1.2:1),dm=(5+3*ty)*(wd+(fdm-wd)*f);
+  const m=dyAdd(v,ty,pos[0]+(i%2)*60-30,pos[1]+((i>>1)*60)-30,{k:'hunt',hp,dm,spm:1.04+.08*f,ag:1100,vw:1500,ls:3000,exp:now+25*60*1000});if(m)n++});
+ if(f>=.35&&Math.random()<.2){const v=kind==='v'?'vampH':'wolfA',q=DYV[v],ty=Math.min(8,ti);dyAdd(v,ty,pos[0],pos[1]-30,{k:'hunt',hp:Math.round(HPT[ty]*q[0]*HM*3.2),dm:(5+3*ty)*q[2]*HD*.9,spm:1.3,nm:'Alfa de la noche',ag:1100,vw:1500,ls:3000,exp:now+25*60*1000})}
+ if(n)send(p.ws,{t:'note',m:'🐺 Se oye un aullido cerca...'})}
+function waves(p,ev,now){if(p.dg||p.city||p.hp<=0)return;const hl=ev==='hl',gap=(hl?30:70)*1000;if(now<(p.nwv||0))return;p.nwv=now+gap;
+ const cap=hl?4:5,night=hl&&nightF(drH())*(hlFull()?1:.35)>.3;let al=0;for(const m of DYL)if(m.k==='wave'&&!m.dead&&Math.hypot(m.x-p.x,m.y-p.y)<1600)al++;if(al>=cap)return;
+ const tier=tierNear(p.x,p.y),n=hl?Math.max(1,Math.min(2+(night&&Math.random()<.4?1:0),cap-al)):Math.min(3,cap-al);if(n<1)return;let c=0;
+ for(let i=0;i<n;i++){const pos=ringPos(p,460);if(!pos)continue;const ty=Math.min(8,tier+(Math.random()<.25?1:0)),v=hl?pick(night?HWN:HWD):pick(EVV[ev]||[['bandit',1]]);if(dyAdd(v,ty,pos[0],pos[1],{k:'wave',sf:1,ag:520,vw:900,ls:1400,exp:now+12*60*1000}))c++}}
+let dyT=0;
+function dyTick(){const now=Date.now();if(now<dyT)return;dyT=now+1000;if(!PL.size){for(const m of DYL.filter(m=>m.k!=='ww'))dyDel(m);wwSync();return}
+ const ev=evNow(),night=!!process.env.DY_NIGHT||nightF(drH())>=.5;
+ for(const m of DYL.slice()){if(m.k==='ww')continue;if((m.exp&&now>m.exp)||(m.k==='hunt'&&!(night&&hlFull()))||(m.k==='wave'&&!ev)){dyDel(m);continue}
+  let near_=false;for(const p of PL.values())if(!p.dg&&Math.hypot(m.x-p.x,m.y-p.y)<2600){near_=true;break}if(!near_&&!m.dead){m.far=(m.far||now);if(now-m.far>60000)dyDel(m)}else m.far=0}
+ wwSync();
+ for(const p of PL.values()){if(night&&hlFull()&&ev==='hl')hunters(p,now);if(ev)waves(p,ev,now)}}
+setInterval(()=>{try{dyTick()}catch(e){log('dyn error '+e.message)}},500);
 setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);
- for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||''])}
-  const mb=[];for(const m of near(p.x,p.y,CFG.sview+CFG.leash))if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview)mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);
+ for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;if(!!q.dg!==!!p.dg||(q.dg&&!(pid(q.uid)&&pid(q.uid)===pid(p.uid))))continue;pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||'',q.pvp?1:0,q.wn?1:0])}
+  const mb=[];let dd=null,dx=null;if(!p.dg){for(const m of near(p.x,p.y,CFG.sview+CFG.leash))if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview)mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);
+   for(const m of DYL)if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview){mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);if(!p.dk.has(m.id)){p.dk.add(m.id);(dd=dd||[]).push([m.id,m.v,m.nm||'',m.ty,m.mx,m.sc||0,Math.round(m.hx),Math.round(m.hy),Math.round(m.hp),Math.round(m.x),Math.round(m.y)])}}
+   for(const id of p.dk){const m=BY.get(id);if(!m||!m.dyn||Math.hypot(m.x-p.x,m.y-p.y)>CFG.sview*1.15){p.dk.delete(id);(dx=dx||[]).push(id)}}}
+  else if(p.dk.size){dx=[...p.dk];p.dk.clear()}
   const hv=EV.filter(e=>e[2]!==p.uid&&Math.hypot(e[3]-p.x,e[4]-p.y)<=CFG.sview).slice(0,30),at=AT.filter(a=>a[0]!==p.uid&&(a[5]?(p.dg&&pid(a[0])&&pid(a[0])===pid(p.uid)):!p.dg)&&Math.hypot(a[3]-p.x,a[4]-p.y)<=CFG.pview).slice(0,40);
-  const o={t:'ws',pl,mb};if(hv.length)o.hv=hv;if(at.length)o.at=at;send(p.ws,o)}EV=[];AT=[]},CFG.tick);
+  const o={t:'ws',pl,mb};if(dd)o.dd=dd;if(dx)o.dx=dx;if(hv.length)o.hv=hv;if(at.length)o.at=at;send(p.ws,o)}EV=[];AT=[]},CFG.tick);
 log('mundo cargado: '+L.length+' enemigos, '+W+'x'+H+' casillas');
-return{handle,leave:(u,ws)=>{const p=PL.get(u);if(p&&p.ws===ws)PL.delete(u)},credit:(u,k,v)=>{const p=PL.get(u);if(p)p.ct[k]+=v},stats:()=>({players:PL.size,mobs:L.length})}};
+setInterval(()=>{for(const p of PL.values()){try{p.wn=X.wanted&&X.wanted(p.uid)?1:0;if(p.pvp&&X.pv&&!X.pv(p.uid)){p.pvp=0;p.lp=null;send(p.ws,{t:'wpv',on:0,e:'Tu Premium Cazador PvP venció'})}}catch(e){}}},5000);
+return{strSet:(i,k,g,pass)=>{STRS.set(i,{k,g,pass})},strDel:i=>{STRS.delete(i)},strClear:()=>STRS.clear(),bcast:m=>{for(const p of PL.values())send(p.ws,m)},tsolid:(x,y)=>solid0(x*T+1,y*T+1),
+ mobsOff:rects=>{for(const m of L)if(rects.some(r=>m.hx/T>=r[0]&&m.hx/T<r[2]&&m.hy/T>=r[1]&&m.hy/T<r[3])){m.dead=1;m.hp=0;m.rt=Infinity;m.tg=null;m.dmg={}}},dyn:()=>DYL,where:u=>{const p=PL.get(u);return p?{x:Math.round(p.x),y:Math.round(p.y),city:p.city?1:0,dg:p.dg?1:0,pvp:p.pvp?1:0}:null},handle,leave:(u,ws)=>{const p=PL.get(u);if(p&&p.ws===ws)PL.delete(u)},credit:(u,k,v)=>{const p=PL.get(u);if(p)p.ct[k]+=v},stats:()=>({players:PL.size,mobs:L.length})}};

@@ -88,13 +88,13 @@ ops['tw.boss']=(u,m)=>{const a=E.acct(u),f=int(m.f,50,600,0);if(!f||f%10)return{
    Reglas: ambos Nv 5+, conectados, un solo trato a la vez. Hasta 6 objetos (de la mochila), oro y provisiones.
    Los objetos se retienen (custodia) al ofrecerlos; el oro y las provisiones se comprueban al cerrar.
    Cualquier cambio anula los dos "Acepto". Comisión 3% sobre el ORO enviado (el receptor cobra el 97%). El servidor ejecuta todo de forma atómica. */
-const TFEE=.03,TMAXI=6,TMAXP=4,TLV=5,TLOCK=1500;
+const TFEE=.03,TMAXI=6,TMAXP=4,TLV=+process.env.TRADE_MIN_LV||5,TLOCK=1500;
 const TR=()=>S.ECO.trd||(S.ECO.trd={});
 const trOf=u=>{const T=TR();for(const id in T){const t=T[id];if(t.a===u||t.b===u)return t}return null};
 const nmOf=u=>(E.acct(u).nm)||'Jugador';
-const mkSide=()=>({items:[],pets:[],gold:0,prov:{},ok:0});
+const mkSide=()=>({items:[],pets:[],gold:0,prov:{},tk:{},ok:0});const TKK=['cmb','es','lic','vipm','vipj','pv','bh'],tkG=(a,k)=>((a.tk&&a.tk[k])|0);
 const TMAXPET=3;
-function trView(t,u,why){const me=t.a===u?'a':'b',th=me==='a'?'b':'a',o=x=>({items:x.items,pets:x.pets||[],gold:x.gold|0,prov:x.prov,ok:x.ok?1:0});
+function trView(t,u,why){const me=t.a===u?'a':'b',th=me==='a'?'b':'a',o=x=>({items:x.items,pets:x.pets||[],gold:x.gold|0,prov:x.prov,tk:x.tk||{},ok:x.ok?1:0});
  return{id:t.id,st:why?'end':t.st,why:why||'',v:t.v,me:o(t['s'+me]),th:Object.assign(o(t['s'+th]),{u:t[th],nm:nmOf(t[th])}),ini:t.a===u?1:0,fee:TFEE,exp:t.exp}}
 function trPush(t,why){for(const u of [t.a,t.b])if(S.online(u))S.push(u,{t:'dm',tr:1,v:trView(t,u,why)})}
 function trEnd(t,why){for(const [u,sd] of [[t.a,t.sa],[t.b,t.sb]])for(const it of sd.items){holdReg(it.id,u,0);E.deliver(u,{item:it,note:'↩️ Trato cancelado: objeto devuelto'})}
@@ -121,6 +121,8 @@ ops['trade.pet']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El tr
 ops['trade.unpet']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const sd=trSide(t,u),i=(sd.pets||[]).findIndex(x=>x.id===String(m.pid||''));if(i<0)return{e:'Esa mascota no está en el trato'};
  const pt=sd.pets.splice(i,1)[0];holdReg(pt.id,u,0,'p');E.deliver(u,{pet:pt,note:'↩️ Mascota retirada del trato'});trChanged(t);return{ok:1,v:trView(t,u)}};
 ops['trade.gold']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const a=E.acct(u),g=int(m.g,0,1e12,0);if(g>E.avail(a,'gold'))return{e:'No tienes tanto oro (sincroniza e inténtalo de nuevo)'};trSide(t,u).gold=g;trChanged(t);return{ok:1,v:trView(t,u)}};
+ops['trade.tk']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const k=String(m.k||''),a=E.acct(u),q=int(m.q,0,50,0);if(!TKK.includes(k))return{e:'Boleto no válido'};
+ const sd=trSide(t,u);sd.tk=sd.tk||{};if(q>tkG(a,k))return{e:'No tienes tantos boletos'};if(q)sd.tk[k]=q;else delete sd.tk[k];trChanged(t);return{ok:1,v:trView(t,u)}};
 ops['trade.prov']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const pk=String(m.pk||''),a=E.acct(u),q=int(m.q,0,1e6,0);if(!PVL.includes(pk))return{e:'Producto no válido'};
  if(KEYK_BLOCK.has(pk))return{e:'Eso no se puede'};const sd=trSide(t,u);if(q&&!sd.prov[pk]&&Object.keys(sd.prov).length>=TMAXP)return{e:'Máximo '+TMAXP+' tipos de provisión'};if(q>provAv(a,pk))return{e:'No tienes tantas'};
  if(q)sd.prov[pk]=q;else delete sd.prov[pk];trChanged(t);return{ok:1,v:trView(t,u)}};
@@ -130,12 +132,14 @@ ops['trade.ok']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El tra
  /* cierre atómico */
  const A=E.acct(t.a),B=E.acct(t.b);
  for(const [a,sd2] of [[A,t.sa],[B,t.sb]]){if(E.avail(a,'gold')<sd2.gold){t.sa.ok=0;t.sb.ok=0;trPush(t);return{e:(a.nm||'Un jugador')+' ya no tiene el oro ofrecido'}}
+  for(const k in (sd2.tk||{}))if(tkG(a,k)<sd2.tk[k]){t.sa.ok=0;t.sb.ok=0;trPush(t);return{e:(a.nm||'Un jugador')+' ya no tiene los boletos ofrecidos'}}
   for(const pk in sd2.prov)if(provAv(a,pk)<sd2.prov[pk]){t.sa.ok=0;t.sb.ok=0;trPush(t);return{e:(a.nm||'Un jugador')+' ya no tiene las provisiones ofrecidas'}}}
  delete TR()[t.id];S.dirty();
  for(const [from,to,fa,sd2] of [[t.a,t.b,A,t.sa],[t.b,t.a,B,t.sb]]){const get=Math.round(sd2.gold*(1-TFEE));
   if(sd2.gold)E.deliver(from,{gold:-sd2.gold,note:'🤝 Trato: enviaste '+sd2.gold+' 🪙 (comisión 3%)'});
   if(get)E.deliver(to,{gold:get,note:'🤝 Trato con '+nmOf(from)+': +'+get+' 🪙'});
   for(const pk in sd2.prov){E.deliver(from,Object.assign({note:'🤝 Trato: entregaste '+sd2.prov[pk]+' de '+pk},provDl(pk,-sd2.prov[pk])));E.deliver(to,Object.assign({note:'🤝 Trato con '+nmOf(from)+': +'+sd2.prov[pk]+' de '+pk},provDl(pk,sd2.prov[pk])))}
+  {const ta=E.acct(to);fa.tk=fa.tk||{};ta.tk=ta.tk||{};for(const k in (sd2.tk||{})){fa.tk[k]=Math.max(0,tkG(fa,k)-sd2.tk[k]);ta.tk[k]=tkG(ta,k)+sd2.tk[k]}if(Object.keys(sd2.tk||{}).length){E.pushEnt(from);E.pushEnt(to);if(S.online(to))S.push(to,{t:'note',m:'🎟️ Trato con '+nmOf(from)+': recibiste boletos VIP',tk:1})}}
   for(const it of sd2.items){holdReg(it.id,to,0);E.deliver(to,{item:it,note:'🤝 Trato con '+nmOf(from)+': recibiste '+it.n})}
   for(const pt of (sd2.pets||[])){holdReg(pt.id,to,0,'p');E.deliver(to,{pet:pt,note:'🤝 Trato con '+nmOf(from)+': recibiste una mascota'})}}
  trPush(t,'done');return{ok:1,done:1}};
@@ -172,5 +176,57 @@ ops['shop.sell']=(u,m)=>{const r=shopOf(m,u);if(r.e)return r;const {s,sid,sa}=r,
 ops['shop.item']=(u,m)=>{const r=shopOf(m,u);if(r.e)return r;const {s,sid,sa}=r,a=E.acct(u);if(!(s.ib>0))return{e:'Esta tienda no compra objetos'};
  const c=claimItem(u,m.item);if(c.e)return c;const want=Math.round(iv(c.it)*s.ib/100),t=tax(want);if(!want)return{e:'Sin valor'};if(E.avail(sa,'gold')<t.pay)return{e:'El comprador no tiene oro suficiente'};
  holdReg(c.it.id,sid,0);E.deliver(u,{gold:t.get,note:'💰 Vendiste '+c.it.n+' (+'+t.get+' 🪙)'});E.deliver(sid,{gold:-t.pay,item:c.it,note:'🎁 Compraste '+c.it.n,tr:1});shopTr(sid);return{ok:1}};
+
+/* ---------- 🎯 RECOMPENSAS POR JUGADORES (PvP, v148) ----------
+   Quien muere en PvP puede poner recompensa por la cabeza de su verdugo (oro, 💎 propias y/u objeto). El servidor retiene todo en custodia;
+   la cobra quien mate al buscado con la Licencia de Cazador activa. Si nadie la cobra en 72 h se devuelve (oro −10%). Poner el cartel cuesta 10% de oro extra. */
+const BTY_MIN=10000,BTY_FEE=.10,BTY_H=72,BTY_POSTED=3,BTY_ACC=5;
+const hOk=a=>(+a.px.bh||0)>now(),btyAll=()=>col('bty');
+function btyBack(b,pct){const g=Math.round((b.g|0)*pct);if(g>0)E.deliver(b.u,{gold:g,note:'↩️ Recompensa por '+b.tn+' devuelta (+'+g+' 🪙)'});if(b.m>0)E.grantGems(b.u,b.m,'own','Recompensa devuelta');
+ if(b.it){holdReg(b.it.id,b.u,0);E.deliver(b.u,{item:b.it,note:'↩️ Objeto de la recompensa devuelto'})}}
+function btyClean(){const t=now();for(const id in btyAll()){const b=btyAll()[id];if(b.ex<=t){btyBack(b,.9);delDoc('bty',id)}}}
+function btyView(b,u){return{id:b.id,t:b.t,tn:b.tn,tc:b.tc|0,tl:b.tl|0,tb:b.tb||'',un:b.un,g:b.g|0,m:b.m|0,it:b.it?{n:b.it.n,r:b.it.r|0,t:b.it.t|0}:null,ts:b.ts,ex:b.ex,na:b.ac.length,acc:b.ac.includes(u)?1:0,mine:b.u===u?1:0,tgt:b.t===u?1:0}}
+const btyHas=t=>{for(const id in btyAll())if(btyAll()[id].t===t)return true;return false};
+ops['bty.list']=(u)=>{btyClean();const a=E.acct(u),l=Object.values(btyAll()).map(b=>btyView(b,u)).sort((x,y)=>(y.g+y.m*20000)-(x.g+x.m*20000)).slice(0,60);
+ const t=now(),kb=(a.kb||[]).filter(k=>t-k.ts<48*36e5).map(k=>({u:k.u,n:k.n,ts:k.ts,has:Object.values(btyAll()).some(b=>b.t===k.u&&b.u===u)?1:0}));
+ return{ok:1,l,kb,hunter:hOk(a)?1:0,pv:(+a.px.pv||0)>t?1:0,stats:{k:a.pvk|0,d:a.pvd|0},min:BTY_MIN,fee:BTY_FEE,h:BTY_H}};
+ops['bty.post']=(u,m)=>{btyClean();const a=E.acct(u),t=now(),tu=String(m.tu||''),kb=(a.kb||[]).find(k=>k.u===tu&&t-k.ts<48*36e5),gm=S.isMaster&&S.isMaster(u);
+ if(!kb&&!gm)return{e:'Solo puedes poner recompensa por quien te mató en PvP en las últimas 48 h'};
+ const b0=Object.values(btyAll());if(b0.some(b=>b.t===tu&&b.u===u))return{e:'Ya tienes un cartel de ese jugador: espera a que se cobre o cancélalo'};
+ if(b0.filter(b=>b.u===u).length>=BTY_POSTED)return{e:'Máximo '+BTY_POSTED+' carteles tuyos a la vez'};
+ const ta=S.ECO.acc[tu];if(!ta)return{e:'Jugador no encontrado'};
+ const g=int(m.g,0,1e11,0),gems=int(m.m,0,100000,0),hasIt=m.item&&typeof m.item==='object';
+ if(g<1&&gems<1&&!hasIt)return{e:'Pon una recompensa: oro, 💎 u objeto'};if(g>0&&g<BTY_MIN)return{e:'El oro mínimo es '+BTY_MIN.toLocaleString('es')+' 🪙'};
+ const fee=Math.round(g*BTY_FEE);if(g>0&&E.avail(a,'gold')<g+fee)return{e:'⚠️ Oro insuficiente: necesitas '+(g+fee).toLocaleString('es')+' 🪙 (recompensa + 10% del cartel)'};
+ if(gems>0&&(a.gem.own|0)<gems)return{e:'Te faltan '+(gems-(a.gem.own|0))+' 💎 propias (las transferidas no valen aquí)'};
+ let it=null;if(hasIt){const c=claimItem(u,m.item);if(c.e)return c;it=c.it}
+ const id='b'+E.rid(6);if(g>0)E.deliver(u,{gold:-(g+fee),note:'🎯 Cartel de recompensa por '+(ta.nm||'?')+' (−'+g+' y 10% de cartel)'});if(gems>0)E.spendGems(a,gems,true,'Recompensa por '+(ta.nm||'?'));
+ if(it)holdReg(it.id,'B:'+id,1);
+ const b={id,t:tu,tn:ta.nm||(kb&&kb.n)||'Jugador',tc:ta.cls|0,tl:ta.lv|0,tb:ta.lbs||'',u,un:a.nm||'Jugador',g,m:gems,it,ts:t,ex:t+BTY_H*36e5,ac:[]};setDoc('bty',id,b);E.pushEnt(u);
+ const v=btyView(b,'');for(const hu in S.ECO.acc){if(hu===u||hu===tu)continue;const ha=S.ECO.acc[hu];if(hOk(ha)&&S.online(hu))S.push(hu,{t:'wbt',b:btyView(b,hu)})}
+ if(S.online(tu))S.push(tu,{t:'note',m:'🎯 ¡Han puesto recompensa por tu cabeza! Los cazadores te buscan.'});
+ return{ok:1,id}};
+ops['bty.accept']=(u,m)=>{btyClean();const a=E.acct(u),b=btyAll()[String(m.id||'')];if(!b)return{e:'Esa recompensa ya no existe'};if(!hOk(a))return{e:'Necesitas la Licencia de Cazador activa (Boutique › VIP y planes)'};
+ if(b.t===u)return{e:'No puedes cazarte a ti mismo'};if(b.u===u)return{e:'No puedes cobrar tu propio cartel'};if(b.ac.includes(u))return{ok:1};
+ if(Object.values(btyAll()).filter(x=>x.ac.includes(u)).length>=BTY_ACC)return{e:'Máximo '+BTY_ACC+' cacerías a la vez'};
+ b.ac.push(u);S.dirty();return{ok:1}};
+ops['bty.drop']=(u,m)=>{const b=btyAll()[String(m.id||'')];if(b){b.ac=b.ac.filter(x=>x!==u);S.dirty()}return{ok:1}};
+ops['bty.cancel']=(u,m)=>{const id=String(m.id||''),b=btyAll()[id];if(!b||b.u!==u)return{e:'No es tu cartel'};btyBack(b,.8);delDoc('bty',id);return{ok:1}};
+const posT={};
+ops['bty.pos']=(u)=>{const a=E.acct(u),t=now();if(t-(posT[u]||0)<6000)return{ok:1,l:[],wait:1};posT[u]=t;btyClean();if(!hOk(a))return{ok:1,l:[]};
+ const l=[];for(const b of Object.values(btyAll())){if(!b.ac.includes(u))continue;const w=S.world&&S.world.where(b.t);
+  if(!w)l.push({id:b.id,st:'off'});else if(w.city)l.push({id:b.id,st:'city'});else if(w.dg)l.push({id:b.id,st:'dg'});else l.push({id:b.id,st:w.pvp?'pvp':'safe',x:w.x,y:w.y})}
+ return{ok:1,l}};
+/* muerte en PvP (la llama el mundo): estadísticas, registro de verdugos y cobro de recompensas */
+function pvKill(ku,vu,fresh,kn){const ka=E.acct(ku),va=E.acct(vu),t=now();ka.pvk=(ka.pvk|0)+1;va.pvd=(va.pvd|0)+1;
+ va.kb=(va.kb||[]).filter(k=>t-k.ts<48*36e5&&k.u!==ku);va.kb.push({u:ku,n:ka.nm||kn||'Jugador',ts:t});if(va.kb.length>10)va.kb.shift();S.dirty();
+ btyClean();const r={g:0,m:0,n:0,its:[]};if(!fresh||!hOk(ka))return r;
+ for(const id in btyAll()){const b=btyAll()[id];if(b.t!==vu||b.u===ku)continue;
+  if(b.g>0){E.deliver(ku,{gold:b.g,note:'🎯 Recompensa por '+b.tn+' (+'+b.g+' 🪙)'});r.g+=b.g}
+  if(b.m>0){E.grantGems(ku,b.m,'tr','Recompensa por '+b.tn);r.m+=b.m}
+  if(b.it){holdReg(b.it.id,ku,0);E.deliver(ku,{item:b.it,note:'🎯 Recompensa: '+b.it.n});r.its.push(b.it.n)}
+  r.n++;delDoc('bty',id);if(S.online(b.u))S.push(b.u,{t:'note',m:'🎯 '+(ka.nm||'Un cazador')+' cobró tu recompensa por '+b.tn+'.'})}
+ if(r.n)E.pushEnt(ku);return r}
+
 function shopTr(sid){const s=col('shops')[sid];if(s){s.tr=(s.tr|0)+1;S.dirty()}}
-return{ops,shopView,iv,PVL}};
+return{ops,shopView,iv,PVL,pvKill,btyHas}};

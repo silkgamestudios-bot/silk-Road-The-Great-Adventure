@@ -53,7 +53,31 @@ const E=require('./economy')(S),MK=require('./market')(S,E),GD=require('./guild'
 if(KEEP){for(const u in KEEP){try{Object.assign(E.acct(u),KEEP[u])}catch(e){}}dirty=1;save(1)}
 S.onDeliver=u=>{try{if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}};
 AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster});
-const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,AC.ops);
+const TR=require('./terr')(S,E);
+const SD=require('./seda')(S,E);
+const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops);
+for(const k of ['gmk.sell','gmk.buy','gmk.cancel'])OPS[k]=()=>({e:'Este mercado se renovó: usa el 🏛️ Mercado de Gemas nuevo (recarga con Ctrl+Shift+R)'});
+/* ===== RESTAURAR jugadores desde la copia del reinicio (clientes prioritarios) + diagnóstico de ranking ===== */
+function bkList(){const d=(process.env.DATA_DIR||'.')+'/backups';let L=[];try{L=fs.readdirSync(d).filter(x=>/^pre-/.test(x)).map(x=>d+'/'+x).filter(x=>fs.existsSync(x+'/data.json'))}catch(e){}return L.sort().reverse()}
+function restorePlayer(name,clear){const q=String(name||'').trim().toLowerCase();if(!q)return{e:'Escribe el nombre exacto del jugador'};
+ for(const dir of bkList()){let j;try{j=JSON.parse(fs.readFileSync(dir+'/data.json','utf8'))}catch(e){continue}const acc=(j.eco&&j.eco.acc)||{};
+  const uid=Object.keys(acc).find(id=>acc[id]&&String(acc[id].nm||'').toLowerCase()===q);if(!uid)continue;const old=acc[uid],cur=E.acct(uid);
+  if((cur.lv|0)>(old.lv|0)&&cur.cls>=0)return{e:'Ese jugador ya tiene nivel '+cur.lv+' (más que la copia: '+old.lv+'). No lo toco.'};
+  const keep={gem:cur.gem,sk:cur.sk,px:cur.px,vip:cur.vip,lic:cur.lic,tk:cur.tk};
+  const nw=JSON.parse(JSON.stringify(old));Object.assign(nw,JSON.parse(JSON.stringify(keep)));if(nw.tk===undefined)delete nw.tk;if(clear){nw.strikes=0;nw.flags=[];delete nw.notified}
+  ECO.acc[uid]=nw;let items=0;const reg=(j.eco&&j.eco.reg)||{};for(const id in reg){const r=reg[id];if(r&&r.o===uid&&!ECO.reg[id]){ECO.reg[id]=r;items++}}
+  if(old.nm){ECO.names=ECO.names||{};ECO.names[String(old.nm).toLowerCase()]=uid}
+  let sv=0;const f=String(uid).replace(/[^\w-]/g,'')+'.json';try{if(fs.existsSync(dir+'/'+f)){fs.copyFileSync(dir+'/'+f,savePath(uid));sv=1}}catch(e){}
+  const w=ONL.get(uid);if(w){try{w.send(JSON.stringify({t:'kick',e:'Tu personaje fue restaurado: vuelve a entrar'}));w.close(4001)}catch(e){}}
+  dirty=1;try{save(1)}catch(e){}log('[RESTAURAR] '+old.nm+' ('+uid+') nivel '+old.lv+' desde '+dir+' · objetos '+items+' · partida '+(sv?'sí':'no'));
+  return{ok:1,nm:old.nm,lv:old.lv|0,items,save:sv,from:dir.split('/').pop()}}
+ return{e:'No encontré a "'+name+'" en ninguna copia del reinicio'}}
+OPS['adm.restore']=(u,m)=>{if(!isMaster(u))return{e:'Solo el master'};return restorePlayer(m.name,m.clear!==0)};
+OPS['adm.rankwhy']=(u,m)=>{if(!isMaster(u))return{e:'Solo el master'};const id=E.uidByName(String(m.name||''));if(!id)return{e:'No existe ese nombre'};const a=E.acct(id),why=[];
+ if(!(a.nm||a.pn))why.push('sin nombre');if(!(a.cls>=0))why.push('sin clase (nunca sincronizó su personaje tras el reinicio)');if((a.strikes|0)>=8)why.push('excluido por antitrampas: '+a.strikes+' strikes');if(isMaster(id))why.push('es master (no sale en el ranking)');
+ return{ok:1,nm:a.nm,lv:a.lv|0,xp:a.xp|0,cls:a.cls,strikes:a.strikes|0,flags:(a.flags||[]).slice(-5).map(f=>f[1]),why:why.length?why:['Cumple todo: debería salir']}};
+/* al arrancar: RESTORE_NAMES="Artoria,Otro" restaura una sola vez a cada uno */
+setTimeout(()=>{try{const L=String(process.env.RESTORE_NAMES||'').split(',').map(x=>x.trim()).filter(Boolean);DB.cfg=DB.cfg||{};DB.cfg.restored=DB.cfg.restored||{};for(const n of L){const k=n.toLowerCase();if(DB.cfg.restored[k])continue;const r=restorePlayer(n,true);log('[RESTAURAR al arrancar] '+n+': '+JSON.stringify(r));if(r.ok){DB.cfg.restored[k]=Date.now();dirty=1}}}catch(e){log('restore boot: '+e.message)}},3000);
 setInterval(()=>{for(const u in ECO.acc){const a=ECO.acc[u];if(a.dl&&a.dl.length)E.forceExpired(a)}},30000);
 /* REGLAS de las colecciones libres: quién puede crear/editar (u = jugador autenticado, id, d = doc nuevo, o = doc anterior) */
 /* Blindaje contra claves peligrosas (__proto__, constructor, toString…): ningún id/colección/operación del cliente puede tocar el prototipo ni funciones nativas */
@@ -64,7 +88,7 @@ function protoBad(o,dep,k){if(dep>6)return true;if(o==null)return false;
  if(typeof o!=='object')return false;
  if(Array.isArray(o)){for(let i=0;i<o.length&&i<400;i++)if(protoBad(o[i],dep+1,k))return true;return false}
  let n=0;for(const x in o){if(x==='__proto__'||++n>400)return true;if(protoBad(o[x],dep+1,x))return true}return false}
-const SRV_ONLY=new Set(['offers','shops','orders','wallets','loot','gemtx']);   // solo el servidor escribe; el cliente las lee y pide operaciones
+const SRV_ONLY=new Set(['offers','shops','orders','wallets','loot','gemtx','sm']);   // solo el servidor escribe; el cliente las lee y pide operaciones
 const small=(d,n)=>JSON.stringify(d).length<=n;
 /* Daño a dragones/centinelas: cada jugador solo escribe SU documento, el daño solo sube y no puede crecer más rápido que un máximo creíble */
 const DRW={};
@@ -105,9 +129,10 @@ function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').spli
 const srv=http.createServer((q,r)=>{if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain','cache-control':'no-store'});r.end(statusText())});
 const wss=new WebSocketServer({server:srv,maxPayload:450000});
 const world=require('./world')(DB,log,{
- lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),
+ lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),pv:u=>(+E.acct(u).px.pv||0)>Date.now(),kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',tjoin:u=>{try{TR.join(u)}catch(e){log('terr join '+e.message)}},
  look:u=>{const a=E.acct(u);return{lv:a.lv,gt:GD.tagOf(u),sk:a.sk}},
  mint:(u,it)=>{const c=E.cleanItem(Object.assign({},it,{id:'s'+E.rid(8)}));if(!c)return it;S.ECO.reg[c.id]={o:u,k:'i',t:Date.now()};dirty=1;return c}});
+S.world=world;try{TR.init()}catch(e){log('terr init '+e.stack)}
 function bc(c,id,o,n){for(const ws of wss.clients){if(!ws.uid)continue;for(const s in ws.subs){const b=ws.subs[s];if(b.c!==c)continue;const mo=match(o,b.w),mn=match(n,b.w);if(mo||mn)ws.send(JSON.stringify({t:'ch',sid:+s,id,d:mn?n:null}))}}}
 const IPN=new Map();
 wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!ORI.includes(og)&&og!=='https://'+req.headers.host&&og!=='http://'+req.headers.host){ws.close(1008);return}
@@ -118,7 +143,7 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
   if(m.t==='hi'){const done=(u,extra)=>{const old=ONL.get(u);if(old&&old!==ws){try{old.send(JSON.stringify({t:'kick',e:'Tu cuenta se abrió en otro dispositivo'}));old.close(4001)}catch(e){}}
      ws.uid=u;ONL.set(u,ws);try{SO.presence(u,1)}catch(e){}const a=E.acct(u);rep(Object.assign({t:'ok',uid:u,ent:E.ent(u)},extra||{}));
      if(isMaster(u)){const o=(DB.cfg||{}).master;if(!o||o.u!==u){DB.cfg=DB.cfg||{};DB.cfg.master={u,ts:Date.now()};dirty=1;bc('cfg','master',o||null,DB.cfg.master)}}
-     setTimeout(()=>E.flushDl(u),400)};
+     setTimeout(()=>E.flushDl(u),400);setTimeout(()=>{try{rep(wsvMsg())}catch(e){}},1200)};
    if(AC&&!ws.uid&&AC.pre(m,ip,rep,done,{isMaster}))return;
    if(m.g){if(!GCID){rep({t:'bad',e:'Google no configurado'});ws.close();return}
     gverify(String(m.g)).then(v=>{const u='g'+sha('g:'+v.sub).slice(0,20);ACC[u]={e:v.email,n:v.name,ts:Date.now()};dirty=1;done(u,{ses:newSes(u),email:v.email,name:v.name,master:isMaster(u)})}).catch(()=>{rep({t:'auth',e:'Google rechazó el inicio de sesión'})});return}
@@ -140,7 +165,7 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
    let r;try{r=f(u,m)}catch(e){log('op '+m.op+' error '+e.stack);r={e:'error del servidor'}}
    const fin=r=>{r=r||{e:'sin respuesta'};if(r.e)rep({t:'r',rid:m.rid,ok:0,e:r.e});else rep(Object.assign({t:'r',rid:m.rid,ok:1},r))};
    if(r&&typeof r.then==='function')r.then(fin,e=>{log('op '+m.op+' error '+(e&&e.stack));fin({e:'error del servidor'})});else fin(r);return}
-  if(m.t&&m.t[0]==='w'){if(world){/* el nivel y la apariencia los pone el servidor, no el cliente */const a=E.acct(u);if(m.t==='wj'||m.t==='wm'){m.lv=a.lv;m.gt=GD.tagOf(u);m.bs=(typeof m.bs==='string'&&a.sk.includes(m.bs))?m.bs:'';m.cz=Array.isArray(m.cz)?m.cz.slice(0,3).map(x=>Math.max(0,Math.min(9,x|0))):[0,0,0]}world.handle(ws,m)}else rep({t:'wx'});return}
+  if(m.t&&m.t[0]==='w'){if(world){/* el nivel y la apariencia los pone el servidor, no el cliente */const a=E.acct(u);if(m.t==='wj'||m.t==='wm'){m.lv=a.lv;m.gt=GD.tagOf(u);m.bs=(typeof m.bs==='string'&&a.sk.includes(m.bs))?m.bs:'';a.lbs=m.bs;m.cz=Array.isArray(m.cz)?m.cz.slice(0,3).map(x=>Math.max(0,Math.min(9,x|0))):[0,0,0]}world.handle(ws,m)}else rep({t:'wx'});return}
   const c=String(m.col||''),id=String(m.id||''),w=Array.isArray(m.w)?m.w.slice(0,4):[];
   if(m.t==='unsub'){delete ws.subs[m.sid];return}
   if(!hasOwn(RULES,c)&&!SRV_ONLY.has(c)){err('colección no permitida');return}
@@ -159,5 +184,19 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
    if(c==='gemreq'&&!old&&d.st==='p')notifyRL('💎 SILK ROAD · Pago de gemas por revisar\nJugador: '+String(d.nm||'?').slice(0,30)+' ('+((ACC[d.u]||{}).e||d.u)+')\nMonto: '+d.usdt+' USDT → '+d.gems+' 💎\nOrden Binance Pay: '+String(d.ref||'').slice(0,60)+'\nTu Pay ID: '+PAY_ID+'\nAprueba en el juego (menú → Gemas).');
    return}});
  ws.on('close',()=>{ws.subs={};if(ws.uid&&ONL.get(ws.uid)===ws){ONL.delete(ws.uid);try{SO.presence(ws.uid,0)}catch(e){}}if(world&&ws.uid)world.leave(ws.uid,ws)})});
+
+/* ---------- v154: versión publicada, jugadores conectados y reinicio diario programado ----------
+   Cada 30 s todos reciben {t:'wsv'}: versión del servidor (el cliente se actualiza solo si es distinta), nº de conectados y hora del próximo reinicio.
+   Reinicio diario: RESTART_HOUR (hora de RD, UTC-4; por defecto 5 = 5:00 a. m.; 'off' lo desactiva). Avisa a 10/5/2/1 min, guarda todo y sale; Render lo vuelve a levantar solo. */
+const BUILD=(()=>{try{return /const V='([^']+)'/.exec(fs.readFileSync(path.join(__dirname,'sw.js'),'utf8'))[1]}catch(e){return ''}})();
+const RS_H=process.env.RESTART_HOUR==null?5:(String(process.env.RESTART_HOUR).toLowerCase()==='off'?-1:+process.env.RESTART_HOUR),T0=Date.now();let RS_AT=0;
+function rsNext(){if(process.env.RESTART_IN_S)return T0+(+process.env.RESTART_IN_S)*1000;if(!(RS_H>=0&&RS_H<24))return 0;const d=new Date(Date.now()-4*36e5);d.setUTCHours(RS_H,0,0,0);let t=d.getTime()+4*36e5;while(t<=Date.now()+6e4||t-T0<30*60e3)t+=864e5;return t}
+RS_AT=rsNext();const RS_SENT=new Set();
+const wsvMsg=()=>({t:'wsv',v:BUILD,n:ONL.size,rs:RS_AT||0});
+function wsvAll(){const s=JSON.stringify(wsvMsg());for(const [u,w] of ONL)if(w.readyState===1)try{w.send(s)}catch(e){}}
+setInterval(wsvAll,30000).unref();
+setInterval(()=>{if(!RS_AT)return;const rm=RS_AT-Date.now();
+ for(const mn of [10,5,2,1]){if(rm<=mn*60e3&&rm>(mn-1)*60e3-1e4&&!RS_SENT.has(mn)){RS_SENT.add(mn);try{SO.sys('🔄 Reinicio programado del servidor en '+mn+' min. Tu progreso se guarda solo; al volver, la partida sigue donde la dejaste.')}catch(e){}wsvAll()}}
+ if(rm<=0){log('[reinicio] reinicio diario programado: guardando y saliendo');try{SO.sys('🔄 Reiniciando el servidor… vuelve en 1 minuto.')}catch(e){}try{save(1)}catch(e){}setTimeout(()=>process.exit(0),1500)}},5000).unref();
 setInterval(()=>{for(const ws of wss.clients){if(!ws.isAlive){ws.terminate();continue}ws.isAlive=false;ws.ping()}},30000);
 srv.listen(PORT,()=>console.log('Silk Road server en puerto',PORT));

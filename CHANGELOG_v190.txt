@@ -1,0 +1,7 @@
+Silk Road Great Adventure v190 — based on stable v183
+
+- Prevents the inventory/equipment tab from automatically selecting the first equipped item when opened; details appear after the player selects an item.
+- Makes the top-right HUD controls translucent.
+- Places the existing PvP button immediately before the map button in the top bar, preserving its original event handler.
+- Moves configurable quick slots to the lower-right control cluster.
+- Keeps the stable v183 gameplay code and supporting assets.

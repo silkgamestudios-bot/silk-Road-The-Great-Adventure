@@ -1,0 +1,12 @@
+Silk Road: Great Adventure — v177
+
+Warehouse transaction-safety improvements:
+- Warehouse helper no longer saves an intermediate state before the matching backpack/resource deduction.
+- Unique equipment entries are stored as one entity (q=1) and duplicate IDs are rejected instead of merged into stacks.
+- Storing equipment validates the cleaned item before removing it from the backpack.
+- Resource deposits only deduct from the backpack after the warehouse accepts the deposit.
+- Warehouse withdrawals validate stored equipment and prevent duplicate IDs already present in the backpack or equipped slots.
+- Resource prompt now displays correct quantities for health and mana potions.
+- Mirrored play.html and silkwork/play.html so deployment copies stay identical.
+
+Validation performed: JavaScript syntax checks and ZIP integrity checks. No live multiplayer server test has been performed.

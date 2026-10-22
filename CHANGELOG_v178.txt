@@ -1,0 +1,14 @@
+Silk Road: Great Adventure — v178
+
+Server-authoritative warehouse and marketplace integration:
+- Added server operations wh.list, wh.deposit and wh.withdraw.
+- Warehouse equipment ownership is tracked by the server registry; equipment is moved into server custody when deposited and released on withdrawal.
+- Resource deposits/withdrawals use server-side account balances and delivery reservations instead of trusting only browser-local counts.
+- Added operation transaction tokens with bounded idempotency cache to make retries after a lost response safe.
+- Added marketplace publication directly from warehouse custody for equipment and supported resources.
+- Cancelling a warehouse-origin offer returns the item/resources to the server warehouse rather than the backpack.
+- Online client now refreshes and uses server warehouse operations; offline/local mode retains the previous local-only behavior.
+- Mirrored play.html and market.js deployment copies.
+
+Validation performed: JavaScript syntax checks, inline script syntax checks, ZIP integrity. A live multiplayer server test has not been performed.
+- Smoke-tested server deposit/withdrawal behavior and confirmed retrying the same deposit transaction token does not double-deposit.

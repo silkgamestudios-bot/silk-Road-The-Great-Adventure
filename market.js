@@ -2,7 +2,7 @@
    el servidor comprueba oro/mercancía/objeto, mueve la propiedad y entrega a cada parte (idempotente). El cliente no decide nada. */
 module.exports=function(S,E){
 const {DB}=S;const RM=E.RM;
-const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','ec_hl','ec_nv','ec_lu','ec_am','ec_nz'];
+const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','ec_hl','ec_nv','ec_lu','ec_am','ec_nz','mpocion'];
 const int=(v,a,b,d)=>{v=Math.floor(+v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d};
 const iv=it=>Math.round(720*RM[it.r]*(1+it.t*.6)*(it.dv?.05:1));
 const tax=(p)=>({pay:Math.round(p*1.03),get:Math.round(p*.97)});
@@ -12,8 +12,8 @@ const delDoc=(c,id)=>{const o=col(c)[id]||null;if(o){delete col(c)[id];S.dirty()
 const now=()=>Date.now();
 const oid=()=>'o'+E.rid(6);
 const aucMin=o=>o.bid>0?Math.max(o.p|0,Math.ceil(o.bid*1.05)):(o.p|0);
-function provRes(pk){if(pk==='pocion')return['pot',null];if(pk.startsWith('ec_'))return['ec',pk.slice(3)];return['prov',pk]}
-const provDl=(pk,q)=>{const [k,s]=provRes(pk);return k==='pot'?{pot:q}:k==='ec'?{ec:{k:s,q}}:{prov:{pk:s,q}}};
+function provRes(pk){if(pk==='pocion')return['pot',null];if(pk==='mpocion')return['mpot',null];if(pk.startsWith('ec_'))return['ec',pk.slice(3)];return['prov',pk]}
+const provDl=(pk,q)=>{const [k,s]=provRes(pk);return k==='pot'?{pot:q}:k==='mpot'?{mpot:q}:k==='ec'?{ec:{k:s,q}}:{prov:{pk:s,q}}};
 const provAv=(a,pk)=>{const [k,s]=provRes(pk);return E.avail(a,k,s)};
 const isMerc=a=>a.cls===0&&a.lic>now();
 function claimItem(u,raw,newOwner){const a=E.acct(u),it=E.cleanItem(raw);if(!it||!it.id)return{e:'Objeto no válido'};const r=S.ECO.reg[it.id];
@@ -21,10 +21,20 @@ function claimItem(u,raw,newOwner){const a=E.acct(u),it=E.cleanItem(raw);if(!it|
 function holdReg(id,o,esc,k){S.ECO.reg[id]={o,k:k||'i',t:now(),esc:esc?1:0};S.dirty()}
 /* ---------- OFERTAS ---------- */
 const ops={};
-ops['offer.new']=(u,m)=>{const a=E.acct(u),p=int(m.p,1,1e12,0);if(!p)return{e:'Precio inválido'};
- if(Object.values(col('offers')).filter(o=>o.u===u).length>=20)return{e:'Máximo 20 ofertas activas'};
+/* ===== Almacén general autoritativo del servidor =====
+   Cada operación acepta un token tx para que reintentar tras perder la respuesta no duplique objetos. */
+const wh=(a)=>{if(!Array.isArray(a.wh))a.wh=[];if(!a.whTx||typeof a.whTx!=='object')a.whTx={};return a.wh};
+function whOnce(a,tx,fn){wh(a);tx=String(tx||'').slice(0,64);if(!/^[\w-]{8,64}$/.test(tx))return{e:'Identificador de operación inválido'};if(a.whTx[tx])return a.whTx[tx];const r=fn();if(r&&r.ok){a.whTx[tx]=r;const ks=Object.keys(a.whTx);if(ks.length>200)for(const k of ks.slice(0,ks.length-150))delete a.whTx[k];S.dirty()}return r}
+function whProv(k){if(k==='pot')return['pot',null];if(k==='mpot')return['mpot',null];if(k==='ec_hl'||k==='ec_nv'||k==='ec_lu'||k==='ec_am'||k==='ec_nz')return['ec',k.slice(3)];if(PVL.includes(k))return['prov',k];return null}
+function whDelta(u,k,q){const p=whProv(k);if(!p)return null;return p[0]==='pot'?{pot:q}:p[0]==='mpot'?{mpot:q}:p[0]==='ec'?{ec:{k:p[1],q}}:{prov:{pk:p[1],q}}}
+ops['wh.list']=(u)=>{const a=E.acct(u);return{ok:1,l:wh(a).map(x=>JSON.parse(JSON.stringify(x)))} };
+ops['wh.deposit']=(u,m)=>{const a=E.acct(u),q=int(m.q,1,1e6,0),k=String(m.k||'');return whOnce(a,m.tx,()=>{const W=wh(a);if(m.kind==='it'){const it=E.cleanItem(m.item),r=it&&S.ECO.reg[it.id];if(!it||!it.id||!r||r.o!==u)return{e:'Objeto no válido o aún no sincronizado'};if(W.some(x=>x.type==='item'&&x.item&&x.item.id===it.id))return{e:'Ese objeto ya está en el almacén'};holdReg(it.id,'W:'+u,1);W.push({k:it.id,n:it.n,q:1,type:'item',item:it});S.dirty();return{ok:1,l:W}}const d=whDelta(u,k,-q);if(!d)return{e:'Recurso no permitido'};const [rk,sub]=whProv(k);if(E.avail(a,rk,sub)<q)return{e:'No tienes esa cantidad sincronizada con el servidor'};E.deliver(u,Object.assign({note:'📥 Depositado en almacén'},d));const old=W.find(x=>x.type!=='item'&&x.k===k);if(old)old.q+=q;else W.push({k,n:k,q,type:'res'});S.dirty();return{ok:1,l:W}})};
+ops['wh.withdraw']=(u,m)=>{const a=E.acct(u),i=int(m.i,0,1e6,-1);return whOnce(a,m.tx,()=>{const W=wh(a),x=W[i];if(!x)return{e:'Ese objeto ya no está en el almacén'};if(m.k!=null&&String(m.k)!==String(x.k))return{e:'El almacén cambió; actualiza e inténtalo otra vez'};if(m.itemId!=null&&(!x.item||String(m.itemId)!==String(x.item.id)))return{e:'El objeto cambió; actualiza e inténtalo otra vez'};if(x.type==='item'){const it=E.cleanItem(x.item),r=it&&S.ECO.reg[it.id];if(!it||!r||r.o!=='W:'+u)return{e:'La propiedad del objeto no coincide'};holdReg(it.id,u,0);E.deliver(u,{item:it,note:'↩️ Retirado del almacén'});W.splice(i,1)}else{const q=int(m.q,1,x.q|0,0);if(!q)return{e:'Cantidad inválida'};const d=whDelta(u,x.k,q);if(!d)return{e:'Recurso no permitido'};x.q-=q;if(x.q<=0)W.splice(i,1);E.deliver(u,Object.assign({note:'↩️ Retirado del almacén'},d))}S.dirty();return{ok:1,l:W}})};
+ops['offer.new']=(u,m)=>{const a=E.acct(u),p=int(m.p,1,1e12,0);if(!p)return{e:'Precio inválido'};if(m.kind==='whit'||m.kind==='whpv'){const tx=String(m.tx||'');if(!/^[\w-]{8,64}$/.test(tx))return{e:'Identificador de publicación inválido'};if(a.whTx&&a.whTx[tx])return a.whTx[tx]}
  const id=oid(),base={u,nm:a.nm||'Jugador',p,ts:now()};
  if(m.kind==='it'){const c=claimItem(u,m.item);if(c.e)return c;holdReg(c.it.id,'M:'+id,1);setDoc('offers',id,Object.assign(base,{it:c.it}));return{ok:1,id}}
+ if(m.kind==='whit'){const W=wh(a),i=int(m.i,0,1e6,-1),x=W[i],it=x&&x.type==='item'&&E.cleanItem(x.item),r=it&&S.ECO.reg[it.id];if(!it||!r||r.o!=='W:'+u|| (m.itemId!=null&&String(m.itemId)!==String(it.id)) || (m.k!=null&&String(m.k)!==String(x.k)))return{e:'Objeto no disponible en el almacén; actualiza e inténtalo otra vez'};holdReg(it.id,'M:'+id,1);W.splice(i,1);setDoc('offers',id,Object.assign(base,{it,wh:1}));const out={ok:1,id};a.whTx=a.whTx||{};a.whTx[String(m.tx)]=out;const txKeys=Object.keys(a.whTx);if(txKeys.length>200)for(const tk of txKeys.slice(0,txKeys.length-150))delete a.whTx[tk];S.dirty();return out}
+ if(m.kind==='whpv'){const W=wh(a),i=int(m.i,0,1e6,-1),x=W[i],q=int(m.q,1,x&&x.q||0,0);if(!x||x.type==='item'||!q||!PVL.includes(String(m.pk||'')))return{e:'Recurso no válido'};if(m.k!=null&&String(m.k)!==String(x.k))return{e:'El almacén cambió; actualiza e inténtalo otra vez'};const pk=String(m.pk),expected=pk==='pocion'?'pot':pk==='mpocion'?'mpot':pk;if(x.k!==expected)return{e:'El recurso del almacén no coincide con el producto'};if(x.q<q)return{e:'Cantidad insuficiente en el almacén'};x.q-=q;if(x.q<=0)W.splice(i,1);setDoc('offers',id,Object.assign(base,{pv:pk,q,wh:1}));const out={ok:1,id};a.whTx=a.whTx||{};a.whTx[String(m.tx)]=out;const txKeys=Object.keys(a.whTx);if(txKeys.length>200)for(const tk of txKeys.slice(0,txKeys.length-150))delete a.whTx[tk];S.dirty();return out}
  if(m.kind==='pet'){const pt=E.cleanPetS(m.pet);if(!pt||!pt.id)return{e:'Mascota no válida'};const r=S.ECO.reg[pt.id];if(!r||r.o!==u)return{e:'Esa mascota no es tuya'};holdReg(pt.id,'M:'+id,1,'p');setDoc('offers',id,Object.assign(base,{pet:pt}));return{ok:1,id}}
  if(m.kind==='ec'){const k=String(m.ec||''),q=int(m.q,1,1e6,0);if(!E.EVK.includes(k)||!q)return{e:'Monedas inválidas'};if(E.avail(a,'ec',k)<q)return{e:'No tienes tantas monedas (sincroniza e inténtalo de nuevo)'};
   E.deliver(u,{ec:{k,q:-q},note:'🪙 Monedas puestas en oferta'});setDoc('offers',id,Object.assign(base,{ec:k,q}));return{ok:1,id}}
@@ -33,9 +43,9 @@ ops['offer.new']=(u,m)=>{const a=E.acct(u),p=int(m.p,1,1e12,0);if(!p)return{e:'P
  return{e:'Tipo de oferta no válido'}};
 ops['offer.cancel']=(u,m)=>{const id=String(m.id||''),o=col('offers')[id];if(!o||o.u!==u)return{e:'No es tu oferta'};if(o.auc&&o.bid>0)return{e:'Tiene pujas: espera al cierre'};
  giveBack(o);delDoc('offers',id);return{ok:1}};
-function giveBack(o){if(o.it){holdReg(o.it.id,o.u,0);E.deliver(o.u,{item:o.it,note:'↩️ Oferta retirada'})}
+function giveBack(o){if(o.wh&&o.it){const a=E.acct(o.u),W=wh(a);holdReg(o.it.id,'W:'+o.u,1);W.push({k:o.it.id,n:o.it.n,q:1,type:'item',item:o.it});S.dirty()}else if(o.it){holdReg(o.it.id,o.u,0);E.deliver(o.u,{item:o.it,note:'↩️ Oferta retirada'})}
  else if(o.pet){holdReg(o.pet.id,o.u,0,'p');E.deliver(o.u,{pet:o.pet,note:'↩️ Mascota devuelta'})}
- else if(o.pv)E.deliver(o.u,Object.assign({note:'↩️ Oferta retirada'},provDl(o.pv,o.q|0)))
+ else if(o.pv&&o.wh){const a=E.acct(o.u),W=wh(a),k=o.pv==='pocion'?'pot':o.pv==='mpocion'?'mpot':o.pv,q=o.q|0,old=W.find(x=>x.type!=='item'&&x.k===k);if(old)old.q+=q;else W.push({k,n:k,q,type:'res'});S.dirty()}else if(o.pv)E.deliver(o.u,Object.assign({note:'↩️ Oferta retirada'},provDl(o.pv,o.q|0)))
  else if(o.ec)E.deliver(o.u,{ec:{k:o.ec,q:o.q|0},note:'↩️ Monedas devueltas'})}
 ops['offer.buy']=(u,m)=>{const id=String(m.id||''),o=col('offers')[id];if(!o||o.auc)return{e:'La oferta ya no existe'};if(o.u===u)return{e:'Es tu propia oferta'};
  const b=E.acct(u),t=tax(o.p);if(E.avail(b,'gold')<t.pay)return{e:'Oro insuficiente: te faltan '+(t.pay-E.avail(b,'gold'))};
@@ -44,7 +54,7 @@ ops['offer.buy']=(u,m)=>{const id=String(m.id||''),o=col('offers')[id];if(!o||o.
  E.deliver(u,bd);E.deliver(o.u,{gold:t.get,note:'💰 Vendiste a '+(b.nm||'un jugador')+' (+'+t.get+' 🪙)',tr:1});return{ok:1}};
 /* ---------- SUBASTAS (mascotas) ---------- */
 ops['auc.new']=(u,m)=>{const a=E.acct(u),pt=E.cleanPetS(m.pet),p=int(m.p,1,1e12,0),h=int(m.h,1,48,6);if(!pt||!pt.id||!p)return{e:'Datos inválidos'};const r=S.ECO.reg[pt.id];if(!r||r.o!==u)return{e:'Esa mascota no es tuya'};
- if(Object.values(col('offers')).filter(o=>o.u===u).length>=20)return{e:'Máximo 20 ofertas activas'};
+ /* Sin límite artificial de publicaciones: cada mascota queda en custodia del servidor. */
  const id=oid();holdReg(pt.id,'M:'+id,1,'p');setDoc('offers',id,{u,nm:a.nm||'Jugador',pet:pt,p,auc:1,end:now()+h*36e5,bid:0,bu:'',bn:'',bt:0,ts:now()});return{ok:1,id}};
 ops['auc.bid']=(u,m)=>{const id=String(m.id||''),o=col('offers')[id];if(!o||!o.auc||o.end<=now())return{e:'La subasta ya cerró'};if(o.u===u)return{e:'Es tu subasta'};if(o.bu===u)return{e:'Ya vas ganando'};
  const b=E.acct(u),amt=aucMin(o),t=tax(amt);if(E.avail(b,'gold')<t.pay)return{e:'Oro insuficiente: te faltan '+(t.pay-E.avail(b,'gold'))};

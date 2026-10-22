@@ -1,0 +1,9 @@
+Silk Road: Great Adventure v179
+
+- Movimiento principal por toque/clic en el suelo: el personaje calcula una ruta y camina sin joystick flotante.
+- Tocar un edificio dirige al personaje a la entrada de ese edificio.
+- Ciudades con caminos comerciales más visibles, banderines de la Ruta de la Seda y detalles de plaza.
+- El edificio Banco y Depósito se representa como una carpa física de almacén con letrero visible.
+- Interfaz del depósito renombrada como Carpa del Almacén y capacidad local sin límite artificial.
+
+Validación: se comprobará la sintaxis de los scripts y la integridad del paquete. No se ha probado en el servidor multijugador desplegado.

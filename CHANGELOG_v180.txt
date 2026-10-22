@@ -1,0 +1,8 @@
+Silk Road: Great Adventure v180
+
+- Interacción directa con la Carpa del Almacén: al tocarla en el mapa, el personaje camina hasta la entrada y abre automáticamente la interfaz del almacén al llegar.
+- Si el jugador cancela el movimiento o elige otro destino, la acción automática pendiente se cancela para evitar abrir servicios por error.
+- Los demás edificios indican que se debe volver a tocar el edificio al llegar para activar su servicio.
+- El botón de parada del movimiento táctil tiene una etiqueta más clara y accesible.
+
+Validación: sintaxis JavaScript e integridad del paquete verificadas localmente. No se ha probado en un servidor multijugador desplegado.

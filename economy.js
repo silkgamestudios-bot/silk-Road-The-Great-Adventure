@@ -43,11 +43,11 @@ function deliver(u,d){const a=acct(u);d.id=d.id||'d'+rid(6);d.ts=Date.now();d.se
 function flushDl(u){const a=acct(u);if(!a.dl.length||!S.online(u))return;const now=Date.now();a.dl.forEach(d=>{if(!d.sent)d.sent=now});S.push(u,{t:'dl',list:a.dl.slice(0,40)})}
 /* Modelo: R (a.res) = estado YA aplicado por el cliente. Una entrega con delta negativo reserva el recurso (no se puede gastar dos veces);
    si el cliente no la confirma en dlTtl tras recibirla, el servidor la aplica a la fuerza (así nadie se queda con el objeto y el oro). */
-const dKeys=d=>{const o=[];if(d.gold)o.push(['gold',null,d.gold]);if(d.goods)o.push(['g',d.goods.g,d.goods.q]);if(d.prov)o.push(['prov',d.prov.pk,d.prov.q]);if(d.ec)o.push(['ec',d.ec.k,d.ec.q]);if(d.pot)o.push(['pot',null,d.pot]);return o};
+const dKeys=d=>{const o=[];if(d.gold)o.push(['gold',null,d.gold]);if(d.goods)o.push(['g',d.goods.g,d.goods.q]);if(d.prov)o.push(['prov',d.prov.pk,d.prov.q]);if(d.ec)o.push(['ec',d.ec.k,d.ec.q]);if(d.pot)o.push(['pot',null,d.pot]);if(d.mpot)o.push(['mpot',null,d.mpot]);return o};
 function reserved(a,key,sub){let t=0;for(const d of a.dl){if(d.forced)continue;for(const [k,s2,q] of dKeys(d))if(k===key&&q<0&&(sub==null||s2===sub))t-=q}return t}
-function resVal(a,key,sub){const R=a.res;return key==='gold'?R.gold:key==='g'?R.g[sub]:key==='prov'?R.fd[sub]:key==='ec'?R.ec[sub]:key==='pot'?R.pot:0}
+function resVal(a,key,sub){const R=a.res;return key==='gold'?R.gold:key==='g'?R.g[sub]:key==='prov'?R.fd[sub]:key==='ec'?R.ec[sub]:key==='pot'?R.pot:key==='mpot'?R.mpot:0}
 const avail=(a,key,sub)=>Math.max(0,resVal(a,key,sub)-reserved(a,key,sub));
-function applyRes(a,key,sub,q){const R=a.res;if(key==='gold')R.gold=Math.max(0,R.gold+q);else if(key==='g')R.g[sub]=Math.max(0,R.g[sub]+q);else if(key==='prov')R.fd[sub]=Math.max(0,R.fd[sub]+q);else if(key==='ec')R.ec[sub]=Math.max(0,R.ec[sub]+q);else if(key==='pot')R.pot=Math.max(0,Math.min(99,R.pot+q))}
+function applyRes(a,key,sub,q){const R=a.res;if(key==='gold')R.gold=Math.max(0,R.gold+q);else if(key==='g')R.g[sub]=Math.max(0,R.g[sub]+q);else if(key==='prov')R.fd[sub]=Math.max(0,R.fd[sub]+q);else if(key==='ec')R.ec[sub]=Math.max(0,R.ec[sub]+q);else if(key==='pot')R.pot=Math.max(0,Math.min(99,R.pot+q));else if(key==='mpot')R.mpot=Math.max(0,Math.min(99,R.mpot+q))}
 function forceExpired(a){const now=Date.now();let n=0;for(const d of a.dl){if(d.forced||!d.sent||now-d.sent<=CFG.dlTtl)continue;let neg=0;for(const [k,s2,q] of dKeys(d))if(q<0){applyRes(a,k,s2,q);neg=1}if(neg){d.forced=1;n++}}if(n)S.dirty();return n}
 /* ---------- validación de objetos y mascotas ---------- */
 const BASE={0:{dm:5},1:{hp:8},2:{hp:4,dm:1},3:{dm:2,hp:2},4:{hp:5},5:{sp:2}};
@@ -139,6 +139,10 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  if(Array.isArray(v.bag))v.bag=v.bag.slice(0,v.bgc).map(x=>chk(x)).filter(Boolean);
  if(Array.isArray(v.lb))v.lb=v.lb.slice(0,v.lgc).map(x=>chk(x)).filter(Boolean);else v.lb=[];
  if(Array.isArray(v.dep))v.dep=v.dep.slice(0,60).map(x=>chk(x)).filter(Boolean);else v.dep=[];
+ /* Almacén general: los objetos guardados también cuentan como propiedad del jugador.
+    Antes el registro de propiedad solo recorría mochila/equipo/loot y podía caducar
+    la propiedad de objetos almacenados, haciendo que el mercado los rechazara. */
+ if(Array.isArray(v.storage)){const st=[];for(const x of v.storage){if(!x||typeof x!=='object')continue;const k=String(x.k||'').slice(0,30),n=String(x.n||k).slice(0,80),q=int(x.q,1,1e9,0);if(!k||!q)continue;if(x.type==='item'){const it=chk(x.item);if(!it||!it.id)continue;st.push({k:it.id,n:it.n||n,q:1,type:'item',item:it})}else if(/^[a-z0-9_]{1,30}$/.test(k)){st.push({k,n,q,type:'res'})}}v.storage=st}else v.storage=[];
  if(Array.isArray(v.pets)){const ids=[];v.pets=v.pets.slice(0,12).map(p=>{const c=cleanPetS(p);if(!c){dropped++;return null}if(c.id){if(seen.has(c.id)){dropped++;return null}seen.add(c.id);const r=ECO.reg[c.id];if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'mascota de otro jugador '+c.id,2);return null}if(!r){if(!first&&!master&&!mintOk(a,'p',0,now)){dropped++;flag(u,'demasiadas mascotas nuevas');return null}ECO.reg[c.id]={o:u,k:'p',t:now};S.dirty()}}return c}).filter(Boolean)}
  if(dropped)fix.items=dropped;
  /* limpieza del registro: lo que ya no está en el guardado ni en el mercado deja de ser tuyo */

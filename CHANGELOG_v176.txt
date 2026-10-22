@@ -1,0 +1,13 @@
+Silk Road: Great Adventure — v176
+
+Inventory / warehouse / market fix:
+- Added a distinct market product key for mana potions (mpocion), separate from health potions.
+- Server market availability now reads the authoritative mana-potion balance.
+- Mana-potion market listings create mpot deltas rather than accidentally consuming health potions or generic resources.
+- Server delivery reservations and expiry recovery now account for mpot deltas.
+- Client delivery handling applies server-confirmed mpot deltas to the mana-potion inventory.
+- Warehouse market listing now stages, commits, and rolls back mpot counts in the correct field.
+
+Validation:
+- JavaScript syntax checks and archive consistency checks are run for this package.
+- This is a code-level fix; a live deployed-server multiplayer test has not been performed.

@@ -1,0 +1,17 @@
+Silk Road: Great Adventure — v175 (corrección de publicaciones desde almacén)
+
+Corrección aplicada:
+- La publicación de objetos desde el almacén solo retira el objeto si el servidor responde explícitamente {ok:1}. Una respuesta de error ya no se interpreta como éxito.
+- La publicación de recursos desde el almacén verifica la respuesta del servidor. Si el servidor rechaza la oferta, se revierte el movimiento local y se devuelve el recurso al almacén.
+- Se muestra el motivo de rechazo devuelto por el servidor, en vez de anunciar una publicación fallida como exitosa.
+- La raíz y la carpeta silkwork/ se mantienen sincronizadas.
+
+Validación local:
+- node --check en server.js, economy.js, market.js y los demás módulos Node.
+- Se extrajeron los bloques JavaScript de play.html y se comprobó su sintaxis con node --check.
+- ZIP validado con unzip -t.
+
+Límites conocidos:
+- El almacén sigue teniendo estado de cliente/localStorage; esta versión no lo convierte todavía en un almacén autoritativo del servidor.
+- No se probaron conexiones reales, pérdidas de red ni compras/ventas dentro de un servidor desplegado.
+- No se afirma que todos los casos de objetos de maná, carne o pesca estén reparados; requieren pruebas de juego.

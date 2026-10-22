@@ -1,0 +1,14 @@
+Silk Road: Great Adventure — v174 (parches de revisión)
+
+Cambios verificados en código:
+- Eliminado el tope artificial de 20 subastas activas por jugador. Cada mascota publicada sigue pasando por la custodia/registro del servidor.
+- El uso de pociones de vida/maná guarda el estado inmediatamente después de consumirlas y aplicar el efecto.
+- Los archivos de despliegue en la raíz y en silkwork/ se mantienen idénticos para market.js y play.html.
+
+Validación ejecutada:
+- node --check sobre server.js, economy.js y market.js.
+- Extracción y node --check de los 5 bloques <script> de play.html.
+
+Pendiente importante:
+- El almacén actual sigue teniendo una parte de su estado en localStorage del cliente. Para hacerlo autoritativo y seguro en multijugador hace falta migrar almacenamiento/transferencias/ventas a operaciones transaccionales del servidor y probarlas con el servidor desplegado.
+- No se ejecutaron pruebas de integración en un servidor real ni se pudo consultar GitHub en vivo en esta sesión. No se afirma que estos pendientes estén resueltos.

@@ -1,0 +1,9 @@
+Silk Road v181 — clean HUD and joystick restored
+- Restored the left-side joystick and removed tap-to-move from the world canvas.
+- Removed the stop-walking helper button from the visible HUD.
+- Hid the System/settings group from regular players while retaining GM access.
+- Suppressed repetitive server connection status popups and reduced notification clutter.
+- Direct player messages now appear in a small header banner instead of a large toast.
+- Moved the PvP toggle to the upper-left and made it compact and translucent.
+- Kept important level, XP, gold/reward and actionable error messages visible.
+- Moved no game/server data; multiplayer behavior still requires runtime testing.

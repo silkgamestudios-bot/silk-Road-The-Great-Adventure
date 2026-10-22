@@ -1,0 +1,7 @@
+Silk Road Great Adventure v183
+
+- Añadido respaldo local independiente para las asignaciones de accesos rápidos por personaje (qs, ss y modos asociados).
+- El respaldo se actualiza en cada guardado y se recupera al iniciar para reducir pérdidas de configuración por desincronización del guardado principal.
+- Ajustes CSS conservadores para que el panel de equipo conserve el grid principal y su detalle integrado sin añadir ventanas nuevas.
+
+Validación: comprobación sintáctica pendiente de ejecutar en todos los scripts embebidos. No se ha probado aún dentro de una sesión multijugador real.

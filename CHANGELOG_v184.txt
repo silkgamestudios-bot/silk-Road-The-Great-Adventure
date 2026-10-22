@@ -1,0 +1,4 @@
+Silk Road Great Adventure v184
+- Moved potion, skill, loot and run controls into the quick-access dock.
+- Repositioned the existing PvP button beside the minimap in the upper-right HUD.
+- Retained existing button IDs and event handlers to preserve gameplay actions.

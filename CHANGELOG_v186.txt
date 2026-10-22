@@ -1,0 +1,4 @@
+Silk Road Great Adventure v186
+- Moved the existing PvP button into the main top HUD row beside the map control.
+- Preserved the original PvP button node and its existing event handler.
+- CSS sizing adjusted for the compact top bar.

@@ -126,6 +126,11 @@ const world=require('./world')(DB,log,{
  mint:(u,it)=>{const c=E.cleanItem(Object.assign({},it,{id:'s'+E.rid(8)}));if(!c)return it;S.ECO.reg[c.id]={o:u,k:'i',t:Date.now()};dirty=1;return c}});
 S.world=world;try{TR.init()}catch(e){log('terr init '+e.stack)}
 function bc(c,id,o,n){for(const ws of wss.clients){if(!ws.uid)continue;for(const s in ws.subs){const b=ws.subs[s];if(b.c!==c)continue;const mo=match(o,b.w),mn=match(n,b.w);if(mo||mn)ws.send(JSON.stringify({t:'ch',sid:+s,id,d:mn?n:null}))}}}
+/* Cupo de jugadores y fila de turnos: MAX_PLAYERS=N limita los conectados a la vez (0/ausente = sin limite). Master y acceso anticipado siempre entran. */
+const MAXP=parseInt(process.env.MAX_PLAYERS||'0',10)||0,QUE=new Map();
+function qGate(u){if(!MAXP||isMaster(u)||isEarly(u)||ONL.has(u))return 0;const now=Date.now();for(const [k,v] of QUE)if(now-v.t>45000)QUE.delete(k);
+ let q=QUE.get(u);if(!q){q={t:now};QUE.set(u,q)}q.t=now;const free=Math.max(0,MAXP-ONL.size);let pos=0;for(const k of QUE.keys()){pos++;if(k===u)break}
+ if(pos<=free){QUE.delete(u);return 0}return pos}
 const IPN=new Map();
 wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!ORI.includes(og)&&og!=='https://'+req.headers.host&&og!=='http://'+req.headers.host){ws.close(1008);return}
  const ip=String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'').split(',')[0].trim();const n0=(IPN.get(ip)||0)+1;if(n0>12){ws.close(1013);return}IPN.set(ip,n0);ws.on('close',()=>{const k=(IPN.get(ip)||1)-1;if(k<=0)IPN.delete(ip);else IPN.set(ip,k)});
@@ -134,6 +139,7 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
   const rep=(o)=>{if(ws.readyState===1)ws.send(JSON.stringify(o))},err=e=>m.rid&&rep({t:'r',rid:m.rid,ok:0,e});
   if(m.t==='hi'){const done=(u,extra)=>{const old=ONL.get(u);if(old&&old!==ws){try{old.send(JSON.stringify({t:'kick',e:'Tu cuenta se abrió en otro dispositivo'}));old.close(4001)}catch(e){}}
      if(!launched()&&!isMaster(u)&&!isEarly(u)){log('pre-apertura bloqueado: uid='+u+' ids='+earlyIds(u).join(' | '));rep({t:'bad',e:'El reino abre el '+new Date(LAUNCH_AT).toLocaleString('es',{timeZone:'America/Santo_Domingo',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+' (hora de República Dominicana). Vuelve entonces.',launch:LAUNCH_AT});try{ws.close()}catch(e){}return}
+     {const q=qGate(u);if(q){rep({t:'bad',e:'El reino está lleno ('+ONL.size+'/'+MAXP+' jugadores). Eres el #'+q+' en la fila. Espera unos segundos y vuelve a entrar.',full:1,pos:q});try{ws.close()}catch(e){}return}}
      ws.uid=u;ONL.set(u,ws);try{SO.presence(u,1)}catch(e){}const a=E.acct(u);rep(Object.assign({t:'ok',uid:u,ent:E.ent(u)},extra||{}));
      if(isMaster(u)){const o=(DB.cfg||{}).master;if(!o||o.u!==u){DB.cfg=DB.cfg||{};DB.cfg.master={u,ts:Date.now()};dirty=1;bc('cfg','master',o||null,DB.cfg.master)}}
      setTimeout(()=>E.flushDl(u),400);setTimeout(()=>{try{rep(wsvMsg())}catch(e){}},1200)};

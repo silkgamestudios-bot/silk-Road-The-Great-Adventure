@@ -39,7 +39,7 @@ function pre(m,ip,rep,done,E){
   if(norm(p)===norm(n))return fail('La contraseña no puede ser igual al usuario.');
   if(!MAIL.test(e))return fail('Escribe un correo válido: lo necesitas para recuperar la contraseña.');
   if(USR[norm(n)])return fail('Ese usuario ya existe.');
-  if(Object.values(USR).filter(x=>x.e===e).length>=3)return fail('Ese correo ya tiene 3 cuentas.');
+  if(Object.values(USR).some(x=>x.e===e))return fail('Ese correo ya está registrado. Entra con tu usuario o recupera tu contraseña.');
   mkPw(p).then(pw=>{if(USR[norm(n)]){fail('Ese usuario ya existe.');return}const u=uidOf(n);USR[norm(n)]={u,n,e,h:pw.h,s:pw.s,ts:Date.now(),f:0,lk:0};ACC[u]={e,n,ts:Date.now(),pw:1};dirty();
    done(u,{ses:sesFor(u),email:e,name:n,uname:n,master:false,fresh:1})}).catch(()=>fail('No se pudo crear la cuenta.'));return true}
  if(m.lg){const r=m.lg||{},k=norm(r.n),p=String(r.p||'');

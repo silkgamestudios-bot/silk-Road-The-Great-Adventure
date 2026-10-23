@@ -3646,7 +3646,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v209';let UPD=null,RSN=0;
+const SR_V='sr-v210';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}const go=()=>location.reload();try{if(window.caches)caches.keys().then(k=>Promise.all(k.map(x=>caches.delete(x)))).then(go,go);else go()}catch(e){go()}setTimeout(go,2500)}
 function updBar(){let b=$('updb');if(!UPD){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='updb';b.style.cssText='position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:9999;background:#1d2b4a;color:#f5e6c4;border:2px solid #d9a441;border-radius:12px;padding:8px 12px;font:13px Georgia,serif;display:flex;gap:8px;align-items:center;max-width:94vw;box-shadow:0 4px 16px #000a';b.addEventListener('click',e=>{if(e.target.closest('button'))updGo()});document.body.appendChild(b)}
  const mn=Math.max(0,Math.ceil((UPD.at-Date.now())/6e4));b.innerHTML='<span>🔄 Hay una versión nueva · se actualiza sola en '+mn+' min</span><button style="background:#d9a441;color:#1b1206;border:0;border-radius:8px;padding:6px 10px;font-weight:bold">Actualizar ahora</button>'}
@@ -6217,18 +6217,18 @@ if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWor
 
 <style id="v182-hud-patch">
 #v182-pvp{position:fixed;z-index:9998;left:12px;top:78px;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(12,18,30,.28);border:1px solid rgba(255,215,95,.62);color:#ffe39a;font-size:21px;box-shadow:0 2px 8px #0005;backdrop-filter:blur(2px);opacity:.82;padding:0}
-#v182-flight{position:fixed;z-index:9998;right:12px;top:205px;display:none;gap:5px;flex-direction:column}
+#v182-flight{position:fixed;z-index:9998;right:7px;top:104px;display:none;gap:5px;flex-direction:column}
 #v182-flight button{background:rgba(10,15,25,.32);border:1px solid #e4c36b88;color:#fff4d0;border-radius:9px;padding:6px 8px;font-size:12px;backdrop-filter:blur(2px)}
-@media(max-width:700px){#v182-pvp{left:8px;top:78px}#v182-flight{right:7px;top:205px}}
+@media(max-width:700px){#v182-pvp{left:8px;top:78px}#v182-flight{right:7px;top:104px}#v182-flight button{padding:5px 7px;font-size:11px}}
 </style>
-<div id="v182-flight"><button id="v182-fly">☁️ Vuelo</button><button id="v182-fls">💨 Velocidad</button></div>
+
 <script id="v182-hud-patch-js">
 (()=>{
  const byText=(re)=>[...document.querySelectorAll('button,[role="button"]')].find(b=>re.test((b.innerText||b.textContent||'').trim()) && b.id!=='v182-pvp' && !b.closest('#v182-flight'));
  const p=document.getElementById('v182-pvp');
  p?.addEventListener('click',()=>{let b=byText(/PvP|Se busca|Gremio de Cazadores/i);if(b)b.click();else {const m=byText(/Menú|Menu/i);if(m)m.click();setTimeout(()=>{const q=byText(/PvP|Se busca|Gremio de Cazadores/i);if(q)q.click()},250)}});
  const f=document.getElementById('v182-flight');
- function refresh(){try{const gm=typeof gmIsM==='function'&&gmIsM();f.style.display=gm?'flex':'none'}catch(e){f.style.display='none'}}
+ function refresh(){try{const gm=typeof gmIsM==='function'&&gmIsM();if(f)f.style.display=gm?'flex':'none'}catch(e){if(f)f.style.display='none'}}
  document.getElementById('v182-fly')?.addEventListener('click',()=>{const b=document.querySelector('button[data-h="fly"]');if(b)b.click();refresh()});
  document.getElementById('v182-fls')?.addEventListener('click',()=>{const b=document.querySelector('button[data-h="fls"]');if(b)b.click()});
  setInterval(refresh,1500);refresh();

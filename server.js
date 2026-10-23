@@ -21,10 +21,10 @@ const LAUNCH_RAW=process.env.LAUNCH_AT===undefined?'2026-10-23T20:00:00-04:00':S
 /* Acceso anticipado discreto (moderadores/creadores): hasta 3 cuentas, ademas del master. Se definen con la variable EARLY (separadas por coma: correo, usuario o uid) o desde el juego (master: Opciones > Pruebas > Acceso anticipado). */
 const EARLY_ENV=(process.env.EARLY||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
 const earlyList=()=>[...new Set(EARLY_ENV.concat(((DB.cfg||{}).early||[]).map(x=>String(x).toLowerCase())))];
-const earlyIds=u=>{const o=[String(u).toLowerCase()],a=ACC[u];if(a&&a.e)o.push(String(a.e).toLowerCase());try{const n=AC&&AC.unameOf&&AC.unameOf(u);if(n)o.push(String(n).toLowerCase())}catch(e){}return o};
+const earlyIds=u=>{const o=[String(u).toLowerCase()],a=ACC[u];if(a&&a.e&&!a.pw)o.push(String(a.e).toLowerCase());try{const n=AC&&AC.unameOf&&AC.unameOf(u);if(n)o.push(String(n).toLowerCase())}catch(e){}return o};
 const isEarly=u=>{const L=earlyList().slice(0,3);return earlyIds(u).some(x=>L.includes(x))};
 const launched=()=>!LAUNCH_AT||Date.now()>=LAUNCH_AT;
-const isMaster=u=>(MASTER&&u===MASTER)||(!!AC&&!!AC.masterUid&&u===AC.masterUid)||(!!MASTER_EMAIL&&!!ACC[u]&&ACC[u].e===MASTER_EMAIL)||(!MASTER&&!MASTER_EMAIL&&!!(DB.cfg&&DB.cfg.master&&DB.cfg.master.u===u));
+const isMaster=u=>(MASTER&&u===MASTER)||(!!AC&&!!AC.masterUid&&u===AC.masterUid)||(!!MASTER_EMAIL&&!!ACC[u]&&!ACC[u].pw&&ACC[u].e===MASTER_EMAIL)||(!MASTER&&!MASTER_EMAIL&&!!(DB.cfg&&DB.cfg.master&&DB.cfg.master.u===u));
 const log=s=>console.log(s);
 const EPH=new Set(['pmem','wagons','pmsg','hits','pres','pinv','pkill']);              // efímeras: no se guardan en disco
 const save=sync=>{dirty=0;const db={};for(const c in DB)if(!EPH.has(c))db[c]=DB[c];const j=JSON.stringify({db,tok:TOK,ses:SES,acc:ACC,eco:ECO,usr:USR});if(sync){fs.writeFileSync(FILE+'.tmp',j);fs.renameSync(FILE+'.tmp',FILE)}else fs.writeFile(FILE+'.tmp',j,e=>{if(!e)fs.rename(FILE+'.tmp',FILE,()=>{})})};
@@ -53,6 +53,7 @@ if((DB.cfg.wipe||'')!==WIPE_ID){try{
  let n=0;try{for(const f of fs.readdirSync(SAVEDIR)){try{fs.copyFileSync(SAVEDIR+'/'+f,bk+'/'+f);fs.unlinkSync(SAVEDIR+'/'+f);n++}catch(e){}}}catch(e){}
  KEEP={};if(process.env.WIPE_KEEP!=='0')for(const u in (ECO.acc||{})){const a=ECO.acc[u];KEEP[u]={gem:a.gem,sk:a.sk,px:a.px,vip:a.vip,lic:a.lic}}   /* WIPE_KEEP=0: tampoco se conservan gemas/apariencias/premium (todos desde cero) */
  for(const k of Object.keys(ECO))delete ECO[k];
+ if(process.env.WIPE_ACCOUNTS==='1'){for(const o of [USR,ACC,SES,TOK])for(const k of Object.keys(o))delete o[k];KEEP={};log('[REINICIO] cuentas, usuarios y sesiones borrados (copia en '+bk+')')}   /* WIPE_ACCOUNTS=1: tambien se borran usuarios/contrasenas/sesiones */
  const cfg=DB.cfg,pay=DB.gemreq;for(const c of Object.keys(DB))delete DB[c];DB.cfg=cfg;if(pay)DB.gemreq=pay;
  DB.cfg.wipe=WIPE_ID;dirty=1;
  log('[REINICIO] '+WIPE_ID+': '+n+' personajes borrados (copia en '+bk+')');

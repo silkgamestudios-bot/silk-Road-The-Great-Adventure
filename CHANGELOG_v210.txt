@@ -1,0 +1,7 @@
+v210 (23 oct 2026)
+- Quitados los botones flotantes Vuelo/Velocidad (siguen en Menu > Pruebas, solo master).
+- Seguridad: el correo master / de acceso anticipado ya NO se reconoce en cuentas con contraseña (correo sin verificar); solo Google o MASTER_USER. Acceso anticipado en cuentas con contraseña se da por usuario.
+- accounts.js: un correo = una cuenta (antes 3).
+- server.js: reinicio total opcional con WIPE_ACCOUNTS=1 (+ WIPE_ID nuevo, WIPE_KEEP=0). Hace copia en DATA_DIR/backups antes de borrar.
+- sw.js: sr-v210.
+NO incluidos (son tuyos, no los pises): claude-shim.js, heroes.js, config.js si tiene tus datos.

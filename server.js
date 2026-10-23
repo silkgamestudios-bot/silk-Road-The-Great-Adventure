@@ -48,6 +48,10 @@ const S={ECO,cat,log,DB,isMaster,notify:notifyRL,dirty:()=>{dirty=1},
 /* ===== REINICIO ÚNICO: personajes, oro y objetos desde cero (se conservan cuentas, gemas pagadas, apariencias compradas y pedidos de pago) ===== */
 /* WIPE_AT_LAUNCH=1: 3 min antes de la apertura el servidor se reinicia solo y borra los PERSONAJES de pruebas (mods/master); las cuentas (usuario/contrasena) se conservan. */
 const LWLEAD=180000,LW=process.env.WIPE_AT_LAUNCH==='1'&&!!LAUNCH_AT&&Date.now()>=LAUNCH_AT-LWLEAD;
+/* DAILY_RESTART=H (0-23, hora de Republica Dominicana, ej. 5 = 5:00 AM): reinicio diario para liberar memoria y limpiar el servidor. Guarda todo antes de cerrar; Render lo vuelve a levantar solo. No borra datos. */
+const DRH=process.env.DAILY_RESTART===undefined||process.env.DAILY_RESTART===''?-1:parseInt(process.env.DAILY_RESTART,10);
+const nextDaily=(h,now)=>{const u=(h+4)%24,d=new Date(now);let t=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),u,0,0);while(t<=now+10*60000)t+=864e5;return t-now};
+if(DRH>=0&&DRH<=23){const ms=nextDaily(DRH,Date.now());setTimeout(()=>{log('[REINICIO] reinicio diario programado ('+DRH+':00 hora RD): guardando y reiniciando');try{save(1)}catch(e){}process.exit(0)},ms);log('reinicio diario en '+Math.round(ms/60000)+' min')}
 const WIPE_ID=LW?('launch-'+LAUNCH_AT):(process.env.WIPE_ID||'reset-2026-10-18');let KEEP=null;
 if(process.env.WIPE_AT_LAUNCH==='1'&&LAUNCH_AT&&!LW){const ms=LAUNCH_AT-LWLEAD-Date.now()+1500;if(ms<2147e6)setTimeout(()=>{log('[REINICIO] reinicio programado previo a la apertura');try{save(1)}catch(e){}process.exit(0)},ms)}
 if((DB.cfg.wipe||'')!==WIPE_ID){try{

@@ -72,6 +72,10 @@ const ops={
   if(!lim('pw'+u,5,36e5))return{e:'Demasiados intentos'};
   if(!eq(await hashPw(String(m.o||''),a.s),a.h))return{e:'La contraseña actual no es correcta'};
   const pw=await mkPw(np);a.h=pw.h;a.s=pw.s;dirty();return{ok:1}},
+ 'adm.mk':async(u,m)=>{if(!ctx.isMaster(u))return{e:'solo el master'};const n=String(m.n||'').trim(),p=String(m.p||'');
+  if(!NAME.test(n))return{e:'Usuario: de 3 a 16 letras, números o guion bajo'};if(p.length<8||p.length>64)return{e:'Contraseña de 8 a 64 caracteres'};if(norm(p)===norm(n))return{e:'La contraseña no puede ser igual al usuario'};
+  if(USR[norm(n)])return{e:'Ese usuario ya existe'};if(!lim('mk'+u,20,36e5))return{e:'Demasiados intentos'};
+  const pw=await mkPw(p);if(USR[norm(n)])return{e:'Ese usuario ya existe'};const uid=uidOf(n);USR[norm(n)]={u:uid,n,e:'',h:pw.h,s:pw.s,ts:Date.now(),f:0,lk:0,mk:1};ACC[uid]={e:'',n,ts:Date.now(),pw:1,mk:1};dirty();log('adm.mk '+n);return{ok:1,n}},
  'adm.pw':async(u,m)=>{if(!ctx.isMaster(u))return{e:'solo el master'};const a=USR[norm(m.n)];if(!a)return{e:'No existe ese usuario'};if(a.u===masterUid)return{e:'No se puede'};
   const np=String(m.p||'');if(np.length<8||np.length>64)return{e:'Contraseña temporal de 8 a 64 caracteres'};const pw=await mkPw(np);a.h=pw.h;a.s=pw.s;a.f=0;a.lk=0;a.rc=null;for(const t in SES)if(SES[t].u===a.u)delete SES[t];dirty();return{ok:1}}};
 return{pre,ops,masterUid,mailOn,isAcct:u=>!!byUid(u),unameOf:u=>{const a=byUid(u);return a?a.n:''}}};

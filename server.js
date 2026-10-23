@@ -46,14 +46,17 @@ const ONL=new Map();   // uid -> ws (una sola sesión por cuenta: evita duplicar
 const S={ECO,cat,log,DB,isMaster,notify:notifyRL,dirty:()=>{dirty=1},
  push:(u,m)=>{const w=ONL.get(u);if(w&&w.readyState===1)w.send(JSON.stringify(m))},online:u=>{const w=ONL.get(u);return !!w&&w.readyState===1},bc:(c,id,o,n)=>bc(c,id,o,n)};
 /* ===== REINICIO ÚNICO: personajes, oro y objetos desde cero (se conservan cuentas, gemas pagadas, apariencias compradas y pedidos de pago) ===== */
-const WIPE_ID=process.env.WIPE_ID||'reset-2026-10-18';let KEEP=null;
+/* WIPE_AT_LAUNCH=1: 3 min antes de la apertura el servidor se reinicia solo y borra los PERSONAJES de pruebas (mods/master); las cuentas (usuario/contrasena) se conservan. */
+const LWLEAD=180000,LW=process.env.WIPE_AT_LAUNCH==='1'&&!!LAUNCH_AT&&Date.now()>=LAUNCH_AT-LWLEAD;
+const WIPE_ID=LW?('launch-'+LAUNCH_AT):(process.env.WIPE_ID||'reset-2026-10-18');let KEEP=null;
+if(process.env.WIPE_AT_LAUNCH==='1'&&LAUNCH_AT&&!LW){const ms=LAUNCH_AT-LWLEAD-Date.now()+1500;if(ms<2147e6)setTimeout(()=>{log('[REINICIO] reinicio programado previo a la apertura');try{save(1)}catch(e){}process.exit(0)},ms)}
 if((DB.cfg.wipe||'')!==WIPE_ID){try{
  const bk=(process.env.DATA_DIR||'.')+'/backups/pre-'+WIPE_ID+'-'+Date.now();fs.mkdirSync(bk,{recursive:true});
  try{fs.copyFileSync(FILE,bk+'/data.json')}catch(e){}
  let n=0;try{for(const f of fs.readdirSync(SAVEDIR)){try{fs.copyFileSync(SAVEDIR+'/'+f,bk+'/'+f);fs.unlinkSync(SAVEDIR+'/'+f);n++}catch(e){}}}catch(e){}
- KEEP={};if(process.env.WIPE_KEEP!=='0')for(const u in (ECO.acc||{})){const a=ECO.acc[u];KEEP[u]={gem:a.gem,sk:a.sk,px:a.px,vip:a.vip,lic:a.lic}}   /* WIPE_KEEP=0: tampoco se conservan gemas/apariencias/premium (todos desde cero) */
+ KEEP={};if(process.env.WIPE_KEEP!=='0'&&!LW)for(const u in (ECO.acc||{})){const a=ECO.acc[u];KEEP[u]={gem:a.gem,sk:a.sk,px:a.px,vip:a.vip,lic:a.lic}}   /* WIPE_KEEP=0: tampoco se conservan gemas/apariencias/premium (todos desde cero) */
  for(const k of Object.keys(ECO))delete ECO[k];
- if(process.env.WIPE_ACCOUNTS==='1'){for(const o of [USR,ACC,SES,TOK])for(const k of Object.keys(o))delete o[k];KEEP={};log('[REINICIO] cuentas, usuarios y sesiones borrados (copia en '+bk+')')}   /* WIPE_ACCOUNTS=1: tambien se borran usuarios/contrasenas/sesiones */
+ if(process.env.WIPE_ACCOUNTS==='1'&&!LW){for(const o of [USR,ACC,SES,TOK])for(const k of Object.keys(o))delete o[k];KEEP={};log('[REINICIO] cuentas, usuarios y sesiones borrados (copia en '+bk+')')}   /* WIPE_ACCOUNTS=1: tambien se borran usuarios/contrasenas/sesiones */
  const cfg=DB.cfg,pay=DB.gemreq;for(const c of Object.keys(DB))delete DB[c];DB.cfg=cfg;if(pay)DB.gemreq=pay;
  DB.cfg.wipe=WIPE_ID;dirty=1;
  log('[REINICIO] '+WIPE_ID+': '+n+' personajes borrados (copia en '+bk+')');

@@ -1,0 +1,7 @@
+Silk Road v202 — HUD sin solapes
+- Oculta los controles de juego mientras la pantalla de marca/título está activa.
+- Mantiene el menú superior en fila y el minimapa circular debajo.
+- Reordena habilidades, accesos extra, pociones, botín y carrera en una cuadrícula con posiciones únicas.
+- Mantiene el botón de ataque principal separado y destacado.
+- Conserva la lógica del juego y actualiza ambas copias de play.html.
+- ZIP validado; se recomienda probar en navegador para confirmar la disposición visual.

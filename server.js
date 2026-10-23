@@ -16,11 +16,19 @@ let DB={},TOK={},SES={},ACC={},ECO={},USR={},AC=null,dirty=0;const REQ=process.e
 try{const j=JSON.parse(fs.readFileSync(FILE,'utf8'));DB=j.db||{};TOK=j.tok||{};SES=j.ses||{};ACC=j.acc||{};ECO=j.eco||{};USR=j.usr||{}}catch(e){}
 for(const k in SES)if(SES[k].x<Date.now())delete SES[k];
 DB.cfg=DB.cfg||{};if(PAY_ID&&!(DB.cfg.pay&&DB.cfg.pay.id===PAY_ID))DB.cfg.pay={id:PAY_ID,ts:Date.now()};
+/* Apertura del reino: antes de esta hora solo entra el master. Cambia LAUNCH_AT en Render (ISO, ej. 2026-10-23T20:00:00-04:00) o pon LAUNCH_AT=off para desactivarlo. */
+const LAUNCH_RAW=process.env.LAUNCH_AT===undefined?'2026-10-23T20:00:00-04:00':String(process.env.LAUNCH_AT).trim(),LAUNCH_AT=/^(off|0|no|)$/i.test(LAUNCH_RAW)?0:(Date.parse(LAUNCH_RAW)||0);
+/* Acceso anticipado discreto (moderadores/creadores): hasta 3 cuentas, ademas del master. Se definen con la variable EARLY (separadas por coma: correo, usuario o uid) o desde el juego (master: Opciones > Pruebas > Acceso anticipado). */
+const EARLY_ENV=(process.env.EARLY||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+const earlyList=()=>[...new Set(EARLY_ENV.concat(((DB.cfg||{}).early||[]).map(x=>String(x).toLowerCase())))];
+const earlyIds=u=>{const o=[String(u).toLowerCase()],a=ACC[u];if(a&&a.e)o.push(String(a.e).toLowerCase());try{const n=AC&&AC.unameOf&&AC.unameOf(u);if(n)o.push(String(n).toLowerCase())}catch(e){}return o};
+const isEarly=u=>{const L=earlyList().slice(0,3);return earlyIds(u).some(x=>L.includes(x))};
+const launched=()=>!LAUNCH_AT||Date.now()>=LAUNCH_AT;
 const isMaster=u=>(MASTER&&u===MASTER)||(!!AC&&!!AC.masterUid&&u===AC.masterUid)||(!!MASTER_EMAIL&&!!ACC[u]&&ACC[u].e===MASTER_EMAIL)||(!MASTER&&!MASTER_EMAIL&&!!(DB.cfg&&DB.cfg.master&&DB.cfg.master.u===u));
 const log=s=>console.log(s);
 const EPH=new Set(['pmem','wagons','pmsg','hits','pres','pinv','pkill']);              // efímeras: no se guardan en disco
 const save=sync=>{dirty=0;const db={};for(const c in DB)if(!EPH.has(c))db[c]=DB[c];const j=JSON.stringify({db,tok:TOK,ses:SES,acc:ACC,eco:ECO,usr:USR});if(sync){fs.writeFileSync(FILE+'.tmp',j);fs.renameSync(FILE+'.tmp',FILE)}else fs.writeFile(FILE+'.tmp',j,e=>{if(!e)fs.rename(FILE+'.tmp',FILE,()=>{})})};
-setInterval(()=>{if(dirty)save()},5000);
+let SV_NEXT=0;setInterval(()=>{if(!dirty)return;const t0=Date.now();if(t0<SV_NEXT)return;save();SV_NEXT=Date.now()+Math.max(0,(Date.now()-t0)*40-5000)},5000);   /* si guardar tarda (base de datos grande), se espacia para no frenar el juego; al apagar siempre se guarda */
 /* copias de seguridad cada 6 h (se guardan 14) en DATA_DIR/backups */
 const BKDIR=(process.env.DATA_DIR||'.')+'/backups';try{fs.mkdirSync(BKDIR,{recursive:true})}catch(e){}
 setInterval(()=>{try{if(!fs.existsSync(FILE))return;const n=new Date().toISOString().slice(0,13).replace(/[-T:]/g,'');fs.copyFileSync(FILE,BKDIR+'/db-'+n+'.json');const l=fs.readdirSync(BKDIR).filter(x=>x.startsWith('db-')).sort();while(l.length>14)fs.unlinkSync(BKDIR+'/'+l.shift())}catch(e){}},6*36e5);
@@ -43,7 +51,7 @@ if((DB.cfg.wipe||'')!==WIPE_ID){try{
  const bk=(process.env.DATA_DIR||'.')+'/backups/pre-'+WIPE_ID+'-'+Date.now();fs.mkdirSync(bk,{recursive:true});
  try{fs.copyFileSync(FILE,bk+'/data.json')}catch(e){}
  let n=0;try{for(const f of fs.readdirSync(SAVEDIR)){try{fs.copyFileSync(SAVEDIR+'/'+f,bk+'/'+f);fs.unlinkSync(SAVEDIR+'/'+f);n++}catch(e){}}}catch(e){}
- KEEP={};for(const u in (ECO.acc||{})){const a=ECO.acc[u];KEEP[u]={gem:a.gem,sk:a.sk,px:a.px,vip:a.vip,lic:a.lic}}
+ KEEP={};if(process.env.WIPE_KEEP!=='0')for(const u in (ECO.acc||{})){const a=ECO.acc[u];KEEP[u]={gem:a.gem,sk:a.sk,px:a.px,vip:a.vip,lic:a.lic}}   /* WIPE_KEEP=0: tampoco se conservan gemas/apariencias/premium (todos desde cero) */
  for(const k of Object.keys(ECO))delete ECO[k];
  const cfg=DB.cfg,pay=DB.gemreq;for(const c of Object.keys(DB))delete DB[c];DB.cfg=cfg;if(pay)DB.gemreq=pay;
  DB.cfg.wipe=WIPE_ID;dirty=1;
@@ -56,6 +64,10 @@ AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},i
 const TR=require('./terr')(S,E);
 const SD=require('./seda')(S,E);
 const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops);
+/* Acceso anticipado: solo el master. */
+OPS['early.list']=u=>isMaster(u)?{list:earlyList(),max:3,env:EARLY_ENV}:{e:'operación desconocida'};
+OPS['early.add']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase().slice(0,120);if(!w)return{e:'Escribe el correo, usuario o uid'};const L=earlyList();if(L.includes(w))return{list:L,max:3};if(L.length>=3)return{e:'Ya hay 3 accesos anticipados. Quita uno primero.'};DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).concat(w);dirty=1;log('early.add '+w);return{list:earlyList(),max:3}};
+OPS['early.del']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase();DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).filter(x=>String(x).toLowerCase()!==w);dirty=1;log('early.del '+w);return{list:earlyList(),max:3,env:EARLY_ENV}};
 for(const k of ['gmk.sell','gmk.buy','gmk.cancel'])OPS[k]=()=>({e:'Este mercado se renovó: usa el 🏛️ Mercado de Gemas nuevo (recarga con Ctrl+Shift+R)'});
 setInterval(()=>{for(const u in ECO.acc){const a=ECO.acc[u];if(a.dl&&a.dl.length)E.forceExpired(a)}},30000);
 /* REGLAS de las colecciones libres: quién puede crear/editar (u = jugador autenticado, id, d = doc nuevo, o = doc anterior) */
@@ -92,7 +104,7 @@ const match=(d,w)=>!!d&&w.every(x=>x[1]==='=='&&d[x[0]]===x[2]);
 /* ===== El servidor también entrega el juego (carpeta public/): sirve de respaldo si Netlify no está disponible ===== */
 const path=require('path'),zlib=require('zlib'),PUB=path.join(__dirname,'public'),FC={};
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.webp':'image/webp','.mp3':'audio/mpeg','.ogg':'audio/ogg'};
-const RAIZ=new Set(['index.html','play.html','privacidad.html','terminos.html','wiki.html','wiki-data.json','sw.js','config.js','claude-shim.js','heroes.js','world-client.js','catalog.js','site.css','site2.css','manifest.webmanifest']);
+const RAIZ=new Set(['index.html','play.html','privacidad.html','terminos.html','wiki.html','wiki-data.json','wiki-data.js','wiki-lore.js','site-hero.js','site-heroes.js','wiki.js','art.js','site.js','site-config.js','sw.js','config.js','claude-shim.js','heroes.js','world-client.js','catalog.js','site.css','site2.css','manifest.webmanifest']);
 const TXT=new Set(['.html','.js','.css','.json','.webmanifest','.svg','.txt']);
 function statusText(){return 'Silk Road server OK'+(world?' '+JSON.stringify(world.stats()):'')+' · cuentas:'+(AC?'si':'no')+(REQ?' · solo con cuenta':'')+(AC&&AC.mailOn()?' · correo:si':' · correo:no')}
 function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').split('?')[0])}catch(e){return false}
@@ -105,7 +117,7 @@ function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').spli
  if(q.headers['if-none-match']===c.etag){r.writeHead(304,h);r.end();return true}
  const gz=c.gz&&/\bgzip\b/.test(q.headers['accept-encoding']||'');if(gz){h['content-encoding']='gzip';h.vary='Accept-Encoding'}
  const b=gz?c.gz:c.buf;h['content-length']=b.length;r.writeHead(200,h);r.end(q.method==='HEAD'?undefined:b);return true}
-const srv=http.createServer((q,r)=>{if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain','cache-control':'no-store'});r.end(statusText())});
+const srv=http.createServer((q,r)=>{if(String(q.url||'').split('?')[0]==='/launch'){r.writeHead(200,{'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'*'});r.end(JSON.stringify({at:LAUNCH_AT,now:Date.now()}));return}if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain','cache-control':'no-store'});r.end(statusText())});
 const wss=new WebSocketServer({server:srv,maxPayload:450000});
 const world=require('./world')(DB,log,{
  lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),pv:u=>(+E.acct(u).px.pv||0)>Date.now(),kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',tjoin:u=>{try{TR.join(u)}catch(e){log('terr join '+e.message)}},
@@ -120,6 +132,7 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
  ws.on('message',raw=>{const now=Date.now();if(now-ws.t>1000){ws.t=now;ws.n=0}if(++ws.n>80)return;let m;try{m=JSON.parse(raw)}catch(e){return}if(!m||typeof m!=='object')return;
   const rep=(o)=>{if(ws.readyState===1)ws.send(JSON.stringify(o))},err=e=>m.rid&&rep({t:'r',rid:m.rid,ok:0,e});
   if(m.t==='hi'){const done=(u,extra)=>{const old=ONL.get(u);if(old&&old!==ws){try{old.send(JSON.stringify({t:'kick',e:'Tu cuenta se abrió en otro dispositivo'}));old.close(4001)}catch(e){}}
+     if(!launched()&&!isMaster(u)&&!isEarly(u)){log('pre-apertura bloqueado: uid='+u+' ids='+earlyIds(u).join(' | '));rep({t:'bad',e:'El reino abre el '+new Date(LAUNCH_AT).toLocaleString('es',{timeZone:'America/Santo_Domingo',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+' (hora de República Dominicana). Vuelve entonces.',launch:LAUNCH_AT});try{ws.close()}catch(e){}return}
      ws.uid=u;ONL.set(u,ws);try{SO.presence(u,1)}catch(e){}const a=E.acct(u);rep(Object.assign({t:'ok',uid:u,ent:E.ent(u)},extra||{}));
      if(isMaster(u)){const o=(DB.cfg||{}).master;if(!o||o.u!==u){DB.cfg=DB.cfg||{};DB.cfg.master={u,ts:Date.now()};dirty=1;bc('cfg','master',o||null,DB.cfg.master)}}
      setTimeout(()=>E.flushDl(u),400);setTimeout(()=>{try{rep(wsvMsg())}catch(e){}},1200)};

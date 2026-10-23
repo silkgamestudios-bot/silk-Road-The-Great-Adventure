@@ -1,0 +1,12 @@
+Silk Road v203 - HUD unico estilo MMORPG movil
+- Se eliminan las capas de parches de HUD v190, v198, v200, v201 y v202; queda una sola capa (v203-hud).
+- Ficha del jugador arriba a la izquierda: retrato circular, nombre, barras de HP y MP, oro y carga.
+- Minimapa circular arriba a la derecha (activo por defecto en partidas nuevas) con la zona debajo; fila de iconos a su izquierda.
+- Boton de ataque grande abajo a la derecha con habilidades y atajos en tres arcos sin solapes.
+- Joystick abajo a la izquierda; pociones rapidas abajo en el centro; barra de XP fina al fondo.
+- Todo escala segun la altura de pantalla (moviles pequenos, moviles grandes y escritorio).
+- No se toca la logica del juego. Probado en navegador (Chromium) a 568x320, 667x375, 844x390, 932x430 y 1280x720; falta probar en un telefono real.
+- v203b: botones rapidos de HP y MP movidos abajo junto al boton de ataque, para usarlos con el pulgar derecho mientras se mueve.
+- v203c: el boton PvP del HUD ahora es solo el interruptor real ON/OFF y aparece unicamente con el servicio Cazador PvP activo (el servidor ya lo exigia). Se elimina el boton PvP viejo que estaba siempre visible.
+- v203d: chat (boton 💬) movido abajo a la izquierda junto al joystick; al recibir mensajes privados sin leer aparece una nubecita translucida con puntos parpadeantes y el numero de mensajes.
+- v203e: boton de chat separado del joystick (unas 2 pulgadas), el panel emerge con animacion al tocarlo y es mas alto y compacto para leer la conversacion.

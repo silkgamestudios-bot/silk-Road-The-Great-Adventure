@@ -1,0 +1,7 @@
+Silk Road v206 - Traduccion de chat: servicio premium de 10 gemas por 30 dias
+- Selector de idioma (Espanol, English, Portugues) al primer ingreso; se cambia con el boton del chat.
+- Boton 🌐 en cada mensaje de otro idioma (chat global y privados). Solo traduce quien tiene el servicio activo; sin servicio aparece la ventana para activarlo.
+- PRECIO: 10 gemas propias = 30 dias (maximo 90 acumulados). El precio vive en social.js (TL_GEMS) y el cliente lo lee del servidor.
+- Servidor (social.js): ops soc.lang, tl.buy y chat.tr. Solo traduce mensajes reales del chat, con cache por texto+idioma, 1 peticion por 0.5 s y tope de 150 traducciones nuevas por jugador al dia (las del cache no cuentan).
+- Clave: variable de entorno GOOGLE_TRANSLATE_KEY en Render. Sin clave, modo demo (antepone [idioma]).
+- Pendiente: traducir el resto de la interfaz del juego.

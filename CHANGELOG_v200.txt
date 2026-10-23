@@ -1,0 +1,7 @@
+Silk Road v200 — HUD refinado
+- Consolidated the HUD overrides at the end of both play.html copies so they take precedence over older experimental rules.
+- Repositioned touch controls into a separated action arc, with larger primary attack and smaller secondary actions.
+- Applied translucent glass panels, softer borders and blur for a cleaner, elegant overlay.
+- Hid gameplay touch controls while the title/start prompt is visible; they return when gameplay starts.
+- Added safe-area and mobile width adjustments. Game logic and original control IDs are preserved.
+- Visual confirmation in a live browser is still recommended after extraction.

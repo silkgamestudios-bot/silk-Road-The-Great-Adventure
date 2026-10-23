@@ -1,117 +1,143 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Silk Road · The Great Adventure</title><meta property="og:type" content="website"><meta property="og:site_name" content="Silk Road"><meta property="og:title" content="Silk Road: The Great Adventure"><meta property="og:description" content="MMORPG gratis en tu navegador. Elige tu héroe, cruza la Ruta de la Seda y entra a la Noche de Brujas. Sin descargas."><meta property="og:image" content="https://stately-pudding-e80d07.netlify.app/og.jpg"><meta property="og:image:secure_url" content="https://stately-pudding-e80d07.netlify.app/og.jpg"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:alt" content="Silk Road: The Great Adventure"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://stately-pudding-e80d07.netlify.app/og.jpg"><meta name="description" content="MMORPG de navegador de la vieja escuela sobre la Ruta de la Seda. Gratis, sin descargas: abre y juega.">
-<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0e1124"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="site.css"><link rel="stylesheet" href="site2.css">
-<style>
-.hx{position:relative;min-height:min(86vh,640px);display:flex;align-items:flex-end;background:#0e1124 url(shots/town.jpg) center 30%/cover no-repeat;image-rendering:pixelated}
-.hx:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#0e1124 4%,#0e1124b8 38%,#0e112455 70%,#0e112499)}
-.hx .in{position:relative;width:100%;max-width:1120px;margin:0 auto;padding:0 20px 44px}
-.hx img.lg{width:min(420px,78vw);display:block;border-radius:16px;box-shadow:0 10px 40px #000c;margin-bottom:18px}
-.hx h1{position:absolute;left:-9999px}
-.hx p{max-width:540px;font-size:21px;margin:0 0 20px;text-shadow:0 2px 8px #000}
-.hx .row{justify-content:flex-start}
-.dl{display:inline-flex;align-items:center;gap:12px;padding:12px 24px 12px 18px;border-radius:12px;border:0;cursor:pointer;background:linear-gradient(#ffd666,#e8a33d);color:#2a1608;font-family:var(--sf);text-align:left;box-shadow:0 4px 0 #8a5a12,0 8px 26px #e8a33d55}.dl b{display:block;font:700 20px var(--px)}.dl small{display:block;font-size:13px;opacity:.85;line-height:1.2}.dl:hover{filter:brightness(1.06)}.dl:active{transform:translateY(3px);box-shadow:0 1px 0 #8a5a12}
-#ihelp{margin:12px 0 0;max-width:520px;padding:12px 16px;border-radius:12px;background:#171b36ee;border:2px solid #e8a33d;font-size:16px;color:#efe6d2}#ihelp b{color:#ffd666}
-#shp{position:fixed;inset:0;z-index:50;background:#06081acc;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:14px}#shp[hidden]{display:none}
-#shp .bx{width:100%;max-width:460px;background:linear-gradient(180deg,#1d2347,#12152c);border:1px solid #3a4378;border-radius:22px;padding:20px;box-shadow:0 24px 70px #000d,0 0 0 1px #e8a33d33 inset;position:relative}
-#shp h3{margin:0;color:#fff;font-size:22px}#shp .sub{margin:2px 0 14px;color:#a9a48f;font-size:15px}
-#shp .pv{display:flex;gap:12px;align-items:center;padding:8px;border-radius:14px;background:#0d1024;border:1px solid #2d3560;margin-bottom:16px}#shp .pv img{width:104px;height:55px;object-fit:cover;border-radius:9px;flex:none}#shp .pv b{display:block;font-size:15px;color:#efe6d2;line-height:1.25}#shp .pv span{font-size:13px;color:#8a86a0}
-#shp .gr{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-#shp .gr a{display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;color:#efe6d2;font:600 13px var(--sf)}
-#shp .gr i{display:grid;place-items:center;width:62px;height:62px;border-radius:18px;box-shadow:0 6px 16px #0008,0 -2px 0 #0004 inset;transition:transform .15s}#shp .gr a:hover i{transform:translateY(-3px) scale(1.05)}#shp .gr i svg{width:32px;height:32px;fill:#fff}
-#shp .lk{display:flex;gap:8px;padding:6px;border-radius:14px;background:#0d1024;border:1px solid #2d3560}#shp .lk input{flex:1;min-width:0;background:none;border:0;color:#cfc9b8;font:15px var(--sf);padding:6px 8px;outline:0}
-#shp .lk button{border:0;border-radius:10px;padding:10px 16px;cursor:pointer;background:linear-gradient(#ffd666,#e8a33d);color:#2a1608;font:700 15px var(--sf)}
-#shp .x{position:absolute;top:12px;right:14px;width:34px;height:34px;border-radius:50%;border:0;background:#ffffff14;color:#cfc9b8;font-size:20px;cursor:pointer;line-height:1}#shp .x:hover{background:#ffffff26}
-@media(max-width:380px){#shp .gr i{width:54px;height:54px}}
-.facts{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:20px;font-size:15px;color:var(--mut)}.facts b{color:var(--ac);font-family:var(--px);font-size:18px}
-.rt{max-width:1120px;margin:0 auto;padding:0 20px}
-.sx{padding:54px 0 10px}.sx>p.lead{color:var(--mut);max-width:620px;margin:0 0 22px}
-.pil{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0;border-top:2px solid var(--ln)}
-.pil>div{padding:20px 22px 22px 0;border-bottom:1px solid var(--ln)}.pil h3{margin:0 0 8px;font-size:19px;color:var(--ac)}
-.pil ul{margin:0;padding:0;list-style:none}.pil li{padding:4px 0 4px 18px;position:relative;font-size:17px}.pil li:before{content:"";position:absolute;left:0;top:.8em;width:8px;height:8px;background:var(--red);transform:rotate(45deg)}
-.pil li b{color:var(--fg)}
-.sh{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;align-items:center;margin:34px 0}.sh:nth-of-type(even){grid-template-columns:1fr 1.25fr}.sh:nth-of-type(even) img{order:2}
-.sh img{width:100%;border-radius:10px;border:3px solid #3a2a12;box-shadow:0 10px 30px #000a;image-rendering:pixelated;display:block}
-.sh h3{font-size:24px;margin:0 0 8px;color:var(--ac)}.sh p{margin:0;color:var(--fg)}
-@media(max-width:760px){.sh,.sh:nth-of-type(even){grid-template-columns:1fr}.sh:nth-of-type(even) img{order:0}.hx p{font-size:19px}}
-</style>
-<style>
-#evs{margin:18px 0}.evc{position:relative;overflow:hidden;border-radius:18px;padding:22px 20px;margin:12px 0;color:#fff;border:2px solid #ffb347;background:radial-gradient(circle at 85% 20%,#ff8a2e55,transparent 45%),linear-gradient(135deg,#1c0a2b,#4a1466 55%,#8a2b00);box-shadow:0 0 26px #ff8a2e55}
-.evc h3{margin:0 0 6px;font:800 24px Georgia,serif;color:#ffd666}.evc p{margin:6px 0;color:#f4e6c6}.evc ul{margin:8px 0 12px 18px;padding:0;color:#f4e6c6}.evc li{margin:3px 0}
-.evb{display:inline-block;padding:3px 10px;border-radius:12px;background:#ff8a2e;color:#2a1608;font:700 12px system-ui;margin-bottom:8px}.evb.s{background:#6b6b8a;color:#fff}
-.evc .btn{margin-top:6px}.evf{position:absolute;right:14px;top:6px;font-size:54px;opacity:.85;animation:evfl 3s ease-in-out infinite}.evf+.evf{right:78px;top:44px;font-size:34px;animation-delay:.8s}
-@keyframes evfl{50%{transform:translateY(-8px) rotate(6deg)}}
-.evc.soon{background:linear-gradient(135deg,#1b2540,#2b3a66);border-color:#8aa0e0;box-shadow:none}.evc.soon h3{color:#cfe0ff;font-size:19px}
-body.ev-hl .top{background:linear-gradient(90deg,#1c0a2b,#3a1050);border-bottom:2px solid #ff8a2e}body.ev-hl .hero{box-shadow:0 0 40px #ff8a2e33}
-</style></head><body>
-<header class="top"><div class="wrap"><b>🐪 Silk Road</b><nav><a href="#evs">Eventos</a><a href="#mundo">El juego</a><a href="#heroes">Héroes</a><a href="wiki.html">Wiki</a><a href="#" id="shn">Compartir</a><a href="wiki.html#roadmap">Roadmap</a><a class="go" href="play.html">Jugar</a></nav></div></header>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Silk Road · The Great Adventure</title>
+<meta name="description" content="Un MMORPG de navegador sobre la Ruta de la Seda. 8 clases, 12 ciudades, cuevas, dragones y bestias celestiales. La apertura del reino es el 23 de octubre a las 8:00 PM (hora RD).">
+<meta name="theme-color" content="#09070f">
+<meta property="og:title" content="Silk Road · The Great Adventure">
+<meta property="og:description" content="La Gran Ruta abre sus puertas. Cuenta regresiva a la apertura del reino.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23e6b64f'/%3E%3Crect x='24' y='24' width='16' height='16' fill='%2309070f'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <a class="brand" href="index.html"><span class="spr" style="--k:2;--c:1;--t:3" aria-hidden="true"></span><span>SILK ROAD</span></a>
+  <nav class="nav" aria-label="Principal">
+    <a href="index.html" class="on">Inicio</a>
+    <a href="wiki.html">Wiki</a>
+    <a href="wiki.html#/clases">Clases</a>
+    <a href="wiki.html#/arte">Arte</a>
+    <a href="play.html" class="play locked" data-play data-go="⚔️ Jugar" aria-disabled="true"><span data-lbl>🔒 Jugar</span></a>
+  </nav>
+</div></header>
+
 <main>
-<div class="hx"><div class="in"><img class="lg" src="logo.jpg" alt="Silk Road: The Great Adventure"><h1>Silk Road: The Great Adventure</h1>
-<p>Cruza la Ruta de la Seda de Chang'an a Antioquía. Un MMORPG de navegador de la vieja escuela, donde cada nivel se gana peleando.</p>
-<div class="row"><a class="btn pri" href="play.html">Jugar ahora</a><a class="btn" href="wiki.html">Ver la wiki</a><button class="btn" id="shb" type="button">Compartir</button><button class="dl" id="inst" type="button"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg><span><b>Descargar la app</b><small>Gratis · se instala en tu celular</small></span></button></div>
-<div id="ihelp" hidden></div>
-<div class="facts"><span><b>8</b> clases</span><span><b>12</b> ciudades</span><span><b>8</b> jugadores por party</span><span><b>500</b> miembros por gremio</span><span>Gratis: juega en el navegador o instala la app</span></div></div></div>
-<div class="rt">
-<section id="evs" hidden class="sx"><h2 class="sec">Eventos</h2><div id="evl"></div></section>
-<section id="mundo" class="sx"><h2 class="sec">Así se juega</h2><p class="lead">Un mundo hardcore: los drops son difíciles, los atributos suben en pequeños porcentajes y nadie recibe premios por entrar.</p>
-<div class="pil">
-<div><h3>Combate</h3><ul><li><b>8 clases</b>: Mercader, Caballero, Mago, Arquero, Sanador, Monje, Druida y Guerrera</li><li><b>Golpes críticos</b> y combos que se ven en pantalla</li><li>El Caballero golpea en círculo a las <b>8 casillas</b> que lo rodean</li></ul></div>
-<div><h3>Mundo</h3><ul><li><b>12 ciudades</b>, cada una con sus tiendas</li><li><b>Cuevas</b> visibles en el mapa; los secretos solo llegan como rumores</li><li>Ciclo de día y noche, clima y eventos por fecha real</li></ul></div>
-<div><h3>Comunidad</h3><ul><li><b>Party de 8</b> con bonus desde 3 clases distintas</li><li><b>Gremios</b> por 10 💎: etiqueta, invitaciones, tesoro y chat</li><li><b>Chat global</b>, mensajes privados y hasta 30 amigos</li></ul></div>
-<div><h3>Economía</h3><ul><li><b>Mercado de jugadores</b> en tiempo real</li><li><b>Boutique</b> de 32 apariencias; las gemas solo compran apariencias y mejoras</li><li>Servidor que verifica oro, objetos y mercado</li></ul></div>
-</div>
-<div class="sh"><img src="shots/cueva.jpg" alt="Cripta del Viajero" loading="lazy"><div><h3>La Cripta del Viajero</h3><p>La entrada está a unos cuatro minutos a pie de la ciudad. Cinco pisos de pasillos anchos y cavernas, con escaleras que suben y bajan.</p></div></div>
-<div class="sh"><img src="shots/chat.jpg" alt="Chat del juego" loading="lazy"><div><h3>Chat y amigos en el mismo panel</h3><p>Toca el botón de chat para hablar con todos, escribir en privado o ver quién de tus amigos está en línea. Toca el nombre de cualquiera para escribirle, invitarlo al gremio o agregarlo.</p></div></div>
+<section class="hero" id="inicio">
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="moon" aria-hidden="true"></div>
+  <div class="dunes" aria-hidden="true">
+    <svg viewBox="0 0 1440 400" preserveAspectRatio="none">
+      <path d="M0 220 C180 120 340 250 520 190 C720 120 880 260 1080 180 C1220 130 1340 190 1440 160 V400 H0Z" fill="#3a1a38"/>
+      <path d="M0 270 C200 200 360 300 560 250 C760 200 960 310 1160 240 C1280 200 1380 250 1440 230 V400 H0Z" fill="#241129"/>
+      <path d="M0 330 C220 270 420 350 640 310 C860 270 1040 350 1240 300 C1330 280 1400 310 1440 300 V400 H0Z" fill="#150a1a"/>
+    </svg>
+  </div>
+  <svg class="caravan" viewBox="0 0 300 80" aria-hidden="true" fill="#0a0510">
+    <g id="cm"><ellipse cx="22" cy="40" rx="22" ry="10"/><path d="M14 32 q6 -16 12 0z"/><path d="M40 36 q10 -2 14 -16 q3 -6 9 -6 l3 5 q-5 2 -6 8 q-4 14 -14 20z"/><rect x="6" y="46" width="3.2" height="26"/><rect x="14" y="46" width="3.2" height="26"/><rect x="31" y="46" width="3.2" height="26"/><rect x="39" y="46" width="3.2" height="26"/></g>
+    <use href="#cm" x="86"/><use href="#cm" x="172"/>
+  </svg>
+  <div class="heroes" id="heroes" aria-hidden="true"></div>
+
+  <div class="wrap hero-in">
+    <div class="eyebrow">Un MMORPG de la Ruta de la Seda</div>
+    <h1 class="logo">SILK ROAD<small>The Great Adventure</small></h1>
+    <p class="tag">De las murallas de Chang'an a las puertas de Constantinopla. Cruza el desierto, funda tu gremio y escribe tu leyenda.</p>
+    <div class="orn">◆</div>
+
+    <div class="cd" id="cd">
+      <div class="cd-label" id="cd-label">La Gran Ruta abre en</div>
+      <div class="cd-row" role="timer" aria-live="off">
+        <div class="cd-box"><span class="cd-num" id="cd-d">--</span><span class="cd-u">Días</span></div>
+        <div class="cd-box"><span class="cd-num" id="cd-h">--</span><span class="cd-u">Horas</span></div>
+        <div class="cd-box"><span class="cd-num" id="cd-m">--</span><span class="cd-u">Minutos</span></div>
+        <div class="cd-box"><span class="cd-num" id="cd-s">--</span><span class="cd-u">Segundos</span></div>
+      </div>
+      <p class="cd-when" id="cd-when"></p>
+      <div class="cd-bar" id="cd-bar"><i></i></div>
+    </div>
+
+    <div class="play-wrap">
+      <a class="btn btn-play" href="play.html" data-play data-lock="🔒 Se abre a las 8:00 PM" aria-disabled="true"><span data-lbl>🔒 Se abre a las 8:00 PM</span></a>
+      <p class="play-hint" id="play-hint">El botón se desbloquea solo cuando termine la cuenta regresiva.</p>
+    </div>
+  </div>
 </section>
-<section id="heroes" class="sx"><h2 class="sec">Elige tu héroe</h2><p class="lead">Cada clase juega distinto. Mira sus números y su estilo antes de decidir.</p><div class="heroes" id="hl">Cargando…</div></section>
-</div>
-<div id="shp" hidden role="dialog" aria-label="Compartir"><div class="bx"><button class="x" id="shx" type="button" aria-label="Cerrar">&times;</button><h3>Comparte Silk Road</h3><p class="sub">Invita a tus amigos a cruzar la Ruta de la Seda.</p>
-<div class="pv"><img src="og.jpg" alt=""><div><b>Silk Road: The Great Adventure</b><span id="shu"></span></div></div>
-<div class="gr" id="shg"></div><div class="lk"><input id="shi" readonly aria-label="Enlace"><button id="shc" type="button">Copiar</button></div></div></div>
-<footer>Silk Games Studios · República Dominicana · <a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos</a></footer></main>
+
+<section class="s band" id="mundo">
+  <div class="wrap">
+    <h2>Un mundo hecho para cruzarse</h2>
+    <p class="lead" id="mundo-lead"></p>
+    <div class="grid g4" id="nums"></div>
+  </div>
+</section>
+
+<section class="s" id="clases">
+  <div class="wrap">
+    <h2>Ocho caminos, una sola Ruta</h2>
+    <p class="lead">Cada clase tiene su estilo, sus habilidades y su propia leyenda. Toca una carta para ver a tu héroe tal como se ve en el juego, con su historia y sus habilidades.</p>
+    <div class="grid g4 slots" id="cls"></div>
+  </div>
+</section>
+
+<section class="s band" id="todo">
+  <div class="wrap">
+    <h2>Lo que te espera</h2>
+    <div class="grid g3" id="feats"></div>
+  </div>
+</section>
+
+<section class="s" id="arte">
+  <div class="wrap">
+    <h2>Arte conceptual</h2>
+    <p class="lead">Un vistazo a los paisajes de la Ruta: del desierto de Taklamakán al Santuario Celestial.</p>
+    <div class="gal" id="gal" style="margin-top:40px"></div>
+    <p style="text-align:center;margin-top:26px"><a class="btn" href="wiki.html#/arte">Ver toda la galería</a></p>
+  </div>
+</section>
+
+<section class="s band" style="text-align:center">
+  <div class="wrap">
+    <h2>Tu nombre empieza hoy</h2>
+    <p class="lead">Estudia la wiki, elige tu clase y prepara tu caravana. Cuando el reloj llegue a cero, la Gran Ruta se abre.</p>
+    <div style="margin-top:34px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a class="btn btn-play" href="play.html" data-play data-lock="🔒 Se abre a las 8:00 PM" aria-disabled="true"><span data-lbl>🔒 Se abre a las 8:00 PM</span></a>
+      <a class="btn" href="wiki.html">Abrir la wiki</a>
+    </div>
+    <p class="play-hint">Faltan <b data-eta>--</b></p>
+  </div>
+</section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p>© Silk Games Studios · <a href="wiki.html">Wiki</a> · <a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos</a></p>
+  <p class="credit">Los sprites de personajes usan el tileset DawnLike (CC-BY 4.0) de DragonDePlatino y DawnBringer. Las escenas y emblemas de esta página son ilustraciones originales.</p>
+</div></footer>
+
+<script src="site-config.js"></script>
+<script src="wiki-data.js"></script>
+<script src="wiki-lore.js"></script>
+<script src="site-heroes.js"></script>
+<script src="art.js"></script>
+<script src="site-hero.js"></script>
+<script src="site.js"></script>
 <script>
-/* Eventos del sitio: se muestran solo en su fecha y desaparecen solos. Para agregar otro evento, añade una fila a EV.
-   a/b = [mes,dia] inicio/fin (b puede ser del año siguiente); lunar:{año:[mes,dia]} = fecha de inicio (dura 15 dias). */
-const EV=[
-{k:'hl',ic:'🎃',ic2:'🦇',n:'Noche de Brujas y Día de Muertos',a:[10,16],b:[11,2],theme:1,
- d:'La Ruta de la Seda se llena de fantasmas. Solo hasta el 2 de noviembre.',
- l:['🎃 Los enemigos sueltan <b>calabazas</b> (60%) para canjear con el Sepulturero Hueso Viejo','⛏️ <b>100 tesoros de los fantasmas</b> ocultos bajo el mapa: pala, mapa y acertijos','🌙 Los mejores premios (atuendos, 1.000.000 🪙 y 💎) solo se abren de <b>noche</b>','🌑 Eclipses, hordas y la <b>cripta maldita</b>','🪙 Moneda de Brujas, la moneda propia del evento']},
-{k:'nv',ic:'🎄',ic2:'⭐',n:'Navidad y Reyes',a:[12,15],b:[1,6],d:'Nieve, regalos y la moneda de Navidad.',l:['🎄 Ciudades decoradas y tienda del evento','🎁 Premios únicos por tiempo limitado']},
-{k:'am',ic:'💝',ic2:'🌹',n:'Amor y Amistad',a:[2,10],b:[2,15],d:'Juega en pareja o en party y gana la moneda de Amor.',l:['💝 Misiones en parejas y party','🌹 Atuendos de temporada']},
-{k:'nz',ic:'🌷',ic2:'🌱',n:'Nowruz (Año Nuevo persa)',a:[3,18],b:[3,25],d:'Primavera en la Ruta de la Seda.',l:['🌷 Moneda de Nowruz','🌱 Decoración de primavera']},
-{k:'lu',ic:'🏮',ic2:'🧧',n:'Año Nuevo Lunar',lunar:{2027:[2,6],2028:[1,26],2029:[2,13],2030:[2,3]},d:'Faroles rojos y la moneda Lunar.',l:['🏮 Chang\'an de fiesta','🧧 Premios del Año Nuevo']}];
-(function(){const now=new Date(),Y=now.getFullYear(),D=864e5,out=[];
-function rng(e,y){if(e.lunar){const f=e.lunar[y];if(!f)return null;const a=new Date(y,f[0]-1,f[1]);return[a,new Date(a.getTime()+15*D)]}
- let a=new Date(y,e.a[0]-1,e.a[1]),b=new Date(y,e.b[0]-1,e.b[1],23,59,59);if(b<a)b=new Date(y+1,e.b[0]-1,e.b[1],23,59,59);return[a,b]}
-for(const e of EV)for(const y of[Y-1,Y,Y+1]){const r=rng(e,y);if(!r)continue;const[a,b]=r;
- if(now>=a&&now<=b){out.push({e,on:1,a,b});break}
- if(now<a&&a-now<30*D){out.push({e,on:0,a,b});break}}
-out.sort((x,y)=>y.on-x.on||x.a-y.a);if(!out.length)return;
-const f=d=>d.toLocaleDateString('es',{day:'numeric',month:'long'});let h='';
-for(const o of out){const e=o.e;if(o.on){const left=Math.max(0,Math.ceil((o.b-now)/D));
- h+='<div class="evc"><span class="evf">'+e.ic+'</span><span class="evf">'+e.ic2+'</span><span class="evb">EVENTO ACTIVO · termina el '+f(o.b)+' ('+left+' días)</span><h3>'+e.ic+' '+e.n+'</h3><p>'+e.d+'</p><ul>'+e.l.map(x=>'<li>'+x+'</li>').join('')+'</ul><a class="btn pri" href="play.html">▶ JUGAR EL EVENTO</a></div>';
- if(e.theme)document.body.classList.add('ev-'+e.k)}
- else h+='<div class="evc soon"><span class="evb s">PRÓXIMAMENTE · '+f(o.a)+'</span><h3>'+e.ic+' '+e.n+'</h3><p>'+e.d+'</p></div>'}
-document.getElementById('evl').innerHTML=h;document.getElementById('evs').hidden=false})();
+(function(){
+  const W=window.WIKI,A=window.ART,CG=['#b8862a','#6b7c93','#b8442a','#3a8f4a','#e3d79a','#d8892a','#2f9f78','#a8552d'];
+  document.getElementById('heroes').innerHTML=[0,1,2,3,4,5,6,7].map(c=>HERO.img(c,'down',0,5,'data-anim="1"')).join('');
+  document.getElementById('mundo-lead').textContent='Dieciséis tierras, doce ciudades-oasis y casi '+W.world.mobs.toLocaleString('es')+' enemigos repartidos entre las murallas de Chang\'an y las fronteras de Constantinopla.';
+  const nums=[['🗺️',W.regions.length,'tierras por explorar'],['🏛️',W.cities.length,'ciudades-oasis'],['⚔️',W.classes.length,'clases jugables'],['⭐',W.train_skill.lvmax.toLocaleString('es'),'niveles de poder'],['🕳️',W.caves.length,'cuevas y torres'],['🐉',3,'dragones al mes'],['🌠',W.celest.length,'bestias celestiales'],['🐎',W.pets.length,'mascotas y monturas']];
+  document.getElementById('nums').innerHTML=nums.map(n=>'<div class="card" style="text-align:center"><span class="ico">'+n[0]+'</span><h3 style="font-size:34px;margin:0">'+n[1]+'</h3><p style="margin-top:4px">'+n[2]+'</p></div>').join('');
+  document.getElementById('cls').innerHTML=W.classes.map((c,i)=>HERO.slot(i)).join('');
+  const F=[['🏛️','Ciudades-oasis','Doce ciudades con mercado de jugadores, establo, herrería, botica, almacén y mucho más.'],['🕳️','Cuevas y la Torre','Cinco mazmorras, desde las Arañas hasta una torre de 600 pisos que nadie ha terminado.'],['🌠','Bestias Celestiales','Dos guardianas del Zodiaco con millones de vida esconden monturas que no se venden.'],['🐉','Dragones del mes','Ignarax y Glacius bajan tres veces al mes, a la misma hora para todos.'],['🛡️','Gremios y territorios','Funda tu gremio, levanta muros y torres y defiende tu bandera.'],['🏕️','Carpa de entrenamiento','Tres ritos para subir tus skills de ataque, defensa y agilidad hasta el 600.'],['💰','Economía de jugadores','Tiendas, Mercado de Gemas y rutas de caravana: el oro lo mueven los jugadores.'],['🐺','Mascotas y monturas','Perros, lobos, halcones, búhos, caballos y camellos que pelean contigo.'],['🌦️','Clima vivo','Lluvia, rayos, ventiscas, nieve que se acumula, olas de calor y tormentas de arena. Cada estación cambia las reglas.'],['🎃','Eventos y estaciones','Noche de Brujas, Navidad, Año Nuevo Lunar, Nowruz… y el clima cambia con las estaciones.']];
+  document.getElementById('feats').innerHTML=F.map(x=>'<div class="card"><span class="ico">'+x[0]+'</span><h3>'+x[1]+'</h3><p>'+x[2]+'</p></div>').join('');
+  const picks=['d','celest','tower'];
+  document.getElementById('gal').innerHTML=picks.map(k=>{const m=A.placeMeta(k);return '<a class="shot" href="wiki.html#/arte" style="cursor:pointer">'+A.place(k)+'<figcaption>'+m.n+'<small>'+m.s+'</small></figcaption></a>'}).join('');
+})();
 </script>
-<script>
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-let dp=null;const b=document.getElementById('inst'),h=document.getElementById('ihelp');
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e});
-addEventListener('appinstalled',()=>{b.style.display='none';h.hidden=true});
-if(matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches||navigator.standalone)b.style.display='none';
-b.onclick=async()=>{if(dp){dp.prompt();dp=null;return}h.hidden=false;
- h.innerHTML=/iphone|ipad|ipod/i.test(navigator.userAgent)?'<b>En iPhone o iPad:</b> toca el botón Compartir ⬆️ de Safari y elige <b>«Añadir a pantalla de inicio»</b>.':/android/i.test(navigator.userAgent)?'<b>En Android:</b> abre el menú ⋮ del navegador y elige <b>«Instalar app»</b> o <b>«Añadir a pantalla de inicio»</b>.':'<b>En computadora:</b> en Chrome busca el icono de instalar ⊕ en la barra de direcciones, o abre el menú ⋮ y elige <b>«Instalar Silk Road»</b>. En celular, abre esta página desde el navegador del teléfono.'};
-</script><script src="heroes.js"></script><script>fetch('wiki-data.json').then(r=>r.json()).then(d=>heroCards(d,document.getElementById('hl')));
-/* ---- Compartir: enlace del propio sitio (siempre la dirección correcta) con el logo como miniatura ---- */
-(function(){const base=location.origin+'/',T='Silk Road: The Great Adventure. MMORPG gratis en tu navegador: elige tu héroe y cruza la Ruta de la Seda.',
- L=r=>base+'?ref='+r,enc=encodeURIComponent,p=document.getElementById('shp'),g=document.getElementById('shg'),inp=document.getElementById('shi'),cb=document.getElementById('shc');
- const ICO={"siWhatsapp": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z\"/></svg>", "siFacebook": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z\"/></svg>", "siX": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z\"/></svg>", "siTelegram": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z\"/></svg>", "siMessenger": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M.001 11.639C.001 4.949 5.241 0 12.001 0S24 4.95 24 11.639c0 6.689-5.24 11.638-12 11.638-1.21 0-2.38-.16-3.47-.46a.96.96 0 00-.64.05l-2.39 1.05a.96.96 0 01-1.35-.85l-.07-2.14a.97.97 0 00-.32-.68A11.39 11.389 0 01.002 11.64zm8.32-2.19l-3.52 5.6c-.35.53.32 1.139.82.75l3.79-2.87c.26-.2.6-.2.87 0l2.8 2.1c.84.63 2.04.4 2.6-.48l3.52-5.6c.35-.53-.32-1.13-.82-.75l-3.79 2.87c-.25.2-.6.2-.86 0l-2.8-2.1a1.8 1.8 0 00-2.61.48z\"/></svg>"};
- const NET=[['WhatsApp','#25D366',ICO.siWhatsapp,()=>'https://wa.me/?text='+enc(T+' '+L('wa'))],['Facebook','#0866FF',ICO.siFacebook,()=>'https://www.facebook.com/sharer/sharer.php?u='+enc(L('fb'))],['X','#14171a',ICO.siX,()=>'https://twitter.com/intent/tweet?text='+enc(T)+'&url='+enc(L('x'))],['Telegram','#26A5E4',ICO.siTelegram,()=>'https://t.me/share/url?url='+enc(L('tg'))+'&text='+enc(T)]];
- const open=e=>{if(e)e.preventDefault();
-  if(navigator.share&&/android|iphone|ipad|ipod/i.test(navigator.userAgent)){navigator.share({title:'Silk Road: The Great Adventure',text:T,url:L('app')}).catch(()=>{});return}
-  g.innerHTML=NET.map(n=>'<a target="_blank" rel="noopener" href="'+n[3]()+'"><i style="background:'+n[1]+(n[0]=='X'?';border:1px solid #ffffff30':'')+'">'+n[2]+'</i>'+n[0]+'</a>').join('');
-  inp.value=L('link');document.getElementById('shu').textContent=location.host;cb.textContent='Copiar';p.hidden=false};
- cb.onclick=async()=>{try{await navigator.clipboard.writeText(inp.value);cb.textContent='¡Copiado!'}catch(x){inp.select();document.execCommand&&document.execCommand('copy');cb.textContent='¡Copiado!'}};
- ['shb','shn'].forEach(i=>{const e=document.getElementById(i);if(e)e.onclick=open});
- document.getElementById('shx').onclick=()=>p.hidden=true;p.onclick=e=>{if(e.target===p)p.hidden=true};addEventListener('keydown',e=>{if(e.key==='Escape')p.hidden=true})})();
-</script></body></html>
+</body>
+</html>

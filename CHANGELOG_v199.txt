@@ -1,0 +1,6 @@
+Silk Road v199 — MMO reference HUD
+- Repositioned the player status panel to the upper-left with compact HP/MP bars.
+- Moved the minimap to the upper-right and styled it as a circular radar.
+- Restyled top utility controls and the movement/attack/skill touch controls to better match the supplied MMO HUD reference.
+- Preserved existing control IDs, event handlers, game logic, and the mirrored silkwork copy.
+- Responsive sizing rules cover landscape desktop and smaller mobile screens.

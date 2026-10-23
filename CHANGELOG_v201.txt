@@ -1,0 +1,7 @@
+Silk Road v201 — Menú y minimapa ordenados
+- Reorganiza los accesos superiores en una única fila horizontal dentro de un panel de cristal semitransparente.
+- Sitúa el minimapa circular debajo de la fila de menú, con borde dorado y fondo transparente.
+- Ajusta los tamaños y separaciones para escritorio y móvil.
+- Conserva los IDs, la lógica del juego y los manejadores de los botones existentes.
+- Aplica los cambios a las dos copias de play.html incluidas en el proyecto.
+Nota: requiere prueba visual en el navegador del usuario para confirmar el ajuste en su pantalla.

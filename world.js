@@ -19,9 +19,12 @@ const near=(x,y,r)=>{const o=[];for(let a=Math.floor((x-r)/CS);a<=Math.floor((x+
 let EV=[],AT=[];const PL=new Map(),pid=u=>{const r=DB.pres&&DB.pres[u];if(r&&r.p&&Date.now()-(+r.t||0)<30000)return String(r.p);return(DB.pmem&&DB.pmem[u]&&DB.pmem[u].pid)||''},sc=p=>p.ct.dm+1.5*p.ct.tk+6*p.ct.ut;
 const send=(ws,m)=>{if(ws.readyState===1)ws.send(JSON.stringify(m))},mvM=(m,dx,dy)=>{if(!solid(m.x+dx,m.y))m.x+=dx;if(!solid(m.x,m.y+dy))m.y+=dy};
 function step(dt,now){const act=new Set();for(const p of PL.values())for(const m of near(p.x,p.y,CFG.view+CFG.leash))act.add(m);for(const m of DYL)act.add(m);
+ /* rendimiento: los jugadores atacables se agrupan por celdas; cada enemigo solo mira a los cercanos (antes revisaba a TODOS los conectados) */
+ const PG=new Map();for(const p of PL.values()){if(p.city||p.dg||p.hp<=0)continue;const k=key(Math.floor(p.x/CS),Math.floor(p.y/CS));let a=PG.get(k);if(!a)PG.set(k,a=[]);a.push(p)}
+ const nearP=(m,r)=>{let tg=null,bd=r;if(!PG.size)return null;for(let a=Math.floor((m.x-r)/CS),a1=Math.floor((m.x+r)/CS);a<=a1;a++)for(let b=Math.floor((m.y-r)/CS),b1=Math.floor((m.y+r)/CS);b<=b1;b++){const g=PG.get(key(a,b));if(g)for(const p of g){const d=Math.hypot(p.x-m.x,p.y-m.y);if(d<bd){bd=d;tg=p}}}return tg};
  for(const m of act){if(m.dead){if(now>=m.rt){if(m.dyn&&!m.rz){dyDel(m);continue}m.dead=0;m.hp=m.mx;m.x=m.hx;m.y=m.hy;m.tg=null;m.dmg={}}continue}
   let tg=m.tg&&PL.get(m.tg);if(tg&&(tg.city||tg.dg||tg.hp<=0||Math.hypot(tg.x-m.x,tg.y-m.y)>(m.vw||CFG.view)||Math.hypot(m.x-m.hx,m.y-m.hy)>(m.ls||CFG.leash)))tg=null;
-  if(!tg){let bd=m.ag||CFG.aggro;for(const p of PL.values()){if(p.city||p.dg||p.hp<=0)continue;const d=Math.hypot(p.x-m.x,p.y-m.y);if(d<bd){bd=d;tg=p}}}
+  if(!tg)tg=nearP(m,m.ag||CFG.aggro);
   m.tg=tg?tg.uid:null;m.t-=dt;
   if(tg){const dx=tg.x-m.x,dy=tg.y-m.y,d=Math.hypot(dx,dy)||1,vg=.55+.45*Math.max(0,m.hp/m.mx);if(d>(m.rg?m.rg*.6:20)){const s=m.sp*vg*dt;mvM(m,dx/d*s,dy/d*s)}
    if(d<(m.rg||24)&&m.t<=0){m.t=.8;const dm=m.dm*(m.sf?sD(tg.lv,m):1)*(.6+.4*Math.max(0,m.hp/m.mx));tg.ct.tk+=dm;send(tg.ws,{t:'wd',d:Math.round(dm*10)/10,mid:m.id})}}

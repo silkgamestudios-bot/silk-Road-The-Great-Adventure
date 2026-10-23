@@ -1,40 +1,44 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Wiki · Silk Road</title><meta property="og:type" content="website"><meta property="og:site_name" content="Silk Road"><meta property="og:title" content="Silk Road: The Great Adventure"><meta property="og:description" content="MMORPG gratis en tu navegador. Elige tu héroe, cruza la Ruta de la Seda y entra a la Noche de Brujas. Sin descargas."><meta property="og:image" content="https://stately-pudding-e80d07.netlify.app/og.jpg"><meta property="og:image:secure_url" content="https://stately-pudding-e80d07.netlify.app/og.jpg"><meta property="og:image:type" content="image/jpeg"><meta property="og:image:alt" content="Silk Road: The Great Adventure"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://stately-pudding-e80d07.netlify.app/og.jpg"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#14213d"><link rel="icon" href="icon-192.png"><link rel="stylesheet" href="site.css"><link rel="stylesheet" href="site2.css"><link rel="apple-touch-icon" href="apple-touch-icon.png"></head><body>
-<header class="top"><div class="wrap"><b>🐪 Silk Road · Wiki</b><nav><a href="index.html">Inicio</a><a class="go" href="play.html">▶ JUGAR</a></nav></div></header>
-<div class="wrap wiki"><aside class="side" id="side"></aside><main id="main">Cargando…</main></div>
-<footer>Datos generados desde el propio juego (v42). Silk Games Studios.</footer>
-<script src="heroes.js"></script><script src="catalog.js"></script><script>
-const $=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const TN=['Rata','Serpiente','Bandido','Goblin','Momia','Orco','Orco berserker','Vampiro','Faraón'];
-const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-let D=null;
-const SEC={
- inicio:['🏠 Inicio',()=>`<h2>Bienvenido a Silk Road</h2><p>Silk Road: The Great Adventure es un MMORPG de navegador con filosofía <b>old-school / hardcore</b>: nada se regala, los drops son duros y los atributos son pequeños porcentajes. Este wiki se genera con los datos reales del juego.</p>
- <div class="grid"><div class="card"><h3>${D.cls.length} clases</h3><p>Cada una con su habilidad y 10 sets.</p></div><div class="card"><h3>${D.cities.length} ciudades</h3><p>Tiendas, mercado y establo.</p></div><div class="card"><h3>${Object.keys(D.mobs).length+9} tipos de enemigos</h3><p>Más ${Object.keys(D.bosses).length} jefes y compañeros salvajes.</p></div><div class="card"><h3>${D.pets.length} mascotas</h3><p>Compañeros y monturas.</p></div></div>
- <div class="note">Reglas de oro: <b>no hay recompensas por entrar ni por descubrir sitios</b>, la XP viene de matar, y la noche completa solo ocurre en eventos especiales.</div>`],
- clases:['⚔️ Clases',()=>{setTimeout(()=>heroCards(D,$('hl2')),0);return `<h2>Guía de héroes</h2><div class="heroes" id="hl2"></div><h2>Tabla comparativa</h2><input class="q" placeholder="Buscar…" oninput="flt(this)"><table><tr><th>Clase</th><th>Vida</th><th>MP</th><th>Daño</th><th>Vel.</th><th>Alcance</th><th>Habilidad</th></tr>${D.cls.map(c=>`<tr class="f"><td>${c.ic} <b>${esc(c.n)}</b></td><td>${c.hp}</td><td>${c.mp}</td><td>×${c.dm}</td><td>${c.sp}</td><td>${c.rg||'cuerpo a cuerpo'}</td><td>${esc(c.sk)}</td></tr><tr class="f"><td colspan="7" style="color:var(--mut)">${esc(c.d)}</td></tr>`).join('')}</table>`}],
- sets:['🛡️ Sets y objetos',()=>`<h2>Sets por clase</h2><p>Rarezas: ${D.rar.map((r,i)=>`<span class="r${i}">${r}</span> (×${D.rm[i]})`).join(' · ')}. Niveles de equipo: ${D.lvs.join(', ')}.</p><input class="q" placeholder="Buscar pieza o set…" oninput="flt(this)">
- ${D.sets.map(s=>`<h3>${esc(s.cls)}</h3><table>${s.sets.map((n,li)=>`<tr class="f"><td style="width:70px">Nv ${D.lvs[li]}</td><td><b>${esc(n)}</b><br><small style="color:var(--mut)">${(s.names[li]||[]).map(esc).join(' · ')}</small></td></tr>`).join('')}</table>`).join('')}`],
- bestiario:['👹 Bestiario',()=>`<h2>Enemigos del camino</h2><p>XP por kill (antes de bonus): <b>1 a 9</b> según el tipo. Los sets y el oro dependen de la probabilidad de drop.</p><table><tr><th>Tipo</th><th>XP</th><th>Oro</th><th>Equipo básico</th><th>Poción</th></tr>${D.hc.tiers.map(t=>`<tr class="f"><td><b>${TN[t.t]}</b></td><td>${t.xp}</td><td>${Math.round(t.gc*100)}%</td><td>${Math.round(t.ic*1000)/10}%</td><td>${Math.round(t.pc*1000)/10}%</td></tr>`).join('')}</table>
- <h2>Criaturas especiales</h2><input class="q" placeholder="Buscar…" oninput="flt(this)"><table><tr><th>Nombre</th><th>Vida×</th><th>Daño×</th><th>Vel.×</th><th>Nv</th></tr>${Object.values(D.mobs).map(m=>`<tr class="f"><td>${esc(m.nm)}</td><td>${m.hp}</td><td>${m.dm}</td><td>${m.sp}</td><td>${m.lv}</td></tr>`).join('')}</table>`],
- jefes:['👑 Jefes',()=>`<h2>Compañeros salvajes y jefes</h2><table><tr><th>Jefe</th><th>Vida</th><th>Daño</th><th>Tamaño</th></tr>${Object.values(D.bosses).map(b=>`<tr class="f"><td><b>${esc(b.n)}</b></td><td>${(b.hp||0).toLocaleString()}</td><td>${b.dm||''}</td><td>${b.sz||''}</td></tr>`).join('')}</table><div class="note">Los jefes se encuentran en guaridas del mapa. Al vencerlos se pueden domar como mascotas.</div>`],
- mascotas:['🐾 Mascotas',()=>`<h2>Mascotas y monturas</h2><table><tr><th></th><th>Nombre</th><th>Tipo</th><th>Vida</th><th>Precio</th><th>Descripción</th></tr>${D.pets.map(p=>`<tr class="f"><td>${p.ic}</td><td><b>${esc(p.n)}</b></td><td>${p.kind=='m'?'Montura':'Compañero'}</td><td>${p.hp}</td><td>${(p.price||0).toLocaleString()} 🪙</td><td>${esc(p.d)}</td></tr>`).join('')}</table>`],
- ciudades:['🏙️ Ciudades',()=>`<h2>Las 12 ciudades</h2><table><tr><th>Ciudad</th><th>Tipo</th><th>Coordenadas</th></tr>${D.cities.map(c=>`<tr class="f"><td><b>${esc(c.n)}</b></td><td>${esc(c.t)}</td><td>${c.tx}, ${c.ty}</td></tr>`).join('')}</table>
- <h3>Edificios de cada ciudad</h3><p>${D.shops.map(s=>`<span class="tag">${s.ic} ${esc(s.n)}</span>`).join(' ')}</p><h3>Cuevas</h3><p>${D.caves.map(esc).join(' · ')}</p>`],
- progreso:['📈 Niveles y XP',()=>`<h2>Subir de nivel</h2><p>La XP viene casi solo de <b>matar enemigos</b>. Tareas, jefes y misiones dan apenas el 20% de lo que parece. Es un juego de esfuerzo.</p><table><tr><th>Nivel</th><th>XP para el siguiente</th></tr>${D.hc.need.map(n=>`<tr><td>${n[0]}</td><td>${n[1].toLocaleString()}</td></tr>`).join('')}</table>
- <h2>Party</h2><ul><li>Máximo <b>8</b> jugadores.</li><li>Bonus de XP desde 3 miembros con 3 clases distintas: +1% (3-4), +2% (5-7), +3% (8).</li><li>El que es 4+ niveles menor recibe +20%.</li></ul><h2>Tareas diarias</h2><p>${D.tasks.map(t=>`<span class="tag">${esc(t.n)}</span>`).join(' ')}</p>
- <h2>Servicios premium</h2><p>${D.prem.map(p=>`<span class="tag">${p.ic} ${esc(p.n)}</span>`).join(' ')}</p>`],
- eventos:['🎃 Eventos',()=>`<h2>Calendario</h2><table><tr><th>Evento</th><th>Fechas</th></tr>${D.events.map(e=>`<tr><td>${e.ic} ${esc(e.n)}</td><td>${e.a?e.a[1]+' '+MES[e.a[0]-1]+' – '+e.b[1]+' '+MES[e.b[0]-1]:'según el año'}</td></tr>`).join('')}</table><div class="note">Los eventos se activan solo por fecha real. La noche completa (oscuridad total) es exclusiva de eventos especiales; el resto del tiempo la noche es suave (35%).</div>`],
- boutique:['🛍️ Boutique',()=>{const C=window.SRCAT;if(!C)return '<h2>Boutique</h2><p>No se pudo cargar el catálogo.</p>';const sk=Object.values(C.SKINS);const st={melee:'⚔️ Cuerpo a cuerpo',ranged:'🏹 Distancia',magic:'🔮 Mágico'};
-  return `<h2>Boutique de apariencias</h2><p>${sk.length} apariencias, 4 por héroe. Se compran con 💎 gemas y cada una da atributos pequeños y reales: armadura, defensa, resistencia elemental, daño elemental, protección, bono de golpe según el estilo del héroe y crítico.</p><input class="q" placeholder="Buscar héroe o apariencia…" oninput="flt(this)"><table><tr><th>Héroe</th><th>Apariencia</th><th>Rareza</th><th>Estilo</th><th>💎</th><th>Armadura</th><th>Def</th><th>Res.</th><th>Elem.</th><th>Prot.</th><th>Golpe</th><th>Crít.</th></tr>${sk.map(q=>`<tr class="f"><td>${esc(C.CLASES[q.c])}</td><td><b>${esc(q.n)}</b></td><td>${esc(C.RAR[q.t])}</td><td>${st[q.st]||''}</td><td>${q.g}</td><td>+${q.ar} PV</td><td>${q.df}%</td><td>${q.er}%</td><td>${esc(q.el)} +${q.el_}%</td><td>${q.pr}%</td><td>+${q.hit}%</td><td>+${q.cr}%</td></tr>`).join('')}</table>`}],
- gremios:['🏰 Gremios',()=>`<h2>Gremios</h2><ul><li>Crear un gremio cuesta <b>10 💎 propias</b> (las transferidas no valen).</li><li>Hasta <b>500 miembros</b> por gremio.</li><li>Etiqueta de <b>2 a 4 letras</b> que aparece junto a tu nombre [TAG]. Cambiarla cuesta 2 💎.</li><li>Tres modos de ingreso: <b>solo invitación</b>, <b>por solicitud</b> o <b>abierto</b>.</li><li>Rangos: miembro, oficial (invita y acepta solicitudes, expulsa miembros) y líder (todo lo demás).</li><li>Tesoro común: cualquiera deposita oro, solo el líder lo retira.</li><li>Chat del gremio, mensaje del día y registro de eventos.</li></ul><div class="note">Todo se valida en el servidor: el precio, el cupo y los permisos no se pueden saltar.</div>`],
- social:['💬 Chat y amigos',()=>`<h2>Chat, mensajes privados y amigos</h2><ul><li>Botón 💬 en pantalla (se despliega solo cuando lo necesitas): <b>Global</b>, <b>Privados</b> y <b>Amigos</b>.</li><li>Toca el nombre de cualquier jugador, en el chat o en el mundo, y elige: mensaje privado, agregar amigo, invitar a tu gremio o bloquear.</li><li>Hasta <b>30 amigos</b>. Ves quién está en línea y quién no, y te avisa cuando se conectan.</li><li>Los mensajes privados se guardan aunque el otro esté desconectado.</li><li>Antispam: límite de velocidad y silencio automático si repites mensajes. Puedes bloquear a quien te moleste.</li></ul>`],
- cuevas:['🕳️ Cuevas y cripta',()=>`<h2>Cuevas</h2><p>Las cuevas y la <b>Cripta del Viajero</b> aparecen marcadas en el mapa y el minimapa desde el inicio. La cripta está a unos <b>4 minutos caminando</b> de Chang'an y tiene 5 pisos de cavernas con pasillos anchos, varias escaleras (⬆️ subir / ⬇️ bajar) y un guardián al final.</p><p>Lo que no está en el mapa son los <b>secretos</b>: guaridas, tesoros y lugares ocultos. De ellos solo circulan <b>rumores</b>: pregunta en las ciudades y sal a buscarlos.</p>`],
- roadmap:['🗺️ Roadmap',()=>`<h2>Roadmap</h2><h3 class="done">✅ Hecho</h3><ul class="tl"><li>Mundo grande con 12 ciudades Tibia-style: calles, césped, farolas con colisión, árboles y estandartes, con paleta propia por ciudad.</li><li>Tiendas por necesidad (herrería, armería, botica, materiales, gremio) y mercado de jugadores.</li><li>8 clases, 10 sets por clase y balance del Caballero como tanque.</li><li>Party de 8 con bonus por clases distintas.</li><li>Cuevas y criptas con look de cueva real (roca, lodo, charcos, huesos y cadáveres que se ensucian con la profundidad), mobs al 40% y por oleadas.</li><li>Combate táctico: los enemigos te cercan en las 8 casillas de alrededor, los demás esperan su turno y los débiles huyen. Barras de vida en mobs y personajes.</li><li>Personalización de héroe: color de piel, cabello y atuendo.</li><li>Economía hardcore: sin regalos de entrada ni por descubrir, XP pesada.</li><li>Halloween por fecha con calabazas asesinas, gigantes y espectrales.</li><li>Servidor online con reglas, mundo compartido y app instalable (PWA) en pantalla completa.</li><li>Clic en el mapa o el minimapa y tu héroe camina solo hasta ese punto (con ✋ Parar).</li><li>Golpes críticos y combos visibles en pantalla: varias fuentes de daño a la vez aumentan el crítico.</li><li>Boutique: 32 apariencias (4 por héroe) con defensa, armadura, resistencia, daño elemental y bono según el estilo del héroe (cuerpo a cuerpo, mágico o a distancia).</li><li>Gremios: 10 💎, hasta 500 miembros, etiqueta, invitaciones, solicitudes, tesoro, rangos y chat.</li><li>Chat global, mensajes privados y lista de 30 amigos con estado en línea.</li><li>Caballero: tajo circular que golpea las 8 casillas a su alrededor.</li><li>Cuevas rediseñadas (pasillos anchos, muros de roca, escaleras claras) y cripta a unos 4 minutos de la ciudad.</li><li>Establo con jaulas de hierro y animales que se mueven.</li><li>HUD y diálogos con look moderno.</li><li>Antitrampas en el servidor: oro, nivel, objetos y gemas se validan; el mercado, las tiendas y las subastas las manda el servidor.</li></ul>
- <h3 class="wip">🔧 En desarrollo</h3><ul class="tl"><li>Jefes autoritativos en el servidor para co-op real.</li><li>Validación en servidor de tiendas y party.</li><li>Guardar oro e inventario en el servidor.</li></ul>
- <h3 class="plan">🔭 Planeado</h3><ul class="tl"><li>Eclipses y otros eventos de noche completa.</li><li>Depósito de ciudad (banco) y casas.</li><li>Más cuevas y dungeons por tier.</li><li>Rankings de jugadores y gremios.</li></ul>`]};
-function flt(i){const q=i.value.toLowerCase();document.querySelectorAll('.f').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q)?'':'none')}
-function go(){const k=(location.hash||'#inicio').slice(1);const s=SEC[k]||SEC.inicio;$('main').innerHTML=s[1]();document.querySelectorAll('#side a').forEach(a=>a.classList.toggle('on',a.dataset.k==(SEC[k]?k:'inicio')));scrollTo(0,0)}
-fetch('wiki-data.json').then(r=>r.json()).then(d=>{D=d;$('side').innerHTML=Object.entries(SEC).map(([k,v])=>`<a href="#${k}" data-k="${k}">${v[0]}</a>`).join('');addEventListener('hashchange',go);go()}).catch(e=>{$('main').textContent='No se pudo cargar el wiki: '+e});
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-</script></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wiki · Silk Road</title>
+<meta name="description" content="La wiki de Silk Road: The Great Adventure. Clases, habilidades, equipo, zonas, monstruos, farmeo, carpas y más.">
+<meta name="theme-color" content="#09070f">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23e6b64f'/%3E%3Crect x='24' y='24' width='16' height='16' fill='%2309070f'/%3E%3C/svg%3E">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="index.html"><span class="spr" style="--k:2;--c:1;--t:3" aria-hidden="true"></span><span>SILK ROAD</span></a>
+  <nav class="nav" aria-label="Principal">
+    <a href="index.html">Inicio</a>
+    <a href="wiki.html" class="on">Wiki</a>
+    <a href="#/clases">Clases</a>
+    <a href="#/arte">Arte</a>
+    <a href="play.html" class="play locked" data-play data-go="⚔️ Jugar" aria-disabled="true"><span data-lbl>🔒 Jugar</span></a>
+  </nav>
+</div></header>
+<div class="wrap wiki">
+  <button class="btn menu-btn" type="button">☰ Menú de la wiki</button>
+  <aside class="side" id="side" aria-label="Wiki"></aside>
+  <main class="page" id="page" tabindex="-1"></main>
+</div>
+<div class="lightbox" id="lb" aria-label="Imagen ampliada"></div>
+<footer class="foot"><div class="wrap">
+  <p>© Silk Games Studios · <a href="index.html">Inicio</a> · <a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos</a></p>
+  <p class="credit">Sprites: tileset DawnLike (CC-BY 4.0) de DragonDePlatino y DawnBringer. Escenas y textos originales.</p>
+</div></footer>
+<script src="site-config.js"></script>
+<script src="wiki-data.js"></script>
+<script src="wiki-lore.js"></script>
+<script src="site-heroes.js"></script>
+<script src="art.js"></script>
+<script src="site-hero.js"></script>
+<script src="site.js"></script>
+<script src="wiki.js"></script>
+</body>
+</html>

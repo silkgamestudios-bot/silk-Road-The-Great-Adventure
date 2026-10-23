@@ -13,17 +13,50 @@ const row=u=>{const a=acctOf(u);return{u,nm:a.nm||'Jugador',on:S.online(u)?1:0,l
 const dmView=(s)=>{const o={};for(const p in s.dm){const d=s.dm[p];o[p]={nm:nm(p),on:S.online(p)?1:0,un:d.un|0,m:d.m.slice(-20)}}return o};
 function state(u){const s=so(u);return{fr:s.fr.map(row),rq:s.rq.map(x=>({u:x,nm:nm(x)})),bl:s.bl.map(x=>({u:x,nm:nm(x)})),dm:dmView(s),max:MAXF}}
 const ops={};
-ops['soc.me']=(u)=>({ok:1,s:state(u),g:GLOB.slice(-30)});
+/* ===== Idioma de la cuenta + traducción bajo demanda (Google Translate) ===== */
+const LANGS=['es','en','pt'],TR_DAY=150,TR_KEY=process.env.GOOGLE_TRANSLATE_KEY||'',TRC=new Map(),TRMAX=3000;
+const langOf=u=>{const l=has(ECO.acc,u)?ECO.acc[u].lang:'';return LANGS.includes(l)?l:''};
+function gTranslate(text,target){
+ const k=target+'|'+text;if(TRC.has(k)){const v=TRC.get(k);TRC.delete(k);TRC.set(k,v);return Promise.resolve(v)}
+ const done=v=>{TRC.set(k,v);if(TRC.size>TRMAX)TRC.delete(TRC.keys().next().value);return v};
+ if(!TR_KEY)return Promise.resolve(done({t:'['+target+'] '+text,src:'',demo:1})); /* modo demo sin clave */
+ return new Promise((res,rej)=>{const body=JSON.stringify({q:text,target,format:'text'});
+  const rq=require('https').request({hostname:'translation.googleapis.com',path:'/language/translate/v2?key='+encodeURIComponent(TR_KEY),method:'POST',headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)},timeout:6000},r=>{let d='';r.on('data',c=>{d+=c;if(d.length>20000)r.destroy()});r.on('end',()=>{try{const j=JSON.parse(d),x=j.data.translations[0];res(done({t:String(x.translatedText||'').slice(0,400),src:String(x.detectedSourceLanguage||'').slice(0,5)}))}catch(e){rej(new Error('bad'))}})});
+  rq.on('timeout',()=>rq.destroy(new Error('timeout')));rq.on('error',rej);rq.end(body)})}
+ops['soc.lang']=(u,m)=>{const l=String(m.l||'');if(!LANGS.includes(l))return err('Idioma no válido');acctOf(u).lang=l;S.dirty();return{ok:1,lg:l}};
+/* servicio premium 🌐 Traducción: 10 💎 propias = 30 días (máx. 90 acumulados), igual que los demás servicios de la tienda */
+const TL_GEMS=10,TL_D=30,DAYMS=864e5,tlOf=u=>{const a=acctOf(u);return(a.px&&+a.px.tl)||0};
+ops['tl.buy']=(u)=>{const a=acctOf(u),t=now(),cur=tlOf(u);if(!a.px)a.px={};
+ if(Math.max(t,cur)-t+TL_D*DAYMS>90*DAYMS)return err('Máximo 90 días acumulados');
+ if(!E.spendGems(a,TL_GEMS,true,'Traducción premium '+TL_D+' d'))return err('Te falta '+TL_GEMS+' 💎 propia (las transferidas solo valen para apariencias)');
+ a.px.tl=Math.max(t,cur)+TL_D*DAYMS;S.dirty();E.pushEnt(u);if(S.log)S.log('[tienda] '+(a.nm||u)+' compró traducción '+TL_D+'d');return{ok:1,ent:E.ent(u),tl:a.px.tl,cost:TL_GEMS}};
+ops['chat.tr']=async(u,m)=>{const a=acctOf(u),lg=langOf(u);if(!lg)return err('Elige primero tu idioma');
+ if(tlOf(u)<=now())return{ok:1,need:1,cost:TL_GEMS,days:TL_D};
+ if(!rate(u,'t',500))return err('Más despacio');
+ let msg=null;
+ if(m.k==='g'){const ts=+m.ts;msg=GLOB.find(x=>x.ts===ts&&String(x.u)===String(m.u)&&!x.sys)}
+ else if(m.k==='d'){const d=so(u).dm,p=String(m.p||''),ts=+m.ts;if(has(d,p))msg=d[p].m.find(x=>x.ts===ts)}
+ if(!msg)return err('Mensaje no disponible');
+ const txt=String(msg.t||'');if(txt.length<2||!/[\p{L}]/u.test(txt))return{ok:1,same:1};
+ if(msg.ls&&msg.ls===lg)return{ok:1,same:1};
+ const day=new Date().toISOString().slice(0,10),q=a.trq&&a.trq.d===day?a.trq:(a.trq={d:day,n:0});
+ const k=lg+'|'+txt;const cached=TRC.has(k);
+ if(!cached&&q.n>=TR_DAY)return err('Llegaste al límite diario de traducciones ('+TR_DAY+'). Mañana se reinicia.');
+ try{const r=await gTranslate(txt,lg);if(!cached){q.n++;S.dirty()}
+  if(r.src&&r.src===lg)return{ok:1,same:1};
+  return{ok:1,t:r.t,src:r.src,demo:r.demo?1:0,left:Math.max(0,TR_DAY-q.n)}}
+ catch(e){return err('No se pudo traducir ahora, intenta de nuevo')}};
+ops['soc.me']=(u)=>({ok:1,s:state(u),g:GLOB.slice(-30),lg:langOf(u),tl:tlOf(u),tc:TL_GEMS});
 ops['soc.find']=(u,m)=>{const t=resolve(m);if(!t||t===u)return err('No existe un jugador con ese nombre');return{ok:1,p:row(t)}};
 ops['chat.g']=(u,m)=>{const a=acctOf(u);if(!a.nm)return err('Elige primero el nombre de tu personaje');const t=clean(m.text);if(!t)return err('Mensaje vacío');
  if(!rate(u,'g',1500))return err('Espera un momento antes de escribir otra vez');if(a.mute&&a.mute>now())return err('Estás silenciado por unos minutos');
  const last=a.lastg||'';if(last===t.toLowerCase()){a.dupg=(a.dupg|0)+1;if(a.dupg>=3){a.mute=now()+3*60e3;a.dupg=0;return err('Spam detectado: silenciado 3 minutos')}}else a.dupg=0;a.lastg=t.toLowerCase();
- const msg={u,nm:a.nm,gt:S.tagOf?S.tagOf(u):'',t,ts:now()};GLOB.push(msg);if(GLOB.length>GMAX)GLOB.shift();
+ const msg={u,nm:a.nm,gt:S.tagOf?S.tagOf(u):'',t,ts:now(),ls:langOf(u)};GLOB.push(msg);if(GLOB.length>GMAX)GLOB.shift();
  for(const id of Object.keys(ECO.acc))if(S.online(id)){const bl=so(id).bl;if(bl.includes(u))continue;S.push(id,{t:'cg',m:msg})}return{ok:1}};
 ops['dm.send']=(u,m)=>{const a=acctOf(u);if(!a.nm)return err('Elige primero el nombre de tu personaje');const to=resolve(m);if(!to||!has(ECO.acc,to))return err('Ese jugador no existe');if(to===u)return err('No puedes escribirte a ti mismo');
  const t=clean(m.text);if(!t)return err('Mensaje vacío');if(!rate(u,'d',700))return err('Más despacio');
  const sb=so(to);if(sb.bl.includes(u))return err('Ese jugador no recibe tus mensajes');if(so(u).bl.includes(to))return err('Lo tienes bloqueado');
- const msg={f:u,nm:a.nm,t,ts:now()};
+ const msg={f:u,nm:a.nm,t,ts:now(),ls:langOf(u)};
  const put=(me,peer,un)=>{const s=so(me);const d=s.dm[peer]||(s.dm[peer]={m:[],un:0});d.m.push(msg);if(d.m.length>MAXH)d.m.shift();if(un)d.un=(d.un|0)+1;const ks=Object.keys(s.dm);if(ks.length>60){ks.sort((x,y)=>(s.dm[x].m.slice(-1)[0]||{ts:0}).ts-(s.dm[y].m.slice(-1)[0]||{ts:0}).ts);delete s.dm[ks[0]]}};
  put(u,to,0);put(to,u,1);S.dirty();S.push(to,{t:'dm',p:u,nm:a.nm,m:msg});return{ok:1,m:msg,to,tn:nm(to)}};
 ops['dm.read']=(u,m)=>{const p=String(m.u||'');const dm=so(u).dm;const d=has(dm,p)?dm[p]:null;if(d)d.un=0;S.dirty();return{ok:1}};

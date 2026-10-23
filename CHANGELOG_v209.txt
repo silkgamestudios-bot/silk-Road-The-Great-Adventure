@@ -1,0 +1,16 @@
+v209 — unificación (rama server v203e + traductor premium + sitio/wiki/héroes + cuenta regresiva)
+
+VIENE DE TUS ZIPS (files_57..62):
+- server.js: guardado espaciado si la base es grande; WIPE_KEEP=0 para el wipe sin conservar gemas/premium.
+- world.js: los enemigos buscan jugadores por celdas (rendimiento).
+- economy.js: oro gastado en pociones (pgs) para no perder pociones al comprar y ganar a la vez.
+- play.html: pgs en pociones y guardado, incendios forestales por rayos (v203d), en modo cuentas no se borra el personaje desde Opciones, SR_V.
+- config.js (accounts:true) y package.json (ws ^8.18, node>=18).
+NUESTRO (v204-v208):
+- Traductor de chat premium (10 gemas / 30 días), es/en/pt, Google Translate v2 (GOOGLE_TRANSLATE_KEY).
+- Candado de lanzamiento: LAUNCH_AT (por defecto 2026-10-23 20:00 hora RD, "off" lo apaga); /launch; solo entra el master antes. Master: MASTER_EMAIL / MASTER_UID.
+- Sitio: index.html (cuenta regresiva), wiki.html + wiki.js (23 secciones incl. Clima), cartas-slot de héroes reales con visor.
+- Archivos nuevos del sitio: site-*.js, art.js, wiki-*.js, skins.png. Los de héroes se llaman site-hero.js / site-heroes.js para NO pisar tu heroes.js del repo.
+Acceso anticipado discreto: hasta 3 cuentas (variable EARLY o master en Opciones > Pruebas > 🎟️ Acceso anticipado).
+SW: sr-v209.
+NO INCLUIDO (los tienes tú en el repo): accounts.js, claude-shim.js, heroes.js. No los sobrescribas.

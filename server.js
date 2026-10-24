@@ -10,7 +10,7 @@ const MASTER=process.env.MASTER_UID||'';
 const GCID=process.env.GOOGLE_CLIENT_ID||'',MASTER_EMAIL=(process.env.MASTER_EMAIL||'').trim().toLowerCase();
 const TOKINFO=process.env.GOOGLE_TOKENINFO_URL||'https://oauth2.googleapis.com/tokeninfo?id_token=';
 const PAY_ID=process.env.BINANCE_PAY_ID||'748095851',WA_NUMBER=(process.env.MASTER_WHATSAPP||'18093965707').replace(/\D/g,'');
-const CALLMEBOT_KEY=process.env.CALLMEBOT_KEY||'',CALLMEBOT_URL=process.env.CALLMEBOT_URL||'https://api.callmebot.com/whatsapp.php',WA_TOKEN=process.env.WA_TOKEN||'',WA_PHONE_ID=process.env.WA_PHONE_ID||'';
+const NTFY=(process.env.NTFY_TOPIC||'').replace(/[^\w-]/g,'');const CALLMEBOT_KEY=process.env.CALLMEBOT_KEY||'',CALLMEBOT_URL=process.env.CALLMEBOT_URL||'https://api.callmebot.com/whatsapp.php',WA_TOKEN=process.env.WA_TOKEN||'',WA_PHONE_ID=process.env.WA_PHONE_ID||'';
 const SAVEDIR=(process.env.DATA_DIR||'.')+'/saves';try{fs.mkdirSync(SAVEDIR,{recursive:true})}catch(e){}
 let DB={},TOK={},SES={},ACC={},ECO={},USR={},AC=null,dirty=0;const REQ=process.env.REQUIRE_ACCOUNTS==='1';
 try{const j=JSON.parse(fs.readFileSync(FILE,'utf8'));DB=j.db||{};TOK=j.tok||{};SES=j.ses||{};ACC=j.acc||{};ECO=j.eco||{};USR=j.usr||{}}catch(e){}
@@ -36,7 +36,8 @@ for(const sg of['SIGTERM','SIGINT'])process.on(sg,()=>{try{save(1)}catch(e){}pro
 async function notify(text){try{
  if(CALLMEBOT_KEY){await fetch(CALLMEBOT_URL+'?phone='+WA_NUMBER+'&text='+encodeURIComponent(text)+'&apikey='+encodeURIComponent(CALLMEBOT_KEY))}
  else if(WA_TOKEN&&WA_PHONE_ID){await fetch('https://graph.facebook.com/v20.0/'+WA_PHONE_ID+'/messages',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+WA_TOKEN},body:JSON.stringify({messaging_product:'whatsapp',to:WA_NUMBER,type:'text',text:{body:text}})})}
- else log('[notificación sin proveedor WhatsApp configurado] '+text.replace(/\n/g,' | '))}catch(e){log('notify error '+e.message)}}
+ else log('[notificación sin proveedor WhatsApp configurado] '+text.replace(/\n/g,' | '))}catch(e){log('notify error '+e.message)}
+ if(NTFY){try{await fetch('https://ntfy.sh/'+encodeURIComponent(NTFY),{method:'POST',headers:{Title:'Silk Road',Priority:'high',Tags:'gem'},body:text})}catch(e){log('ntfy error '+e.message)}}}
 let lastN=0;const notifyRL=t=>{const n=Date.now();if(n-lastN<3000){setTimeout(()=>notify(t),3000);lastN=n+3000}else{lastN=n;notify(t)}};
 async function gverify(cred){const r=await fetch(TOKINFO+encodeURIComponent(cred));if(!r.ok)throw new Error('token');const j=await r.json();
  if(j.aud!==GCID||!/accounts\.google\.com$/.test(String(j.iss||''))||String(j.email_verified)!=='true'||(+j.exp)*1000<Date.now()||!j.sub)throw new Error('token inválido');return{sub:String(j.sub),email:String(j.email||'').toLowerCase(),name:String(j.name||'').slice(0,40)}}
@@ -92,6 +93,15 @@ OPS['adm.lv']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const n
  a.lv=lv;a.xp=0;dirty=1;log('[GM] '+u+' puso a '+id+' ('+(a.nm||a.pn||'?')+') en nivel '+lv+' (antes '+old+')');
  const w=ONL.get(id);if(w){try{w.send(JSON.stringify({t:'bad',e:'Un GM ajustó tu nivel a '+lv+'. Vuelve a entrar al juego.'}));setTimeout(()=>{try{w.close()}catch(e){}},500)}catch(e){}}
  return{ok:1,id,nm:a.nm||a.pn||id,old,lv,online:!!w,saved:ok}};
+OPS['char.del']=(u,m)=>{const a=E.acct(u),n=Date.now();if(n-(a.cdt||0)<60000)return{e:'Espera un minuto antes de borrar otra vez'};if(isMaster(u))return{e:'El personaje del master no se borra desde aquí'};
+ try{fs.unlinkSync(savePath(u))}catch(e){}
+ if(a.nm&&ECO.names[a.nm.toLowerCase()]===u)delete ECO.names[a.nm.toLowerCase()];
+ for(const id in ECO.reg)if(ECO.reg[id]&&ECO.reg[id].o===u)delete ECO.reg[id];
+ const z=ECO.acc[u];Object.assign(z,{lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,ts:0,dl:[],mint:{},gb:{v:0,t:0},cdt:n});
+ z.res={gold:0,g:[0,0,0,0,0],fd:Object.assign({carne:0,cocida:0,pasto:0,hierba:0,lazo:0},Object.fromEntries((E.MNK||[]).map(k=>[k,0]))),ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0};
+ dirty=1;log('[personaje] '+u+' borró su personaje');try{E.acct(u);E.pushEnt(u)}catch(e){}return{ok:1}};
+OPS['wa.set']=(u,m)=>{const a=E.acct(u),d=String(m.wa||'').replace(/\D/g,'');if(!d){delete a.wa;dirty=1;return{ok:1,wa:''}}if(d.length<8||d.length>15)return{e:'Escribe tu número con código de país, solo números (ej. 18091234567)'};a.wa=d;dirty=1;return{ok:1,wa:d}};
+OPS['wa.get']=u=>({ok:1,wa:(E.acct(u).wa)||''});
 OPS['early.list']=u=>isMaster(u)?{list:earlyList(),max:3,env:EARLY_ENV}:{e:'operación desconocida'};
 OPS['early.add']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase().slice(0,120);if(!w)return{e:'Escribe el correo, usuario o uid'};const L=earlyList();if(L.includes(w))return{list:L,max:3};if(L.length>=3)return{e:'Ya hay 3 accesos anticipados. Quita uno primero.'};DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).concat(w);dirty=1;log('early.add '+w);return{list:earlyList(),max:3}};
 OPS['early.del']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase();DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).filter(x=>String(x).toLowerCase()!==w);dirty=1;log('early.del '+w);return{list:earlyList(),max:3,env:EARLY_ENV}};

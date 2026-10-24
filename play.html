@@ -1082,7 +1082,7 @@ function atk(auto){if(modal||P.cd>0)return;const c=CL(),cn=CN[P.cls],ns=strikes(
  if(cn){const R=coneR();let t=null,bd=R+60,bg=0;for(const e of alive()){const d=Math.hypot(e.x-P.x,e.y-P.y)+(e.wild?90:0);if(e.pvg){if(d<R+60){t=e;bg=1}}else if(!bg&&d<bd){bd=d;t=e}}
   if(!t&&auto)return;const fd={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[P.dir||'down'],ang=t?Math.atan2(t.y-P.y,t.x-P.x):fd;
   if(P.cls==3){archerShot(ang,R,auto);return}
-  const lm=(1+.02*(ELV()-1))*mpf()*([1,1,1.35,.9,1.3,.8,1.1,1][P.cls|0]||1),mcS=cn.mc*.5*lm*.45,mcB=cn.mc*1.5*lm*.45,big=P.lv>=12&&P.mp>=mcB,small=!big&&P.mp>=mcS,full=big||small;if(!full){P.cd=cdOf();P.fx=.15;staffStrike(ang);if(!auto||Math.random()<.03)toast('💧 Sin MP: golpeas con tu bastón · el MP no se regenera solo: come carne/pescado cocinado 🍗 o usa una poción',3200);return}
+  const lm=(1+.02*(ELV()-1))*mpf()*([1,1,1.1,.9,1.15,.8,1.1,1][P.cls|0]||1),mcS=cn.mc*.5*lm*.45,mcB=cn.mc*1.5*lm*.45,big=P.lv>=12&&P.mp>=mcB,small=!big&&P.mp>=mcS,full=big||small;if(!full){P.cd=cdOf();P.fx=.15;staffStrike(ang);if(!auto||Math.random()<.03)toast('💧 Sin MP: golpeas con tu bastón · el MP no se regenera solo: come carne/pescado cocinado 🍗 o usa una poción',3200);return}
   P.cd=cdOf();P.mp-=big?mcB:mcS;
   if(P.cls==2&&!big){const a=ang;AR.push({x:P.x,y:P.y,vx:Math.cos(a)*400,vy:Math.sin(a)*400,l:(R+60)/400,dm:small?Math.round(dmg()*.6):Math.round(dmg()*.3),a,fb:1});return}
   if(!big){coneStrike(ang,Math.min(R,small?R:110),.5,cn,small,.6);return}
@@ -1779,7 +1779,7 @@ function PROV(){return PVL.slice(0,4).filter(z=>z[0]=='pasto'||z[0]=='hierba').m
 function provTrade(k,n,m){const gi=10+PVL.findIndex(z=>z[0]==k),b=PVL.find(z=>z[0]==k)[3],df=dyf(MCI,gi),pbp=Math.round(b*df*(lic()?1:1.25)),psp=Math.round(b*df*(lic()?.7:.45));
  if(m=='b'){let q=Math.min(+n||1,Math.floor(P.gold/pbp));while(q>0&&gcost(pbp*q)>P.gold)q--;if(q<1){toast('Falta oro (precio + 3% de impuesto)');return}const tt=gcost(pbp*q);gpay(pbp*q);pset(k,pget(k)+q);dyBump(MCI,gi,q,1);toast('Compraste '+q+' de '+k+' (−'+fmt(tt)+' 🪙 con 3% de impuesto)')}
  else{const q=n=='max'?pget(k):Math.min(+n,pget(k));if(q<1)return;const nt=gget(psp*q);pset(k,pget(k)-q);dyBump(MCI,gi,q,-1);toast('Vendiste '+q+' de '+k+' (+'+fmt(nt)+' 🪙, −3% de impuesto)')}}
-const HRK=['carne','car2','car3','car4','car5'],CK=['cocida','coc2','coc3','coc4','coc5'],RHP=[.02,.03,.04,.05,.06],RMP=[.02,.03,.04,.05,.06],rcPc=v=>(Math.round(v*1000)/10)+'%',HZT=[0,600,2000,5000,11000,24000,50000],GN=['común','selecta','fina','exquisita','legendaria'];
+const HRK=['carne','car2','car3','car4','car5'],CK=['cocida','coc2','coc3','coc4','coc5'],RHP=[.02,.03,.04,.05,.06],RMP=[.025,.0375,.05,.0625,.075],rcPc=v=>(Math.round(v*1000)/10)+'%',HZT=[0,600,2000,5000,11000,24000,50000],GN=['común','selecta','fina','exquisita','legendaria'];
 const huntLv=()=>{let l=0;for(const t of HZT)if((P.hu|0)>=t)l++;return l},rawN=()=>HRK.concat(['fi1','fi2','fi3','fi4']).reduce((a,k)=>a+(P.fd[k]|0),0),cookN=()=>CK.concat(['fc1','fc2','fc3','fc4']).reduce((a,k)=>a+(P.fd[k]|0),0);
 function wildKill(w){pqEvt('hunt',1);w.dead=240;const q=MEAT[w.sp]||1,L0=huntLv();P.hu=(P.hu|0)+1;const g=Math.min(5,1+Math.floor((w.tr|0)/3)+Math.floor((L0-1)/2+Math.random()));dropMeat(w.x,w.y,q,g);const L1=huntLv();if(L1>L0)toast('🏹 ¡Tu nivel de Caza sube a '+L1+'! Mejor carne de las presas.',5000);vib(10)}
 
@@ -1796,7 +1796,7 @@ function fishTick(){if(!FSH)return;if(modal||DG.f||!nearWater()){FSH=null;return
  const r=Math.random();let sz=r<.015+.02*sc?3:r<.12+.06*sc?2:r<.4+.07*sc?1:0;P.pz=(P.pz|0)+1;P.fd['fi'+(sz+1)]=(P.fd['fi'+(sz+1)]|0)+1;toast('🎣 ¡Pescaste un pez '+FN[sz]+'! '+(sz>1?'🐠':'🐟'),2800);vib(sz>1?[30,20,60]:15);if(fishLv()>L0)toast('🎣 ¡Tu nivel de Pesca sube a '+fishLv()+'! Mejores peces.',5000);try{pqEvt('fish',1)}catch(e){}save()}
 (function(){const b=document.createElement('button');b.id='fsb';b.hidden=true;$('ctx').appendChild(b);b.addEventListener('click',()=>fishCast());setInterval(fishTick,400)})();
 function fishBtn(){const b=$('fsb');if(!b)return;b.hidden=!nearFish()||modal;if(!b.hidden){const rod=P.tl.cana;b.textContent=FSH?'🎣 Esperando que pique…':'🎣 Pescar'+(rod?' · 🔧'+rod.du:'')+' · 🧵'+(P.fd.hil|0)+' · 🧺'+fishN()+'/'+fishCap()}}
-const FRK=['fi1','fi2','fi3','fi4'],FCK=['fc1','fc2','fc3','fc4'],FHP=[.015,.025,.035,.05],FMP=[.025,.035,.05,.07],FN=['pequeño','mediano','grande','enorme'],PZT=[0,400,1500,4000,9000,20000];
+const FRK=['fi1','fi2','fi3','fi4'],FCK=['fc1','fc2','fc3','fc4'],FHP=[.015,.025,.035,.05],FMP=[.03,.045,.06,.085],FN=['pequeño','mediano','grande','enorme'],PZT=[0,400,1500,4000,9000,20000];
 const EATL=[...CK.map((k,i)=>({k,hp:RHP[i],mp:RMP[i],nm:'Carne '+GN[i]})),...FCK.map((k,i)=>({k,hp:FHP[i],mp:FMP[i],nm:'Pescado '+FN[i]}))];
 function eatCap(){return Math.min(10,2+Math.floor((P.lv|0)/11))}
 function eat(){if(!Array.isArray(P.rc))P.rc=P.rc?[P.rc]:[];const n=Date.now();P.rc=P.rc.filter(r=>r.e>n);let b=null;for(const x of EATL)if((P.fd[x.k]|0)>0&&(!b||x.hp+x.mp>b.hp+b.mp))b=x;if(!b){toast('No tienes carne ni pescado cocinados: cocínalos en la Carpa del Cocinero o cómpralos a otros jugadores',3500);return}
@@ -2894,12 +2894,15 @@ function mkOfertas(){const CATS=[['all','Todo'],['obj','Objetos'],['pet','Mascot
   else if(t=='p'&&P.pets[+k]){const p=P.pets[+k];det=`<div class="icd" style="--rc:${WMC[p.q]||'#d9a441'}"><div class="ich"><span class="ici">${pimg(pty(p),40)}</span><div><b>${hx(p.nm)}</b><br><small>Nv ${p.lv} · ${WMQ[p.q]}</small></div></div><label class="mkpl"><small>Precio fijo 🪙</small><input id="pp${k}" type="number" min="1" class="pin" placeholder="precio"></label><div class="ica"><button data-h="mpubp" data-i="${k}">📢 Publicar</button></div><label class="mkpl"><small>Subasta: duración en horas (1–48); usa el precio de arriba como inicial</small><input id="ah${k}" type="number" min="1" max="48" class="pin" placeholder="horas"></label><div class="ica"><button data-h="mpuba" data-i="${k}">🔨 Subastar</button><button data-h="scx">Cancelar</button></div></div>`}
   else if(t=='v'){const z=PVL.find(x=>x[0]==k);if(z)det=`<div class="icd" style="--rc:#7fd8b8"><div class="ich"><span class="ici">${ii(z[0],z[1],36)}</span><div><b>${hx(z[2])}</b><br><small>Tienes ×${pget(k)}</small></div></div><div class="row2"><label class="mkpl"><small>Cantidad</small><input id="vq_${k}" type="number" min="1" class="pin" placeholder="cant."></label><label class="mkpl"><small>Precio del lote 🪙</small><input id="vp_${k}" type="number" min="1" class="pin" placeholder="precio"></label></div><div class="ica"><button data-h="mpubv" data-k="${k}">📢 Publicar</button><button data-h="scx">Cancelar</button></div></div>`}
   else if(t=='e'){const e=EVT_.find(x=>x.k==k);if(e)det=`<div class="icd" style="--rc:#d9a441"><div class="ich"><span class="ici"><span class="oe">${e.ic}</span></span><div><b>Monedas de ${hx(e.n)}</b><br><small>Tienes ×${P.ec[k]|0}</small></div></div><div class="row2"><label class="mkpl"><small>Cantidad</small><input id="eq${k}" type="number" min="1" class="pin" placeholder="cant."></label><label class="mkpl"><small>Precio total 🪙</small><input id="ep${k}" type="number" min="1" class="pin" placeholder="precio"></label></div><div class="ica"><button data-h="mpube" data-k="${k}">📢 Publicar</button><button data-h="scx">Cancelar</button></div></div>`}}
+ if(MON()&&window.MKWA==null){window.MKWA='';mop('wa.get',{},r=>{window.MKWA=(r&&r.wa)||'';try{if(HT==8)heroM()}catch(e){}})}
+ h+=`<div class="mkc"><small>💬 <b>Mi WhatsApp para compradores</b> (opcional). Se mostrará en las ofertas que publiques para que te contacten. Con código de país, solo números.</small><div class="row2" style="margin-top:4px"><input id="mkwa" class="pin" inputmode="numeric" placeholder="18091234567" value="${hx(window.MKWA||'')}"><button data-h="mwasave">Guardar</button></div></div>`;
  h+=`<div class="mkft"><span class="pl">🪙 ${fmt(P.gold)}</span><span class="pl">🏦 ${fmt(P.bank|0)}</span><button data-h="ms3">📦 Órdenes</button></div></div>`;
  window._mkdet=det;return h}
 function mkDet(x){const o=x.o;let acts;
  if(x.own)acts=(x.auc&&o&&o.bid>0)?'<small>Con pujas: no se puede retirar</small>':`<button data-h="mdel" data-id="${hx(x.id)}">↩️ Retirar</button>`;
  else if(x.auc){const of=OFFERS[x.id];acts=(of.bu==UID||of.end<=Date.now())?'<small>'+(of.bu==UID?'Tu puja':'Cerrada')+'</small>':`<button data-h="maucb" data-id="${hx(x.id)}">🔨 Pujar ${fmt(aucMin(of))}</button>`}
  else acts=`<button class="best" data-h="mofb" data-id="${hx(x.id)}">🛒 Comprar · ${fmt(x.px)} 🪙</button>`;
+ if(!x.own&&x.o&&x.o.wa)acts+=`<button data-h="mwac" data-id="${hx(x.id)}">💬 Contactar por WhatsApp</button>`;
  return `<div class="icd" style="--rc:${x.col}"><div class="ich"><span class="ici">${x.vis}</span><div><b style="color:${x.col}">${hx(x.nm)}</b><br><small>${x.own?'Tu oferta · ':''}${fmt(x.px)} 🪙${x.own?'':' (con 3% de comisión)'}</small></div></div><p><small>${x.sub}${x.extra?'<br>'+x.extra:''}</small></p><div class="ica">${acts}<button data-h="scx">Cancelar</button></div></div>`}
 document.addEventListener('input',e=>{if(e.target&&e.target.id=='mkf'){window.MKF=e.target.value;mkfApply()}});
 function mkfApply(){const q=String(window.MKF||'').trim().toLowerCase();document.querySelectorAll('#hero .mkg .zs[data-n]').forEach(b=>{b.style.display=(!q||b.dataset.n.indexOf(q)>=0)?'':'none'})}
@@ -2992,7 +2995,7 @@ function grab(rad,q){let n=0,g=0,ml=0;const its=[],AF=(q===0&&rad>=9999)?LF:null
  SES.gd+=g;SES.it+=its.length;SES.ml+=ml;
  if(n&&(g||its.length||ml)){P.tc.lt++;if(q!==0){const a=[];if(ml)a.push(['xp','+'+ml+' 🥩 carne','#ffb3a0']);if(g)a.push(['gd','+'+g+' 🪙','#ffd666']);its.forEach(it=>a.push(['it','+ '+it.n,RC[it.r],it]));a.forEach((z,i)=>FT.push({x:P.x,y:P.y-22,t:1.6,d:i*.14,o:i*15,k:z[0],s:z[1],c:z[2],it:z[3]}))}vib(15);chk()}return n}
 /* ===== GEMAS: pago de Premium/VIP, atuendos, transferencias y usuario master ===== */
-const GEMP={lt:3,ap:2,bl:4,es:3,cmb:6,lic:10,vipm:15,vipj:7,vip:11,pv:7,bh:5},GMON=['cmb','es','lic','vipm','vipj','pv','bh'],GEMSKIN=12,GPK=[{g:1,b:0},{g:3,b:0},{g:5,b:0},{g:10,b:0}],GMIN=1,GMAX=5000,BNID='PON_AQUI_TU_BINANCE_PAY_ID',PAYWA=''/* tu WhatsApp con código de país, solo números, ej: 18095551234 */;
+const GEMP={lt:3,ap:2,bl:4,es:3,cmb:6,lic:10,vipm:15,vipj:7,vip:11,pv:7,bh:5},GMON=['cmb','es','lic','vipm','vipj','pv','bh'],GEMSKIN=12,GPK=[{g:1,b:0},{g:3,b:0},{g:5,b:0},{g:10,b:0}],GMIN=1,GMAX=5000,BNID='PON_AQUI_TU_BINANCE_PAY_ID',PAYWA='18093965707'/* tu WhatsApp con código de país, solo números, ej: 18095551234 */;
 const GM={sec:'sal',u:'',g:'',ref:'',img:'',tc:'',tq:'',pw:'',cc:'',cq:'',pid:'',mp:0,v:'',cn:'',og:'',pg:'',po:'',ph:'24',ph2:'',pn:0,sl:null,lg:null},GPAY={id:''},PGS={};
 let GMST=null,GREQ={},GREQM={},GGR={},GMW=0;
 try{GPAY.id=localStorage.getItem('srk_pid')||''}catch(e){}
@@ -3032,7 +3035,7 @@ async function gmSend(){if(!DB){if(PAYWA){gmWa();return}toast('Sin conexión al 
  const c=gmCalc(GM.u),ref=(GM.ref||'').trim();if(c.u<GMIN||c.u>GMAX){toast('Monto válido: '+GMIN+' a '+GMAX+' USDT');return}
  if(ref.length<8){toast('Escribe el ID de la orden de Binance Pay (mín. 8 caracteres)',3500);return}
  if(Object.values(GREQ).filter(r=>r.st=='p').length>=3){toast('Ya tienes 3 solicitudes pendientes');return}
- try{await DB.collection('gemreq').doc().set({u:UID,nm:P.name||'',usdt:rsD()?rsPay(c.u):c.u,gems:c.t,lp:c.u,dsc:rsD(),ref:ref.slice(0,80),img:GM.img||'',st:'p',ts:Date.now()});GM.ref='';GM.img='';gmLog('📨 Solicitud: '+(rsD()?rsPay(c.u):c.u)+' USDT → '+c.t+' 💎');toast('📨 Comprobante enviado. El master lo revisará',4500);save()}catch(e){toast('No se pudo enviar')}heroM()}
+ try{await DB.collection('gemreq').doc().set({u:UID,nm:P.name||'',usdt:rsD()?rsPay(c.u):c.u,gems:c.t,lp:c.u,dsc:rsD(),ref:ref.slice(0,80),img:GM.img||'',st:'p',ts:Date.now()});GM.ref='';GM.img='';gmLog('📨 Solicitud: '+(rsD()?rsPay(c.u):c.u)+' USDT → '+c.t+' 💎');toast('📨 Comprobante enviado. La verificación es manual y puede tardar unos minutos: te acreditaremos las gemas en cuanto se confirme.',7000);save()}catch(e){toast('No se pudo enviar')}heroM()}
 function gmImg(f){if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{let w=700,q=.6,u='';for(let i=0;i<4;i++){const s=Math.min(1,w/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*s));c.height=Math.max(1,Math.round(im.height*s));c.getContext('2d').drawImage(im,0,0,c.width,c.height);u=c.toDataURL('image/jpeg',q);if(u.length<180000)break;w=Math.round(w*.75);q=Math.max(.3,q-.1)}GM.img=u.length<180000?u:'';toast(GM.img?'🖼️ Captura lista':'Imagen muy grande',2500);heroM()};im.onerror=()=>toast('Imagen no válida');im.src=r.result};r.readAsDataURL(f)}
 /* ===== 🏛️ MERCADO DE LA SEDA y 💎 MERCADO DE GEMAS (v161): libro de ofertas entre jugadores ===== */
 const SM={mk:'i',tab:'m',d:null,cl:[],q:'',slf:-1,sel:'',side:'s',pr:'',qt:'1',rmin:0,pick:-1,sh:null,busy:0,tm:0,gq:'',gp:'',gside:'s',tkk:'',tkq:'1',tkp:'',tkc:'g',ld:0};
@@ -3313,7 +3316,7 @@ function gmAct(a,b){const i=a.indexOf(':'),k=i<0?a:a.slice(0,i),v=i<0?'':a.slice
  else if(k=='cp')gmCopy(GPAY.id||(BNID.startsWith('PON_')?'':BNID))
  else if(k=='wa')gmWa()
  else if(k=='cpu')gmCopy(UID)
- else if(k=='send')gmSend()
+ else if(k=='send'){try{if(PAYWA&&gmCalc(GM.u).u>=GMIN&&(GM.ref||'').trim())gmWa()}catch(e){}gmSend()}
  else if(k=='tx')gmTx()
  else if(k=='tk')vtAct(v)
  else if(k=='sk'){gmSkin(v);heroM()}
@@ -3444,7 +3447,7 @@ function gmPayHtml(){const pid=GPAY.id||BNID,ok=pid&&!String(pid).startsWith('PO
  return `<div class="bpay"><div class="bph"><span class="bpl">🟡 Binance Pay</span><span style="display:flex;align-items:center;gap:6px">${gemSvg(1,26)}<b>${c.t}</b> = <b>${c.u} USDT</b></span></div>
  <div class="bps"><i>1</i><div><b>Paga ${c.u} USDT</b> por Binance Pay a este ID:<div class="bpid"><code>${ok?hx(pid):'(el master aún no lo configuró)'}</code>${ok?'<button data-h="gm_cp">Copiar</button>':''}</div></div></div>
  <div class="bps"><i>2</i><div><b>Pon el ID de tu orden</b> y, si quieres, la captura del pago<input class="gin" id="gref" placeholder="ID de la orden de Binance Pay" value="${hx(GM.ref)}"><input class="gin" type="file" id="gfile" accept="image/*">${GM.img?`<img class="gimg" src="${GM.img}"><br><small>🖼️ Captura lista para enviar</small>`:''}</div></div>
- <div class="bps"><i>3</i><div><b>Envía el comprobante</b><button class="bpb" data-h="gm_send">📨 Enviar comprobante</button>${PAYWA?'<button class="bpb wa" data-h="gm_wa">💬 Enviar por WhatsApp</button>':''}<small>⏱️ Acreditación manual: el master revisa tu pago y te acredita las gemas. Verás el estado abajo.</small>${DB||PAYWA?'':'<br><small>⚠️ Sin conexión al servidor: aún no se pueden enviar comprobantes desde este navegador.</small>'}</div></div></div>`}
+ <div class="bps"><i>3</i><div><b>Envía el comprobante</b><button class="bpb" data-h="gm_send">📨 Enviar comprobante</button>${PAYWA?'<button class="bpb wa" data-h="gm_wa">💬 Enviar por WhatsApp</button>':''}<div class="gbox" style="margin:8px 0"><b>⏱️ Verificación manual</b><br><small>Al enviar el comprobante se abre tu WhatsApp con el mensaje listo: solo dale enviar y adjunta tu captura. Cada pago se verifica a mano: confirmarlo y acreditar tus gemas puede tardar unos minutos. No envíes el comprobante dos veces; verás el estado abajo en cuanto se apruebe.</small></div>${DB||PAYWA?'':'<br><small>⚠️ Sin conexión al servidor: aún no se pueden enviar comprobantes desde este navegador.</small>'}</div></div></div>`}
 async function gmSlLoad(){if(!ONL()||GM.slb)return;GM.slb=1;try{const r=await SRNET.rpc({t:'x',op:'gem.log'});GM.sl=r.l||[]}catch(e){}GM.slb=0;GM.slt=Date.now();if(!$('hero').hidden&&HT==5)heroM()}
 function gmTabHtml(){if(ONL()&&(!GM.slt||Date.now()-GM.slt>30000))gmSlLoad();const pid=GPAY.id||BNID,mine=Object.entries(GREQ).sort((a,b)=>b[1].ts-a[1].ts).slice(0,6),stl={p:'⏳ pendiente',a:'✅ aprobada',r:'❌ rechazada'};
  const S={};S.reg=`<div class="gbox gwarn"><h3>📜 Reglas de las gemas</h3><small>• <b>1 💎 = 1 USDT</b> por Binance Pay. Se acreditan cuando el master confirma tu comprobante.<br>• Tus gemas <b>propias</b> (compradas) pagan <b>Premium y VIP</b>, solo para ti.<br>• Puedes <b>transferir</b> gemas a otro jugador, pero las que recibe <b>no sirven para Premium ni VIP</b> (esos servicios no se comparten): solo para comprar <b>atuendos especiales</b>.<br>• Al transferirlas quedan inhabilitadas para Premium/VIP.<br>• 💎 También puedes comprar y vender gemas con otros jugadores (por oro) en la <b>Carpa del Mercado de Gemas</b>: esas gemas llegan como transferidas y sirven para <b>apariencias, trajes, atuendos y Bonus (XP, oro, defensa, vida)</b>; no para VIP, Licencia, Combo ni Escolta.${rsD()?'<br>• 🏷️ <b>Eres revendedor: pagas '+rsD()+'% menos</b> al comprar gemas.':''}</small></div>`
@@ -3944,6 +3947,8 @@ $('hero').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
  else if(k=='mbuy')mBuy(b.dataset.u,+b.dataset.i,b.dataset.n);
  else if(k=='msell')mSell(b.dataset.u,+b.dataset.i,b.dataset.n);
  else if(k=='mofb')mOfb(b.dataset.id);
+ else if(k=='mwasave'){const v=String((document.getElementById('mkwa')||{}).value||'').replace(/\D/g,'');if(v&&!confirm('Tu número +'+v+' será visible para los compradores en tus ofertas nuevas. ¿Continuar?'))return;mop('wa.set',{wa:v},r=>{window.MKWA=(r&&r.wa)||'';toast(v?'💬 WhatsApp guardado (solo en ofertas nuevas)':'💬 WhatsApp quitado',3000)})}
+ else if(k=='mwac'){const x=OFFERS[b.dataset.id];if(x&&x.wa){const t='Hola '+(x.nm||'')+'! Vi tu oferta en el Mercado de Jugadores de Silk Road. ¿Sigue disponible? Soy '+(P.name||'un jugador')+'.';try{window.open('https://wa.me/'+x.wa+'?text='+encodeURIComponent(t),'_blank')}catch(e){}}}
  else if(k=='mpub')mPub(+b.dataset.i);
  else if(k=='mpubt')mPubTk(b.dataset.k);
  else if(k=='mpubp')mPubPet(+b.dataset.i);
@@ -5831,7 +5836,7 @@ addEventListener('keydown',e=>{if(T.hidden)return;if(e.key=='Enter'||e.key==' ')
 cont.addEventListener('click',()=>{if(!has)return;q('go').click();close()});
 q('tnew').addEventListener('click',()=>{if(has)q('tcf').hidden=false;else close()});
 q('tcn').addEventListener('click',()=>{q('tcf').hidden=true});
-q('tcy').addEventListener('click',()=>{try{localStorage.removeItem(KEY)}catch(e){}try{sessionStorage.setItem('sr_skip','1')}catch(e){}location.reload()});
+q('tcy').addEventListener('click',async()=>{const b=q('tcy');b.disabled=true;try{if(typeof MON=='function'&&MON()&&window.SRNET&&SRNET.rpc){await Promise.race([SRNET.rpc({t:'x',op:'char.del'}),new Promise((_,j)=>setTimeout(()=>j(new Error('El servidor no respondió')),6000))])}}catch(e){b.disabled=false;try{toast(String((e&&e.message)||e||'No se pudo borrar'),3500)}catch(x){alert(String((e&&e.message)||e))}return}try{localStorage.removeItem(KEY)}catch(e){}try{sessionStorage.setItem('sr_skip','1')}catch(e){}location.reload()});
 q('tcred').addEventListener('click',()=>{const c=q('crd');c.style.zIndex=60;c.hidden=false});
 })()}catch(e){try{document.getElementById('ttl').hidden=true}catch(x){}}
 ;(function(){const t=document.getElementById('talk');if(t)document.body.appendChild(t)})();

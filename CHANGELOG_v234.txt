@@ -1,0 +1,4 @@
+v234 - Aviso de version nueva (reactivado)
+- Si el servidor tiene una version distinta a la del cliente, sale una barra: "Hay una versión nueva del juego" + boton "Actualizar ahora". NO recarga sola.
+- El servidor toma su version de sw.js (const V='sr-vNNN'); el cliente de SR_V en play.html. Al empacar, los dos se suben juntos.
+- reload.json ahora en v234 (esta subida saca a todos una vez; en subidas siguientes solo cambia el id si quieres forzar).

@@ -1,0 +1,19 @@
+v236 - Cuentas PC/celular: el guardado bueno ya no se pierde; borrar partida es definitivo
+CAUSA RAIZ encontrada con prueba de punta a punta (dos aparatos contra el servidor real):
+- Un aparato que entra SIN copia local arrancaba el juego con el personaje "en blanco" y ese guardado vacio se subia al servidor ENCIMA del personaje real.
+- Al recargar (pagehide) o al borrar, el guardado pendiente viejo tambien se subia encima de lo nuevo (resucitaba la partida borrada).
+- Otro aparato con copia vieja la volvia a subir al reconectar.
+
+ARREGLOS
+- Cliente (play.html): save() no guarda nunca si no hay personaje elegido (pantalla de titulo).
+- Servidor (server.js):
+  * Un guardado en blanco nunca reemplaza un personaje real (devuelve el del servidor y el cliente lo carga).
+  * Borrar personaje queda marcado (wdt): ninguna conexion puede volver a crear la partida con datos viejos; los otros aparatos descartan su copia local al conectar (wp con marca de borrado).
+  * Guardado con fecha (bts) anterior al de otro aparato: rechazado (v235) y, tras un borrado, tambien rechazado.
+- Cliente (claude-shim.js):
+  * halt(): antes de recargar con otro estado (bajar del servidor, descartar copia, borrar) se congelan los guardados y el pagehide.
+  * Copia local en blanco = no es copia: se baja la del servidor.
+  * Panel Cuenta: botones "Traer la partida del servidor" y "Usar la partida de este aparato" (con confirmacion) para resolver cuentas desparejadas.
+  * Borrar partida limpia sr_bts.
+- Boton "Actualizar ahora": desregistra el service worker, borra caches y recarga con parametro nuevo; muestra versiones (tuya -> servidor).
+- reload.json -> v236 (esta subida saca a todos una vez, 5 min).

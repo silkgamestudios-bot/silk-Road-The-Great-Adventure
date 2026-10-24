@@ -97,7 +97,7 @@ OPS['char.del']=(u,m)=>{const a=E.acct(u),n=Date.now();if(n-(a.cdt||0)<60000)ret
  try{fs.unlinkSync(savePath(u))}catch(e){}
  if(a.nm&&ECO.names[a.nm.toLowerCase()]===u)delete ECO.names[a.nm.toLowerCase()];
  for(const id in ECO.reg)if(ECO.reg[id]&&ECO.reg[id].o===u)delete ECO.reg[id];
- const z=ECO.acc[u];Object.assign(z,{lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,ts:0,dl:[],mint:{},gb:{v:0,t:0},cdt:n});
+ const z=ECO.acc[u];Object.assign(z,{lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,ts:0,dl:[],mint:{},gb:{v:0,t:0},cdt:n,wdt:n});
  z.res={gold:0,g:[0,0,0,0,0],fd:Object.assign({carne:0,cocida:0,pasto:0,hierba:0,lazo:0},Object.fromEntries((E.MNK||[]).map(k=>[k,0]))),ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0};
  dirty=1;log('[personaje] '+u+' borró su personaje');try{E.acct(u);E.pushEnt(u)}catch(e){}return{ok:1}};
 OPS['wa.set']=(u,m)=>{const a=E.acct(u),d=String(m.wa||'').replace(/\D/g,'');if(!d){delete a.wa;dirty=1;return{ok:1,wa:''}}if(d.length<8||d.length>15)return{e:'Escribe tu número con código de país, solo números (ej. 18091234567)'};a.wa=d;dirty=1;return{ok:1,wa:d}};
@@ -193,14 +193,18 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
   if(!ws.uid)return;const u=ws.uid;
   if(m.t!=='sv'&&protoBad(m,0,'')){err('datos no válidos');return}
   if(m.t==='sv'){if(typeof m.d!=='string'||m.d.length>400000||now-(ws.sv||0)<1500){err('guardado rechazado');return}ws.sv=now;
+   /* v236: personaje borrado = borrado de verdad. Una conexion que no ha leido el estado despues del borrado (pagehide de la pestana que borro, otro aparato con copia vieja) no puede volver a crear la partida. */
+   {const wd=+((E.acct(u)||{}).wdt)||0;if(wd&&(!(ws.ldt>=wd)||(!m.force&&+m.bts>0&&+m.bts<wd))){rep({t:'r',rid:m.rid,ok:1,stale:1,wiped:1,d:null,ts:0});return}}
+   /* v236: un guardado EN BLANCO (sin personaje elegido) nunca reemplaza un personaje real: se devuelve el del servidor. */
+   {let nv=null;try{nv=JSON.parse(m.d)}catch(e){}if(nv&&!nv.ch){let o=null,ov=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'));ov=JSON.parse(o.d)}catch(e){}if(ov&&ov.ch){log('[sync] guardado en blanco rechazado: '+u);rep({t:'r',rid:m.rid,ok:1,stale:1,blank:1,d:o.d,ts:o.ts});return}}}
    /* v235: si otro dispositivo guardó después de la última sincronización de este (bts), este guardado es viejo: NO se escribe, se devuelve el del servidor. */
-   if(+m.bts>0){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}if(o&&o.ts>+m.bts+50){rep({t:'r',rid:m.rid,ok:1,stale:1,d:o.d,ts:o.ts});return}}
+   if(+m.bts>0&&!m.force){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}if(o&&o.ts>+m.bts+50){rep({t:'r',rid:m.rid,ok:1,stale:1,d:o.d,ts:o.ts});return}}
    let r;try{r=E.audit(u,m.d,m.ack)}catch(e){log('audit error '+e.stack);err('error de validación');return}
    if(r.rej){E.flag(u,'guardado rechazado: '+r.rej);err(r.rej);return}
    const sts=Date.now();try{fs.writeFileSync(savePath(u),JSON.stringify({d:r.out,ts:sts}))}catch(e){err('no se pudo guardar');return}
    try{const v=JSON.parse(r.out);S.guildSeen&&S.guildSeen(u,v.lv|0,v.cl|0);if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}
    rep({t:'r',rid:m.rid,ok:1,ts:sts,fix:r.fix,acked:r.acked,ent:E.ent(u)});E.flushDl(u);return}
-  if(m.t==='ld'){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}rep({t:'r',rid:m.rid,ok:1,wp:WIPE_ID,d:o?o.d:null,ts:o?o.ts:0,ent:E.ent(u)});setTimeout(()=>E.flushDl(u),300);return}
+  if(m.t==='ld'){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}ws.ldt=Date.now();const wd=+((E.acct(u)||{}).wdt)||0;rep({t:'r',rid:m.rid,ok:1,wp:WIPE_ID+(wd?'/'+wd:''),d:o?o.d:null,ts:o?o.ts:0,ent:E.ent(u)});setTimeout(()=>E.flushDl(u),300);return}
   if(m.t==='x'){if(now-ws.xt>1000){ws.xt=now;ws.xn=0}if(++ws.xn>12){err('demasiadas peticiones');return}
    const opn=String(m.op||''),f=hasOwn(OPS,opn)?OPS[opn]:null;if(typeof f!=='function'){err('operación desconocida');return}
    let r;try{r=f(u,m)}catch(e){log('op '+m.op+' error '+e.stack);r={e:'error del servidor'}}

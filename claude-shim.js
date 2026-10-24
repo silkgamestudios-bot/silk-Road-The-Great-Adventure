@@ -86,35 +86,47 @@ function accOpen(){if(!me||!me.uid)return;const d=document.createElement('div');
  d.innerHTML='<div style="max-width:380px;width:100%;max-height:92vh;overflow:auto;background:linear-gradient(#22345f,#121c35);border:3px solid #6b4a17;border-radius:16px;padding:18px;color:#f5e6c4"><h3 style="margin:0 0 4px;color:#ffd66b">👤 '+(me.uname||me.name||'Mi cuenta')+'</h3><div style="color:#b9a97f;font-size:13px">'+(me.email||'')+'</div>'+
   (me.uname?'<h4 style="margin:14px 0 2px">Cambiar contraseña</h4>'+I('ao','Contraseña actual')+I('an','Contraseña nueva (mínimo 8)')+'<button id="apw" style="'+BTN+'">Guardar contraseña</button>':'')+
   (me.master?'<h4 style="margin:14px 0 2px">Master: restablecer contraseña de un jugador</h4>'+I('au','Usuario del jugador','text')+I('ap','Contraseña temporal (8+)','text')+'<button id="aad" style="'+BTN+'">Restablecer</button>':'')+
+  '<h4 style="margin:14px 0 2px">💾 Partida en la nube</h4><div style="color:#b9a97f;font-size:12px;margin-bottom:6px">Si este aparato y otro muestran personajes distintos, elige cuál es el bueno.</div><button id="asd" style="'+BTN+';background:#3a4a7a;box-shadow:none;margin-bottom:6px">⬇ Traer la partida del servidor</button><button id="asu" style="'+BTN+';background:#3a4a7a;box-shadow:none">⬆ Usar la partida de este aparato</button>'+
   '<p id="am" style="font-size:14px;min-height:18px;margin:8px 0"></p><div style="display:flex;gap:8px"><button id="alo" style="'+BTN+';background:#3a4a7a;box-shadow:none">Cerrar sesión</button><button id="acl" style="'+BTN+';background:#3a4a7a;box-shadow:none">Cerrar</button></div></div>';
  document.body.appendChild(d);const m=(t,g)=>{const e=d.querySelector('#am');e.textContent=t;e.style.color=g?'#9fe8a8':'#ff9a9a'},v=id=>d.querySelector('#'+id).value;
  d.querySelector('#acl').onclick=()=>d.remove();d.querySelector('#alo').onclick=()=>SRACC.logout();
  const pw=d.querySelector('#apw');if(pw)pw.onclick=()=>rpc({t:'x',op:'acc.pw',o:v('ao'),n:v('an')}).then(()=>{m('Contraseña cambiada',1)}).catch(e=>m(e.message));
+ const sd=d.querySelector('#asd'),su=d.querySelector('#asu');
+sd.onclick=()=>{if(!sd.dataset.a){sd.dataset.a=1;sd.textContent='¿Seguro? Se descarta la de este aparato. Toca otra vez';return}
+  rpc({t:'ld'}).then(r=>{if(!r.d){m('El servidor no tiene partida tuya todavía.');return}halt();try{const cur=LS.get(SKEY);if(cur&&cur!==r.d)_si.call(localStorage,'sr_bak',cur)}catch(e){}_si.call(localStorage,SKEY,r.d);LS.set('sr_bts',String(r.ts||0));sessionStorage.setItem('sr_rl','1');location.reload()}).catch(e=>m(e.message))};
+ su.onclick=()=>{if(!su.dataset.a){su.dataset.a=1;su.textContent='¿Seguro? Reemplaza la del servidor. Toca otra vez';return}
+  G(g=>g.save&&g.save());const cur=LS.get(SKEY);if(!cur){m('Este aparato no tiene partida guardada.');return}
+  m('Subiendo…',1);const up=n=>rpc({t:'sv',d:cur,force:1}).then(r=>{if(r.wiped){m('Ese personaje fue borrado. Recarga el juego.');return}if(r.ts)LS.set('sr_bts',String(r.ts));pend=null;m('Listo: el servidor ahora tiene la partida de este aparato.',1)}).catch(e=>{if(n<3&&/rechazado/.test(e.message))setTimeout(()=>up(n+1),1800);else m(e.message)});setTimeout(()=>up(0),1800)};
  const ad=d.querySelector('#aad');if(ad)ad.onclick=()=>rpc({t:'x',op:'adm.pw',n:v('au'),p:v('ap')}).then(()=>m('Listo: dale esa contraseña temporal al jugador',1)).catch(e=>m(e.message))}
 /* ---- Guardado en la nube atado a la cuenta ---- */
 const SKEY='silkroad_v1';let lastUp=0,pend=null,syncing=0;
 const _si=Storage.prototype.setItem;
 Storage.prototype.setItem=function(k,v){_si.call(this,k,v);if(k===SKEY&&ok){pend=v;if(!lastUp||Date.now()-lastUp>(window.SR_GAME&&SR_GAME.ack().length?2500:20000))flushSave()}};
 let inflight=0,stl=0;
+/* v236: antes de recargar con OTRO estado (bajar del servidor, descartar copia local, borrar) se congela todo: ni el guardado del juego ni el pagehide pueden subir la copia vieja encima. */
+const halt=()=>{window.SR_WIPING=1;pend=null;stl=1};
 function staleFix(r){if(stl)return;stl=1;pend=null;try{const cur=LS.get(SKEY);if(cur&&cur!==r.d)_si.call(localStorage,'sr_bak',cur)}catch(e){}if(r.d){_si.call(localStorage,SKEY,r.d);LS.set('sr_bts',String(r.ts));sessionStorage.setItem('sr_rl','1');location.reload()}else stl=0}
-function flushSave(){if(!pend||!ok||inflight||stl)return;const d=pend;pend=null;lastUp=Date.now();inflight=1;let ack=[];G(g=>ack=g.ack());rpc({t:'sv',d,ack,bts:+LS.get('sr_bts')||0}).then(r=>{inflight=0;if(r.stale){staleFix(r);return}if(r.ts)LS.set('sr_bts',String(r.ts));G(g=>{if(r.acked&&r.acked.length)g.acked(r.acked);if(r.fix)g.fix(r.fix);if(r.ent)g.ent(r.ent)})}).catch(()=>{inflight=0;pend=pend||d})}
-setInterval(()=>{if(pend)flushSave()},8000);addEventListener('pagehide',()=>{try{if(pend&&ok)if(!stl)ws.send(JSON.stringify({t:'sv',d:pend,bts:+LS.get('sr_bts')||0}))}catch(e){}});
+function flushSave(){if(!pend||!ok||inflight||stl||window.SR_WIPING)return;const d=pend;pend=null;lastUp=Date.now();inflight=1;let ack=[];G(g=>ack=g.ack());rpc({t:'sv',d,ack,bts:+LS.get('sr_bts')||0}).then(r=>{inflight=0;if(r.stale){staleFix(r);return}if(r.ts)LS.set('sr_bts',String(r.ts));G(g=>{if(r.acked&&r.acked.length)g.acked(r.acked);if(r.fix)g.fix(r.fix);if(r.ent)g.ent(r.ent)})}).catch(()=>{inflight=0;pend=pend||d})}
+setInterval(()=>{if(pend)flushSave()},8000);addEventListener('pagehide',()=>{try{if(pend&&ok)if(!stl&&!window.SR_WIPING)ws.send(JSON.stringify({t:'sv',d:pend,bts:+LS.get('sr_bts')||0}))}catch(e){}});
 async function cloudSync(){if(syncing)return;syncing=1;try{
  const prev=LS.get('sr_acc');if(prev&&prev!==uid){LS.del(SKEY);LS.del('sr_bts')}LS.set('sr_acc',uid);
- const r=await rpc({t:'ld'}),loc=LS.get(SKEY),sts=+r.ts||0,bts=+LS.get('sr_bts')||0;
- if(r.wp&&LS.get('sr_wp')!==r.wp){LS.set('sr_wp',r.wp);if(loc){LS.del(SKEY);LS.del('sr_bts');sessionStorage.removeItem('sr_rl');location.reload();return}}
+ const r=await rpc({t:'ld'}),sts=+r.ts||0,bts=+LS.get('sr_bts')||0;let loc=LS.get(SKEY);
+ if(r.wp&&LS.get('sr_wp')!==r.wp){LS.set('sr_wp',r.wp);if(loc){halt();LS.del(SKEY);LS.del('sr_bts');sessionStorage.removeItem('sr_rl');location.reload();return}}
  /* v230: EL SERVIDOR ES LA VERDAD. sr_bts = fecha del guardado del servidor con el que este dispositivo quedó sincronizado.
     - Sin copia local: se baja la del servidor.
     - Si otro dispositivo guardó después (sts>bts): gana el servidor.
     - Si nadie más guardó (sts<=bts): la copia local (más nueva) sube al servidor.
     - Sin referencia (primera vez con esta versión): regla antigua una sola vez (mayor nivel/xp). */
- const takeServer=()=>{_si.call(localStorage,SKEY,r.d);LS.set('sr_bts',String(sts));sessionStorage.setItem('sr_rl','1');location.reload()};
+ /* v236: una copia local EN BLANCO (el juego arrancó y guardó su estado por defecto) no cuenta como copia: nunca debe pisar una partida real del servidor */
+ const blank=s=>{try{const o=JSON.parse(s);return !o||!o.ch}catch(e){return false}};
+ if(loc&&r.d&&!blank(r.d)&&blank(loc)){loc=null;sessionStorage.removeItem('sr_rl')}
+ const takeServer=()=>{halt();_si.call(localStorage,SKEY,r.d);LS.set('sr_bts',String(sts));sessionStorage.setItem('sr_rl','1');location.reload()};
  if(r.d&&!loc&&!sessionStorage.getItem('sr_rl')){takeServer();return}
  if(r.d&&loc&&loc!==r.d&&!sessionStorage.getItem('sr_rl')){
   if(bts){if(sts>bts){takeServer();return}}
   else{let a={},b={};try{a=JSON.parse(loc)}catch(e){}try{b=JSON.parse(r.d)}catch(e){}
    if((b.lv||0)>(a.lv||0)||((b.lv||0)==(a.lv||0)&&(b.xp||0)>(a.xp||0)+1)){takeServer();return}}}
  if(r.d&&loc===r.d&&sts)LS.set('sr_bts',String(sts));
- sessionStorage.removeItem('sr_rl');if(loc)rpc({t:'sv',d:loc}).then(x=>{if(x&&x.ts)LS.set('sr_bts',String(x.ts))}).catch(()=>{})}catch(e){}syncing=0}
+ sessionStorage.removeItem('sr_rl');if(loc)rpc({t:'sv',d:loc}).then(x=>{if(x&&x.stale){staleFix(x);return}if(x&&x.ts)LS.set('sr_bts',String(x.ts))}).catch(()=>{})}catch(e){}syncing=0}
 conn();
 })();

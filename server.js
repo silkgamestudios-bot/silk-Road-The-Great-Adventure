@@ -67,12 +67,31 @@ if((DB.cfg.wipe||'')!==WIPE_ID){try{
 }catch(e){log('[REINICIO] error '+e.stack)}}
 const E=require('./economy')(S),MK=require('./market')(S,E),GD=require('./guild')(S,E),ST=require('./store')(S,E),SO=require('./social')(S,E);S.tagOf=u=>GD.tagOf(u);
 if(KEEP){for(const u in KEEP){try{Object.assign(E.acct(u),KEEP[u])}catch(e){}}dirty=1;save(1)}
+/* RECORTE (TRIM_ID): conserva cuentas, nivel y habilidades; quita objetos, mascotas, monturas y materiales (y oro si TRIM_GOLD=0) y regala TRIM_GEMS gemas. Se aplica UNA vez por cada valor nuevo de TRIM_ID. */
+if(process.env.TRIM_ID&&DB.cfg.trim!==process.env.TRIM_ID){try{
+ const TID=process.env.TRIM_ID,GEM=Math.max(0,Math.min(100000,parseInt(process.env.TRIM_GEMS||'0',10)||0)),bk=(process.env.DATA_DIR||'.')+'/backups/trim-'+TID+'-'+Date.now();fs.mkdirSync(bk,{recursive:true});let n=0;
+ try{fs.copyFileSync(FILE,bk+'/data.json')}catch(e){}
+ for(const f of fs.readdirSync(SAVEDIR)){try{if(!/\.json$/.test(f))continue;const u=f.slice(0,-5);fs.copyFileSync(SAVEDIR+'/'+f,bk+'/'+f);if(isMaster(u))continue;
+  const o=JSON.parse(fs.readFileSync(SAVEDIR+'/'+f,'utf8')),v=JSON.parse(o.d);
+  Object.assign(v,{eq:{},bag:[],lb:[],dep:[],storage:[],pets:[],bu:[],i:[0,0,0,0,0],cb:[0,0,0,0,0],fd:{},tl:{},mat:{},rc:[],tch:{n:0},up:v.up&&typeof v.up==='object'?{}:v.up});
+  if(process.env.TRIM_GOLD==='0'){v.g=0;v.bk=0}
+  o.d=JSON.stringify(v);fs.writeFileSync(SAVEDIR+'/'+f,JSON.stringify(o));
+  if(GEM>0)E.grantGems(u,GEM,'own','compensación de reinicio');n++}catch(e){log('[RECORTE] '+f+': '+e.message)}}
+ DB.cfg.trim=TID;dirty=1;save(1);log('[RECORTE] '+TID+': '+n+' personajes recortados, '+GEM+' gemas c/u (copia en '+bk+')');
+}catch(e){log('[RECORTE] error '+e.stack)}}
 S.onDeliver=u=>{try{if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}};
 AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster});
 const TR=require('./terr')(S,E);
 const SD=require('./seda')(S,E);
 const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops);
 /* Acceso anticipado: solo el master. */
+OPS['adm.lv']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const n=String(m.who||'').trim().toLowerCase().slice(0,40),lv=Math.floor(+m.lv);if(!n)return{e:'Escribe el nombre del jugador'};if(!(lv>=1&&lv<=E.CFG.lvMax))return{e:'Nivel entre 1 y '+E.CFG.lvMax};
+ let id=E.uidByName(n);if(!id)for(const k in (ECO.acc||{})){const q=ECO.acc[k];if(q&&[q.nm,q.pn].some(x=>x&&String(x).toLowerCase()===n)){id=k;break}}
+ if(!id&&USR[n]&&USR[n].u)id=USR[n].u;if(!id&&ECO.acc&&ECO.acc[m.who])id=String(m.who);if(!id)return{e:'No encontré a "'+m.who+'"'};
+ const a=E.acct(id),old=a.lv|0;let ok=0;try{const f=savePath(id),o=JSON.parse(fs.readFileSync(f,'utf8')),v=JSON.parse(o.d);v.lv=lv;v.xp=0;o.d=JSON.stringify(v);fs.writeFileSync(f,JSON.stringify(o));ok=1}catch(e){}
+ a.lv=lv;a.xp=0;dirty=1;log('[GM] '+u+' puso a '+id+' ('+(a.nm||a.pn||'?')+') en nivel '+lv+' (antes '+old+')');
+ const w=ONL.get(id);if(w){try{w.send(JSON.stringify({t:'bad',e:'Un GM ajustó tu nivel a '+lv+'. Vuelve a entrar al juego.'}));setTimeout(()=>{try{w.close()}catch(e){}},500)}catch(e){}}
+ return{ok:1,id,nm:a.nm||a.pn||id,old,lv,online:!!w,saved:ok}};
 OPS['early.list']=u=>isMaster(u)?{list:earlyList(),max:3,env:EARLY_ENV}:{e:'operación desconocida'};
 OPS['early.add']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase().slice(0,120);if(!w)return{e:'Escribe el correo, usuario o uid'};const L=earlyList();if(L.includes(w))return{list:L,max:3};if(L.length>=3)return{e:'Ya hay 3 accesos anticipados. Quita uno primero.'};DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).concat(w);dirty=1;log('early.add '+w);return{list:earlyList(),max:3}};
 OPS['early.del']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase();DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).filter(x=>String(x).toLowerCase()!==w);dirty=1;log('early.del '+w);return{list:earlyList(),max:3,env:EARLY_ENV}};

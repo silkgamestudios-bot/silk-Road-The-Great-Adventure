@@ -1,0 +1,2 @@
+v232 - Sacar a todos al reiniciar
+- server.js: variable de entorno FORCE_RELOAD_MIN (ej. 5). Tras el reinicio, todo cliente que se reconecte recibe la pantalla de mantenimiento con boton "Volver a entrar" (recarga la pagina) y no entra hasta que pasen esos minutos. Quitar la variable despues.

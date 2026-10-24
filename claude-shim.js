@@ -34,11 +34,11 @@ const col=c=>{const mk=w=>({where:(f,o,v)=>mk(w.concat([[f,o,v]])),
    get:()=>rpc({t:'get',col:c,id}).then(r=>({exists:!!r.d,id,data:()=>r.d}))}},
   add:d=>{const id='d'+Math.random().toString(36).slice(2,12)+Date.now().toString(36);return rpc({t:'set',col:c,id,d}).then(()=>({id}))}})};
 const db={collection:col};
-const flushNow=async()=>{const d=LS.get(SKEY);if(!d||!ok)return;let ack=[];G(g=>ack=g.ack());const go=()=>rpc({t:'sv',d,ack}).then(r=>{pend=null;lastUp=Date.now();G(g=>{if(r.acked&&r.acked.length)g.acked(r.acked);if(r.fix)g.fix(r.fix);if(r.ent)g.ent(r.ent)})});
+const flushNow=async()=>{const d=LS.get(SKEY);if(!d||!ok)return;let ack=[];G(g=>ack=g.ack());const go=()=>rpc({t:'sv',d,ack}).then(r=>{pend=null;lastUp=Date.now();if(r.ts)LS.set('sr_bts',String(r.ts));G(g=>{if(r.acked&&r.acked.length)g.acked(r.acked);if(r.fix)g.fix(r.fix);if(r.ent)g.ent(r.ent)})});
  try{await go()}catch(e){await new Promise(r=>setTimeout(r,1700));try{await go()}catch(x){}}};
 window.SRNET={flush:flushNow,rpc,send:m=>{if(ws&&ws.readyState==1&&ok)ws.send(JSON.stringify(m))},up:()=>!!(ws&&ws.readyState==1&&ok),onmsg:null,onopen:null};
 window.claude=window.claude||{use:async k=>k=='db'?db:k=='user'?{id:()=>idP}:null};
-window.SRACC={get:()=>me,logout:()=>{LS.del('sr_ses');LS.del('sr_acc');location.reload()},open:()=>accOpen()};
+window.SRACC={get:()=>me,logout:()=>{LS.del('sr_ses');LS.del('sr_acc');LS.del('sr_bts');location.reload()},open:()=>accOpen()};
 /* ---- Inicio de sesión: usuario y contraseña (+ Google si está configurado) ---- */
 let ov=null,tab='in';let wt=null,cl=0;let got=0,cov=null,cT0=0;const stopWt=()=>{if(wt){clearTimeout(wt);wt=null}};
 const pre=m=>{if(ws&&ws.readyState==1){ws.send(JSON.stringify(m));return true}return false};
@@ -95,15 +95,24 @@ function accOpen(){if(!me||!me.uid)return;const d=document.createElement('div');
 const SKEY='silkroad_v1';let lastUp=0,pend=null,syncing=0;
 const _si=Storage.prototype.setItem;
 Storage.prototype.setItem=function(k,v){_si.call(this,k,v);if(k===SKEY&&ok){pend=v;if(!lastUp||Date.now()-lastUp>(window.SR_GAME&&SR_GAME.ack().length?2500:20000))flushSave()}};
-function flushSave(){if(!pend||!ok)return;const d=pend;pend=null;lastUp=Date.now();let ack=[];G(g=>ack=g.ack());rpc({t:'sv',d,ack}).then(r=>{G(g=>{if(r.acked&&r.acked.length)g.acked(r.acked);if(r.fix)g.fix(r.fix);if(r.ent)g.ent(r.ent)})}).catch(()=>{pend=pend||d})}
+function flushSave(){if(!pend||!ok)return;const d=pend;pend=null;lastUp=Date.now();let ack=[];G(g=>ack=g.ack());rpc({t:'sv',d,ack}).then(r=>{if(r.ts)LS.set('sr_bts',String(r.ts));G(g=>{if(r.acked&&r.acked.length)g.acked(r.acked);if(r.fix)g.fix(r.fix);if(r.ent)g.ent(r.ent)})}).catch(()=>{pend=pend||d})}
 setInterval(()=>{if(pend)flushSave()},8000);addEventListener('pagehide',()=>{try{if(pend&&ok)ws.send(JSON.stringify({t:'sv',d:pend}))}catch(e){}});
 async function cloudSync(){if(syncing)return;syncing=1;try{
- const prev=LS.get('sr_acc');if(prev&&prev!==uid){LS.del(SKEY)}LS.set('sr_acc',uid);
- const r=await rpc({t:'ld'}),loc=LS.get(SKEY);
- if(r.wp&&LS.get('sr_wp')!==r.wp){LS.set('sr_wp',r.wp);if(loc){LS.del(SKEY);sessionStorage.removeItem('sr_rl');location.reload();return}}
- if(r.d&&!loc&&!sessionStorage.getItem('sr_rl')){_si.call(localStorage,SKEY,r.d);sessionStorage.setItem('sr_rl','1');location.reload();return}
- if(r.d&&loc&&loc!==r.d&&!sessionStorage.getItem('sr_rl')){let a={},b={};try{a=JSON.parse(loc)}catch(e){}try{b=JSON.parse(r.d)}catch(e){}
-  if((b.lv||0)>(a.lv||0)||((b.lv||0)==(a.lv||0)&&(b.xp||0)>(a.xp||0)+1)){_si.call(localStorage,SKEY,r.d);sessionStorage.setItem('sr_rl','1');location.reload();return}}
- sessionStorage.removeItem('sr_rl');if(loc)rpc({t:'sv',d:loc}).catch(()=>{})}catch(e){}syncing=0}
+ const prev=LS.get('sr_acc');if(prev&&prev!==uid){LS.del(SKEY);LS.del('sr_bts')}LS.set('sr_acc',uid);
+ const r=await rpc({t:'ld'}),loc=LS.get(SKEY),sts=+r.ts||0,bts=+LS.get('sr_bts')||0;
+ if(r.wp&&LS.get('sr_wp')!==r.wp){LS.set('sr_wp',r.wp);if(loc){LS.del(SKEY);LS.del('sr_bts');sessionStorage.removeItem('sr_rl');location.reload();return}}
+ /* v230: EL SERVIDOR ES LA VERDAD. sr_bts = fecha del guardado del servidor con el que este dispositivo quedó sincronizado.
+    - Sin copia local: se baja la del servidor.
+    - Si otro dispositivo guardó después (sts>bts): gana el servidor.
+    - Si nadie más guardó (sts<=bts): la copia local (más nueva) sube al servidor.
+    - Sin referencia (primera vez con esta versión): regla antigua una sola vez (mayor nivel/xp). */
+ const takeServer=()=>{_si.call(localStorage,SKEY,r.d);LS.set('sr_bts',String(sts));sessionStorage.setItem('sr_rl','1');location.reload()};
+ if(r.d&&!loc&&!sessionStorage.getItem('sr_rl')){takeServer();return}
+ if(r.d&&loc&&loc!==r.d&&!sessionStorage.getItem('sr_rl')){
+  if(bts){if(sts>bts){takeServer();return}}
+  else{let a={},b={};try{a=JSON.parse(loc)}catch(e){}try{b=JSON.parse(r.d)}catch(e){}
+   if((b.lv||0)>(a.lv||0)||((b.lv||0)==(a.lv||0)&&(b.xp||0)>(a.xp||0)+1)){takeServer();return}}}
+ if(r.d&&loc===r.d&&sts)LS.set('sr_bts',String(sts));
+ sessionStorage.removeItem('sr_rl');if(loc)rpc({t:'sv',d:loc}).then(x=>{if(x&&x.ts)LS.set('sr_bts',String(x.ts))}).catch(()=>{})}catch(e){}syncing=0}
 conn();
 })();

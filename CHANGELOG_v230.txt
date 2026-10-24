@@ -1,0 +1,8 @@
+v230 - Cuentas PC y celular: el servidor es la verdad
+- claude-shim.js: cada dispositivo recuerda con que guardado del servidor quedo sincronizado (sr_bts). Al entrar:
+  * sin copia local: baja la del servidor;
+  * si otro dispositivo guardo despues: gana el servidor (ya no gana "el de mayor nivel");
+  * si nadie mas guardo: la copia local sube.
+  * Primera vez con esta version: regla antigua una sola vez.
+- server.js: la respuesta de guardado devuelve la misma fecha que se escribe en disco.
+Subir: claude-shim.js, server.js, sw.js

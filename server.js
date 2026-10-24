@@ -158,7 +158,7 @@ function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').spli
  if(q.headers['if-none-match']===c.etag){r.writeHead(304,h);r.end();return true}
  const gz=c.gz&&/\bgzip\b/.test(q.headers['accept-encoding']||'');if(gz){h['content-encoding']='gzip';h.vary='Accept-Encoding'}
  const b=gz?c.gz:c.buf;h['content-length']=b.length;r.writeHead(200,h);r.end(q.method==='HEAD'?undefined:b);return true}
-const srv=http.createServer((q,r)=>{if(String(q.url||'').split('?')[0]==='/launch'){r.writeHead(200,{'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'*'});r.end(JSON.stringify({at:LAUNCH_AT,now:Date.now()}));return}if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain','cache-control':'no-store'});r.end(statusText())});
+const srv=http.createServer((q,r)=>{if(String(q.url||'').split('?')[0]==='/maint'){maintHttp(q,r);return}if(String(q.url||'').split('?')[0]==='/launch'){r.writeHead(200,{'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'*'});r.end(JSON.stringify({at:LAUNCH_AT,now:Date.now()}));return}if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain','cache-control':'no-store'});r.end(statusText())});
 const wss=new WebSocketServer({server:srv,maxPayload:450000});
 const world=require('./world')(DB,log,{
  lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),pv:u=>(+E.acct(u).px.pv||0)>Date.now(),kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',tjoin:u=>{try{TR.join(u)}catch(e){log('terr join '+e.message)}},
@@ -177,7 +177,7 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
  ws.subs={};ws.uid=null;ws.n=0;ws.t=Date.now();ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);ws.xn=0;ws.xt=Date.now();
  ws.on('message',raw=>{const now=Date.now();if(now-ws.t>1000){ws.t=now;ws.n=0}if(++ws.n>80)return;let m;try{m=JSON.parse(raw)}catch(e){return}if(!m||typeof m!=='object')return;
   const rep=(o)=>{if(ws.readyState===1)ws.send(JSON.stringify(o))},err=e=>m.rid&&rep({t:'r',rid:m.rid,ok:0,e});
-  if(m.t==='hi'){const done=(u,extra)=>{const old=ONL.get(u);if(old&&old!==ws){try{old.send(JSON.stringify({t:'kick',e:'Tu cuenta se abrió en otro dispositivo'}));old.close(4001)}catch(e){}}
+  if(m.t==='hi'){const done=(u,extra)=>{if(MT&&Date.now()<MT.until&&!isMaster(u)){try{rep({t:'kick',e:MT_KICK});ws.close()}catch(e){}return}const old=ONL.get(u);if(old&&old!==ws){try{old.send(JSON.stringify({t:'kick',e:'Tu cuenta se abrió en otro dispositivo'}));old.close(4001)}catch(e){}}
      if(!launched()&&!isMaster(u)&&!isEarly(u)){log('pre-apertura bloqueado: uid='+u+' ids='+earlyIds(u).join(' | '));rep({t:'bad',e:'El reino abre el '+new Date(LAUNCH_AT).toLocaleString('es',{timeZone:'America/Santo_Domingo',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+' (hora de República Dominicana). Vuelve entonces.',launch:LAUNCH_AT});try{ws.close()}catch(e){}return}
      {const q=qGate(u);if(q){rep({t:'bad',e:'El reino está lleno ('+ONL.size+'/'+MAXP+' jugadores). Eres el #'+q+' en la fila. Espera unos segundos y vuelve a entrar.',full:1,pos:q});try{ws.close()}catch(e){}return}}
      ws.uid=u;ONL.set(u,ws);try{SO.presence(u,1)}catch(e){}const a=E.acct(u);rep(Object.assign({t:'ok',uid:u,ent:E.ent(u)},extra||{}));
@@ -195,9 +195,9 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
   if(m.t==='sv'){if(typeof m.d!=='string'||m.d.length>400000||now-(ws.sv||0)<1500){err('guardado rechazado');return}ws.sv=now;
    let r;try{r=E.audit(u,m.d,m.ack)}catch(e){log('audit error '+e.stack);err('error de validación');return}
    if(r.rej){E.flag(u,'guardado rechazado: '+r.rej);err(r.rej);return}
-   try{fs.writeFileSync(savePath(u),JSON.stringify({d:r.out,ts:Date.now()}))}catch(e){err('no se pudo guardar');return}
+   const sts=Date.now();try{fs.writeFileSync(savePath(u),JSON.stringify({d:r.out,ts:sts}))}catch(e){err('no se pudo guardar');return}
    try{const v=JSON.parse(r.out);S.guildSeen&&S.guildSeen(u,v.lv|0,v.cl|0);if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}
-   rep({t:'r',rid:m.rid,ok:1,ts:Date.now(),fix:r.fix,acked:r.acked,ent:E.ent(u)});E.flushDl(u);return}
+   rep({t:'r',rid:m.rid,ok:1,ts:sts,fix:r.fix,acked:r.acked,ent:E.ent(u)});E.flushDl(u);return}
   if(m.t==='ld'){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}rep({t:'r',rid:m.rid,ok:1,wp:WIPE_ID,d:o?o.d:null,ts:o?o.ts:0,ent:E.ent(u)});setTimeout(()=>E.flushDl(u),300);return}
   if(m.t==='x'){if(now-ws.xt>1000){ws.xt=now;ws.xn=0}if(++ws.xn>12){err('demasiadas peticiones');return}
    const opn=String(m.op||''),f=hasOwn(OPS,opn)?OPS[opn]:null;if(typeof f!=='function'){err('operación desconocida');return}
@@ -238,4 +238,29 @@ setInterval(()=>{if(!RS_AT)return;const rm=RS_AT-Date.now();
  for(const mn of [10,5,2,1]){if(rm<=mn*60e3&&rm>(mn-1)*60e3-1e4&&!RS_SENT.has(mn)){RS_SENT.add(mn);try{SO.sys('🔄 Reinicio programado del servidor en '+mn+' min. Tu progreso se guarda solo; al volver, la partida sigue donde la dejaste.')}catch(e){}wsvAll()}}
  if(rm<=0){log('[reinicio] reinicio diario programado: guardando y saliendo');try{SO.sys('🔄 Reiniciando el servidor… vuelve en 1 minuto.')}catch(e){}try{save(1)}catch(e){}setTimeout(()=>process.exit(0),1500)}},5000).unref();
 setInterval(()=>{for(const ws of wss.clients){if(!ws.isAlive){ws.terminate();continue}ws.isAlive=false;ws.ping()}},30000);
+/* v230: aviso de mantenimiento con cuenta regresiva para todos los jugadores conectados.
+   Abre en el navegador: https://TU-SERVICIO.onrender.com/maint?pw=TU_MASTER_PASSWORD&warn=5&hold=5
+   (warn = minutos de aviso antes de sacar a todos, hold = minutos que nadie puede entrar). Cancelar: &cancel=1 */
+const MT_KICK='🛠️ Estamos actualizando Silk Road (unos 5 minutos).\n\nCuando vuelvas: entra PRIMERO desde el dispositivo (PC o celular) donde tengas tu mejor progreso, espera a ver tu héroe y después ya puedes usar el otro. Solo por esta vez.';
+let MT=(DB.cfg&&DB.cfg.maint)||null;const MTS={};
+const maintSave=()=>{DB.cfg=DB.cfg||{};DB.cfg.maint=MT;dirty=1};
+const maintAll=m=>{for(const ws of wss.clients){if(ws.uid&&ws.readyState===1){try{ws.send(JSON.stringify(m))}catch(e){}}}};
+function maintHttp(q,r){const u=new URL(q.url,'http://x'),pw=u.searchParams.get('pw')||'',H={'content-type':'text/plain; charset=utf-8','cache-control':'no-store'};
+ let ok=false;try{const a=Buffer.from(pw),b=Buffer.from(process.env.MASTER_PASSWORD||'');ok=b.length>0&&a.length===b.length&&require('crypto').timingSafeEqual(a,b)}catch(e){}
+ if(!ok){r.writeHead(403,H);r.end('no autorizado');return}
+ if(u.searchParams.get('cancel')){MT=null;maintSave();r.writeHead(200,H);r.end('Mantenimiento cancelado');return}
+ const warn=Math.max(0,Math.min(30,+u.searchParams.get('warn')||5)),hold=Math.max(0,Math.min(60,+u.searchParams.get('hold')||5));
+ MT={end:Date.now()+warn*60000,until:Date.now()+(warn+hold)*60000,kicked:0};maintSave();
+ maintInit();maintTick();r.writeHead(200,H);r.end('Mantenimiento programado: aviso '+warn+' min, luego nadie entra '+hold+' min. Jugadores conectados: '+ONL.size)}
+function maintInit(){for(const k in MTS)delete MTS[k];if(!MT)return;const left=MT.end-Date.now();for(const s of [300,240,180,120,60,30,10])if(s*1000>left+1500)MTS[s]=1}
+/* Tras un reinicio, si FORCE_RELOAD_MIN esta puesto (ej. 5), todo cliente que se reconecte recibe la pantalla de mantenimiento con el boton de recargar y no entra hasta que pasen esos minutos. */
+{const fr=+process.env.FORCE_RELOAD_MIN||0;if(fr>0&&!(MT&&MT.until>Date.now()+fr*60000)){MT={end:Date.now(),until:Date.now()+fr*60000,kicked:1};maintSave()}}
+/* reload.json {"id":"v232","min":5}: el reinicio fuerza la recarga SOLO si el id es distinto al ultimo que se aplico (lo cambias tu en las subidas que lo necesiten). */
+try{const rj=JSON.parse(fs.readFileSync(require('path').join(__dirname,'reload.json'),'utf8'));DB.cfg=DB.cfg||{};if(rj&&rj.id&&DB.cfg.lastReload!==String(rj.id)){DB.cfg.lastReload=String(rj.id);const mn=Math.max(0,Math.min(60,+rj.min||5));dirty=1;if(mn>0&&!(MT&&MT.until>Date.now()+mn*60000)){MT={end:Date.now(),until:Date.now()+mn*60000,kicked:1};maintSave()}}}catch(e){}
+maintInit();
+function maintTick(){if(!MT)return;const now=Date.now();if(now>MT.until){MT=null;maintSave();return}const left=MT.end-now;
+ if(left>0){for(const s of [300,240,180,120,60,30,10]){if(left<=s*1000&&!MTS[s]){MTS[s]=1;{const t=s>=60?(s/60)+' minuto'+(s>60?'s':''):s+' segundos';maintAll({t:'note',m:'⚠️ Reinicio por actualización en '+t+'. Guarda tu progreso y sal del juego. Al volver: entra primero desde tu mejor dispositivo (PC o celular).'})}}}}
+ else if(!MT.kicked){MT.kicked=1;maintSave();for(const ws of wss.clients){if(!ws.uid||(ws.uid&&isMaster(ws.uid)))continue;try{ws.send(JSON.stringify({t:'kick',e:MT_KICK}));ws.close(4002)}catch(e){}}}}
+setInterval(maintTick,1000);
+
 srv.listen(PORT,()=>console.log('Silk Road server en puerto',PORT));

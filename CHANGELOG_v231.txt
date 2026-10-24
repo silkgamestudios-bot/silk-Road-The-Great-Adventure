@@ -1,0 +1,2 @@
+v231 - Aviso de mantenimiento para todos los jugadores
+- server.js: /maint?pw=MASTER_PASSWORD&warn=5&hold=5 -> avisos en pantalla a todos los conectados (5,4,3,2,1 min, 30 s, 10 s), al terminar el aviso saca a todos con un mensaje a pantalla completa con las instrucciones y bloquea entradas durante "hold" minutos (el master puede entrar). Cancelar: &cancel=1. Sobrevive a un reinicio del servidor.

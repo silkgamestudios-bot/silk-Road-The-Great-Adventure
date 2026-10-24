@@ -1,0 +1,6 @@
+v233 - Recarga forzada SOLO en subidas especificas
+- Nuevo archivo reload.json: {"id":"v233","min":5}
+- Al reiniciar, si el "id" es distinto al ultimo aplicado, saca a todos con aviso de min minutos.
+- Si el id es el mismo (reinicio de Render, sleep, crash), NO pasa nada.
+- Para forzar recarga en una subida: cambia el id (ej. "v240"). Para NO forzar: no toques reload.json.
+- Ya no hace falta la variable FORCE_RELOAD_MIN en Render (quitala si la pusiste).

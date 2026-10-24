@@ -1,0 +1,3 @@
+v223
+- Zona de novatos: los mobs nv 1-4 dan 2-5 XP por muerte mientras el jugador es nivel 1-4 (unos 60 min hasta el nivel 5). Desde el nivel 5 la XP vuelve a la formula normal.
+- Mobs mas agresivos: rango de persecucion 60 -> 80, alerta de manada 2.5 s -> 6 s, reaparicion 30 s -> 20 s.

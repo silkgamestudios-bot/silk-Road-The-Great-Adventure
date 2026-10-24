@@ -1,0 +1,5 @@
+v224 - Materiales de animales y lazos fabricables
+- Nuevos materiales: 🕸️ Tela de araña (cae de arañas y arañas de cueva) y 🟫 Cuero (lobos, perros salvajes, chacales).
+- Van a la mochila de loot, se pasan a la de uso, y se comercian en 🤝 Jugadores y el almacén.
+- Gremio de Cazadores > Tienda: Fabricar lazo = 4 telas + 1 cuero + 300 oro (x1, x5, x10). Lo valida el servidor (hunt.craft). Los lazos siguen sin caer de mobs; tambien se pueden comprar a 3000.
+- Archivos: play.html, sw.js, store.js, economy.js, market.js

@@ -1,0 +1,5 @@
+v228 - Montura: Escorpion del Desierto (lujo)
+- Nueva montura 🦂 Escorpion del Desierto (valor 20.000.000). 6 salvajes en los desiertos profundos (Oasis de Kashgar y Desierto Rojo, zonas 5+), calidad Notable o mejor.
+- Doma muy dificil: 3 lazos por intento, 9+ aciertos, zona verde mas pequena y marca mas rapida, solo 2 fallos. Si no esta tranquilo (sigilo) te pica y te ralentiza; si fallas, 4 crias acuden a defenderlo y los lazos se pierden.
+- Mecanica propia al montarlo: +20% de velocidad en desierto, -8% fuera; su aguijon pica solo a un enemigo cercano cada 3,5 s (3x su ataque).
+- Comerciable en Establo/Mercado como las demas monturas.

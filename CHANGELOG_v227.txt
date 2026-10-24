@@ -1,0 +1,9 @@
+v227
+- Musica en la pantalla de titulo (audio/city.mp3 en bucle, arranca con el primer toque, boton 🔊/🔇 arriba a la derecha, se detiene al entrar al juego). Recuerda si la silencias.
+- Misiones de mascotas con tematica propia y pistas:
+  * Perro: rescate del cachorro (pistas de rastro, ahuyentar chacales/perros, carreta, hierbas).
+  * Halcon: rastreo en el desierto (pistas de plumas, escorpiones, caza, 2 Alfas).
+  * Buho: enigmas del sabio (150 telas de araña, 40 de plata, murcielagos, 3 Alfas, jefe).
+  * Lobo: la manada (120 lobos, 200 pieles, pistas en las cumbres, 3 Alfas, 2 jefes).
+- Nuevos tipos de prueba: 🔎 pista (ve al lugar; el diario dice direccion y distancia aproximada) y matar un tipo concreto de bestia.
+- Arreglo: las pruebas de varios Alfas ahora generan un Alfa tras otro.

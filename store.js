@@ -87,11 +87,15 @@ const tkOf=a=>(a.tk&&typeof a.tk==='object')?a.tk:(a.tk={});
 const tkRes=u=>{const r=((S.DB.cfg||{}).res||{})[u];return +r>0};
 /* v221: Gremio de Cazadores vende lazos (domar monturas). Oro con 3% de impuesto, tope diario para que no se regalen. */
 const LZ_PRICE=3000,LZ_DAY=40,LZ_MAX=20;
-ops['hunt.buy']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=LZ_MAX))return err('Cantidad de 1 a '+LZ_MAX);
+ops['hunt.buy']=(u,m)=>{return err('Los lazos ya no se venden: se fabrican en el Gremio de Cazadores');const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=LZ_MAX))return err('Cantidad de 1 a '+LZ_MAX);
  const d=Math.floor(Date.now()/DAY),L=a.lz&&a.lz.d===d?a.lz:(a.lz={d,n:0});
  if(L.n+q>LZ_DAY)return err('Límite diario: '+LZ_DAY+' lazos por día (te quedan '+Math.max(0,LZ_DAY-L.n)+')');
  const base=LZ_PRICE*q,c=base+TAXP(base),av=E.avail(a,'gold');if(av<c)return err('⚠️ Oro insuficiente: te faltan '+(c-av)+' 🪙');
  E.deliver(u,{gold:-c,note:'🪢 Compraste '+q+' lazo'+(q>1?'s':'')+' en el Gremio de Cazadores (−'+c+' 🪙, +3% impuesto)'});E.deliver(u,{prov:{pk:'lazo',q}});L.n+=q;S.dirty();return{ok:1,c,left:LZ_DAY-L.n}};
+/* v224: fabricar lazos (200 telas de araña + 300 pieles de lobo + 4000 oro c/u). Lo valida el servidor. */
+ops['hunt.craft']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=20))return err('Cantidad de 1 a 20');
+ const fee=4000*q,tl=200*q,cu=300*q;if(E.avail(a,'prov','tel')<tl)return err('Te faltan 🕸️ telas de araña: necesitas '+tl);if(E.avail(a,'prov','cur')<cu)return err('Te faltan 🟫 pieles de lobo: necesitas '+cu);if(E.avail(a,'gold')<fee)return err('⚠️ Oro insuficiente: te faltan '+(fee-E.avail(a,'gold'))+' 🪙');
+ E.deliver(u,{gold:-fee,note:'🪢 Fabricaste '+q+' lazo'+(q>1?'s':'')+' (−'+tl+' telas, −'+cu+' pieles, −'+fee+' 🪙)'});E.deliver(u,{prov:{pk:'tel',q:-tl}});E.deliver(u,{prov:{pk:'cur',q:-cu}});E.deliver(u,{prov:{pk:'lazo',q}});S.dirty();return{ok:1}};
 ops['tk.buy']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),q=Math.floor(+m.q)||1;if(!TKN[k])return err('Boleto desconocido');if(q<1||q>50)return err('Cantidad de 1 a 50');
  if(!(S.isMaster(u)||a.cls===0||tkRes(u)))return err('Los boletos los compran los Mercaderes y Revendedores');
  const cost=GEMP[k]*q;if(!E.spendGems(a,cost,true,'Boleto '+k+' ×'+q))return err('Te faltan '+(cost-a.gem.own)+' 💎 propias');
@@ -112,13 +116,14 @@ ops['bonus.buy']=(u,m)=>{const a=E.acct(u),L=a.bxl,i=Math.floor(+m.i),BX=E.BX;if
  if(E.gTot(a)<BX.cost)return err('⚠️ Gemas insuficientes: te faltan '+(BX.cost-E.gTot(a))+' 💎');if(!E.spendGems(a,BX.cost,false,'Bonus '+['XP','oro','defensa','vida'][i]+' +4 h'))return err('Gemas insuficientes');
  L.t[i]+=BX.ms;S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró bonus '+i);return{ok:1,ent:E.ent(u),cost:BX.cost}};
 /* Halloween: el oro y las gemas de los cofres del tesoro los entrega el servidor (cuotas de la tabla: 3 cofres de 250.000, 12 de 2 💎, 20 de oro). Si el cliente se los sumara, el antitrampas los borraría. */
-const HALQ={G1:3,M:12,g:20,S:3},halOn=()=>{const d=new Date(Date.now()-4*36e5),mo=d.getUTCMonth()+1,dy=d.getUTCDate();return(mo===10&&dy>=15)||(mo===11&&dy<=3)};
+const HALQ={G1:3,M:12,g:20,S:3,C:52},halOn=()=>{const d=new Date(Date.now()-4*36e5),mo=d.getUTCMonth()+1,dy=d.getUTCDate();return(mo===10&&dy>=15)||(mo===11&&dy<=3)};
 ops['hal.find']=(u,m)=>{const a=E.acct(u),j=Math.floor(+m.j),p=String(m.p||''),v=Math.floor(+m.v)||0;
  if(!halOn())return err('El evento de Halloween no está activo');
  if(!(j>=0&&j<100)||!HALQ[p])return err('Tesoro no válido');
  const H=a.hl||(a.hl={f:{},n:{},ts:0});if(H.f[j])return{ok:1,dup:1};
  if((H.n[p]|0)>=HALQ[p])return err('Ya abriste todos los cofres de ese tipo');
  const now=Date.now();if(now-(H.ts||0)<2000)return err('Cavando demasiado rápido: espera un momento');
+ if(p==='C'){if(!(v>=150&&v<=400&&v%10===0))return err('Premio no válido');H.f[j]=v;H.n.C=(H.n.C|0)+1;H.ts=now;S.dirty();E.deliver(u,{ec:{k:'hl',q:v},note:'🎃 Tesoro de Halloween: +'+v+' calabazas'});return{ok:1,c:v}}
  if(p==='S'){const k=String(m.k||'');if(!/^tk[1-3]$/.test(k))return err('Atuendo no válido');a.tks=Array.isArray(a.tks)?a.tks:[];if(a.tks.includes(k)){H.f[j]=H.f[j]||'S';S.dirty();E.pushEnt(u);return{ok:1,dup:1,ent:E.ent(u)}}
   H.f[j]=k;H.n.S=(H.n.S|0)+1;H.ts=now;a.tks.push(k);S.dirty();E.pushEnt(u);S.log('[halloween] '+(a.nm||u)+' atuendo '+k);return{ok:1,ent:E.ent(u)}}
  let gold=0,gem=0;if(p==='G1')gold=25e4;else if(p==='M')gem=2;else{if(!(v>=2e4&&v<=1e5&&v%5000===0))return err('Premio no válido');gold=v}

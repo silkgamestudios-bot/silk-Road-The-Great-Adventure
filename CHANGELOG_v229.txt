@@ -1,0 +1,5 @@
+v229 - Veneno de escorpion
+- Cada picotazo de escorpion (salvaje al domar, escorpiones enemigos 22%) acumula veneno ☠️ hasta x5: -12% de velocidad por carga y dano continuo (0,3% de vida por segundo por carga, nunca mata por si solo).
+- Con 5 cargas: paralisis de 4 s (no puedes moverte).
+- Dura 4 min. Se cura bebiendo una 🧪 poción de vida (aunque tengas la vida llena). También se quita al morir.
+- Icono ☠️ en la tarjeta del héroe y en el listado de estados.

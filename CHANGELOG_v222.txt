@@ -1,0 +1,9 @@
+v222 - Calabazas / monedas de evento unificadas, atuendo único por evento, guía temático
+- Las calabazas (🎃) ahora SON la moneda del evento de Halloween (P.ec.hl): un solo contador, sin duplicados.
+- Contador visible en pantalla (tarjeta del héroe: 🎃 N) y como ítem "Calabazas" en la mochila de loot (🧺). Comerciable entre jugadores (🤝 Jugadores), misma regla que las demás monedas de evento.
+- Tienda de eventos (Canje › Eventos): UN solo atuendo por evento por 3000 de su moneda. Se quitó la opción de gemas. Solo en la fecha del evento. Estético.
+- Cofres de calabaza ('C') entregan calabazas por el servidor (hal.find). Migración legada única (tope 2500) al activar la cuenta.
+- Drop de moneda de evento: 40% por enemigo (más con los enemigos del evento).
+- NPC Guía de la Ruta: en evento viste el traje del evento, con letrero "INFO GRATIS", y da el consejo de dónde farmear como un rumor temático (distinto por evento). Fuera de evento: ℹ️ INFO GRATIS normal.
+- Héroes sin arte de evento (Elfa/Enana): la tienda muestra el emoji y "aún sin arte para tu héroe" y bloquea la compra hasta tener el arte.
+Archivos: play.html, sw.js (sr-v222), store.js, economy.js

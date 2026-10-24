@@ -1,0 +1,7 @@
+v226 - Misiones de mascotas mucho mas dificiles
+- Perro (rec. nv 12): 3 -> 8 pruebas. Racha 35->120, +entrega de 30 carnes cocidas, 250 kills en 25 min, 6 oleadas, 2 Alfas, mandado de vuelta, 25 hierbas.
+- Halcon (rec. nv 22): 4 -> 9 pruebas. 250 kills en 15 min, racha 80, 2 Alfas, 5 oleadas, 40 hierbas, 40 carnes, 25 animales, escolta de vuelta.
+- Buho (rec. nv 30): 7 -> 10 pruebas. Racha 120, 40 animales, 8 oleadas, 150 telas de araña, 3 Alfas, 300 kills, 50 carnes, jefe.
+- Lobo (rec. nv 40): 10 -> 13 pruebas. Racha 150, 300 kills, 8 oleadas, 3 Alfas, 60 carnes, 200 pieles de lobo, 50 animales, 2 jefes, doma y racha final.
+- Oro de recompensa a la mitad (la mascota ya es el premio).
+- Aviso: quien tenga una de estas misiones a medias puede ver su progreso en otro paso.

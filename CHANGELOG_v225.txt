@@ -1,0 +1,6 @@
+v225 - Lazos solo por fabricacion, lobos por todas las zonas
+- Los lazos ya no se venden (el servidor rechaza hunt.buy). Gremio de Cazadores > pestana "Fabricar".
+- Receta por lazo: 200 telas de araña + 300 pieles de lobo + 4.000 de oro. Servidor valida (hunt.craft).
+- Drops: tela de araña 12% (arañas y arañas de cueva), piel de lobo 8% (lobos, lobos nocturnos, lobos alfa).
+- Mas lobos: bosques tier 1 (50%), otras zonas tier 1 (33%), tier 2 (40%) y tier 3 (30%). Mas arañas en tier 2-3.
+- Precios de referencia del mercado: tela 60, piel 80, lazo 45.000.

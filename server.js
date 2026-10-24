@@ -102,6 +102,10 @@ OPS['char.del']=(u,m)=>{const a=E.acct(u),n=Date.now();if(n-(a.cdt||0)<60000)ret
  dirty=1;log('[personaje] '+u+' borró su personaje');try{E.acct(u);E.pushEnt(u)}catch(e){}return{ok:1}};
 OPS['wa.set']=(u,m)=>{const a=E.acct(u),d=String(m.wa||'').replace(/\D/g,'');if(!d){delete a.wa;dirty=1;return{ok:1,wa:''}}if(d.length<8||d.length>15)return{e:'Escribe tu número con código de país, solo números (ej. 18091234567)'};a.wa=d;dirty=1;return{ok:1,wa:d}};
 OPS['wa.get']=u=>({ok:1,wa:(E.acct(u).wa)||''});
+/* historial de jugadores conectados: pico por dia (hora RD) y pico total; se muestra en Zona GM > Moderadores */
+const pkDay=()=>new Date(Date.now()-4*36e5).toISOString().slice(0,10);
+setInterval(()=>{try{const n=ONL.size;DB.cfg=DB.cfg||{};const P=DB.cfg.pk=DB.cfg.pk||{d:{},all:{n:0,t:0}},k=pkDay(),c=P.d[k]||(P.d[k]={n:0,t:0});if(n>c.n){c.n=n;c.t=Date.now();dirty=1;if(n>P.all.n){P.all={n,t:Date.now()};log('[online] nuevo pico de jugadores conectados: '+n)}}const ks=Object.keys(P.d).sort();if(ks.length>90)for(const q of ks.slice(0,ks.length-90))delete P.d[q]}catch(e){}},30000);
+OPS['adm.peak']=u=>{if(!isMaster(u))return{e:'operación desconocida'};const P=(DB.cfg||{}).pk||{d:{},all:{n:0,t:0}};return{ok:1,now:ONL.size,max:MAXP,all:P.all,days:Object.keys(P.d).sort().reverse().slice(0,14).map(k=>({d:k,n:P.d[k].n,t:P.d[k].t}))}};
 OPS['early.list']=u=>isMaster(u)?{list:earlyList(),max:3,env:EARLY_ENV}:{e:'operación desconocida'};
 OPS['early.add']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase().slice(0,120);if(!w)return{e:'Escribe el correo, usuario o uid'};const L=earlyList();if(L.includes(w))return{list:L,max:3};if(L.length>=3)return{e:'Ya hay 3 accesos anticipados. Quita uno primero.'};DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).concat(w);dirty=1;log('early.add '+w);return{list:earlyList(),max:3}};
 OPS['early.del']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase();DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).filter(x=>String(x).toLowerCase()!==w);dirty=1;log('early.del '+w);return{list:earlyList(),max:3,env:EARLY_ENV}};
@@ -147,7 +151,7 @@ function statusText(){return 'Silk Road server OK'+(world?' '+JSON.stringify(wor
 function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').split('?')[0])}catch(e){return false}
  if(p==='/status'||p==='/health'||(q.method!=='GET'&&q.method!=='HEAD'))return false;if(p.endsWith('/'))p+='index.html';
  let f=path.normalize(path.join(PUB,p));if(f.indexOf(PUB+path.sep)!==0)return false;
- if(!FC[f]&&!fs.existsSync(f)){const b=p.slice(1);if(RAIZ.has(b)||/^[\w.-]+\.(png|jpg|jpeg)$/i.test(b))f=path.join(__dirname,b);else return false}   /* respaldo: si no hay carpeta public/, sirve el cliente suelto en la raíz (solo archivos del juego, nunca los del servidor) */
+ if(!FC[f]&&!fs.existsSync(f)){const b=p.slice(1);if(RAIZ.has(b)||/^[\w.-]+\.(png|jpg|jpeg)$/i.test(b)||/^audio\/[\w-]+\.mp3$/.test(b))f=path.join(__dirname,b);else return false}   /* respaldo: si no hay carpeta public/, sirve el cliente suelto en la raíz (solo archivos del juego, nunca los del servidor) */
  let c=FC[f];if(!c){let st;try{st=fs.statSync(f)}catch(e){return false}if(!st.isFile())return false;const buf=fs.readFileSync(f),ext=path.extname(f).toLowerCase();
   c=FC[f]={buf,gz:TXT.has(ext)&&buf.length>1400?zlib.gzipSync(buf,{level:9}):null,type:MIME[ext]||'application/octet-stream',etag:'"'+crypto.createHash('md5').update(buf).digest('hex').slice(0,16)+'"',ext}}
  const h={'content-type':c.type,etag:c.etag,'cache-control':(TXT.has(c.ext)||p==='/sw.js')?'no-cache':'public, max-age=86400','x-content-type-options':'nosniff'};

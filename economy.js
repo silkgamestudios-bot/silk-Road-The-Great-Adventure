@@ -28,7 +28,7 @@ function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev
   ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}for(const k of MNK)if(a.res&&a.res.fd&&a.res.fd[k]==null)a.res.fd[k]=0;if(!a.bxl)a.bxl={t:[0,0,0,0],a:[0,0,0,0],x:[0,0,0,0],m:0};if(!Array.isArray(a.gl))a.gl=[];if(!a.hl)a.hl={f:{},n:{},ts:0};return a}
 const ent=u=>{const a=acct(u),L=a.bxl;return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,px:a.px,vip:a.vip,lic:a.lic,tk:a.tk||{},nm:a.nm,gld:a.gld,nch:a.nch|0,bx:L.x.map((x,i)=>x+Math.max(0,L.t[i]-L.a[i])),bxt:L.t.slice()}};
 const pushEnt=u=>S.push(u,{t:'ent',ent:ent(u)});
-function flag(u,why,w){const a=acct(u);a.strikes+=w==null?1:w;a.flags.push([Date.now(),String(why).slice(0,120)]);if(a.flags.length>30)a.flags.shift();S.dirty();
+function flag(u,why,w){const a=acct(u);{const nk=x=>String(x).replace(/[0-9+]/g,'').slice(0,60),k=nk(why),t=Date.now();if((a.flags||[]).some(f=>f&&t-f[0]<6e5&&nk(f[1])===k))return}a.strikes+=w==null?1:w;a.flags.push([Date.now(),String(why).slice(0,120)]);if(a.flags.length>30)a.flags.shift();S.dirty();
  log('[antitrampas] '+u+' ('+(a.nm||'?')+'): '+why+' · strikes '+a.strikes);
  if(a.strikes>=3&&!a.notified){a.notified=Date.now();S.notify('⚠️ SILK ROAD · Posible trampa\nJugador: '+(a.nm||u)+'\nMotivo: '+why+'\nStrikes: '+a.strikes)}}
 /* ---------- gemas ---------- */
@@ -165,6 +165,8 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  a.lv=lv;a.xp=xp;if(typeof v.nm==='string'&&v.nm)a.pn=v.nm.replace(/[^\p{L}\p{N} '_-]/gu,'').slice(0,18);if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
  /* lo que sigue sin aplicar (entregas pendientes) se descuenta del esperado para que no se aplique dos veces */
  return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl,p:fix.pp,mp:fix.pm,bx:fix.bx?v.bx:undefined}:null,acked:acked.map(d=>d.id)}}
+/* migración única: el mismo aviso repetido cada 8 s sumaba decenas de strikes y sacaba a jugadores del ranking; se cuentan solo los motivos distintos */
+try{if(!ECO.fixDup){ECO.fixDup=1;let n=0;const nk=x=>String(x).replace(/[0-9+]/g,'').slice(0,60);for(const id in ECO.acc){const a=ECO.acc[id];if(!a||(a.strikes|0)<8)continue;const d=new Set((a.flags||[]).map(f=>nk(f&&f[1])));a.strikes=Math.min(a.strikes|0,Math.max(1,d.size));if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) con strikes repetidos corregidas')}}}catch(e){log('migración strikes: '+e.message)}
 /* migración única: quita los strikes falsos que el antitrampas daba por cocinar carne/pescado (ya no ocurre) */
 try{if(!ECO.fixCook){ECO.fixCook=1;let n=0;for(const id in ECO.acc){const a=ECO.acc[id];if(!a||!Array.isArray(a.flags)||!a.flags.length)continue;const bad=a.flags.filter(f=>/^provisi.n (cocida|coc\d|fc\d) /.test(String(f&&f[1])));if(!bad.length)continue;a.flags=a.flags.filter(f=>!bad.includes(f));a.strikes=Math.max(0,(a.strikes|0)-bad.length);if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) sin strikes falsos por cocinar')}}}catch(e){log('migración cocinar: '+e.message)}
 return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,audit,deliver,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,glAdd,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM,BX}};

@@ -1125,6 +1125,7 @@ function die(){bossDeathHook();drgDeath();RIDE=0;pqReset('die');guardsDeath();co
 function chk(){if(P.gold>=5000000&&!won){won=1;toast('🏆 ¡Eres el Gran Mercader de la Ruta de la Seda!',6000)}}
 function upd(dt){
  if(modal||ROT)return;
+ if(P.hp<=0&&Date.now()-(window.__dg||0)>1500){window.__dg=Date.now();P.hp=0;die();return}
  wxTick(dt);fireTick(dt);dgTick(dt);tkTick(dt);predTick(dt);zbTick();drgTick(dt);zzTick(dt);ppTick(dt);NOWM=performance.now();NT-=dt;if(NT<=0){NT=.25;NR=E.concat(WL,PVG).filter(e=>Math.abs(e.x-P.x)<800&&Math.abs(e.y-P.y)<800)}
  let ix=(K.d||K.arrowright?1:0)-(K.a||K.arrowleft?1:0)+jv.x,iy=(K.s||K.arrowdown?1:0)-(K.w||K.arrowup?1:0)+jv.y;
  {const aw=awStep(dt,ix,iy);if(aw){ix=aw[0];iy=aw[1]}}
@@ -1642,12 +1643,12 @@ const PHR=[[0,-1,2,3,4,-1,3,2,1,-1,0,1,2,-1,-1,-1],[4,-1,5,4,3,-1,2,3,1,-1,2,-1,
 /* v211 · MÚSICA (mp3 con bucle y fundido) + EFECTOS por clase/habilidad (WebAudio) */
 let SFXON=1;try{SFXON=localStorage.getItem('sr_sfx')==='0'?0:1}catch(e){}
 const MUT={e:'explore',c:'city',b:'battle',d:'dungeon'},MUB={};let MUC=null,MUW=null,MUBAD=0,MUCUR='';
-function muFile(k){if(MUB[k]!==undefined)return MUB[k];MUB[k]=null;fetch('/audio/'+MUT[k]+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(b=>new Promise((ok,no)=>AU.ctx.decodeAudioData(b,ok,no))).then(b=>{MUB[k]=b}).catch(()=>{MUB[k]=0;MUBAD++});return null}
+function muFile(k){if(MUB[k]!==undefined)return MUB[k];MUB[k]=null;fetch('/audio/'+MUT[k]+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(b=>new Promise((ok,no)=>AU.ctx.decodeAudioData(b,ok,no))).then(b=>{MUB[k]=b}).catch(()=>{MUB[k]=0;MUBAD++;try{if(MUBAD==1&&gmIsM())toast('🎵 GM: no se encontró /audio/'+MUT[k]+'.mp3 — sube la carpeta audio al servidor',6000)}catch(e){}});return null}
 function muTick(){const x=AU.ctx;if(!x||x.state!='running')return;let want=P.mu&&!document.hidden?(AU.mode=='f'?'':(AU.mode=='b'?'b':(DG.f?'d':AU.mode))):'';if(!MUT[want])want='';
  if(want&&MUBAD>3)want='';
  if(want!==MUCUR){if(want){const b=muFile(want);if(!b){AU.mus=MUB[want]===0?0:AU.mus;return}}
   const t=x.currentTime;if(MUC){const o=MUC;o.g.gain.cancelScheduledValues(t);o.g.gain.setValueAtTime(o.g.gain.value,t);o.g.gain.linearRampToValueAtTime(0,t+1.6);setTimeout(()=>{try{o.s.stop()}catch(e){}},1800);MUC=null}
-  MUCUR=want;if(want){const s=x.createBufferSource(),g=x.createGain();s.buffer=MUB[want];s.loop=true;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(2.3,t+1.6);s.connect(g);g.connect(AU.master);s.start();MUC={s,g}}}
+  MUCUR=want;if(want){const s=x.createBufferSource(),g=x.createGain();s.buffer=MUB[want];s.loop=true;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(3.4,t+1.6);s.connect(g);g.connect(AU.master);s.start();MUC={s,g}}}
  AU.mus=!!MUC}
 function sfxC(){if(!SFXON)return null;if(!AU.ctx)try{auInit()}catch(e){}const c=AU.ctx;if(!c)return null;if(c.state=='suspended')try{c.resume()}catch(e){}if(c.state!='running')return null;if(!AU.sg){AU.sg=c.createGain();AU.sg.connect(c.destination)}AU.sg.gain.value=.5*Math.max(.3,P.mvol||1);return c}
 const SFXT={};
@@ -3758,7 +3759,7 @@ function updBar(){let b=$('updb');if(!UPD){if(b)b.remove();return}if(!b){b=docum
  const mn=Math.max(0,Math.ceil((UPD.at-Date.now())/6e4));b.innerHTML='<span>🔄 Hay una versión nueva · se actualiza sola en '+mn+' min</span><button style="background:#d9a441;color:#1b1206;border:0;border-radius:8px;padding:6px 10px;font-weight:bold">Actualizar ahora</button>'}
 setInterval(()=>{if(!UPD)return;updBar();if(Date.now()>=UPD.at&&P.hp>0&&!modal&&Date.now()-(typeof PVHIT!='undefined'?PVHIT:0)>15000)updGo();else if(Date.now()>=UPD.at+10*6e4)updGo()},5000);
 window.SRSV=m=>{if(m.n!=null&&CHT.on!==(m.n|0)){CHT.on=m.n|0;try{chR()}catch(e){}}
- if(m.v&&m.v!==SR_V&&!UPD){UPD={at:Date.now()+(1+Math.floor(Math.random()*19))*6e4};updBar();toast('🔄 Hay una versión nueva del juego: se actualizará sola en unos minutos (o toca “Actualizar ahora”).',6000)}
+ /* v212: aviso de versión nueva desactivado a pedido (el juego ya recibe lo último al recargar) */
  if(m.rs&&m.rs-Date.now()<=10*6e4&&m.rs>Date.now()&&RSN!=m.rs){RSN=m.rs;toast('🔄 Reinicio del servidor en '+Math.ceil((m.rs-Date.now())/6e4)+' min. Tu progreso se guarda solo.',6000)}};
 async function chLoad(){if(!ONL())return;try{const r=await SRNET.rpc({t:'x',op:'soc.me'});CHT.s=r.s;CHT.g=r.g||[];CHT.ld=Date.now();const lg0=CHT.lg;CHT.lg=r.lg||'';CHT.tl=+r.tl||0;CHT.tc=+r.tc||CHT.tc||10;if(!CHT.lg&&!$('lgp'))lgPick();chR()}catch(e){}}
 async function chOp(op,o,after){if(!ONL()){toast('Necesitas conexión con el servidor',3000);return null}try{const r=await SRNET.rpc(Object.assign({t:'x',op},o||{}));if(r.s)CHT.s=r.s;if(after)after(r);return r}catch(e){toast(String(e.message||'No se pudo'),3500);return null}}

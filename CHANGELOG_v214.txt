@@ -1,0 +1,2 @@
+v214
+- Música incluida dentro de play.html: suena aunque no esté la carpeta audio (si la carpeta existe usa esa, de mejor calidad).

@@ -1,0 +1,4 @@
+v211 · Música y efectos de sonido
+- 4 temas nuevos con el estilo del tráiler (carpeta audio/): ciudad, exploración, batalla/jefe y cuevas. Cambian solos con fundido de 1.6 s. El sintetizador anterior queda de respaldo (feria y si falla la descarga).
+- Efectos: ataque básico por clase (8), cada habilidad según su tipo y elemento (fuego, hielo, rayo, luz, viento, temblor, flechas, puños, moneda...), golpe, crítico, daño recibido, muerte, subir de nivel, poción.
+- Opciones: nuevo botón "🔊 Efectos de sonido" (independiente de la música). Volumen sigue el control de volumen existente.

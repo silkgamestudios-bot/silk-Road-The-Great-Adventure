@@ -1,0 +1,7 @@
+v216 - Balance de inicio, Guia de la Ruta, drops
+* Alrededor de Chang'an (radio ~105 casillas) solo hay mobs nivel 1-4; los de nivel mayor se quitaron y se agregaron ~400 mobs nuevos nivel 1,2,3,4 (HP escalado).
+* NPC nuevo "Guia de la Ruta" en cada ciudad: te dice la mejor zona de farmeo segun tu nivel.
+* Drop de objetos de mobs normales +5 puntos (14% -> 19% base, +3% por tier).
+* Objetos de evento: 3% de la probabilidad normal y maximo 9 por evento por jugador.
+* Monturas celestiales mas fuertes: Corcel Dorado 300/190, Buey 320/195, Leon Rojo 310/190 (HP/energia base).
+DROPS: ver explicacion en el chat.

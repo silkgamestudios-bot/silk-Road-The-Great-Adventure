@@ -1,0 +1,1 @@
+v218 - mobs de evento sueltan equipo con la misma tabla por tier, sin tope

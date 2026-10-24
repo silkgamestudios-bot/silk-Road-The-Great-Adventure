@@ -5,3 +5,47 @@ v210 (23 oct 2026)
 - server.js: reinicio total opcional con WIPE_ACCOUNTS=1 (+ WIPE_ID nuevo, WIPE_KEEP=0). Hace copia en DATA_DIR/backups antes de borrar.
 - sw.js: sr-v210.
 NO incluidos (son tuyos, no los pises): claude-shim.js, heroes.js, config.js si tiene tus datos.
+- server.js: cupo de jugadores con fila de turnos: variable MAX_PLAYERS=N (sin ella no hay limite). Master y acceso anticipado siempre entran.
+- og.jpg + etiquetas Open Graph/Twitter en index.html y play.html (vista previa al compartir el enlace).
+- server.js: WIPE_AT_LAUNCH=1 -> 3 min antes de la apertura el servidor se reinicia y borra los personajes de prueba (conserva usuarios/contrasenas); no repite.
+- Zona GM: nueva tarjeta Moderadores (agregar/quitar acceso anticipado desde el menu Sistema) y espacio para Reportes de moderacion (proximamente).
+- Zona GM > Moderadores: crear cuenta de mod (usuario + contrasena, con generador) con acceso anticipado automatico; op adm.mk (solo master) en accounts.js.
+- server.js: DAILY_RESTART=H (hora RD) reinicio diario que guarda todo y no borra datos.
+- play.html: al Equipar/Guardar un objeto la ventana del objeto se cierra y avisa (antes quedaba abierta y parecia que no pasaba nada). config.js: ya no esconde Crear cuenta.
+- Evento Halloween: hasta nivel 6 los drops de moneda (6%->21%) y calabaza (60%->75%) suben +15 puntos; los textos +1 de drop son mas grandes y duran mas. Se quita poniendo EVBOOST_LV=0 en play.html.
+
+- Armería > Vender: seleccion multiple (toca objetos, check), Vender seleccionados, Seleccionar todo, Limpiar. Se mantiene -3% impuesto.
+
+- Cuevas/mazmorras: sin lentitud por clima ni por vida baja, colision mas suave (radio 7).
+
+- Mochila de uso: ahora muestra herramientas compradas (pico, pala, hacha, caña), antorchas y pala de Halloween.
+
+- Herramientas en mochila: botones Usar y Tirar (con confirmacion).
+
+- Misiones del dia aceptadas: panel a la izquierda (max 3 aceptadas a la vez). Critico 💥 siempre visible.
+
+- Comida: varias raciones activas a la vez (2 a Nv1 hasta 10 a Nv88+), barra de tiempo por racion en pantalla.
+
+- Server: TRIM_ID/TRIM_GEMS/TRIM_GOLD: recorta items, mascotas y materiales conservando cuentas y nivel, y regala gemas.
+
+- GM: herramienta 'Poner nivel a un jugador' (panel Mods). Op adm.lv solo master.
+
+- Borrar personaje online: op char.del (servidor borra su partida y libera el nombre); boton 'Si, borrar' espera al servidor.
+
+- Balance: costo MP Mago 1.35->1.1, Sanador 1.3->1.15; MP de carne/pescado +25%.
+
+- Gemas: aviso claro de verificacion manual (unos minutos) en el panel y al enviar comprobante.
+
+- Gemas: boton 'Enviar por WhatsApp' activo (wa.me/18093965707) con mensaje prellenado.
+
+- Server: NTFY_TOPIC opcional (aviso push gratis con la app ntfy) ademas de CallMeBot.
+
+- Mercado de Jugadores: WhatsApp opcional del vendedor (wa.set/wa.get) y boton 'Contactar por WhatsApp' (wa.me) en ofertas.
+
+- Gemas: 'Enviar comprobante' abre tambien WhatsApp con el mensaje listo.
+
+- Antitrampas: no suma el mismo aviso repetido (10 min); migracion corrige strikes inflados (sacaban gente del ranking).
+
+- GM: historial de jugadores conectados (pico por dia y record) en Moderadores; log '[online] nuevo pico'.
+
+- Borrar personaje: el boton 'Nueva partida' del menu ahora aparece tambien con cuentas; se evita que el guardado al cerrar la pagina (pagehide) reescriba la partida borrada.

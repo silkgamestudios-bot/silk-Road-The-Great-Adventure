@@ -9,7 +9,7 @@ const num=(v,a,b,d)=>Number.isFinite(+v)?Math.min(b,Math.max(a,+v)):d;
 const int=(v,a,b,d)=>Math.floor(num(v,a,b,d));
 const CFG={slack:+(process.env.AUDIT_SLACK||1.5),mode:process.env.AUDIT_MODE||'enforce',masterExempt:process.env.MASTER_EXEMPT!=='0',
  lvMax:1200,goldRate:400,goldPerLv:6,xpRate:12,xpBurst:6000,dtMax:7200,bossLv:[20,22,24,26,28,29,30,30],bossGold:i=>150000*(i+1),bossUp:.35,
- impGold:+(process.env.IMPORT_GOLD_PER_LV||150000),impOff:process.env.FIRST_IMPORT==='0',goodsCap:30000,goodsBase:[60,40,80,30,25],provCap:9999,provRate:2,ecRate:.5,ecBurst:150,dlTtl:90e3};
+ impGold:+(process.env.IMPORT_GOLD_PER_LV||150000),impOff:process.env.FIRST_IMPORT==='0',goodsCap:30000,goodsBase:[60,40,80,30,25],provCap:9999,provRate:2,ecRate:2,ecBurst:400,dlTtl:90e3};
 const RM=[1,1.6,2.4,3.5],EVK=['hl','nv','lu','am','nz'],PRK=['au','ap','lt','bl','es','pv','bh'];
 const xpNeed=l=>Math.round((30+90*l+3*l*l)*(1.3+.05*l)*1.6);
 const xpTot=(lv,xp)=>{let t=xp;for(let l=1;l<lv;l++)t+=xpNeed(l);return t};

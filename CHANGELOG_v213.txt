@@ -1,0 +1,2 @@
+v213
+- PC: la tarjeta de mascotas (y la de party) se encimaba con el panel del héroe y parecía una 'segunda barra de vida'; ahora se colocan siempre debajo del panel.

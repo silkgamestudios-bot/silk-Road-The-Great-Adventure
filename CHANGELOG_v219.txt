@@ -1,0 +1,1 @@
+v219 - monedas de evento 40% por mob, atuendo cuesta 3000 monedas (cliente+servidor), limite anti-trampa de monedas mas alto

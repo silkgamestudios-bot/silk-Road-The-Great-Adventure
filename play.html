@@ -989,6 +989,15 @@ for(let k=0,tr=0;k<60&&tr<8000;tr++){const tx=12+Math.floor(R()*(W-24)),ty=12+Ma
  {const e={pk,camp:k};placeE(e,tx,ty,Math.min(8,tier));applyVar(e,'raider');E.push(e)}
  for(let j=0;j<n;j++){const e={pk,camp:k},a=R()*6.283,r=R()*4.5;placeE(e,tx+Math.round(Math.cos(a)*r),ty+Math.round(Math.sin(a)*r),tier);if(R()>.25){const v=bio=='d'&&R()<.6?(tier>=4?'scorpb':'scorp'):(R()<.45?'bandit':R()<.5?'thief':'assassin');applyVar(e,v)}{const ok=!blk(e.hx,e.hy,9)&&egKeep(e);if(ok&&j<capC)E.push(e)}}
  k++}
+/* v216: ZONA DE NOVATOS: alrededor de Chang'an solo mobs nv 1-4 y muchos más; los fuertes quedan lejos */
+{const c0=C[0],RAD=105;let s2=987654321;const r2=()=>(s2=s2*48271%2147483647)/2147483647;
+ for(let i=E.length-1;i>=0;i--){const e=E[i];if(e.boss||e.guard||e.dg||e.zb||e.zz||e.drg)continue;if(Math.hypot(e.hx/T-c0.tx,e.hy/T-c0.ty)<RAD&&((e.ty|0)>=1||(e.nv||0)>4))E.splice(i,1)}
+ const HM=[1,1.5,2.1,2.8];let made=0;
+ for(let k=0;k<6000&&made<170;k++){const a=r2()*6.283,d=22+r2()*(RAD-22),tx=Math.round(c0.tx+Math.cos(a)*d),ty=Math.round(c0.ty+Math.sin(a)*d*.8);
+  if(tx<4||ty<4||tx>=W-4||ty>=H-4)continue;const tl=M[ty][tx];if(solid(tl)||tl==4||tl==5||ncity(tx,ty,26))continue;
+  const n=3+Math.floor(r2()*3),pk={al:0,big:0};made++;
+  for(let j=0;j<n;j++){const e={pk};placeE(e,tx+Math.round((r2()-.5)*6),ty+Math.round((r2()-.5)*6),0);const r=r2();if(r<.2)applyVar(e,'jackal');else if(r<.32)applyVar(e,'rdog');else if(r<.38)applyVar(e,'bat');
+   const lv=1+Math.floor(r2()*4);e.nv=lv;e.mx=e.hp=Math.round(e.mx*HM[lv-1]);if(!blk(e.hx,e.hy,9))E.push(e)}}}
 const cv=$('c'),g=cv.getContext('2d');let VW=0,VH=0;
 let DS=1;const rs=()=>{DS=Math.max(1,Math.round(devicePixelRatio||1));VW=cv.clientWidth;VH=cv.clientHeight;cv.width=VW*DS;cv.height=VH*DS};
 addEventListener('resize',rs);rs();
@@ -1226,7 +1235,7 @@ $('mk').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)re
  else if(a=='x'){modal=0;$('mk').hidden=true;return}
  rm();chk();save()});
 $('shop').addEventListener('click',openM);
-const NAMES={'trader-basic':'Mercader','trader-priest':'Sacerdote','ruler':'Gobernador'};
+const NAMES={'trader-basic':'Mercader','trader-priest':'Sacerdote','ruler':'Gobernador','guide':'Guía de la Ruta'};
 const npcAt=(o,r)=>{for(const c of C)for(const [n,ox,oy] of NPC)if(Math.hypot(o.x-(c.tx+ox)*T-16,o.y-(c.ty+oy)*T-14)<r)return{n,c};const v=nmVend(o,Math.max(r,40));if(v)return{n:'nomad',v:v.k,c:{n:'Feria',tx:0,ty:0,f:[1,1,1,1,1]}};const m=nmPos();if(m&&!m.camp&&Math.hypot(o.x-m.x,o.y-(m.y+40))<r)return{n:'nomad',v:'car',c:{n:'Caravana',tx:0,ty:0,f:[1,1,1,1,1]}}};
 const unm=()=>{modal=($('intro').hidden&&$('mk').hidden&&$('dlg').hidden&&$('hero').hidden&&$('cls').hidden&&$('cj').hidden&&$('est').hidden&&$('kt').hidden&&$('dep').hidden&&$('inf').hidden&&$('trn').hidden&&$('tm').hidden&&$('crd').hidden&&$('hz').hidden&&$('mapfs').hidden&&$('qp').hidden&&$('evn').hidden)?0:1};
 const qtxt=()=>qst.t=='k'?`Cazar enemigos ${qst.got}/${qst.n} (+${qst.rw}🪙)`:`Lleva ${qst.n} ${G[qst.g]} a ${C[qst.to].n} (+${qst.rw}🪙)`;
@@ -1251,8 +1260,15 @@ function usePot(){const x=potPick(0);if(!x)return toast(potMsg(0));if(P.hp>=P.mh
 function say(t,x,b){modal=1;const d=$('dlg');d.hidden=false;d.innerHTML=`<h2>${t}</h2><p>${x}</p><div class="row2">${b.map(([k,l])=>`<button data-d="${k}">${l}</button>`).join('')}</div>`}
 function talk(n){cur=n;P.tc.tk++;if(n.n=='nomad')return nmTalk(n.v);const t=NAMES[n.n]+' de '+n.c.n;
  if(n.n=='trader-basic')say(t,'¡Bienvenido a '+n.c.n+'! Los precios cambian de ciudad en ciudad. ¿Quieres un consejo?',[['tips','Preguntar por precios'],['torch','🔦 Comprar antorcha · 300 🪙'],['torch5','🔦 Comprar 5 · 1.350 🪙'],['hpp','❤️ Poción de vida · 50 🪙'],['hpp5','❤️ Poción de vida ×5 · 225 🪙'],['mpp','💧 Poción de maná · 50 🪙'],['mpp5','💧 Poción de maná ×5 · 225 🪙'],['x','Despedirse']]);
+ else if(n.n=='guide')guideTalk(t);
  else if(n.n=='trader-priest')say(t,'Que la Seda guíe tus pasos, viajero.',[['bless','Pedir bendición (cura la vida)'],['x','Despedirse']]);
  else govM()}
+
+/* v216: Guía de la Ruta: consejos de zonas de farmeo según tu nivel */
+function guideTalk(t){const L=P.lv|0,Z=[[1,4,"Llanuras de Chang'an","Ratas, chacales y perros salvajes alrededor de Chang'an. Aquí no hay nada que te pase por encima: farmea tranquilo hasta el nivel 4."],[5,8,'Bosque de Jade y Valle Amarillo','Serpientes, arañas y lobos jóvenes. Ve en grupo de mascotas y lleva pociones.'],[8,12,'Estepa de Gansu','Bandidos que patrullan los caminos. Cuidado con los campamentos: muchos juntos.'],[12,15,'Cordillera Qilian y Taklamakán','Goblins que atacan en grupo. Mejor con armadura nueva.'],[15,19,'Oasis de Kashgar y Estepas de Bukhara','Momias malditas. Lleva antorcha y varias pociones.'],[19,22,'Pamir Helado y Desierto Rojo','Orcos con mucha vida. Pega duro: equipa lo mejor que tengas.'],[22,26,'Samarkand y Cañones Malditos','Berserkers rápidos. Sube de nivel antes de entrar.'],[26,29,'Bagdad y Reino de Cenizas','Vampiros que drenan vida. Bendición recomendada.'],[29,99,'Constantinopla y Yermo del Faraón','El terror final de la Ruta. Solo con equipo fuerte y grupo.']];
+ let i=Z.findIndex(z=>L>=z[0]&&L<=z[1]);if(i<0)i=0;const z=Z[i],nx=Z[Math.min(Z.length-1,i+1)];
+ const tip=L<=4?'<br>💡 Cerca de la ciudad los enemigos son de nivel 1 a 4: ahí subes rápido y sin riesgo. Los más fuertes están más lejos, <b>no te alejes antes del nivel 5</b>.':L<=8?'<br>💡 Ya puedes alejarte un poco de Chang\'an, pero no pases del Valle Amarillo hasta el nivel 8.':'<br>💡 Si el enemigo te supera mucho, retrocede una zona: es mejor subir seguro que morir y perder nivel.';
+ say(t,'Eres nivel <b>'+L+'</b>. Tu mejor zona de farmeo:<br>📍 <b>'+z[2]+'</b> (nv '+z[0]+'-'+Math.min(z[1],40)+')<br>'+z[3]+(nx!==z?'<br><br>Siguiente paso: <b>'+nx[2]+'</b> (nv '+nx[0]+'+).':'')+tip,[['x','Gracias, guía']])}
 function govM(){const t='Gobernador de '+cur.c.n;
  if(!qst)say(t,'La ruta necesita héroes. ¿Aceptas un encargo?',[['qk','Cazar 5 enemigos'],['qd','Entregar mercancía'],['x','Ahora no']]);
  else{const ok=qdone();say(t,'Encargo: '+qtxt()+(ok?'<br><b>¡Listo para cobrar!</b>':''),ok?[['qc','Cobrar '+qst.rw+' 🪙'],['x','Cerrar']]:[['qa','Abandonar encargo'],['x','Cerrar']])}}
@@ -1632,7 +1648,7 @@ function buffsMini(){let h='';if(P.rest>Date.now())h+='<span>😴</span>';const 
 function hudCard(){const c=$('hc');c.hidden=!(P.chosen&&P.name);if(c.hidden)return;CI=CI||CLS.map((q,i)=>icon('c'+i+'-down-1'));
  const nx=xpNeed(P.lv),xp=P.lv>=LVMAX?100:Math.min(100,100*P.xp/nx);if(HCL0&&P.lv>HCL0){c.classList.remove('lvl');void c.offsetWidth;c.classList.add('lvl')}HCL0=P.lv;
  c.title='Nv '+P.lv+' · XP '+P.xp+' / '+nx+' ('+Math.floor(xp)+'%) · '+fmt(xph())+' XP/h · '+FPS+' fps';
- c.innerHTML=`<div class="hpf"><img src="${(!P.skin&&P.bsk&&bsIcon(P.bsk))||CI[P.cls]}"${tjSty()}></div><div class="hcol"><div class="hn">${bdgPre(UID)}${GD.g?'<b style="color:#ffd666">['+hx(GD.g.tag)+']</b> ':''}${hx(P.name)} <small>Nv ${P.lv}${pa('bl')?' 🙏':''}</small></div><div class="bar3 hp"><i style="width:${Math.max(0,P.hp)/P.mhp*100}%"></i><span>${fmt(Math.max(0,Math.round(P.hp)))}/${fmt(P.mhp)}</span></div><div class="bar3 mp"><i style="width:${P.mp/P.mmp*100}%"></i></div><div class="bar3 st"><i style="width:${P.sta}%"></i></div><div class="bar3 xp"><i style="width:${xp}%"></i></div><div class="chips"><span>🪙 ${fmt(P.gold)}</span><span>📦 ${load()}/${capX()}</span>${buffsMini()}${lic()?'<span>🐗'+(OS=='s'?'😴':OS=='d'?'☠️':escOn()?'🛡️':'✔')+'</span>':''}</div></div>`;
+ c.innerHTML=`<div class="hpf"><img src="${(!P.skin&&P.bsk&&bsIcon(P.bsk))||CI[P.cls]}"${tjSty()}></div><div class="hcol"><div class="hn">${bdgPre(UID)}${GD.g?'<b style="color:#ffd666">['+hx(GD.g.tag)+']</b> ':''}${hx(P.name)} <small>Nv ${P.lv}${pa('bl')?' 🙏':''}</small></div><div class="bar3 hp"><i style="width:${Math.max(0,P.hp)/P.mhp*100}%"></i><span>${fmt(Math.max(0,Math.round(P.hp)))}/${fmt(P.mhp)}</span></div><div class="bar3 mp"><i style="width:${Math.max(0,Math.min(100,P.mp/P.mmp*100))}%"></i><span>${fmt(Math.max(0,Math.round(P.mp)))}/${fmt(P.mmp)}</span></div><div class="bar3 st"><i style="width:${P.sta}%"></i></div><div class="bar3 xp"><i style="width:${xp}%"></i></div><div class="chips"><span>🪙 ${fmt(P.gold)}</span><span>📦 ${load()}/${capX()}</span>${buffsMini()}${lic()?'<span>🐗'+(OS=='s'?'😴':OS=='d'?'☠️':escOn()?'🛡️':'✔')+'</span>':''}</div></div>`;
  const rg=RG[RGI[Math.min(H-1,Math.max(0,Math.floor(P.y/T)))*W+Math.min(W-1,Math.max(0,Math.floor(P.x/T)))]],ct=cityAt(P),nc=C.reduce((a,b)=>Math.hypot(a.tx*T-P.x,a.ty*T-P.y)<Math.hypot(b.tx*T-P.x,b.ty*T-P.y)?a:b),nd=Math.round(Math.hypot(nc.tx*T-P.x,nc.ty*T-P.y)/T),dg=P.lv<REC(rg.t)-4;
  {const pc=$('pc'),C0=petC(),M0=petM(),rows=[C0,M0&&M0!==C0?M0:null].filter(Boolean);pc.hidden=!rows.length||P.pcv===0;if(P.pcm)$('pcb').innerHTML=rows.map(p=>`<div class="prow"><span>${pimg(pty(p),24)}</span><div class="pcol"><div class="bar3 hp" style="height:6px"><i style="width:${Math.max(0,p.hp/pmax(p)*100)}%"></i></div><div class="bar3 en" style="height:6px;margin-top:2px"><i style="width:${p.en/pen(p)*100}%"></i></div></div></div>`).join('');else $('pcb').innerHTML=rows.map(p=>`<div class="prow"><span>${pimg(pty(p),30)}</span><div class="pcol"><div class="pn">${hx(p.nm)} <small>Nv ${p.lv}${p===M0&&RIDE?' · montado':''}${p.hp<=0?' · herido':''}${p.ill>Date.now()?' · 🤢 enfermo':''}</small></div><div class="bar3 hp"><i style="width:${p.hp/pmax(p)*100}%"></i><span>${Math.max(0,Math.round(p.hp))}/${pmax(p)}</span></div><div class="bar3 en"><i style="width:${p.en/pen(p)*100}%"></i><span>${Math.round(p.en)}/${pen(p)}</span></div></div></div>`).join('')}
  $('zline').innerHTML=`<span style="color:${dg?'#ffa0a0':'#cdeeb0'}">🌍 ${rg.n}<br>Zona ${rg.t+1} · Nv ${REC(rg.t)}+${dg?' ☠️':''}</span><br>${ct?'📍 '+ct.n:'🧭 '+nc.n+' · '+nd}${qst?'<br>📜 '+qtxt():''}`}
@@ -2346,7 +2362,7 @@ function drawTown(c,bx,by,now){const ci=C.indexOf(c);
  festive(c,bx,by,ci,now);townEv(c,bx,by,now);townWx(c,bx,by,now);
  stableCages(bx,by,now);
  for(const [ox,oy,n] of PROPS)sp(n,bx+ox*T+16,by+oy*T+16,2);
- NPC.forEach(([n,ox,oy],i)=>{const nx=bx+ox*T+16,ny=by+oy*T+14;sp(n+'-'+(1+Math.floor(now*2+i)%2),nx,ny,2);if(Math.hypot(P.x-(c.tx+ox)*T-16,P.y-(c.ty+oy)*T-14)<70){g.font='16px serif';g.fillText('💬',nx,ny-26+Math.sin(now*5)*2)}});
+ NPC.forEach(([n,ox,oy],i)=>{const nx=bx+ox*T+16,ny=by+oy*T+14;if(n=='guide'){g.filter='hue-rotate(150deg) saturate(1.3)';sp('trader-basic-'+(1+Math.floor(now*2+i)%2),nx,ny,2);g.filter='none'}else sp(n+'-'+(1+Math.floor(now*2+i)%2),nx,ny,2);if(Math.hypot(P.x-(c.tx+ox)*T-16,P.y-(c.ty+oy)*T-14)<70){g.font='16px serif';g.fillText('💬',nx,ny-26+Math.sin(now*5)*2)}});
  for(const w of TW){if(w.c!==ci)continue;const x=w.x-CX,y=w.y-CY;g.fillStyle='rgba(0,0,0,.2)';g.beginPath();g.ellipse(x,y+12,10,3,0,0,7);g.fill();sp(w.sp+'-'+(1+Math.floor(now*(w.wait>0?1:3)+w.ph)%2),x,y,2);if(w.wait>0&&w.say){g.font='15px serif';g.textAlign='center';g.fillText(w.say,x,y-24+Math.sin(now*5+w.ph)*2)}}
  g.font='bold 15px Georgia,serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#000';g.fillText(c.n,bx+17,by-17.3*T);g.fillStyle='#ffe9a8';g.fillText(c.n,bx+16,by-17.3*T-1);g.font='bold 10px Georgia,serif';g.fillStyle='#000';g.fillText(CTY[ci],bx+17,by-17.3*T+14);g.fillStyle='#fff';g.fillText(CTY[ci],bx+16,by-17.3*T+13)}
 var TWGEN=1;function twFree(dx,dy){if(dx<-23||dx>22||dy<-17||dy>14)return 0;for(const b of BLD)if(!(TWGEN&&(b.k=='ck'||b.k=='gk'||b.k=='sd'))&&dx>b.fx-.6&&dx<b.fx+b.fw+.6&&dy>b.fy-.6&&dy<b.fy+b.fh+.4)return 0;if(dx>CORRAL.x0-.6&&dx<CORRAL.x1+.6&&dy>CORRAL.y0-.6&&dy<CORRAL.y1+.6)return 0;for(const s0 of STALLS)if(dx>s0[0]-.8&&dx<s0[0]+2.8&&dy>s0[1]-.8&&dy<s0[1]+2.4)return 0;if(Math.hypot(dx,dy)<1.8)return 0;return 1}
@@ -2770,13 +2786,19 @@ function townEv(c,bx,by,now){const ev=curEv();if(!ev)return;const k=ev.k;
  else if(k=='lu'&&NIGHT>.3){for(let i=0;i<3;i++){const t=((now*.45+i*.33+c.tx*.1)%1),cxp=bx+(-3+i*3)*T,cyp=by-8.8*T+i*8,r=t*60;g.globalAlpha=1-t;g.strokeStyle=['#ffd666','#ff5a4a','#7fd0ff'][i];g.lineWidth=2;for(let j=0;j<12;j++){const a=j*.5236;g.beginPath();g.moveTo(cxp+Math.cos(a)*r*.6,cyp+Math.sin(a)*r*.6);g.lineTo(cxp+Math.cos(a)*r,cyp+Math.sin(a)*r);g.stroke()}g.globalAlpha=1}}
  else if(k=='am'){for(let i=0;i<4;i++){const t=(now*.3+i*.25)%1;heart(bx+16+Math.sin(now+i)*12,by+16-t*60,'rgba(255,90,140,'+(1-t)+')')}}
  else if(k=='nz'){for(let i=0;i<8;i++)flower(bx+16+Math.cos(i*.785)*34,by+16+Math.sin(i*.785)*26,['#ff8ad8','#ffd666','#fff'][i%3])}}
-const SKP=300,CLSN=['Mercader','Caballero','Mago','Arquero','Sanador','Monje','Elfa','Enana'];
+const SKP=3000,CLSN=['Mercader','Caballero','Mago','Arquero','Sanador','Monje','Elfa','Enana'];
 const SKN=(e,c)=>({hl:(c==1||c==5)?'Calabaza maldita':'Bruja de medianoche',nv:'Gala navideña',lu:'Dragón imperial',am:'Corazón enamorado',nz:'Jardín de Nowruz'})[e.k];
 const skinName=()=>{const e=P.skin&&EVT_.find(z=>z.k==P.skin);return e?e.ic+' '+SKN(e,P.cls):(TKN[P.skin]?'🎃 '+TKN[P.skin]:'normal')};
 const skinImg=(ek,h)=>'<img src="'+icon('s'+ek+P.cls+'-down-1')+'" height="'+h+'" style="image-rendering:pixelated">';
 /* Evento: hasta el nivel 6 los drops de moneda/calabaza suben +15 puntos (EVBOOST). Para quitarlo despues, pon EVBOOST_LV=0. */
-const EVBOOST_LV=6,EVBOOST=.15;
-function evCoin(e){const ev=curEv();if(!ev)return;const bo=(P.lv|0)<=EVBOOST_LV?EVBOOST:0;tkDrop(e,bo);let n=0;if(e.evt)n=EVC[e.v]||1;else if(Math.random()<.06+bo)n=1;if(!n)return;P.ec[ev.k]=(P.ec[ev.k]|0)+n;FT.push({x:e.x,y:e.y-22,t:2.2,d:.3,o:0,k:'xp',z:17,s:'+'+n+' '+ev.ic,c:'#ffd666'})}
+const EVBOOST_LV=6,EVBOOST=0;
+/* v216: objetos de evento = extremadamente raros y tope de 9 por evento (por jugador) */
+const EVI_MAX=9;
+function eviKey(){const ev=curEv();return ev?ev.k+new Date().getFullYear():''}
+function eviGet(){try{return JSON.parse(localStorage.getItem('sr_evi')||'{}')}catch(x){return{}}}
+function evItCap(e){return 1}
+function evItInc(){const k=eviKey();if(!k)return;try{const o=eviGet();o[k]=(o[k]|0)+1;localStorage.setItem('sr_evi',JSON.stringify(o))}catch(x){}}
+function evCoin(e){const ev=curEv();if(!ev)return;const bo=(P.lv|0)<=EVBOOST_LV?EVBOOST:0;tkDrop(e,bo);let n=0;if(e.evt)n=EVC[e.v]||1;else if(Math.random()<.40+bo)n=1;if(!n)return;P.ec[ev.k]=(P.ec[ev.k]|0)+n;FT.push({x:e.x,y:e.y-22,t:2.2,d:.3,o:0,k:'xp',z:17,s:'+'+n+' '+ev.ic,c:'#ffd666'})}
 function evShopHtml(){const cur=curEv();let h='<p style="margin:10px 0 2px"><b>🎭 Atuendos de evento ('+CLSN[P.cls]+')</b></p><small>Monedas: '+EVT_.map(e=>e.ic+' '+(P.ec[e.k]|0)).join(' · ')+'. Se ganan matando enemigos durante el evento (más con los enemigos del evento). Cada atuendo cuesta '+SKP+' monedas (solo en su fecha) o '+GEMSKIN+' 💎 en cualquier momento; una vez tuyo, lo usas siempre.<br>💱 Las monedas se comercian: véndelas o cómpralas en 🤝 Jugadores (ofertas y tiendas de Mercaderes).</small>';
  for(const e of EVT_){const own=P.sk.includes(e.k),on=cur===e;h+='<div class="prm"><span>'+skinImg(e.k,44)+'</span><div><b>'+e.ic+' '+SKN(e,P.cls)+'</b><br><small>'+e.n+(own?' · ✅ tuyo':on?' · '+SKP+' monedas':' · monedas solo en el evento')+(own?'':' · 💎 '+GEMSKIN+' cuando quieras')+'</small></div><div style="display:flex;flex-direction:column;gap:6px;flex:0 0 auto">'+(own?'<button data-bq="ev:sq:'+e.k+'">'+(P.skin===e.k?'Quitar':'Equipar')+'</button>':((on?'<button data-bq="ev:se:'+e.k+'">Comprar</button>':'')+'<button data-bq="ev:sg:'+e.k+'">💎 '+GEMSKIN+'</button>'))+'</div></div>'}
  return h}
@@ -3088,7 +3110,9 @@ const PRM=[{k:'pv',n:'Cazador PvP',ic:'⚔️',c:0,d:'Permite activar el PvP abi
 const LT=[],FT=[],PV={},ICI=IC.map(u=>{const i=new Image();i.src=u;return i}),pa=k=>P.prem[k]>Date.now();
 const rem=ts=>{const m=Math.max(0,ts-Date.now()),d=Math.floor(m/864e5),h=Math.floor(m%864e5/36e5),mi=Math.floor(m%36e5/6e4);return d?d+' d '+h+' h':h?h+' h '+mi+' min':mi+' min'};
 function bagDrop(e){const own=P.bu.length+(BCAP()>=40?1:0)+(LCAP()>=40?1:0);if(own>=2||REC(e.ty|0)<10||REC(e.ty|0)>12||Math.random()>=.25)return;P.bu.push(40);toast('🎒 ¡Encontraste un Bolso de 40 espacios! Úsalo desde 🎒 Objetos: en tu mochila o en la bolsa de loot',7000);vib([60,40,120]);save()}
-function spawnLoot(e,gd){try{bagDrop(e)}catch(x){}const l={x:e.x+Math.random()*16-8,y:e.y+Math.random()*16-8,gd,it:Math.random()<.14+.03*(e.ty||0)+(e.rw?.08:0)?(e.rw?genItem(Math.min(4,((e.ty||0)+(e.rw?1:0))>>1)):genJunk(Math.min(4,(e.ty||0)>>1))):null,l:120};LT.push(l);return l}
+/* v216b: prob. de objeto por tier: bajos cubren lo basico; altos bajan hasta 12% (mobs mas fuertes, no regalar) */
+const DRT=[.20,.20,.22,.17,.16,.15,.14,.13,.12];
+function spawnLoot(e,gd){try{bagDrop(e)}catch(x){}const l={x:e.x+Math.random()*16-8,y:e.y+Math.random()*16-8,gd,it:Math.random()<(DRT[Math.max(0,Math.min(8,e.ty|0))]+(e.rw?.05:0))*evItCap(e)?(e.rw?genItem(Math.min(4,((e.ty||0)+(e.rw?1:0))>>1)):genJunk(Math.min(4,(e.ty||0)>>1))):null,l:120};LT.push(l);return l}
 function popKill(e,xp,l){const a=[['xp','+'+xp+' XP','#8fd3ff']],au=pa('lt');if(l.gd)a.push(['gd',(au?'+':'')+l.gd+' 🪙','#ffd666']);if(l.it)a.push(['it',(au?'+ ':'')+l.it.n,RC[l.it.r],l.it]);
  a.forEach((z,i)=>FT.push({x:e.x,y:e.y-14,t:1.7,d:i*.14,o:i*15,k:z[0],s:z[1],c:z[2],it:z[3]}));if(FT.length>40)FT.splice(0,FT.length-40)}
 /* carne: cae al suelo y dura 10 min para recogerla */function dropMeat(x,y,q,g){LT.push({x:x+Math.random()*16-8,y:y+Math.random()*16-8,gd:0,it:null,ml:q,mg:g||1,l:600})}
@@ -4625,7 +4649,7 @@ const TCV={};function spT(n,x,y,k,tn){const a=A[n];if(!a)return;if(AT.complete==
    d[i]=Math.round((R1+m)*255);d[i+1]=Math.round((G1+m)*255);d[i+2]=Math.round((B1+m)*255)}
   q.putImageData(id,0,0);TCV[key]=c}
  g.drawImage(c,Math.round(x-a[2]*k/2),Math.round(y-a[3]*k/2),a[2]*k,a[3]*k)}
-const NPC=[['trader-basic',-1,-1],['trader-priest',1,-1],['ruler',0,1]],PROPS=[[-2,-1,'chest'],[2,1,'chest']];
+const NPC=[['trader-basic',-1,-1],['trader-priest',1,-1],['ruler',0,1],['guide',2,-1]],PROPS=[[-2,-1,'chest'],[2,1,'chest']];
 function draw(){
  g.setTransform(DS,0,0,DS,0,0);g.imageSmoothingEnabled=false;const now=performance.now()/1000;if(SHK>.3){g.translate((Math.random()-.5)*SHK,(Math.random()-.5)*SHK);SHK*=.86}else SHK=0;
  const cx=Math.max(0,Math.min(W*T-VW,P.x-VW/2)),cy=Math.max(0,Math.min(H*T-VH,P.y-VH/2));
@@ -5281,9 +5305,9 @@ function zbTick(){if(!P.zbk)return;ZB.forEach((z,i)=>{if(z.x==null||P.dc['zb'+i]
 
 /* ===== BESTIAS DEL ZODIACO (mascota + montura) ===== */
 if(A['lion-1']&&!A['an-lion-1']){A['an-lion-1']=A['lion-1'];A['an-lion-2']=A['lion-2']}
-PTY.push({k:'zhorse',sp:'nhorse',n:'Corcel Dorado',ic:'🐎',kind:'m',both:1,hp:200,en:125,atk:15,rng:90,spd:1.25,drain:1.1,mpr:.9,hpr:.008,cargo:60,price:0,d:'Una bestia del Zodiaco domada: como mascota es una montura veloz (+40%) poderosa, aunque menos que las salvajes.'},
-{k:'zox',sp:'cow',n:'Buey Robusto',ic:'🐂',kind:'m',both:1,hp:215,en:130,atk:13,rng:90,spd:1.1,drain:.8,mpr:.9,hpr:.01,cargo:300,price:0,d:'Montura resistente con +300 de carga y mascota de combate, un poco más fuerte que las demás. Sube de nivel como todas.'},
-{k:'tiger',sp:'lion',n:'León Rojo',ic:'🦁',kind:'m',both:1,hp:205,en:125,atk:15,rng:90,spd:1.2,drain:1.2,mpr:.9,hpr:.008,cargo:60,price:0,d:'Montura veloz y mascota de combate, un poco más fuerte que las demás. Sube de nivel como todas.'});
+PTY.push({k:'zhorse',sp:'nhorse',n:'Corcel Dorado',ic:'🐎',kind:'m',both:1,hp:300,en:190,atk:15,rng:90,spd:1.25,drain:1.1,mpr:.9,hpr:.008,cargo:60,price:0,d:'Una bestia del Zodiaco domada: como mascota es una montura veloz (+40%) poderosa, aunque menos que las salvajes.'},
+{k:'zox',sp:'cow',n:'Buey Robusto',ic:'🐂',kind:'m',both:1,hp:320,en:195,atk:13,rng:90,spd:1.1,drain:.8,mpr:.9,hpr:.01,cargo:300,price:0,d:'Montura resistente con +300 de carga y mascota de combate, un poco más fuerte que las demás. Sube de nivel como todas.'},
+{k:'tiger',sp:'lion',n:'León Rojo',ic:'🦁',kind:'m',both:1,hp:310,en:190,atk:15,rng:90,spd:1.2,drain:1.2,mpr:.9,hpr:.008,cargo:60,price:0,d:'Montura veloz y mascota de combate, un poco más fuerte que las demás. Sube de nivel como todas.'});
 /* ===== DEPREDADOR ===== */
 const PRD={t:1800+Math.random()*1800,e:null,life:0,k:0};
 function predSpawn(){if(P.lv<50||DG.f||modal||cityAt(P)||inTmp(P))return false;const tier=tierAt(P.x,P.y),cold=0;for(let t=0;t<16;t++){const a=Math.random()*6.283,r=650+Math.random()*250,tx=Math.floor((P.x+Math.cos(a)*r)/T),ty=Math.floor((P.y+Math.sin(a)*r)/T);if(tx<3||ty<3||tx>=W-3||ty>=H-3||solid(M[ty][tx])||M[ty][tx]==5||TREE[ty*W+tx])continue;
@@ -6438,7 +6462,7 @@ html body #hc .hcol{flex:1 1 auto!important;min-width:0!important}
 html body #hc .hn{font-size:calc(var(--k)*12px)!important;line-height:1.25!important;color:#fff!important;text-shadow:0 1px 3px #000!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 html body #hc .hn small{color:var(--gold)!important;font-size:.85em!important}
 html body #hc .bar3{position:relative!important;height:calc(var(--k)*11px)!important;margin-top:calc(var(--k)*3px)!important;border-radius:8px!important;background:rgba(0,0,0,.55)!important;border:1px solid rgba(255,255,255,.22)!important;overflow:hidden!important}
-html body #hc .bar3.mp{height:calc(var(--k)*8px)!important}
+html body #hc .bar3.mp{height:calc(var(--k)*10px)!important;display:block!important}html body #hc .bar3.mp span{display:block!important;font-size:calc(var(--k)*8px)!important}
 html body #hc .bar3.st{height:calc(var(--k)*3px)!important;border:0!important}
 html body #hc .bar3.xp{display:none!important}
 html body #hc .bar3 span{position:absolute!important;inset:0!important;text-align:center!important;font:700 calc(var(--k)*9px)/calc(var(--k)*10px) system-ui,sans-serif!important;color:#fff!important;text-shadow:0 1px 2px #000!important}

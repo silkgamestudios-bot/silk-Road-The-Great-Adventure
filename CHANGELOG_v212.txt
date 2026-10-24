@@ -1,0 +1,4 @@
+v212
+- Quitado el letrero "Hay una versión nueva · se actualiza sola".
+- Muerte: si la vida llega a 0 por cualquier causa, el personaje ahora muere siempre (antes algunas fuentes de daño dejaban la vida en 0 sin morir).
+- Música: volumen de las pistas más alto; el service worker ya no falla si falta la carpeta audio; el GM ve un aviso si no se encuentra /audio/*.mp3.

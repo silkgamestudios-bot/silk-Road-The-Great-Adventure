@@ -1,0 +1,2 @@
+v215
+- Sonido ambiente: lluvia, tormenta con truenos, viento/ventisca/arena, murmullo de ciudad con campanitas, cuevas con goteo, grillos de noche, pasos (distintos en ciudad, nieve, cueva), rugido y brasas del dragón según la distancia. Va con el botón 'Efectos de sonido'.

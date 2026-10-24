@@ -71,7 +71,7 @@ ops['adm.badge']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const o=
 ops['evskin.gem']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k))return err('Evento desconocido');if(a.ev.includes(k))return err('Ya lo tienes');
  if(!E.spendGems(a,GEMSKIN,false,'Atuendo de evento '+k))return err('Te faltan '+(GEMSKIN-E.gTot(a))+' 💎');a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
 ops['evskin.coin']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k))return err('Evento desconocido');if(a.ev.includes(k))return err('Ya lo tienes');
- if(E.avail(a,'ec',k)<300)return err('Te faltan monedas de evento (sincroniza e inténtalo de nuevo)');E.deliver(u,{ec:{k,q:-300},note:'🎭 Atuendo de evento comprado'});a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
+ if(E.avail(a,'ec',k)<3000)return err('Te faltan monedas de evento (sincroniza e inténtalo de nuevo)');E.deliver(u,{ec:{k,q:-3000},note:'🎭 Atuendo de evento comprado'});a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
 ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d=+m.d||null;if(!GEMP[k]||k==='vip')return err('Servicio desconocido');
  if(d==null)d=GMON.includes(k)?30:10;if(![10,20,30].includes(d))d=GMON.includes(k)?30:10;if(k==='es'||k==='pv'||k==='bh')d=30;
  const vm=k==='vipm',vj=k==='vipj',vip=vm||vj,cmb=k==='cmb',lc=k==='lic',ks=vm?['lt','ap','bl','es']:vj?['lt','ap','bl']:cmb?GCMB:lc?[]:[k],cost=price(k,d);

@@ -193,6 +193,8 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
   if(!ws.uid)return;const u=ws.uid;
   if(m.t!=='sv'&&protoBad(m,0,'')){err('datos no válidos');return}
   if(m.t==='sv'){if(typeof m.d!=='string'||m.d.length>400000||now-(ws.sv||0)<1500){err('guardado rechazado');return}ws.sv=now;
+   /* v235: si otro dispositivo guardó después de la última sincronización de este (bts), este guardado es viejo: NO se escribe, se devuelve el del servidor. */
+   if(+m.bts>0){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}if(o&&o.ts>+m.bts+50){rep({t:'r',rid:m.rid,ok:1,stale:1,d:o.d,ts:o.ts});return}}
    let r;try{r=E.audit(u,m.d,m.ack)}catch(e){log('audit error '+e.stack);err('error de validación');return}
    if(r.rej){E.flag(u,'guardado rechazado: '+r.rej);err(r.rej);return}
    const sts=Date.now();try{fs.writeFileSync(savePath(u),JSON.stringify({d:r.out,ts:sts}))}catch(e){err('no se pudo guardar');return}

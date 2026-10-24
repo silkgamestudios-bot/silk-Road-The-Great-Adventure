@@ -3851,7 +3851,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v234';let UPD=null,RSN=0;
+const SR_V='sr-v235';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}const go=()=>location.reload();try{if(window.caches)caches.keys().then(k=>Promise.all(k.map(x=>caches.delete(x)))).then(go,go);else go()}catch(e){go()}setTimeout(go,2500)}
 function updBar(){let b=$('updb');if(!UPD){if(b)b.remove();return}if(!b){b=document.createElement('div');b.id='updb';b.style.cssText='position:fixed;left:50%;top:8px;transform:translateX(-50%);z-index:9999;background:#1d2b4a;color:#f5e6c4;border:2px solid #d9a441;border-radius:12px;padding:8px 12px;font:13px Georgia,serif;display:flex;gap:8px;align-items:center;max-width:94vw;box-shadow:0 4px 16px #000a';b.addEventListener('click',e=>{if(e.target.closest('button'))updGo()});document.body.appendChild(b)}
  const mn=Math.max(0,Math.ceil((UPD.at-Date.now())/6e4));b.innerHTML='<span>🔄 Hay una versión nueva del juego'+(UPD.at<1e15?' · se actualiza sola en '+mn+' min':'')+'</span><button style="background:#d9a441;color:#1b1206;border:0;border-radius:8px;padding:6px 10px;font-weight:bold">Actualizar ahora</button>'}

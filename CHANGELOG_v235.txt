@@ -1,0 +1,7 @@
+v235 - Guardado: el servidor ya no acepta guardados viejos
+- Cada guardado del cliente lleva la fecha (bts) del ultimo guardado del servidor con el que se sincronizo.
+- Si otro dispositivo guardo despues, el servidor NO escribe el guardado viejo: devuelve el suyo y el cliente lo carga (recarga sola).
+- La copia local descartada queda en localStorage 'sr_bak' por si hay que recuperarla.
+- Un solo guardado en vuelo a la vez (evita falsos "viejo").
+- Clientes antiguos (sin bts) siguen funcionando como antes.
+- reload.json -> v235 (esta subida saca a todos una vez, 5 min).

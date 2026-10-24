@@ -95,8 +95,10 @@ function accOpen(){if(!me||!me.uid)return;const d=document.createElement('div');
 const SKEY='silkroad_v1';let lastUp=0,pend=null,syncing=0;
 const _si=Storage.prototype.setItem;
 Storage.prototype.setItem=function(k,v){_si.call(this,k,v);if(k===SKEY&&ok){pend=v;if(!lastUp||Date.now()-lastUp>(window.SR_GAME&&SR_GAME.ack().length?2500:20000))flushSave()}};
-function flushSave(){if(!pend||!ok)return;const d=pend;pend=null;lastUp=Date.now();let ack=[];G(g=>ack=g.ack());rpc({t:'sv',d,ack}).then(r=>{if(r.ts)LS.set('sr_bts',String(r.ts));G(g=>{if(r.acked&&r.acked.length)g.acked(r.acked);if(r.fix)g.fix(r.fix);if(r.ent)g.ent(r.ent)})}).catch(()=>{pend=pend||d})}
-setInterval(()=>{if(pend)flushSave()},8000);addEventListener('pagehide',()=>{try{if(pend&&ok)ws.send(JSON.stringify({t:'sv',d:pend}))}catch(e){}});
+let inflight=0,stl=0;
+function staleFix(r){if(stl)return;stl=1;pend=null;try{const cur=LS.get(SKEY);if(cur&&cur!==r.d)_si.call(localStorage,'sr_bak',cur)}catch(e){}if(r.d){_si.call(localStorage,SKEY,r.d);LS.set('sr_bts',String(r.ts));sessionStorage.setItem('sr_rl','1');location.reload()}else stl=0}
+function flushSave(){if(!pend||!ok||inflight||stl)return;const d=pend;pend=null;lastUp=Date.now();inflight=1;let ack=[];G(g=>ack=g.ack());rpc({t:'sv',d,ack,bts:+LS.get('sr_bts')||0}).then(r=>{inflight=0;if(r.stale){staleFix(r);return}if(r.ts)LS.set('sr_bts',String(r.ts));G(g=>{if(r.acked&&r.acked.length)g.acked(r.acked);if(r.fix)g.fix(r.fix);if(r.ent)g.ent(r.ent)})}).catch(()=>{inflight=0;pend=pend||d})}
+setInterval(()=>{if(pend)flushSave()},8000);addEventListener('pagehide',()=>{try{if(pend&&ok)if(!stl)ws.send(JSON.stringify({t:'sv',d:pend,bts:+LS.get('sr_bts')||0}))}catch(e){}});
 async function cloudSync(){if(syncing)return;syncing=1;try{
  const prev=LS.get('sr_acc');if(prev&&prev!==uid){LS.del(SKEY);LS.del('sr_bts')}LS.set('sr_acc',uid);
  const r=await rpc({t:'ld'}),loc=LS.get(SKEY),sts=+r.ts||0,bts=+LS.get('sr_bts')||0;

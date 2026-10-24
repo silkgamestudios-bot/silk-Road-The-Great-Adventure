@@ -1,0 +1,4 @@
+v220
+* server.js: ahora por defecto SOLO se entra con cuenta (REQUIRE_ACCOUNTS!=0). Sin cuenta cada dispositivo era un jugador distinto (por eso PC y celular no coincidian).
+* Atuendos de Halloween (Esqueleto, Pantano, Fantasma lunar): el servidor ahora los guarda (store.js hal.find S, economy.js ent.tks / audit). Antes el servidor los borraba y no se podian activar. Los ya abiertos se reclaman solos al entrar (tope 3).
+* Minerales, gemas y madera: boton "Pasar a uso" en la mochila de loot y "Devolver a loot" en la de uso.

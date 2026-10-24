@@ -1,0 +1,1 @@
+v221 - Gremio de Cazadores: pestaña Tienda con lazos (3.000 oro c/u +3%, 1/5/10/20, tope 40 por dia); online lo cobra y entrega el servidor (hunt.buy)

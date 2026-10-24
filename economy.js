@@ -26,7 +26,7 @@ const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13
 function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev:[],px:{au:0,ap:0,lt:0,bl:0,es:0,pv:0,bh:0},vip:0,lic:0,
   res:{gold:0,g:[0,0,0,0,0],fd:Object.assign({carne:0,cocida:0,pasto:0,hierba:0,lazo:0},Object.fromEntries(MNK.map(k=>[k,0]))),ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0},
   ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}for(const k of MNK)if(a.res&&a.res.fd&&a.res.fd[k]==null)a.res.fd[k]=0;if(!a.bxl)a.bxl={t:[0,0,0,0],a:[0,0,0,0],x:[0,0,0,0],m:0};if(!Array.isArray(a.gl))a.gl=[];if(!a.hl)a.hl={f:{},n:{},ts:0};return a}
-const ent=u=>{const a=acct(u),L=a.bxl;return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,px:a.px,vip:a.vip,lic:a.lic,tk:a.tk||{},nm:a.nm,gld:a.gld,nch:a.nch|0,bx:L.x.map((x,i)=>x+Math.max(0,L.t[i]-L.a[i])),bxt:L.t.slice()}};
+const ent=u=>{const a=acct(u),L=a.bxl;return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,px:a.px,vip:a.vip,lic:a.lic,tk:a.tk||{},tks:Array.isArray(a.tks)?a.tks:[],nm:a.nm,gld:a.gld,nch:a.nch|0,bx:L.x.map((x,i)=>x+Math.max(0,L.t[i]-L.a[i])),bxt:L.t.slice()}};
 const pushEnt=u=>S.push(u,{t:'ent',ent:ent(u)});
 function flag(u,why,w){const a=acct(u);{const nk=x=>String(x).replace(/[0-9+]/g,'').slice(0,60),k=nk(why),t=Date.now();if((a.flags||[]).some(f=>f&&t-f[0]<6e5&&nk(f[1])===k))return}a.strikes+=w==null?1:w;a.flags.push([Date.now(),String(why).slice(0,120)]);if(a.flags.length>30)a.flags.shift();S.dirty();
  log('[antitrampas] '+u+' ('+(a.nm||'?')+'): '+why+' · strikes '+a.strikes);
@@ -157,7 +157,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   for(let i=0;i<4;i++){const rb=int(rp[i],0,BX.max,0),cl=Math.min(int(ck[i],0,1e13,0),L.t[i]);let ok=rb;
    if(!master){const cap=L.x[i]+Math.max(0,cl-L.a[i]);if(rb>cap+2000){if(!first)flag(u,'bonus '+i+' imposible: '+Math.round(L.x[i]/6e4)+'→'+Math.round(rb/6e4)+' min',2);ok=cap;fix.bx=1}}
    o4[i]=ok;L.x[i]=ok;L.a[i]=Math.max(L.a[i],cl)}
-  L.m=1;v.bx=o4;v.bxt=L.t.slice()}}v.vp=a.vip;v.pr=Object.assign({},v.pr&&typeof v.pr==='object'?v.pr:{},a.px);v.lic=a.lic;v.bo=a.sk.slice();v.sk=a.ev.slice();
+  L.m=1;v.bx=o4;v.bxt=L.t.slice()}}v.vp=a.vip;v.pr=Object.assign({},v.pr&&typeof v.pr==='object'?v.pr:{},a.px);v.lic=a.lic;v.bo=a.sk.slice();v.sk=a.ev.concat(Array.isArray(a.tks)?a.tks:[]);
  if(v.bsk&&!a.sk.includes(v.bsk))v.bsk='';
  v.ml=0;/* el master lo decide el servidor */
  /* ---- aceptar ---- */

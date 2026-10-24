@@ -12,7 +12,7 @@ const TOKINFO=process.env.GOOGLE_TOKENINFO_URL||'https://oauth2.googleapis.com/t
 const PAY_ID=process.env.BINANCE_PAY_ID||'748095851',WA_NUMBER=(process.env.MASTER_WHATSAPP||'18093965707').replace(/\D/g,'');
 const NTFY=(process.env.NTFY_TOPIC||'').replace(/[^\w-]/g,'');const CALLMEBOT_KEY=process.env.CALLMEBOT_KEY||'',CALLMEBOT_URL=process.env.CALLMEBOT_URL||'https://api.callmebot.com/whatsapp.php',WA_TOKEN=process.env.WA_TOKEN||'',WA_PHONE_ID=process.env.WA_PHONE_ID||'';
 const SAVEDIR=(process.env.DATA_DIR||'.')+'/saves';try{fs.mkdirSync(SAVEDIR,{recursive:true})}catch(e){}
-let DB={},TOK={},SES={},ACC={},ECO={},USR={},AC=null,dirty=0;const REQ=process.env.REQUIRE_ACCOUNTS==='1';
+let DB={},TOK={},SES={},ACC={},ECO={},USR={},AC=null,dirty=0;const REQ=process.env.REQUIRE_ACCOUNTS!=='0';   /* v220: por defecto SOLO con cuenta (un usuario = una partida en PC y celular). Pon REQUIRE_ACCOUNTS=0 solo para pruebas con invitados */
 try{const j=JSON.parse(fs.readFileSync(FILE,'utf8'));DB=j.db||{};TOK=j.tok||{};SES=j.ses||{};ACC=j.acc||{};ECO=j.eco||{};USR=j.usr||{}}catch(e){}
 for(const k in SES)if(SES[k].x<Date.now())delete SES[k];
 DB.cfg=DB.cfg||{};if(PAY_ID&&!(DB.cfg.pay&&DB.cfg.pay.id===PAY_ID))DB.cfg.pay={id:PAY_ID,ts:Date.now()};

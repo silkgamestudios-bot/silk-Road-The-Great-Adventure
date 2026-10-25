@@ -1,0 +1,7 @@
+v255 - Colisiones en los pueblos, parque tematico y comercio visible
+- COLISIONES: ya no se puede cruzar por encima de los puestos del mercado, la fuente, los NPC fijos ni los cofres. Los jugadores tampoco se atraviesan entre si en los pueblos (ni a los comerciantes que caminan). Se puede llegar a todas las puertas de todas las ciudades.
+- PARQUE en cada pueblo (al sur de la fuente), con la tematica de la ciudad: Jardin del Loto (China: estanque con peces, puente rojo, cerezos), Oasis de la Ruta (palmeras y pozo), Jardin Persa (estanque con surtidor y cipreses), Agora (estatua de marmol y olivos) y Jardin del Chorten (stupa y banderas de oracion). Con senderos, bancas, flores y setos; los arboles y bancas bloquean el paso.
+- COMERCIO VISIBLE: cada puesto tiene su vendedor detras del mostrador; los comerciantes que pasean ahora van a los puestos, se paran frente al vendedor y se ve el trueque (la mercancia va al cliente, la moneda vuelve al vendedor y se dan la mano).
+- Los comerciantes ya no pasan por encima de las carpas ni de las bancas, y se esquivan entre ellos y al jugador.
+- El Portal de los Magos se movio unas casillas al oeste (para dejar sitio al parque).
+- Solo cliente (el mundo y los enemigos no cambian): sube play.html y sw.js, sin Manual Deploy.

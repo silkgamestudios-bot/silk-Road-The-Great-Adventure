@@ -1,0 +1,5 @@
+v256 - Arreglos (solo cliente: play.html + sw.js, SIN Manual Deploy)
+- Cuevas (Arañas y demás): el suelo/paredes se cachean, mucho más fluido.
+- Mochila llena: aviso claro con los ítems que no se pudieron recoger.
+- Menú > Mochila/Botín: Cancelar y ✕ de la ficha del ítem ya cierran.
+- Posada: explica cómo funciona (cura, descanso 20 min, precio) y botón Cancelar.

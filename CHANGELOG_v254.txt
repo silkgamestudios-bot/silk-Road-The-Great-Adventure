@@ -1,0 +1,8 @@
+v254 - Pueblos con arquitectura propia (fase 1 de "pueblos grandes y distintos")
+- Cada ciudad tiene ahora su estilo de edificios (mismo tamaño y misma posicion, solo cambia la vista):
+  · China (Chang'an, Lanzhou): pagoda de dos niveles, columnas rojas y rejas.
+  · Adobe de la Ruta (Dunhuang, Turfan, Kashgar): azotea con almenas y vigas, ventanas de arco y toldo.
+  · Cupulas (Bukhara, Samarkand, Bagdad): iwan azul, gran cupula con nervaduras y minarete.
+  · Greco-romana (Constantinopla, Persepolis, Antioquia): fronton, columnas de marmol y escalinata.
+  · Tibetana (Lhasa): muros blancos inclinados, franja roja con adornos dorados y banderas de oracion.
+- Solo cliente: sube play.html y sw.js (no hace falta Manual Deploy).

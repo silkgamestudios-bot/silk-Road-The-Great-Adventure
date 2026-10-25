@@ -1,0 +1,3 @@
+v257 - Templo (solo cliente: play.html + sw.js, SIN Manual Deploy)
+- Templo de las Ocho Sendas: estatuas propias para la Elfa Druida y la Enana Guerrera (antes compartían con Sanador y Caballero).
+- Cada clase tiene su estatua y su ofrenda/senda para entrenar habilidades.

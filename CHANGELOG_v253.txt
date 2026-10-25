@@ -1,0 +1,3 @@
+v253 - Carpa del Cocinero con el nuevo diseño de tiendas
+- La Carpa del Cocinero ahora usa casillas como Armería/Herrería/Botica: lista lateral (🥩 Carne / 🐟 Pescado), casillas con la cantidad cruda, y al tocar una sale el detalle (qué se obtiene, costo) con Cocinar 1 / 10 / Todas. Sigue el botón "Cocinar TODO".
+- Solo cliente: sube play.html y sw.js.

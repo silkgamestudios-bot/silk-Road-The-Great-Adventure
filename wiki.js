@@ -21,9 +21,9 @@ const head=(t,s)=>'<h1>'+t+'</h1>'+(s?'<p class="sub">'+s+'</p>':'');
 const NAV=[
  ['Empezar',[['inicio','🏠','Inicio'],['lore','📜','La Gran Ruta (lore)'],['guia','🧭','Guía del recién llegado']]],
  ['Personajes',[['clases','⚔️','Las 8 clases'],['skills','✨','Habilidades'],['equipo','🛡️','Equipo y rarezas'],['entrenamiento','🕯️','Entrenamiento']]],
- ['El mundo',[['mundo','🗺️','Tierras y ciudades'],['cuevas','🕳️','Cuevas y la Torre'],['monstruos','👹','Monstruos y jefes'],['clima','🌦️','Clima y estaciones'],['celestiales','🌠','Celestiales y dragones'],['mascotas','🐎','Mascotas y monturas']]],
+ ['El mundo',[['mundo','🗺️','Tierras y ciudades'],['cuevas','🕳️','Cuevas y la Torre'],['submundo','🔥','El Submundo'],['monstruos','👹','Monstruos y jefes'],['clima','🌦️','Clima y estaciones'],['celestiales','🌠','Celestiales y dragones'],['mascotas','🐎','Mascotas y monturas']]],
  ['Progreso y oro',[['farmeo','💰','Farmeo, oro y botín'],['misiones','📋','Misiones diarias'],['carpas','🏕️','Carpas y edificios'],['premium','💎','Servicios premium'],['gremios','🏰','Gremios y territorios']]],
- ['Más',[['eventos','🎃','Eventos y estaciones'],['arte','🎨','Arte conceptual'],['creditos','ℹ️','Créditos']]]
+ ['Más',[['eventos','🎃','Eventos y estaciones'],['novedades','🆕','Novedades'],['arte','🎨','Arte conceptual'],['creditos','ℹ️','Créditos']]]
 ];
 function side(cur){
   return '<input id="q" type="search" placeholder="Buscar en la wiki…" autocomplete="off" aria-label="Buscar">'+NAV.map(g=>'<h4>'+g[0]+'</h4>'+g[1].map(x=>'<a href="#/'+x[0]+'" class="'+(cur==x[0]||(cur=='clase'&&x[0]=='clases')?'on':'')+'"><span class="n">'+x[1]+'</span>'+x[2]+'</a>').join('')).join('');
@@ -258,13 +258,46 @@ function buildIdx(){
   W.classes.forEach(c=>{add(c.n,'Clase · '+L.classes[c.id].titulo,'#/clase/'+c.id);c.skills.forEach(s=>add(s.n,c.n+' · habilidad nv '+s.lv,'#/skills/'+c.id));c.skins.forEach(s=>add(s.n,c.n+' · apariencia','#/clase/'+c.id));c.sets.forEach(s=>s.p.forEach(p=>add(p,c.n+' · set nv '+s.lv,'#/equipo/'+c.id)))});
   W.farm.forEach(f=>add(f.n,'Enemigo · farmeo','#/farmeo'));W.bosses.forEach(b=>add(b.n,'Jefe nv '+b.lv,'#/monstruos'));W.hordes.forEach(b=>add(b.n,'Jefe de horda','#/monstruos'));W.lairs.forEach(b=>add(b.n,'Guarida','#/monstruos'));
   W.caves.forEach(c=>{add(c.n,'Cueva','#/cuevas');add(c.guard,'Guardián de '+c.n,'#/cuevas')});W.regions.forEach(r=>add(r.n,'Tierra','#/mundo'));W.cities.forEach(c=>add(c.n,'Ciudad','#/mundo'));W.landmarks.forEach(l=>add(l,'Punto de interés','#/mundo'));W.zones_cursed.forEach(z=>add(z,'Zona maldita','#/mundo'));
-  W.celest.forEach(z=>add(z.n,'Bestia celestial','#/celestiales'));W.dragons.forEach(d=>add(d.n,'Dragón','#/celestiales'));W.pets.forEach(p=>add(p.n,'Mascota o montura','#/mascotas'));W.bld.forEach(b=>add(b.n,'Edificio','#/carpas'));W.prem.forEach(p=>add(p.n,'Servicio premium','#/premium'));W.events.forEach(e=>add(e.n,'Evento','#/eventos'));W.dq.forEach(q=>add(q.n,'Misión diaria','#/misiones'));W.train.forEach(t=>add(t.n,'Rito de entrenamiento','#/entrenamiento'));
+  W.celest.forEach(z=>add(z.n,'Bestia celestial','#/celestiales'));['Balor|Jefe del Portón de Fuego (nv 400)','Minotauro|Submundo','Portón de Fuego|Submundo (8 placas)','Bolso de Fuego|Bolso de 65 espacios','Ágora Caída|Entrada al Submundo','Refugio|Pueblo seguro del Submundo','Infierno|Temporada 2'].forEach(z=>{const q=z.split('|');add(q[0],q[1],'#/submundo')});W.dragons.forEach(d=>add(d.n,'Dragón','#/celestiales'));W.pets.forEach(p=>add(p.n,'Mascota o montura','#/mascotas'));W.bld.forEach(b=>add(b.n,'Edificio','#/carpas'));W.prem.forEach(p=>add(p.n,'Servicio premium','#/premium'));W.events.forEach(e=>add(e.n,'Evento','#/eventos'));W.dq.forEach(q=>add(q.n,'Misión diaria','#/misiones'));W.train.forEach(t=>add(t.n,'Rito de entrenamiento','#/entrenamiento'));
 }
 function search(q){
   if(!IDX)buildIdx();const k=norm(q.trim());if(!k)return null;
   const r=IDX.filter(x=>x.n.includes(k)).slice(0,40);
   return '<h1>Resultados</h1><p class="sub">'+r.length+' coincidencias para «'+esc(q)+'»</p><div class="hits">'+(r.map(x=>'<a class="hit" href="'+x.r+'"><b>'+esc(x.t)+'</b><small>'+esc(x.s)+'</small></a>').join('')||'<p>No encontré nada. Prueba con otra palabra.</p>')+'</div>';
 }
+
+
+/* ---------- v268: Submundo y Novedades ---------- */
+P.submundo=()=>head('El Submundo del Ágora Caída','Un mundo entero bajo las ruinas griegas · mobs míticos nv 40–350 · Portón de Fuego y Balor')
+ +note('<b>Cómo se entra:</b> bajo las ruinas del <b>Ágora Caída</b> hay una puerta al Submundo. Hace falta el servicio <b>VIP de 7 '+'💎</b> o el <b>Combo Cazador de 3 '+'💎</b> activo. Si el servicio se acaba mientras estás abajo, te devuelve a las ruinas.')
+ +'<p>El Submundo tiene el mismo tamaño que el mapa de arriba, pero está hecho de cuevas y galerías: caminos que se abren, se cruzan y se pierden. Todo lo que ves son ruinas, ríos de lava y criaturas de la mitología.</p>'
+ +'<h2>Zonas y monstruos</h2><p>Cuanto más lejos del inicio, más fuertes son los monstruos: <b>nivel 40 al empezar y hasta 350</b> cerca del final. Su vida, su daño y lo que dan al morir suben con su nivel.</p>'
+ +tbl(['Zona','Qué te encuentras'],[
+  ['Galerías de Hades','Trasgos, orcos del Tártaro, arácnidos de Aracne, escorpiones, hoplitas esqueleto'],
+  ['Laberinto del Minotauro','Minotauros, cíclopes, sátiros abisales, autómatas de Hefesto, carneros dorados'],
+  ['Nido de las Lamias','Lamias, medusas, cocodrilos del Estigia, náyades corruptas'],
+  ['Campos de Asfódelos','Centauros caídos, nigromantes de Hécate, psicopompos, sombras de Caronte'],
+  ['Ríos de Fuego','Diablos del Flegetonte, demonios de brasas, súcubos, titanes sangrientos, Cerbero'],
+  ['Puertas del Tártaro','Demonios ardientes, arcángeles caídos, archidemonios, grandes demonios, titanes de piedra']])
+ +'<h2>El Refugio</h2><p>En el camino, antes del final, queda un <b>pequeño pueblo destruido y disperso</b>. No hay gente por las calles: los vendedores están escondidos y no salen, pero atienden en sus puertas.</p>'
+ +'<ul><li><b>Zona segura:</b> nadie te puede atacar dentro del Refugio.</li><li><b>Punto de reaparición:</b> si mueres en el Submundo, vuelves al Refugio.</li><li><b>Servicios:</b> Posada, Iglesia, Herrería, Armería, Botica, Materiales, Carpa del Almacén y Carpa del Cocinero. Todo en pequeño.</li></ul>'
+ +'<h2>La cueva del Portón de Fuego</h2><p>Al fondo del Submundo hay una cueva con un <b>portón enorme, rodeado de fuego</b>, cerrado a cal y canto. Delante del portón hay <b>8 placas</b> en el suelo.</p>'
+ +'<ul><li>El portón solo se abre cuando <b>8 héroes están a la vez sobre las 8 placas</b>. Da igual si van en party o no.</li><li>Si alguien se baja, el portón se vuelve a cerrar.</li></ul>'
+ +'<h2>Balor, Señor del Portón</h2><div class="stats"><div class="stat"><label>Nivel<b>400</b></label></div><div class="stat"><label>Vida<b>20.000.000</b></label></div><div class="stat"><label>Elemento<b>🔥 Fuego</b></label></div></div>'
+ +'<p>Al abrirse el portón sale <b>Balor</b>, un demonio enorme. Su vida es <b>compartida</b> entre todos los que lo pelean, y es un jefe de paso: <b>solo da experiencia y oro</b>, con mucha más experiencia que oro. Al derrotarlo queda abierto el camino al <b>Infierno</b>.</p>'
+ +note('El Infierno (lava, ríos de fuego, demonios y goblins más fuertes) es el mapa de la <b>temporada 2</b>. Por ahora el portal al final de la cueva todavía no lleva a ningún sitio.')
+ +'<h2>Botín del Submundo</h2>'+tbl(['Qué','Probabilidad','Detalle'],[
+  ['Equipo común','12%','Nivel 30, 50 o 60 al azar; sus estadísticas suben con el nivel'],
+  ['🔥 Bolso de Fuego','5%','Mochila o bolsa de loot de <b>65 espacios</b>. Máximo 2 en tu poder'],
+  ['Oro','45%','Un 12% de la experiencia que daría el monstruo'],
+  ['Experiencia','siempre','Nivel del monstruo → 1/700 de lo que cuesta subir ese nivel']],[1])
+ +'<p>Ejemplos de experiencia por monstruo: nivel 40 → 64 · nivel 100 → 562 · nivel 200 → 3.565 · nivel 300 → 11.066 · nivel 350 → 17.147.</p>';
+P.novedades=()=>head('Novedades','Lo último que se añadió al juego')
+ +'<h2>🔥 El Submundo (v263–v268)</h2><ul><li>Nuevo mundo bajo las ruinas del Ágora Caída, <a href="#/submundo">con mobs míticos nv 40–350</a>.</li><li>Portón de Fuego (8 placas) y el jefe Balor, nivel 400, 20 M de vida.</li><li>Pueblo-refugio: zona segura, reaparición y tiendas escondidas.</li><li>Botín propio: equipo común nv 30/50/60 y el Bolso de Fuego de 65 espacios.</li><li>Experiencia y oro por monstruo según su nivel.</li></ul>'
+ +'<h2>🏙️ Pueblos más grandes (v262)</h2><p>Cada ciudad creció con un anillo exterior: calles empedradas, arcos de entrada con el nombre de la ciudad y casas con el estilo de cada cultura. Las ciudades son zona segura.</p>'
+ +'<h2>⚡ Cuevas más fluidas (v258–v267)</h2><p>Las cuevas se dibujan desde caché y solo procesan los monstruos cercanos: mucho más FPS, sobre todo en celulares.</p>'
+ +'<h2>🎒 Mochilas</h2><p>Mochila y bolsa de loot pueden ser de 25, 40 o 65 espacios. Los bolsos se usan desde 🎒 Objetos.</p>'
+ +'<h2>🖥️ Pantalla completa y música</h2><p>El juego entra en pantalla completa al tocar, el título tiene brasas animadas y esta web ya tiene música ambiente (botón 🔊 abajo a la derecha).</p>';
 
 /* ---------- router ---------- */
 function route(){

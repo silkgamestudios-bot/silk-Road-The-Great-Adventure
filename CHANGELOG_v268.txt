@@ -1,0 +1,6 @@
+v268 - Pulido: sin aviso, pantalla completa, musica web, wiki (solo cliente: SIN Manual Deploy)
+- Quitado el aviso "El servidor tiene una version vieja del mundo" (world-client.js).
+- Pantalla completa: se pide en cada toque hasta lograrla (y no vuelve a forzarla si la sales con el boton).
+- Titulo: brasas doradas flotando, vineta y brillo en el logo.
+- Musica ambiente en la portada y la wiki (boton 🔊 abajo a la derecha, recuerda si la apagas). Va dentro de site.js.
+- Wiki: nueva pagina El Submundo y pagina Novedades (v256-v268), busqueda actualizada.

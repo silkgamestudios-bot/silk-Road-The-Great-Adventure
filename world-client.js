@@ -2,7 +2,7 @@
    Si el servidor no tiene mundo (falta world.json), el juego sigue en modo local sin cambios. */
 (function(){
 const N=window.SRNET;if(!N)return;
-let WBAD=0,on=0,OT={},WQ=[],lx=0,ly=0,ft=0,OFX=[],SM=[],LS=0;   // SM: id del servidor → enemigo (solo los 'base'); LS: último snapshot
+let uwJ=0,WBAD=0,on=0,OT={},WQ=[],lx=0,ly=0,ft=0,OFX=[],SM=[],LS=0;   // SM: id del servidor → enemigo (solo los 'base'); LS: último snapshot
 const ready=()=>P&&P.chosen&&P.name;
 const SKIP=e=>e.boss||e.guard||e.wild||e.tmp||e.alpha||e.vec;
 /* Solo se congelan los enemigos BASE (índice < n, los que el servidor conoce). Los creados durante la partida
@@ -14,10 +14,10 @@ function dynMk(d){if(SM[d[0]])return;const ty=d[3]|0,e={dyn:1,sync:1,sid:d[0],st
 function dynRm(id){const e=SM[id];if(!e)return;const i=E.indexOf(e);if(i>=0)E.splice(i,1);NR=NR.filter(q=>q!==e);SM[id]=null}
 window.SRWON=()=>on;
 function freeze(n){const t=Date.now();dynClr();SM=[];E.forEach((e,i)=>{if(i>=n||SKIP(e))return;e.sid=i;e.sync=1;e.stun=1e9;e.lt=t;SM[i]=e})}   // la IA local se apaga: manda el servidor
-N.onopen=()=>{on=0;WBAD=0;PV.on=0;PV.t=null};
+N.onopen=()=>{uwJ=0;on=0;WBAD=0;PV.on=0;PV.t=null};
 N.onmsg=m=>{
  if(m.t=='wi'){let sg=0,n=m.n|0;if(m.sg!=null&&n>0&&E.length>=n){for(let i=0;i<n;i++){const e=E[i];sg=(!e||SKIP(e)||e.dg)?(Math.imul(sg,31)+3)|0:(Math.imul(sg,31)+Math.round(e.hx)*7+Math.round(e.hy)*13+(e.ty|0)*17+1)|0}}
-  if(m.sg!=null&&(E.length<n||sg!==(m.sg|0))){on=0;WBAD=1;console.log('mundo: versión distinta',n,E.length,sg,m.sg);toast('⚠️ El servidor tiene una versión vieja del mundo. Sube TODOS los archivos a GitHub y haz Manual Deploy; mientras tanto juegas en modo local.',9000)}
+  if(m.sg!=null&&(E.length<n||sg!==(m.sg|0))){on=0;WBAD=1;console.log('mundo: versión distinta',n,E.length,sg,m.sg);/* v268: aviso quitado (se juega en modo local sin molestar) */}
   else{on=1;WBAD=0;freeze(n);toast('🌐 Mundo online conectado',2200)}}
  else if(m.t=='wx'){on=0;dynClr()}
  else if(m.t=='wp'){P.x=m.x;P.y=m.y}
@@ -30,6 +30,7 @@ N.onmsg=m=>{
  else if(m.t=='wbt'){try{btyNotify(m.b)}catch(e){}}
  else if(m.t=='wsv'){try{window.SRSV&&SRSV(m)}catch(e){}}
  else if(m.t=='wtp'||m.t=='wts'||m.t=='wtd'){try{window.SRTZ&&SRTZ.msg(m)}catch(e){}}
+ else if(m.t=='wubd'){try{window.SRUBD&&SRUBD(m)}catch(e){}}
  else if(m.t=='wk')reward(m)};
 /* ===== PvP abierto (v148) ===== */
 const PV={on:0,t:null,sent:0},G0={pvg:1,u:'',nm:'',x:0,y:0,hp:1,mx:1,dead:1e9,ty:0,stun:0,rw:0,nv:1,sp:0,mov:0,hx:0,hy:0};PVG.push(G0);
@@ -43,7 +44,7 @@ function pvBar(){let el=document.getElementById('pvt');if(!el){el=document.creat
  if(PV.on&&PV.t&&G0.dead<=0){el.style.display='block';const p=Math.max(0,Math.min(1,G0.hp/G0.mx));el.innerHTML='🎯 '+(String(G0.nm).replace(/[<>&]/g,''))+' <small>(toca para soltar)</small><div style="height:6px;background:#0008;border-radius:3px;margin-top:3px"><i style="display:block;height:6px;width:'+Math.round(p*100)+'%;background:#ff5a4a;border-radius:3px"></i></div>'}else el.style.display='none'}
 setInterval(()=>{if(PV.t&&G0.dead<=0){const o=OT[PV.t];if(o){G0.x=o.rx;G0.y=o.ry}}pvBtn()},120);
 window.SRPVP={click:(u,o)=>{if(!PV.on||!o.pvp)return 0;if(PV.t===u){PV.t=null;pvSync();toast('🎯 Objetivo liberado',1500);return 1}PV.t=u;pvSync();toast('🎯 Objetivo fijado: '+o.nm+' · ataca y tus golpes y hechizos van hacia él',3000);return 1},on:()=>PV.on};
-function snap(m){const seen={};
+function snap(m){const seen={};if(m.ud){try{window.SRUD&&SRUD(m.ud)}catch(e){}}
  for(const a of m.pl){const o=OT[a[0]]||(OT[a[0]]={rx:a[4],ry:a[5]});Object.assign(o,{nm:a[1],c:a[2],lv:a[3],x:a[4],y:a[5],hp:a[6],mhp:a[7],pt:a[8],gt:a[9]||'',bs:a[10]||'',pvp:a[11]|0,wn:a[12]|0});seen[a[0]]=1}
  for(const u in OT)if(!seen[u])delete OT[u];
  if(m.dx)for(const id of m.dx)dynRm(id);if(m.dd&&!(typeof DG!=='undefined'&&DG.f))for(const d of m.dd)dynMk(d);
@@ -59,7 +60,7 @@ function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100));
  if(m.it){const it=cleanIt(m.it);if(P.bag.length<24)P.bag.push(it);else LT.push({x:P.x,y:P.y,gd:0,it,l:300});t.push('🎁 '+it.n)}
  if(t.length&&FT.length<60)FT.push({x:P.x,y:P.y-30,t:1.6,d:0,o:0,k:'dm',s:t.join(' '),c:'#ffd666'});
  try{chk();save()}catch(e){}}
-const _h=hitE;hitE=function(e,dm){if(e.pvg){pvStrike(e,dm);return}if(!on||!e.sync||SM[e.sid]!==e)return _h(e,dm);if(e.dead>0)return;dm=Math.max(1,Math.round(dm));WQ.push([e.sid,dm]);e.hp=Math.max(1,e.hp-dm);
+const _h=hitE;hitE=function(e,dm){if(!e.pvg&&(cityAt(P)||cityAt(e)||(typeof uwSafe=='function'&&(uwSafe(P)||uwSafe(e))))){if(!window.__szT||Date.now()-window.__szT>2500){window.__szT=Date.now();toast('🛡️ Zona segura: no se puede atacar dentro del pueblo',2200)}return}if(e.pvg){pvStrike(e,dm);return}if(!on||!e.sync||SM[e.sid]!==e)return _h(e,dm);if(e.dead>0)return;dm=Math.max(1,Math.round(dm));WQ.push([e.sid,dm]);e.hp=Math.max(1,e.hp-dm);
  if(FT.length<60)FT.push({x:e.x+Math.random()*14-7,y:e.y-14,t:.9,d:0,o:0,k:'dm',s:String(dm),c:'#ffe9a8'})};
 if(typeof drawTemple=='function'){const _t=drawTemple;drawTemple=function(cx,cy,now){_t(cx,cy,now);others(cx,cy,now)}}
 const OCOL=['#ffd24a','#9ad0ff','#b07dff','#e8d9a8','#7fffb0','#ffb070','#7fe06a','#ff8a8a'];
@@ -82,9 +83,13 @@ if(x<-40||x>VW+40||y<-60||y>VHn+40)continue;
   if(o.pvp){g.font='11px serif';g.fillText('⚔️',x+22,y-24)}if(o.wn){g.font='bold 11px Georgia,serif';g.fillStyle='#000';g.fillText('🎯 SE BUSCA',x+1,y-37);g.fillStyle='#ff6a4a';g.fillText('🎯 SE BUSCA',x,y-38)}
   if(PV.t===u&&PV.on){g.strokeStyle='#ff4a3a';g.lineWidth=2;g.beginPath();g.ellipse(x,y+10,18+2*Math.sin(now/120),7,0,0,7);g.stroke()}}}
 setInterval(()=>{if(!ready()||!N.up())return;
+ const inUW=typeof UW!=='undefined'&&UW.on;   /* v264: el Submundo (portón de 8 placas y Balor) funciona aunque el mundo compartido esté en modo local */
+ if(!on&&(inUW||uwJ)){if(inUW){if(!uwJ){uwJ=1;N.send({t:'wj',nm:P.name,c:P.cls|0,lv:P.lv,x:Math.round(P.x),y:Math.round(P.y)})}
+   N.send({t:'wm',x:Math.round(P.x),y:Math.round(P.y),hp:Math.round(P.hp),mhp:Math.round(P.mhp),lv:P.lv,tp:0,dg:1,uw:1,pw:0,fl:0})}
+  else{uwJ=0;N.send({t:'wm',x:Math.round(P.x),y:Math.round(P.y),hp:Math.round(P.hp),mhp:Math.round(P.mhp),lv:P.lv,tp:1,dg:0,uw:0,pw:0,fl:0})}return}
  if(!on){if(WBAD)return;if(Date.now()-ft>2000){ft=Date.now();N.send({t:'wj',nm:P.name,c:P.cls|0,lv:P.lv,x:Math.round(P.x),y:Math.round(P.y)})}return}
  const tp=Math.hypot(P.x-lx,P.y-ly)>300;lx=P.x;ly=P.y;
- N.send({t:'wm',x:Math.round(P.x),y:Math.round(P.y),hp:Math.round(P.hp),mhp:Math.round(P.mhp),lv:P.lv,tp:tp?1:0,dg:(typeof DG!=='undefined'&&DG.f)?1:0,pw:PV.on?Math.round(dmg()):0,fl:(typeof FLY!=='undefined'&&FLY.on&&gmIsM())?1:0});
+ N.send({t:'wm',x:Math.round(P.x),y:Math.round(P.y),hp:Math.round(P.hp),mhp:Math.round(P.mhp),lv:P.lv,tp:tp?1:0,dg:(typeof DG!=='undefined'&&DG.f)?1:0,uw:(typeof UW!=='undefined'&&UW.on)?1:0,pw:PV.on?Math.round(dmg()):0,fl:(typeof FLY!=='undefined'&&FLY.on&&gmIsM())?1:0});
  if(typeof DG!=='undefined'&&DG.f)WQ.length=0;
  if(WQ.length)N.send({t:'wh',h:WQ.splice(0,12)})},100);
 setInterval(()=>{if(!on||!LS)return;const n=Date.now();if(n-LS>1500)return;   // vigilante: si el servidor no reporta un enemigo cercano en 4 s, vuelve a modo local (nunca queda inmortal)

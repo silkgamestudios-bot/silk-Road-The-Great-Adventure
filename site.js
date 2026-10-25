@@ -85,3 +85,19 @@ window.__t0=launch-864e5;
   if(sim)console.log('[sim] la apertura es en',sim,'segundos');
 })();
 })();
+
+/* v268: música ambiente del sitio (portada y wiki). Arranca al primer toque (los navegadores no dejan sonar solos) y recuerda si la apagaste. */
+(function(){
+const K='sr_site_music';let off=0,pos=0;try{off=localStorage.getItem(K)==='off';pos=+localStorage.getItem(K+'_t')||0}catch(e){}
+const a=new Audio('audio/explore.mp3');a.loop=true;a.preload='none';a.volume=.32;
+const b=document.createElement('button');b.id='smu';b.type='button';b.setAttribute('aria-label','Música');
+const st=document.createElement('style');st.textContent='#smu{position:fixed;right:14px;bottom:14px;z-index:60;width:46px;height:46px;border-radius:50%;border:1px solid #e6b64f99;background:rgba(15,10,24,.82);color:#f3d58a;font-size:20px;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 4px 18px #000a;transition:transform .15s,box-shadow .3s}#smu:hover{transform:scale(1.08)}#smu.on{box-shadow:0 0 0 2px #e6b64f55,0 0 22px #e6b64f66;animation:smup 2.4s ease-in-out infinite}@keyframes smup{50%{box-shadow:0 0 0 5px #e6b64f22,0 0 30px #e6b64f88}}';document.head.appendChild(st);
+const ui=()=>{b.textContent=(!a.paused&&!off)?'🔊':'🔇';b.classList.toggle('on',!a.paused&&!off);b.title=off?'Activar música':'Silenciar música'};
+const play=()=>{if(off)return;try{if(pos&&a.readyState<1)a.addEventListener('loadedmetadata',()=>{try{a.currentTime=pos%Math.max(1,a.duration||1)}catch(e){}},{once:true});const p=a.play();p&&p.then&&p.then(ui).catch(()=>{})}catch(e){}ui()};
+b.addEventListener('click',e=>{e.stopPropagation();if(a.paused||off){off=0;try{localStorage.setItem(K,'on')}catch(x){}a.preload='auto';play();ui()}else{off=1;a.pause();try{localStorage.setItem(K,'off')}catch(x){}ui()}});
+const first=e=>{if(e&&e.target&&e.target.closest&&e.target.closest('#smu'))return;removeEventListener('pointerdown',first,true);removeEventListener('keydown',first,true);removeEventListener('scroll',first,true);a.preload='auto';play()};
+addEventListener('pointerdown',first,true);addEventListener('keydown',first,true);
+addEventListener('pagehide',()=>{try{localStorage.setItem(K+'_t',String(Math.floor(a.currentTime||0)))}catch(e){}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)a.pause();else if(!off&&a.currentTime>0)play()});
+document.body.appendChild(b);ui();
+})();

@@ -1144,7 +1144,7 @@ function upd(dt){
  {const aw=awStep(dt,ix,iy);if(aw){ix=aw[0];iy=aw[1]}}
  const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}
  if(ix)P.face=ix>0?1:-1;P.mov=(ix||iy)?1:0;if(ix||iy)P.dir=Math.abs(ix)>Math.abs(iy)?(ix>0?'right':'left'):(iy>0?'down':'up');
- const SPD=CL().sp*.5*(1+eqT().sp/100)*(1+.003*GLV())*(1+.0015*Math.min(P.lv,200))*(1+TJB().sp)*(P.b.sp>0?1.4:1)*mspd()*(runOn()?1.6:1)*(SNEAK&&!RUN?.4:1)*(P.slow>0?.5:1)*(P.par>0?0:1-.12*(P.vn|0))*(DG.f?1:(.7+.3*Math.min(1,P.hp/P.mhp*1.25)))*(DG.f?1:WE.f.spd)*dt;FLYMV(ix*SPD,iy*SPD)||mv(P,ix*SPD,iy*SPD,DG.f?7:10);if(!DG.f&&!FLY.on&&(WE.f.px||WE.f.py))mv(P,WE.f.px*dt,WE.f.py*dt,10);P.tc.mv+=Math.hypot(ix*SPD,iy*SPD);if(P.cls==0&&lic()){const l=TR[0];if(!l||Math.hypot(P.x-l.x,P.y-l.y)>4){TR.unshift({x:P.x,y:P.y});if(TR.length>40)TR.length=40}}
+ const SPD=CL().sp*.5*(1+eqT().sp/100)*(1+.003*GLV())*(1+.0015*Math.min(P.lv,200))*(1+TJB().sp)*(P.b.sp>0?1.4:1)*mspd()*(DG.f?1.15:1)/* v240: +15% dentro de las cuevas */*(runOn()?1.6:1)*(SNEAK&&!RUN?.4:1)*(P.slow>0?.5:1)*(P.par>0?0:1-.12*(P.vn|0))*(DG.f?1:(.7+.3*Math.min(1,P.hp/P.mhp*1.25)))*(DG.f?1:WE.f.spd)*dt;FLYMV(ix*SPD,iy*SPD)||mv(P,ix*SPD,iy*SPD,DG.f?7:10);if(!DG.f&&!FLY.on&&(WE.f.px||WE.f.py))mv(P,WE.f.px*dt,WE.f.py*dt,10);P.tc.mv+=Math.hypot(ix*SPD,iy*SPD);if(P.cls==0&&lic()){const l=TR[0];if(!l||Math.hypot(P.x-l.x,P.y-l.y)>4){TR.unshift({x:P.x,y:P.y});if(TR.length>40)TR.length=40}}
  {const cxx=Math.floor(P.x/T/EC),cyy=Math.floor(P.y/T/EC);if((cxx!=LCX||cyy!=LCY)&&!DG.f){LCX=cxx;LCY=cyy;const ri=RGI[Math.min(H-1,Math.floor(P.y/T))*W+Math.min(W-1,Math.floor(P.x/T))];if(ri!=RCUR){RCUR=ri;toast('🌍 '+RG[ri].n+' · Zona '+(RG[ri].t+1)+' · Nv '+REC(RG[ri].t)+'+',3500)}for(let j=cyy-3;j<=cyy+3;j++)for(let i=cxx-3;i<=cxx+3;i++){if(i<0||j<0||i>=CW||j>=CH||(i-cxx)**2+(j-cyy)**2>10)continue;if(!EXP[j*CW+i]){EXP[j*CW+i]=1;EXPN++;fg.clearRect(i,j,1,1)}}
   C.forEach((c,i)=>{if(!P.dc['c'+i]&&Math.hypot(c.tx-P.x/T,c.ty-P.y/T)<7){P.dc['c'+i]=1;toast('🏙️ ¡Descubriste '+c.n+'!',3500)}});
   LM.forEach((l,i)=>{if(!P.dc['l'+i]&&Math.hypot(l.tx-P.x/T,l.ty-P.y/T)<5){const lt=TM[l.ty*W+l.tx],gx=150*(lt+1);P.dc['l'+i]=1;pqEvt('disc',1);toast('🗿 ¡'+l.n+'!',4000);vib([30,30,30])}})}}
@@ -3851,7 +3851,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v238';let UPD=null,RSN=0;
+const SR_V='sr-v240';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}
  /* v236: desregistra el service worker, borra cachés y recarga con un parámetro nuevo para saltarse cualquier copia vieja (en celulares a veces "no pasaba nada") */
  let done=0;const go=()=>{if(done)return;done=1;try{const u=new URL(location.href);u.searchParams.set('r',String(Date.now()));location.replace(u.toString())}catch(e){location.reload()}};
@@ -4914,7 +4914,7 @@ $('sgb').addEventListener('click',qsSwitch);
 setInterval(sgUpd,150);
 setInterval(trTick,1000);
 
-function loop(t){const dt=Math.min(.05,(t-last)/1e3);last=t;if(!P.tn)upd(dt);draw();if(++fr%8==0)hud();if(fr%300==0)save();requestAnimationFrame(loop)}
+function loop(t){const dt=Math.min(.08,(t-last)/1e3);/* v240: tope .08 (antes .05): en celulares lentos (<20 FPS) el juego ya no va en cámara lenta */last=t;if(!P.tn)upd(dt);draw();if(++fr%8==0)hud();if(fr%300==0)save();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 
 /* ===== TITLE / BRAND INTRO ===== */

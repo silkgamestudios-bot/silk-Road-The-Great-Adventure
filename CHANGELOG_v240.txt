@@ -1,0 +1,6 @@
+v240 - Cuevas: personaje mas agil y juego sin camara lenta en celulares flojos
+HALLAZGO: en el codigo NO existe ningun efecto de lodo/ralentizado dentro de las cuevas (arana, huesos, serpientes, abismo, cripta, torre). Medido en el juego: la velocidad adentro es igual a la de afuera (Mago nivel 1 = 59 px/s). El lodo es solo dibujo.
+Lo que si hacia sentir "pesado": el tope de tiempo por cuadro era .05 s, asi que por debajo de 20 FPS el juego iba en camara lenta.
+- Tope de tiempo por cuadro .05 -> .08 (el juego va a tiempo real hasta ~12 FPS).
+- Velocidad del jugador +15% dentro de las cuevas (un solo numero en SPD: DG.f?1.15:1).
+- El limite de registros vuelve a 5 por hora por conexion (igual que v238; v239 se descarta).

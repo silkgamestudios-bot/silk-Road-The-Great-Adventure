@@ -1,0 +1,23 @@
+v237 - Una sola cuenta para PC y celular: pantalla clara, cuenta visible y cierre de sesion real
+LO QUE PEDIA RICK: un solo login (usuario + contrasena), ID unico por usuario, y que PC y celular continúen el mismo progreso.
+(El servidor ya asigna un ID fijo por usuario; esta version hace que se VEA y que no queden restos de otra cuenta en el aparato.)
+
+CLIENTE (claude-shim.js / play.html)
+- Pantalla de entrada: pestanas "Entrar" | "Crear cuenta" (Entrar primero), con explicacion de usar el mismo usuario y contrasena en otro aparato. Usuario recordado, ojo para ver la contrasena, mensaje de error que orienta.
+- Si el logo logo.jpg no existe se muestra el nombre del juego en letras doradas (nunca imagen rota).
+- Tarjeta en el titulo: "Usuario | En tu cuenta: personaje - clase - nivel" y boton "Cambiar de cuenta" (2 toques).
+- Cerrar sesion real: sube lo ultimo, invalida la sesion en el servidor y deja el aparato limpio (sin personaje de otra cuenta).
+- Marca de dueno de la copia local (sr_own): una copia de otra cuenta se respalda y se baja el personaje de la cuenta.
+- No se sube NADA al servidor hasta leer primero la nube; el menu del titulo queda bloqueado mientras sincroniza.
+- Reparado staleFix (congela guardados antes de adoptar el del servidor).
+- Respaldo restaurable desde 💬 → 👤 ("Recuperar respaldo") solo si es de la misma clase.
+- Los 8 personajes (Elfa Druida, Enana Guerrera) en la lista de clases de la pantalla de titulo.
+- Borrar personaje limpia tambien la copia de atajos (quickbar).
+
+SERVIDOR (server.js / accounts.js)
+- Contrasenas toleran espacios al inicio o al final.
+- /status muestra: version del cliente, si los datos estan en DISCO PERMANENTE, usuarios registrados, personajes guardados y arranques.
+- Registro en log de cada lectura/guardado de cuenta ([sync]) para ver en Render.
+- acc.out: invalida la sesion al cambiar de cuenta.
+
+NOTA: reload.json no cambia (no fuerza recarga). Los jugadores veran la barra "Hay una version nueva". En la PC usar Ctrl+F5.

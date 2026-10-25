@@ -1,0 +1,6 @@
+v238 - Sin app instalable: el juego es solo web
+- Se quita el manifest, el service worker y el aviso de instalar (no hay APK/PWA).
+- sw.js ahora es un limpiador: los aparatos con atajo anclado/app instalada borran su copia vieja y recargan solos.
+- play.html desregistra cualquier service worker y borra cachés al abrir.
+- Sin cambios de cuentas ni de datos. reload.json igual.
+- /status con charset utf-8 (se veia "Â·").

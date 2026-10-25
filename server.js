@@ -12,6 +12,9 @@ const TOKINFO=process.env.GOOGLE_TOKENINFO_URL||'https://oauth2.googleapis.com/t
 const PAY_ID=process.env.BINANCE_PAY_ID||'748095851',WA_NUMBER=(process.env.MASTER_WHATSAPP||'18093965707').replace(/\D/g,'');
 const NTFY=(process.env.NTFY_TOPIC||'').replace(/[^\w-]/g,'');const CALLMEBOT_KEY=process.env.CALLMEBOT_KEY||'',CALLMEBOT_URL=process.env.CALLMEBOT_URL||'https://api.callmebot.com/whatsapp.php',WA_TOKEN=process.env.WA_TOKEN||'',WA_PHONE_ID=process.env.WA_PHONE_ID||'';
 const SAVEDIR=(process.env.DATA_DIR||'.')+'/saves';try{fs.mkdirSync(SAVEDIR,{recursive:true})}catch(e){}
+/* v237: contador de arranques guardado EN la carpeta de datos. Si el disco no es permanente, vuelve a 1 en cada reinicio (se ve en la página /status). */
+const BOOTF=(process.env.DATA_DIR||'.')+'/.arranques.json';let BOOT={first:Date.now(),n:0,last:0};try{const j=JSON.parse(fs.readFileSync(BOOTF,'utf8'));if(j&&j.first)BOOT=j}catch(e){}
+BOOT.n=(BOOT.n|0)+1;BOOT.prev=BOOT.last||0;BOOT.last=Date.now();try{fs.writeFileSync(BOOTF,JSON.stringify(BOOT))}catch(e){}
 let DB={},TOK={},SES={},ACC={},ECO={},USR={},AC=null,dirty=0;const REQ=process.env.REQUIRE_ACCOUNTS!=='0';   /* v220: por defecto SOLO con cuenta (un usuario = una partida en PC y celular). Pon REQUIRE_ACCOUNTS=0 solo para pruebas con invitados */
 try{const j=JSON.parse(fs.readFileSync(FILE,'utf8'));DB=j.db||{};TOK=j.tok||{};SES=j.ses||{};ACC=j.acc||{};ECO=j.eco||{};USR=j.usr||{}}catch(e){}
 for(const k in SES)if(SES[k].x<Date.now())delete SES[k];
@@ -147,7 +150,14 @@ const path=require('path'),zlib=require('zlib'),PUB=path.join(__dirname,'public'
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.webp':'image/webp','.mp3':'audio/mpeg','.ogg':'audio/ogg'};
 const RAIZ=new Set(['index.html','play.html','privacidad.html','terminos.html','wiki.html','wiki-data.json','wiki-data.js','wiki-lore.js','site-hero.js','site-heroes.js','wiki.js','art.js','site.js','site-config.js','sw.js','config.js','claude-shim.js','heroes.js','world-client.js','catalog.js','site.css','site2.css','manifest.webmanifest']);
 const TXT=new Set(['.html','.js','.css','.json','.webmanifest','.svg','.txt']);
-function statusText(){return 'Silk Road server OK'+(world?' '+JSON.stringify(world.stats()):'')+' · cuentas:'+(AC?'si':'no')+(REQ?' · solo con cuenta':'')+(AC&&AC.mailOn()?' · correo:si':' · correo:no')}
+/* v237: diagnóstico en /status: versión del cliente, si los datos están en un disco permanente, cuántos usuarios y personajes hay y cuántos arranques lleva esta carpeta de datos */
+function diskInfo(){const DD=process.env.DATA_DIR||'';let sep=false,mnt=false;try{if(DD){sep=fs.statSync(DD).dev!==fs.statSync(__dirname).dev;try{const R=path.resolve(DD);mnt=fs.readFileSync('/proc/mounts','utf8').split('\n').some(l=>{const q=l.split(' ')[1];return q&&path.resolve(q.replace(/\\040/g,' '))===R})}catch(e){}}}catch(e){}return{set:!!DD,dir:DD||'(sin DATA_DIR)',perm:sep||mnt}}
+function statusText(){const di=diskInfo(),nu=Object.keys(USR).length;let ns=0;try{ns=fs.readdirSync(SAVEDIR).filter(f=>/\.json$/.test(f)).length}catch(e){}
+ const fd=t=>new Date(t).toLocaleString('es',{timeZone:'America/Santo_Domingo',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+ return 'Silk Road server OK'+(BUILD?' · cliente '+BUILD:'')+(world?' '+JSON.stringify(world.stats()):'')+' · cuentas:'+(AC?'si':'no')+(REQ?' · solo con cuenta':'')+(AC&&AC.mailOn()?' · correo:si':' · correo:no')
+  +'\ndatos: '+di.dir+' → '+(di.perm?'DISCO PERMANENTE (los datos sobreviven a los reinicios)':di.set?'⚠ carpeta normal: NO parece un disco permanente':'⚠ SIN DATA_DIR: los datos se pierden en cada reinicio')
+  +'\nusuarios registrados: '+nu+' · personajes guardados: '+ns
+  +'\narranques con estos datos: '+BOOT.n+' (primero: '+fd(BOOT.first)+(BOOT.prev?' · anterior: '+fd(BOOT.prev):'')+')'}
 function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').split('?')[0])}catch(e){return false}
  if(p==='/status'||p==='/health'||(q.method!=='GET'&&q.method!=='HEAD'))return false;if(p.endsWith('/'))p+='index.html';
  let f=path.normalize(path.join(PUB,p));if(f.indexOf(PUB+path.sep)!==0)return false;
@@ -158,7 +168,7 @@ function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').spli
  if(q.headers['if-none-match']===c.etag){r.writeHead(304,h);r.end();return true}
  const gz=c.gz&&/\bgzip\b/.test(q.headers['accept-encoding']||'');if(gz){h['content-encoding']='gzip';h.vary='Accept-Encoding'}
  const b=gz?c.gz:c.buf;h['content-length']=b.length;r.writeHead(200,h);r.end(q.method==='HEAD'?undefined:b);return true}
-const srv=http.createServer((q,r)=>{if(String(q.url||'').split('?')[0]==='/maint'){maintHttp(q,r);return}if(String(q.url||'').split('?')[0]==='/launch'){r.writeHead(200,{'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'*'});r.end(JSON.stringify({at:LAUNCH_AT,now:Date.now()}));return}if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain','cache-control':'no-store'});r.end(statusText())});
+const srv=http.createServer((q,r)=>{if(String(q.url||'').split('?')[0]==='/maint'){maintHttp(q,r);return}if(String(q.url||'').split('?')[0]==='/launch'){r.writeHead(200,{'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'*'});r.end(JSON.stringify({at:LAUNCH_AT,now:Date.now()}));return}if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain; charset=utf-8','cache-control':'no-store'});r.end(statusText())});
 const wss=new WebSocketServer({server:srv,maxPayload:450000});
 const world=require('./world')(DB,log,{
  lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),pv:u=>(+E.acct(u).px.pv||0)>Date.now(),kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',tjoin:u=>{try{TR.join(u)}catch(e){log('terr join '+e.message)}},
@@ -172,6 +182,9 @@ function qGate(u){if(!MAXP||isMaster(u)||isEarly(u)||ONL.has(u))return 0;const n
  let q=QUE.get(u);if(!q){q={t:now};QUE.set(u,q)}q.t=now;const free=Math.max(0,MAXP-ONL.size);let pos=0;for(const k of QUE.keys()){pos++;if(k===u)break}
  if(pos<=free){QUE.delete(u);return 0}return pos}
 const IPN=new Map();
+/* v237: bitácora de sincronización: en los logs de Render se ve qué personaje entrega y guarda el servidor por cuenta. */
+const sumSv=d=>{try{const o=JSON.parse(d);return o&&o.ch?(String(o.nm||'?').slice(0,16)+' cl'+(o.cl|0)+' nv'+(o.lv|0)):'sin personaje'}catch(e){return '?'}};
+const unm=u=>{try{return (AC&&AC.unameOf(u))||u}catch(e){return u}};const LSI=new Map();
 wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!ORI.includes(og)&&og!=='https://'+req.headers.host&&og!=='http://'+req.headers.host){ws.close(1008);return}
  const ip=String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'').split(',')[0].trim();const n0=(IPN.get(ip)||0)+1;if(n0>12){ws.close(1013);return}IPN.set(ip,n0);ws.on('close',()=>{const k=(IPN.get(ip)||1)-1;if(k<=0)IPN.delete(ip);else IPN.set(ip,k)});
  ws.subs={};ws.uid=null;ws.n=0;ws.t=Date.now();ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);ws.xn=0;ws.xt=Date.now();
@@ -180,13 +193,13 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
   if(m.t==='hi'){const done=(u,extra)=>{if(MT&&Date.now()<MT.until&&!isMaster(u)){try{rep({t:'kick',e:MT_KICK});ws.close()}catch(e){}return}const old=ONL.get(u);if(old&&old!==ws){try{old.send(JSON.stringify({t:'kick',e:'Tu cuenta se abrió en otro dispositivo'}));old.close(4001)}catch(e){}}
      if(!launched()&&!isMaster(u)&&!isEarly(u)){log('pre-apertura bloqueado: uid='+u+' ids='+earlyIds(u).join(' | '));rep({t:'bad',e:'El reino abre el '+new Date(LAUNCH_AT).toLocaleString('es',{timeZone:'America/Santo_Domingo',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+' (hora de República Dominicana). Vuelve entonces.',launch:LAUNCH_AT});try{ws.close()}catch(e){}return}
      {const q=qGate(u);if(q){rep({t:'bad',e:'El reino está lleno ('+ONL.size+'/'+MAXP+' jugadores). Eres el #'+q+' en la fila. Espera unos segundos y vuelve a entrar.',full:1,pos:q});try{ws.close()}catch(e){}return}}
-     ws.uid=u;ONL.set(u,ws);try{SO.presence(u,1)}catch(e){}const a=E.acct(u);rep(Object.assign({t:'ok',uid:u,ent:E.ent(u)},extra||{}));
+     ws.uid=u;if(extra&&extra.ses)ws.ses=extra.ses;ONL.set(u,ws);try{SO.presence(u,1)}catch(e){}const a=E.acct(u);rep(Object.assign({t:'ok',uid:u,ent:E.ent(u)},extra||{}));
      if(isMaster(u)){const o=(DB.cfg||{}).master;if(!o||o.u!==u){DB.cfg=DB.cfg||{};DB.cfg.master={u,ts:Date.now()};dirty=1;bc('cfg','master',o||null,DB.cfg.master)}}
      setTimeout(()=>E.flushDl(u),400);setTimeout(()=>{try{rep(wsvMsg())}catch(e){}},1200)};
    if(AC&&!ws.uid&&AC.pre(m,ip,rep,done,{isMaster}))return;
    if(m.g){if(!GCID){rep({t:'bad',e:'Google no configurado'});ws.close();return}
     gverify(String(m.g)).then(v=>{const u='g'+sha('g:'+v.sub).slice(0,20);ACC[u]={e:v.email,n:v.name,ts:Date.now()};dirty=1;done(u,{ses:newSes(u),email:v.email,name:v.name,master:isMaster(u)})}).catch(()=>{rep({t:'auth',e:'Google rechazó el inicio de sesión'})});return}
-   if(m.ses){const a=SES[sha(m.ses)];if(!a||a.x<Date.now()){rep({t:'auth'});return}done(a.u,{email:(ACC[a.u]||{}).e,name:(ACC[a.u]||{}).n,uname:AC.unameOf(a.u)||undefined,master:isMaster(a.u)});return}
+   if(m.ses){const a=SES[sha(m.ses)];if(!a||a.x<Date.now()){rep({t:'auth'});return}ws.ses=String(m.ses);done(a.u,{email:(ACC[a.u]||{}).e,name:(ACC[a.u]||{}).n,uname:AC.unameOf(a.u)||undefined,master:isMaster(a.u)});return}
    if(GCID||REQ){rep({t:'auth'});return}   /* con Google configurado ya no se aceptan invitados */
    const u=String(m.uid||''),k=sha(m.tok);if(!/^[\w-]{3,40}$/.test(u)||!m.tok){ws.close();return}
    if(TOK[u]&&TOK[u]!==k){rep({t:'bad'});ws.close();return}if(!TOK[u]){TOK[u]=k;dirty=1}done(u);return}
@@ -198,15 +211,17 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
    /* v236: un guardado EN BLANCO (sin personaje elegido) nunca reemplaza un personaje real: se devuelve el del servidor. */
    {let nv=null;try{nv=JSON.parse(m.d)}catch(e){}if(nv&&!nv.ch){let o=null,ov=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'));ov=JSON.parse(o.d)}catch(e){}if(ov&&ov.ch){log('[sync] guardado en blanco rechazado: '+u);rep({t:'r',rid:m.rid,ok:1,stale:1,blank:1,d:o.d,ts:o.ts});return}}}
    /* v235: si otro dispositivo guardó después de la última sincronización de este (bts), este guardado es viejo: NO se escribe, se devuelve el del servidor. */
-   if(+m.bts>0&&!m.force){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}if(o&&o.ts>+m.bts+50){rep({t:'r',rid:m.rid,ok:1,stale:1,d:o.d,ts:o.ts});return}}
+   if(+m.bts>0&&!m.force){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}if(o&&o.ts>+m.bts+50){log('[sync] guardado viejo rechazado: '+unm(u)+' (el servidor tiene uno más nuevo: '+sumSv(o.d)+')');rep({t:'r',rid:m.rid,ok:1,stale:1,d:o.d,ts:o.ts});return}}
    let r;try{r=E.audit(u,m.d,m.ack)}catch(e){log('audit error '+e.stack);err('error de validación');return}
    if(r.rej){E.flag(u,'guardado rechazado: '+r.rej);err(r.rej);return}
    const sts=Date.now();try{fs.writeFileSync(savePath(u),JSON.stringify({d:r.out,ts:sts}))}catch(e){err('no se pudo guardar');return}
+   {const sg=sumSv(r.out);if(LSI.get(u)!==sg){LSI.set(u,sg);log('[sync] sv '+unm(u)+' → '+sg)}}
    try{const v=JSON.parse(r.out);S.guildSeen&&S.guildSeen(u,v.lv|0,v.cl|0);if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}
    rep({t:'r',rid:m.rid,ok:1,ts:sts,fix:r.fix,acked:r.acked,ent:E.ent(u)});E.flushDl(u);return}
-  if(m.t==='ld'){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}ws.ldt=Date.now();const wd=+((E.acct(u)||{}).wdt)||0;rep({t:'r',rid:m.rid,ok:1,wp:WIPE_ID+(wd?'/'+wd:''),d:o?o.d:null,ts:o?o.ts:0,ent:E.ent(u)});setTimeout(()=>E.flushDl(u),300);return}
+  if(m.t==='ld'){let o=null;try{o=JSON.parse(fs.readFileSync(savePath(u),'utf8'))}catch(e){}ws.ldt=Date.now();log('[sync] ld '+unm(u)+' → '+(o?sumSv(o.d)+' (guardado hace '+Math.round((Date.now()-o.ts)/60000)+' min)':'sin partida en el servidor'));const wd=+((E.acct(u)||{}).wdt)||0;rep({t:'r',rid:m.rid,ok:1,wp:WIPE_ID+(wd?'/'+wd:''),d:o?o.d:null,ts:o?o.ts:0,ent:E.ent(u)});setTimeout(()=>E.flushDl(u),300);return}
   if(m.t==='x'){if(now-ws.xt>1000){ws.xt=now;ws.xn=0}if(++ws.xn>12){err('demasiadas peticiones');return}
-   const opn=String(m.op||''),f=hasOwn(OPS,opn)?OPS[opn]:null;if(typeof f!=='function'){err('operación desconocida');return}
+   const opn=String(m.op||'');if(opn==='acc.out'){if(ws.ses){delete SES[sha(ws.ses)];dirty=1;ws.ses=null}rep({t:'r',rid:m.rid,ok:1});return}   /* v237: cerrar sesión invalida el token de esta conexión */
+   const f=hasOwn(OPS,opn)?OPS[opn]:null;if(typeof f!=='function'){err('operación desconocida');return}
    let r;try{r=f(u,m)}catch(e){log('op '+m.op+' error '+e.stack);r={e:'error del servidor'}}
    const fin=r=>{r=r||{e:'sin respuesta'};if(r.e)rep({t:'r',rid:m.rid,ok:0,e:r.e});else rep(Object.assign({t:'r',rid:m.rid,ok:1},r))};
    if(r&&typeof r.then==='function')r.then(fin,e=>{log('op '+m.op+' error '+(e&&e.stack));fin({e:'error del servidor'})});else fin(r);return}

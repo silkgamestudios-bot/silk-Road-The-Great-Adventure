@@ -1,0 +1,7 @@
+v252 - Imagenes de los planes y boletos
+- Plan Jugador 30/15 dias y Plan Mercader 30/15 dias ahora tienen su ilustracion en las casillas y en la carta emergente.
+- Los 4 boletos de plan tienen su imagen de boleto (casillas, carta y Mochila de uso).
+- Archivos nuevos (subir a la RAIZ del repo): pl_vpf.png pl_vph.png pl_vmf.png pl_vmh.png tk_vpf.png tk_vph.png tk_vmf.png tk_vmh.png
+- Casillas de 4 elementos en 2 columnas (4 en pantallas anchas).
+- Los Bonus siguen con su emoji hasta tener sus imagenes.
+- Solo cliente: no hace falta Manual Deploy si subes todos los archivos.

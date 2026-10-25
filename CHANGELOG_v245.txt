@@ -1,0 +1,3 @@
+v245
+- COMERCIO (trato directo entre jugadores) ahora es servicio VIP: nuevo servicio "🤝 Comercio" desde 3 💎 (10/20/30 días). Los DOS jugadores deben tenerlo activo (el servidor lo valida). Incluido en VIP Jugador (7 💎) y VIP Mercader (15 💎). El master/staff está exento.
+- BENDICIÓN: solo se compra en la ⛪ Iglesia con oro (el servidor rechaza comprarla con gemas; ya no viene en los VIP). Dura 30 días, pero si mueres se gasta. Con Bendición no pierdes nada de oro al morir (conservas además un % del botín según tu nivel).

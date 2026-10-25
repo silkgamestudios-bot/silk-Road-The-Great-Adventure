@@ -1,0 +1,3 @@
+v244
+- Armería › Vender: ahora primero sale un menú "¿Qué quieres vender?" (🧺 Bolsa de loot / 🎒 Mochila). Al elegir, solo ves esa lista, marcas los objetos que te interesan y confirmas "Vender seleccionados" (muestra el total).
+- Eliminados los botones de vender TODO de golpe (Todo el loot / Seleccionar todo).

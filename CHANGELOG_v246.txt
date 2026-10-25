@@ -1,0 +1,7 @@
+v246
+- Tienda de gemas (planes VIP) rediseñada: secciones claras "Planes VIP / Servicios sueltos / Bonus".
+  · Cada plan VIP lista qué incluye (con descripción de cada servicio), para quién es y cuánto ahorras vs. comprarlo por separado.
+  · Cada servicio suelto explica qué hace, requisitos y duración.
+  · Los 4 Bonus (XP, oro, defensa, vida) se juntaron en una sola tarjeta en vez de 4 repetidas.
+  · Corregido: la tarjeta VIP Jugador mostraba el estado del VIP Mercader; botones de duración que se salían de la tarjeta.
+- Comercio: 1 mes = 3 💎 (10 d = 1, 20 d = 2) para que el VIP Jugador (7 💎) siempre convenga más. (servidor: store.js)

@@ -1,0 +1,14 @@
+v241 - Misiones, tareas y cadenas de mascotas: ya no regalan oro ni lazos
+Regla del master: las mascotas y monturas son muy dificiles de conseguir; los lazos se fabrican (telas + pieles + oro), no se regalan; las tareas no dan oro.
+
+ENCONTRADO (fuentes de regalo)
+- Cadenas de los Maestros (perro, halcon, buho, lobo): daban oro en cada paso, oro x3 al terminar y 3 LAZOS + 3 hierbas, y se podian REPETIR sin limite -> granja de lazos (un lazo vale ~45.000) y de oro.
+- Misiones diarias de mascotas: regalaban 2-10 lazos por misión; y el oro de todas las misiones diarias era 40 x nivel x (1/2/3/5) (muy alto).
+- Tareas permanentes: daban oro en cada rango.
+
+CAMBIOS (play.html)
+- Cadenas de los Maestros: sin oro y sin lazos. Solo experiencia (+3 hierbas la primera vez). Repetir la cadena da solo 25% de la XP y nada mas.
+- Misiones diarias: oro reducido a 10% (4 x nivel x 1/2/3/5; "poco oro"); las de mascotas dan hierbas, ya no lazos. Textos del menu actualizados.
+- Tareas permanentes: ya no dan oro, solo XP. Texto actualizado.
+- Incluye lo de v240 (cuevas +15% de velocidad y tope de tiempo por cuadro .08).
+NOTA: el progreso de misiones lo cuenta el cliente (el servidor solo limita 4 cobros/dia y la llave). Con oro y lazos quitados no queda nada que abusar; la verificacion en servidor llegara con los mobs en servidor.

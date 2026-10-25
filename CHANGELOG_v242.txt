@@ -1,0 +1,9 @@
+v242 - Menú de equipo: los avisos ya no quedan escondidos detrás del menú
+CAUSA RAIZ del "se queda bug en equipo": el aviso (toast) tenía z-index 10 y los menus (equipo, tiendas, mercado, etc.) 65-95. Todo aviso que salia con un menu abierto quedaba DETRAS y no se veia: "Requiere nivel 50", "Mochila llena", "Te faltan X oro"... El jugador tocaba Equipar, la tarjeta se cerraba y no pasaba nada ni se decia por que.
+
+CAMBIOS (play.html)
+- #toast z-index 10 -> 96: los avisos se ven por encima de cualquier menu (el login y la pantalla de carga siguen por encima).
+- Equipar con nivel insuficiente: el boton ahora dice "🔒 Requiere Nv N" ANTES de tocarlo, y al tocarlo el aviso se ve.
+- Celulares angostos (<=860 px): el boton ⚡ "Lo mejor" muestra solo el rayo y el paginador (‹ 1/2 ›) cabe en una linea (antes se montaba sobre "Lo mejor" y el › quedaba cortado).
+- Texto de Progreso: "XP extra" (ya no dice oro).
+- Incluye v240 (cuevas +15% velocidad, tope .08) y v241 (misiones/tareas/cadenas sin oro ni lazos).

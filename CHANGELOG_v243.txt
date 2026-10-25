@@ -1,0 +1,5 @@
+v243
+- BUG LOOT CUEVA DE ARAÑAS (y todas las cuevas): el loot automático recogía desde CUALQUIER parte del mapa (radio 9999), incluso lo de dentro de la cueva estando fuera. Ahora cada botín queda ligado a su zona (cueva/piso o mundo): solo se recoge y se ve estando en esa zona, y el auto-loot alcanza máx. 1400 px.
+- Cueva de las Arañas: -5% de botín (oro y probabilidad de objeto x0.95).
+- Avisos de venta con nombre: "💰 Vendiste <objeto>: +N 🪙", botín, pociones, minerales (las compras ya mostraban "Compra realizada" y "Oro insuficiente").
+- Leñador/minero: icono discreto 🪓 / ⛏️ / 🪏 sobre el personaje mientras talas o minas.

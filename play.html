@@ -1037,7 +1037,7 @@ for(let k=0,tr=0;k<60&&tr<8000;tr++){const tx=12+Math.floor(R()*(W-24)),ty=12+Ma
   for(let j=0;j<n;j++){const e={pk};placeE(e,tx+Math.round((r2()-.5)*6),ty+Math.round((r2()-.5)*6),0);const r=r2();if(r<.2)applyVar(e,'jackal');else if(r<.32)applyVar(e,'rdog');else if(r<.38)applyVar(e,'bat');
    const lv=1+Math.floor(r2()*4);e.nv=lv;e.nvz=1;e.mx=e.hp=Math.round(e.mx*HM[lv-1]);if(!blk(e.hx,e.hy,9))E.push(e)}}}
 const cv=$('c');let g=cv.getContext('2d'),VW=0,VH=0;
-let DS=1;const rs=()=>{DS=Math.max(1,Math.round(devicePixelRatio||1));VW=cv.clientWidth;VH=cv.clientHeight;cv.width=VW*DS;cv.height=VH*DS};
+let DS=1,DSM=9;const rs=()=>{DS=Math.max(1,Math.min(DSM,Math.round(devicePixelRatio||1)));VW=cv.clientWidth;VH=cv.clientHeight;cv.width=VW*DS;cv.height=VH*DS};
 addEventListener('resize',rs);rs();
 let modal=1,won=0,mc=null,pr=[],tt,qst=null,CX=0,CY=0,lastB=0,cur=null,rsArm=0,CI=null,VIB=1,HOLD=0,APOT=1,ROT=0,LV0=0,MOB=0;
 const SK='silkroad_v1';
@@ -4071,7 +4071,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v257';let UPD=null,RSN=0;
+const SR_V='sr-v258';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}
  /* v236: desregistra el service worker, borra cachés y recarga con un parámetro nuevo para saltarse cualquier copia vieja (en celulares a veces "no pasaba nada") */
  let done=0;const go=()=>{if(done)return;done=1;try{const u=new URL(location.href);u.searchParams.set('r',String(Date.now()));location.replace(u.toString())}catch(e){location.reload()}};
@@ -5146,7 +5146,11 @@ $('sgb').addEventListener('click',qsSwitch);
 setInterval(sgUpd,150);
 setInterval(trTick,1000);
 
-function loop(t){const dt=Math.min(.08,(t-last)/1e3);/* v240: tope .08 (antes .05): en celulares lentos (<20 FPS) el juego ya no va en cámara lenta */last=t;if(!P.tn)upd(dt);draw();if(++fr%8==0)hud();if(fr%300==0)save();requestAnimationFrame(loop)}
+let EMA=16,LOWT=0;
+function loop(t){const raw=t-last;/* v258: el juego va a velocidad normal aunque el celular baje de FPS (sub-pasos de simulación) y baja la resolución del lienzo si va lento */
+ const dt=Math.min(.3,raw/1e3),n=Math.max(1,Math.ceil(dt/.1));last=t;
+ if(raw<500){EMA+=(raw-EMA)*.06;if(EMA>36&&DS>1)LOWT+=raw;else LOWT=0;if(LOWT>2500){LOWT=0;EMA=16;DSM=DS-1;rs()}}
+ if(!P.tn)for(let k=0;k<n;k++)upd(dt/n);draw();if(++fr%8==0)hud();if(fr%300==0)save();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 
 /* ===== TITLE / BRAND INTRO ===== */

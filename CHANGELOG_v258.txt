@@ -1,0 +1,4 @@
+v258 - Velocidad en cuevas (solo cliente: play.html + sw.js, SIN Manual Deploy)
+- Causa: el tope de tiempo por frame hacía cámara lenta (personaje y mobs) cuando el celular bajaba de ~12 FPS.
+- Ahora la simulación usa sub-pasos y mantiene la velocidad real aunque bajen los FPS.
+- Si el celular va lento (>2.5 s con FPS bajos) se baja la resolución del lienzo automáticamente.

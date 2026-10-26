@@ -1,0 +1,5 @@
+v297 - Heroes detallados ACTIVADOS por defecto (mismo tamano que los viejos).
+- Todos los jugadores ven los sprites nuevos de los 8 heroes. Quien quiera volver al estilo de antes: Ajustes > desmarcar "Heroes detallados". Opcion "Tamano grande" sigue disponible.
+- Creditos: se agrego a aveontrainer (DeviantArt) como autor de los sprites.
+- Skins/atuendos especiales siguen con el dibujo de antes; los colores de Apariencia no se aplican a los sprites nuevos.
+Incluye los 8 hn_*.png. Solo cliente: no necesita Manual Deploy.

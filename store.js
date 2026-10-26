@@ -85,7 +85,7 @@ ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d
  ks.forEach(z=>{a.px[z]=Math.max(now,a.px[z]||0)+d*DAY});if(vm||lc||mf)a.lic=Math.max(now,a.lic||0)+d*DAY;if(vip)a.vip=Math.max(now,a.vip||0)+d*DAY;
  S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+k+' '+d+'d');return{ok:1,ent:E.ent(u),cost}};
 /* ---------- 🎟️ BOLETOS VIP (v154): el mismo servicio, pero como objeto que se puede enviar o intercambiar ---------- */
-const TKN={vpf:'👑 Plan Jugador · 30 días',vph:'👑 Plan Jugador · 15 días',vmf:'🛒 Plan Mercader · 30 días',vmh:'🛒 Plan Mercader · 15 días',cmb:'🎯 Combo Cazador',es:'🐗 Escolta de caravana',lic:'📜 Licencia de Mercader',vipm:'👑 VIP Mercader',vipj:'👑 VIP Jugador',pv:'⚔️ Cazador PvP',bh:'🎯 Licencia de Cazador',vpw:'👑 Plan Jugador · 7 días (Influencer)',apw:'📚 Bonus de Exp · 7 días'};
+const TKN={vpf:'👑 Plan Jugador · 30 días',vph:'👑 Plan Jugador · 15 días',vmf:'🛒 Plan Mercader · 30 días',vmh:'🛒 Plan Mercader · 15 días',cmb:'🎯 Combo Cazador',es:'🐗 Escolta de caravana',lic:'📜 Licencia de Mercader',vipm:'👑 VIP Mercader',vipj:'👑 VIP Jugador',pv:'⚔️ Cazador PvP',bh:'🎯 Licencia de Cazador',vpw:'👑 Plan Jugador · 7 días (Influencer)',bx0:'⭐ Bonus de Experiencia · 2 h',bx1:'🪙 Bonus de Oro · 2 h',bx2:'🛡️ Bonus de Defensa · 2 h',bx3:'❤️ Bonus de Vida · 2 h'};
 const tkOf=a=>(a.tk&&typeof a.tk==='object')?a.tk:(a.tk={});
 const tkRes=u=>{const r=((S.DB.cfg||{}).res||{})[u];return +r>0};
 /* v221: Gremio de Cazadores vende lazos (domar monturas). Oro con 3% de impuesto, tope diario para que no se regalen. */
@@ -108,8 +108,9 @@ ops['tk.send']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),q=Math.floor(+m.q)||1
  const t=tkOf(a);if((t[k]|0)<q)return err('No tienes tantos boletos');const b=E.acct(id);t[k]-=q;const tb=tkOf(b);tb[k]=(tb[k]|0)+q;S.dirty();E.pushEnt(u);E.pushEnt(id);
  const msg='🎟️ '+(a.nm||'Un jugador')+' te envía '+(q>1?q+' boletos':'un boleto')+' '+TKN[k];if(S.online(id))S.push(id,{t:'note',m:msg,tk:1});else E.deliver(id,{note:msg});
  S.log('[boletos] '+(a.nm||u)+' → '+(b.nm||id)+' '+q+' '+k);return{ok:1,ent:E.ent(u)}};
-ops['tk.use']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),now=Date.now(),d=(k==='vph'||k==='vmh')?15:(k==='vpw'||k==='apw')?7:30;if(!TKN[k])return err('Boleto desconocido');const t=tkOf(a);if((t[k]|0)<1)return err('No tienes ese boleto');
- const vm=k==='vipm',vj=k==='vipj',vf=k==='vpf'||k==='vph'||k==='vmf'||k==='vmh'||k==='vpw',mf=k==='vmf'||k==='vmh',vip=vm||vj||vf,cmb=k==='cmb',lc=k==='lic',ks=k==='apw'?['ap']:vf?['lt','ap','tr','pv','bh'].concat(mf?['es']:[]):vm?['lt','ap','es','tr']:vj?['lt','ap','tr']:cmb?GCMB:lc?[]:[k];
+ops['tk.use']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),now=Date.now(),d=(k==='vph'||k==='vmh')?15:k==='vpw'?7:30;if(!TKN[k])return err('Boleto desconocido');const t=tkOf(a);if((t[k]|0)<1)return err('No tienes ese boleto');
+ if(/^bx[0-3]$/.test(k)){const i=+k[2],L=a.bxl,H2=2*36e5;if(L.x[i]+Math.max(0,L.t[i]-L.a[i])+H2>E.BX.max+2*36e5)return err('Máximo 20 h acumuladas: canjéalo más tarde');t[k]--;L.t[i]+=H2;S.dirty();E.pushEnt(u);S.log('[boletos] '+(a.nm||u)+' canjeó '+k);return{ok:1,ent:E.ent(u)}}
+ const vm=k==='vipm',vj=k==='vipj',vf=k==='vpf'||k==='vph'||k==='vmf'||k==='vmh'||k==='vpw',mf=k==='vmf'||k==='vmh',vip=vm||vj||vf,cmb=k==='cmb',lc=k==='lic',ks=vf?['lt','ap','tr','pv','bh'].concat(mf?['es']:[]):vm?['lt','ap','es','tr']:vj?['lt','ap','tr']:cmb?GCMB:lc?[]:[k];
  if((vm||lc||mf)&&(a.cls!==0||a.lv<LIC_LV))return err(a.cls!==0?'Ese boleto solo lo canjea un Mercader (puedes enviarlo o intercambiarlo)':'Necesitas nivel '+LIC_LV);
  if(ks.some(z=>Math.max(now,a.px[z]||0)-now+d*DAY>90*DAY)||((vm||lc)&&Math.max(now,a.lic||0)-now+d*DAY>90*DAY)||(vip&&Math.max(now,a.vip||0)-now+d*DAY>90*DAY))return err('Máximo 90 días acumulados: canjéalo más tarde');
  t[k]--;ks.forEach(z=>{a.px[z]=Math.max(now,a.px[z]||0)+d*DAY});if(vm||lc||mf)a.lic=Math.max(now,a.lic||0)+d*DAY;if(vip)a.vip=Math.max(now,a.vip||0)+d*DAY;
@@ -119,18 +120,26 @@ ops['bonus.buy']=(u,m)=>{const a=E.acct(u),L=a.bxl,i=Math.floor(+m.i),BX=E.BX;if
  if(E.gTot(a)<BX.cost)return err('⚠️ Gemas insuficientes: te faltan '+(BX.cost-E.gTot(a))+' 💎');if(!E.spendGems(a,BX.cost,false,'Bonus '+['XP','oro','defensa','vida'][i]+' +4 h'))return err('Gemas insuficientes');
  L.t[i]+=BX.ms;S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró bonus '+i);return{ok:1,ent:E.ent(u),cost:BX.cost}};
 /* Halloween: el oro y las gemas de los cofres del tesoro los entrega el servidor (cuotas de la tabla: 3 cofres de 250.000, 12 de 2 💎, 20 de oro). Si el cliente se los sumara, el antitrampas los borraría. */
-const HALQ={G1:3,M:12,g:20,S:3,C:52},halOn=()=>{const d=new Date(Date.now()-4*36e5),mo=d.getUTCMonth()+1,dy=d.getUTCDate();return(mo===10&&dy>=15)||(mo===11&&dy<=3)};
-ops['hal.find']=(u,m)=>{const a=E.acct(u),j=Math.floor(+m.j),p=String(m.p||''),v=Math.floor(+m.v)||0;
+const halOn=()=>{const d=new Date(Date.now()-4*36e5),mo=d.getUTCMonth()+1,dy=d.getUTCDate();return(mo===10&&dy>=15)||(mo===11&&dy<=3)};
+/* v325: los 100 tesoros son ÚNICOS y compartidos por todo el servidor. El plan (qué premio hay en cada tesoro) lo calcula el servidor con la misma semilla del cliente; el primero que lo abre lo reclama para siempre. */
+const HAL_SEED=1013031;
+function halRng(s){let a=s>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let HALP=null;function halPlan(){if(HALP)return HALP;const r=halRng(HAL_SEED),pz=[];for(let i=0;i<3;i++)pz.push('S');for(let i=0;i<3;i++)pz.push('G1');for(let i=0;i<12;i++)pz.push('M');for(let i=0;i<20;i++)pz.push('g');for(let i=0;i<10;i++)pz.push('I');for(let i=0;i<52;i++)pz.push('C');
+ for(let i=pz.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[pz[i],pz[j]]=[pz[j],pz[i]]}
+ let sk=0;return HALP=pz.map((p,j)=>{const rv=halRng(HAL_SEED*7+j*131+5);let k='';if(p==='S'){sk++;k='tk'+sk}return{p,k,v:p==='g'?20000+5000*Math.floor(rv()*17):p==='C'?150+10*Math.floor(rv()*26):0}})}
+const halDB=()=>S.DB.hal||(S.DB.hal={c:{}});
+ops['hal.state']=(u,m)=>({ok:1,c:Object.keys(halDB().c).map(Number)});
+ops['hal.find']=(u,m)=>{const a=E.acct(u),j=Math.floor(+m.j),p=String(m.p||'');
  if(!halOn())return err('El evento de Halloween no está activo');
- if(!(j>=0&&j<100)||!HALQ[p])return err('Tesoro no válido');
- const H=a.hl||(a.hl={f:{},n:{},ts:0});if(H.f[j])return{ok:1,dup:1};
- if((H.n[p]|0)>=HALQ[p])return err('Ya abriste todos los cofres de ese tipo');
- const now=Date.now();if(now-(H.ts||0)<2000)return err('Cavando demasiado rápido: espera un momento');
- if(p==='C'){if(!(v>=150&&v<=400&&v%10===0))return err('Premio no válido');H.f[j]=v;H.n.C=(H.n.C|0)+1;H.ts=now;S.dirty();E.deliver(u,{ec:{k:'hl',q:v},note:'🎃 Tesoro de Halloween: +'+v+' calabazas'});return{ok:1,c:v}}
- if(p==='S'){const k=String(m.k||'');if(!/^tk[1-3]$/.test(k))return err('Atuendo no válido');a.tks=Array.isArray(a.tks)?a.tks:[];if(a.tks.includes(k)){H.f[j]=H.f[j]||'S';S.dirty();E.pushEnt(u);return{ok:1,dup:1,ent:E.ent(u)}}
-  H.f[j]=k;H.n.S=(H.n.S|0)+1;H.ts=now;a.tks.push(k);S.dirty();E.pushEnt(u);S.log('[halloween] '+(a.nm||u)+' atuendo '+k);return{ok:1,ent:E.ent(u)}}
- let gold=0,gem=0;if(p==='G1')gold=25e4;else if(p==='M')gem=2;else{if(!(v>=2e4&&v<=1e5&&v%5000===0))return err('Premio no válido');gold=v}
- H.f[j]=gold||gem;H.n[p]=(H.n[p]|0)+1;H.ts=now;S.dirty();
+ if(!(j>=0&&j<100))return err('Tesoro no válido');
+ const pl=halPlan()[j];if(pl.p!==p)return err('Tesoro no válido');
+ const D=halDB(),cl=D.c[j];if(cl){if(cl.u===u)return{ok:1,dup:1};return err('Otro jugador ya reclamó este tesoro (cada cofre es único)')}
+ const H=a.hl||(a.hl={f:{},n:{},ts:0}),now=Date.now();if(now-(H.ts||0)<2000)return err('Cavando demasiado rápido: espera un momento');
+ D.c[j]={u,n:String(a.nm||'').slice(0,20),t:now,p};H.f[j]=1;H.n[p]=(H.n[p]|0)+1;H.ts=now;S.dirty();
+ if(p==='C'){E.deliver(u,{ec:{k:'hl',q:pl.v},note:'🎃 Tesoro de Halloween: +'+pl.v+' calabazas'});S.log('[halloween] '+(a.nm||u)+' abrió el tesoro #'+j+' (C)');return{ok:1,c:pl.v}}
+ if(p==='S'){a.tks=Array.isArray(a.tks)?a.tks:[];if(!a.tks.includes(pl.k))a.tks.push(pl.k);E.pushEnt(u);S.log('[halloween] '+(a.nm||u)+' atuendo '+pl.k);return{ok:1,ent:E.ent(u)}}
+ if(p==='I'){S.log('[halloween] '+(a.nm||u)+' abrió el tesoro #'+j+' (objeto)');return{ok:1}}
+ const gold=p==='G1'?25e4:p==='g'?pl.v:0,gem=p==='M'?2:0;
  if(gold)E.deliver(u,{gold,note:'🎃 Tesoro de Halloween: +'+gold.toLocaleString('es')+' 🪙'});
  if(gem)E.grantGems(u,gem,'own','tesoro de Halloween');
  S.log('[halloween] '+(a.nm||u)+' abrió el tesoro #'+j+' ('+p+')');return{ok:1,g:gold,m:gem}};
@@ -165,18 +174,33 @@ ops['adm.reseller']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const
  const cfg=S.DB.cfg=S.DB.cfg||{},old=cfg.res||{},nw=Object.assign({},old);if(d>0)nw[o]=d;else delete nw[o];cfg.res=nw;S.dirty();S.bc('cfg','res',old,nw);S.log('[master] revendedor '+(d||'quitado')+'% → '+m.name);gmLogAdd(nmOf(u),'reseller',nmOf(o),d,d?('descuento '+d+'%'):'sin descuento');return{ok:1,nm:nmOf(o),d}};
 ops['adm.reslist']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const r=((S.DB.cfg||{}).res)||{};return{ok:1,l:Object.keys(r).map(id=>({nm:nmOf(id),d:r[id]|0,on:S.online(id)?1:0}))}};
 /* ===== v319: Influencers. Código de referido -> boletos de VIP/Exp de 7 días por jugadores válidos (nivel 20) ===== */
-const INF_LV=20,INF_VIP_N=10,INF_EXP_N=5;
+const INF_LV=15,INF_AGE=6*36e5,INF_IPMAX=3,INF_DAY=30,INF_VIP_N=10,INF_EXP_N=5;/* cada 10: 1 VIP 7 d + Bonus Vida 2 h + Bonus Defensa 2 h; cada 5: Bonus Exp 2 h */
 const infDB=()=>{S.DB.inf=S.DB.inf||{};return S.DB.inf};
 const infCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9_]/g,'').slice(0,16);
-S.refSeen=(u,a)=>{try{const ac=S.ACC&&S.ACC[u],c=ac&&ac.rf;if(!c||a.rfd||(a.lv|0)<INF_LV||S.isMaster(u))return;const d=infDB(),i=d[c];a.rfd=1;if(!i||!i.u||i.u===u){S.dirty();return}
+S.refSeen=(u,a)=>{try{const ac=S.ACC&&S.ACC[u],c=ac&&ac.rf;if(!c||a.rfd||(a.lv|0)<INF_LV||S.isMaster(u))return;const d=infDB(),i=d[c];
+  /* antifraude: la cuenta debe tener 6 h de vida, sin sospechas del anticheat, máx. 3 por conexión y 30 por día por influencer */
+  if(Date.now()-(+ac.ts||+a.created||0)<INF_AGE)return;a.rfd=1;if((a.strikes|0)>=3||!i||!i.u||i.u===u){S.dirty();return}
+  const ri=ac.ri||'',dy=Math.floor(Date.now()/864e5);i.ips=i.ips||{};if(ri&&(i.ips[ri]|0)>=INF_IPMAX){S.log('[influencer] '+c+': demasiadas cuentas desde la misma conexión');S.dirty();return}
+  if(i.dy!==dy){i.dy=dy;i.dn=0}if((i.dn|0)>=INF_DAY){S.log('[influencer] '+c+': tope diario');S.dirty();return}i.dn=(i.dn|0)+1;if(ri)i.ips[ri]=(i.ips[ri]|0)+1;
   i.ok=(i.ok|0)+1;const w=Math.floor(i.ok/INF_VIP_N)-(i.gv|0),x=Math.floor(i.ok/INF_EXP_N)-(i.ga|0),b=E.acct(i.u);if(!b)return;const t=tkOf(b);
-  if(w>0){t.vpw=(t.vpw|0)+w;i.gv=(i.gv|0)+w}if(x>0){t.apw=(t.apw|0)+x;i.ga=(i.ga|0)+x}
-  S.dirty();E.pushEnt(i.u);const msg='⭐ Un jugador nuevo llegó a nivel '+INF_LV+' con tu código '+c+' ('+i.ok+' en total)'+(w>0?' · +'+w+' 🎟️ VIP 7 días':'')+(x>0?' · +'+x+' 🎟️ Bonus Exp 7 días':'');
+  if(w>0){t.vpw=(t.vpw|0)+w;t.bx2=(t.bx2|0)+w;t.bx3=(t.bx3|0)+w;i.gv=(i.gv|0)+w}if(x>0){t.bx0=(t.bx0|0)+x;i.ga=(i.ga|0)+x}
+  S.dirty();E.pushEnt(i.u);const msg='⭐ Un jugador nuevo llegó a nivel '+INF_LV+' con tu código '+c+' ('+i.ok+' en total)'+(w>0?' · +'+w+' 🎟️ VIP 7 días, +'+w+' Bonus Defensa 2 h y +'+w+' Bonus Vida 2 h':'')+(x>0?' · +'+x+' 🎟️ Bonus Exp 2 h':'');
   if(S.online(i.u))S.push(i.u,{t:'note',m:msg,tk:1});else E.deliver(i.u,{note:msg});S.log('[influencer] '+c+' → '+i.ok+' válidos')}catch(e){S.log('[influencer] error '+e.message)}};
 ops['inf.new']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const c=infCode(m.code),o=E.uidByName(m.name);if(c.length<3)return err('Código de 3 a 16 letras o números');if(!o)return err('No hay ningún jugador con ese nombre');const d=infDB();if(d[c]&&d[c].u!==o)return err('Ese código ya es de otro influencer');
  d[c]=d[c]||{ok:0,gv:0,ga:0,ts:Date.now()};d[c].u=o;d[c].n=E.acct(o).nm||m.name;const bd=(S.DB.cfg.badges=S.DB.cfg.badges||{});if(!bd[o])bd[o]='inf';S.dirty();S.log('[influencer] código '+c+' → '+d[c].n);return{ok:1}};
 ops['inf.del']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const c=infCode(m.code),d=infDB();if(!d[c])return err('Ese código no existe');delete d[c];S.dirty();return{ok:1}};
 ops['inf.list']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const d=infDB();return{ok:1,lv:INF_LV,vn:INF_VIP_N,en:INF_EXP_N,l:Object.keys(d).map(c=>({c,n:d[c].n,ok:d[c].ok|0,gv:d[c].gv|0,ga:d[c].ga|0}))}};
 ops['inf.me']=(u)=>{const d=infDB(),l=Object.keys(d).filter(c=>d[c].u===u).map(c=>({c,ok:d[c].ok|0,gv:d[c].gv|0,ga:d[c].ga|0}));return{ok:1,lv:INF_LV,vn:INF_VIP_N,en:INF_EXP_N,l}};
+
+/* ===== v325: Mina de la Gran Montaña. Las vetas son compartidas por todo el servidor: quien extrae una la deja vacía 90 días para TODOS ===== */
+const MN_DAYS=90,MN_NODES=60,MN_FL=12,MN_HOUR=60,MN_DAY=200,MN_GAP=1800;
+const mnDB=()=>{S.DB.mn=S.DB.mn||{};return S.DB.mn};
+const mnClean=()=>{const d=mnDB(),n=Date.now(),L=MN_DAYS*864e5;for(const k of Object.keys(d))if(n-d[k]>L)delete d[k]};
+ops['mine.get']=(u,m)=>{const f=Math.floor(+m.f);if(!(f>=1&&f<=MN_FL))return err('Piso inválido');mnClean();const d=mnDB(),l=[];for(const k of Object.keys(d)){const i=k.indexOf(':');if(+k.slice(0,i)===f)l.push(+k.slice(i+1))}return{ok:1,l,days:MN_DAYS}};
+ops['mine.take']=(u,m)=>{const f=Math.floor(+m.f),i=Math.floor(+m.i);if(!(f>=1&&f<=MN_FL&&i>=0&&i<MN_NODES*4))return err('Veta inválida');const a=E.acct(u),n=Date.now(),h=Math.floor(n/36e5),dy=Math.floor(n/864e5);
+ /* antiabuso: nadie puede vaciar la mina sin picar de verdad (ritmo máximo por hora y por día) */
+ if(n-(a.mnT||0)<MN_GAP)return err('Pica con calma: espera un instante');a.mnT=n;
+ if(!a.mnh||a.mnh[0]!==h)a.mnh=[h,0];if(!a.mnd||a.mnd[0]!==dy)a.mnd=[dy,0];if(a.mnh[1]>=MN_HOUR)return err('Tus brazos están cansados: descansa un poco antes de seguir minando');if(a.mnd[1]>=MN_DAY)return err('Ya extrajiste muchísimo hoy: vuelve mañana');
+ mnClean();const d=mnDB(),k=f+':'+i;if(d[k])return{ok:0,gone:1};d[k]=n;a.mnh[1]++;a.mnd[1]++;S.dirty();S.log('[mina] '+(a.nm||a.pn||u)+' extrajo la veta '+k);return{ok:1}};
 
 return{ops,price,GEMP}};

@@ -93,6 +93,12 @@ ops['item.up']=(u,m)=>{const id=String(m.id||''),r=E.reg()[id],a=E.acct(u);if(!r
  E.deliver(u,{gold:-cg,note:'⚒️ Potenciación a +'+L+': −'+cg+' 🪙 (con 3% de impuesto)'});for(const k in c.m)E.deliver(u,{prov:{pk:k,q:-c.m[k]}});
  const win=Math.random()<c.p;if(win){r.up=L;S.dirty()}return{ok:1,up:r.up|0,won:win?1:0}};
 
+const ARC=[null,{pat:6,tel:3,p:1},{pat:12,tel:6,p:1},{pat:20,tel:10,p:.85},{pat:32,tel:16,p:.7},{pat:50,tel:25,p:.55}];
+ops['item.ar']=(u,m)=>{const id=String(m.id||''),r=E.reg()[id],a=E.acct(u);if(!r||r.o!==u)return{e:'Sincroniza primero (el objeto aún no está registrado). Inténtalo de nuevo en unos segundos.'};const L=(r.ar|0)+1;if(L>5)return{e:'Ya tiene el Refuerzo Arácnido al máximo (5)'};const c=ARC[L];
+ if(E.avail(a,'prov','pat')<c.pat||E.avail(a,'prov','tel')<c.tel)return{e:'Faltan patas o telas de araña'};
+ E.deliver(u,{prov:{pk:'pat',q:-c.pat},note:'🕷️ Refuerzo Arácnido nivel '+L+': −'+c.pat+' patas, −'+c.tel+' telas'});E.deliver(u,{prov:{pk:'tel',q:-c.tel}});
+ const win=Math.random()<c.p;if(win){r.ar=L;S.dirty()}return{ok:1,ar:r.ar|0,won:win?1:0}};
+
 /* ===== misiones diarias y cofres (el servidor tira los dados) ===== */
 const KNMS=['común','poco común','rara','épica','legendaria','mítica'],DQKS=[0,.03,.08,.18],DQRS=[[100],[80,20],[55,30,15],[35,30,20,10,4,1]];
 const dayKey=()=>new Date(Date.now()-4*36e5).toISOString().slice(0,10);

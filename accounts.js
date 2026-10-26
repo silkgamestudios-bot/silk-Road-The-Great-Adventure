@@ -43,7 +43,7 @@ function pre(m,ip,rep,done,E){
   if(USR[norm(n)])return fail('Ese usuario ya existe.');
   if(rc&&!(ctx.refOk&&ctx.refOk(rc)))return fail('Ese código de influencer no existe. Revísalo o déjalo vacío.');
   if(Object.values(USR).some(x=>x.e===e))return fail('Ese correo ya está registrado. Entra con tu usuario o recupera tu contraseña.');
-  mkPw(p).then(pw=>{if(USR[norm(n)]){fail('Ese usuario ya existe.');return}const u=uidOf(n);USR[norm(n)]={u,n,e,h:pw.h,s:pw.s,ts:Date.now(),f:0,lk:0};ACC[u]={e,n,ts:Date.now(),pw:1};if(rc)ACC[u].rf=rc;dirty();
+  mkPw(p).then(pw=>{if(USR[norm(n)]){fail('Ese usuario ya existe.');return}const u=uidOf(n);USR[norm(n)]={u,n,e,h:pw.h,s:pw.s,ts:Date.now(),f:0,lk:0};ACC[u]={e,n,ts:Date.now(),pw:1};if(rc){ACC[u].rf=rc;ACC[u].ri=sha('ip:'+ip).slice(0,12)}dirty();
    done(u,{ses:sesFor(u),email:e,name:n,uname:n,master:false,fresh:1})}).catch(()=>fail('No se pudo crear la cuenta.'));return true}
  if(m.lg){const r=m.lg||{},k=norm(r.n),p=String(r.p||'');
   if(!lim('lg'+ip,25,6e5))return fail('Demasiados intentos. Espera unos minutos.');

@@ -152,7 +152,7 @@ function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
  if(m.t==='wbd'){try{p.bd=X.bdg?X.bdg(u):''}catch(e){p.bd=''}return}
  if(m.t==='wcq'||m.t==='wcj'||m.t==='wcl'||m.t==='wcw'||m.t==='wcv'||m.t==='wcg'||m.t==='wcp')return arMsg(p,m);
  if(m.t==='wm'){const x=num(m.x,0,W*T,p.x),y=num(m.y,0,H*T,p.y),dt=Math.min(2,Math.max(.05,(now-p.mt)/1000)),d=Math.hypot(x-p.x,y-p.y),tp=m.tp&&(inCity(x,y)||(J.tpd||[]).some(t=>Math.hypot(x-t.x,y-t.y)<300))&&now-(p.tpT||0)>3000;
-  p.sk=String(m.sk||'').replace(/[^\w:.-]/g,'').slice(0,40);
+  p.sk=String(m.sk||'').replace(/[^\w:.-]/g,'').slice(0,40);p.mo=String(m.mo||'').replace(/[^\w-]/g,'').slice(0,16);
   if(m.dg){p.dg=1;p.uw=m.uw?1:0;p.x=x;p.y=y;p.mt=now;if(!p.ar){p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp)}return}const wasDg=p.dg;p.dg=0;p.uw=0;p.pl=-1;
   if(wasDg&&!psolid(x,y,u)){p.x=x;p.y=y;p.mt=now;return}
   const fly=!!(m.fl&&X.gm&&X.gm(u));if(!fly&&((d>CFG.speed*dt+48&&!tp)||psolid(x,y,u))){send(ws,{t:'wp',x:p.x,y:p.y});return}if(tp)p.tpT=now;
@@ -239,7 +239,7 @@ function ubStep(now,dt){const ups=[];for(const p of PL.values())if(p.uw&&p.hp>0)
  if(UBS.open&&!UBS.dead&&now-UBS.tOpen>40*60*1000)ubReset()}
 const UBUD=now=>[UBS.mask,Math.round(UBS.hold*10),UBS.open?1:0,Math.round(UBS.hp),UBM,UBS.dead?1:0,UBS.dead?Math.max(0,Math.ceil((UBS.cd-now)/1000)):0];
 setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);try{ubStep(now,CFG.tick/1000)}catch(e){log('ub error '+e.message)}
- for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||(q.asp&&!q.ar))continue;const aa=(p.ar&&q.ar)||(p.asp&&q.ar);if(!aa&&Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;if(!aa&&(!!q.dg!==!!p.dg||(q.dg&&!(p.uw&&q.uw)&&!(pid(q.uid)&&pid(q.uid)===pid(p.uid)))))continue;pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||'',q.pvp?1:0,q.wn?1:0,q.bd||'',CO.champ&&CO.champ.uid===q.uid?1:0])}
+ for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||(q.asp&&!q.ar))continue;const aa=(p.ar&&q.ar)||(p.asp&&q.ar);if(!aa&&Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;if(!aa&&(!!q.dg!==!!p.dg||(q.dg&&!(p.uw&&q.uw)&&!(pid(q.uid)&&pid(q.uid)===pid(p.uid)))))continue;pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||'',q.pvp?1:0,q.wn?1:0,q.bd||'',CO.champ&&CO.champ.uid===q.uid?1:0,q.mo||''])}
   const mb=[];let dd=null,dx=null;if(!p.dg){for(const m of near(p.x,p.y,CFG.sview+CFG.leash))if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview)mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);
    for(const m of DYL)if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview){mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);if(!p.dk.has(m.id)){p.dk.add(m.id);(dd=dd||[]).push([m.id,m.v,m.nm||'',m.ty,m.mx,m.sc||0,Math.round(m.hx),Math.round(m.hy),Math.round(m.hp),Math.round(m.x),Math.round(m.y)])}}
    for(const id of p.dk){const m=BY.get(id);if(!m||!m.dyn||Math.hypot(m.x-p.x,m.y-p.y)>CFG.sview*1.15){p.dk.delete(id);(dx=dx||[]).push(id)}}}

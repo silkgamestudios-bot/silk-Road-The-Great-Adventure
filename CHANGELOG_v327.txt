@@ -1,0 +1,5 @@
+v327 - FIX minar gemas (no requiere Manual Deploy nuevo; los Manual Deploy pendientes siguen: store.js, economy.js, market.js, world.json de v325/v326)
+- BUG: al intentar minar una esmeralda/rubí/zafiro/diamante con una pala de nivel bajo (o con pico) no pasaba nada y no salía ningún aviso. Los avisos de "te falta / pide X" se ocultaban sin querer.
+- Ahora: avisa "Necesitas Pala de hierro o mejor para minar Esmeralda (las gemas se minan con PALA, no con pico)" y el botón Minar muestra ❗ lo que falta.
+- Requisitos: Esmeralda/Rubí/Zafiro → pala de hierro o mejor; Diamante → pala de acero o mejor. La pala del Sepulturero (Halloween) solo sirve para cavar tesoros, no para minar.
+- Los avisos "faltan…", "ya tiene…", "otro minero se adelantó" ahora sí se muestran (también en el Refuerzo Arácnido y la mina).

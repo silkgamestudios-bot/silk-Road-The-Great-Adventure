@@ -20,7 +20,7 @@ const COOK={carne:'cocida',car2:'coc2',car3:'coc3',car4:'coc4',car5:'coc5',fi1:'
 /* fletchería (v139): lote de 20 flechas = 1 punta de mineral + madera; las básicas ar0 solo se compran con oro (5 c/u) */
 const ARQ={ar1:['pie',1,1],ar2:['cob',1,1],ar3:['hie',1,2],ar4:['pla',1,2],ar5:['aur',1,3],ar6:['mit',1,3],ar7:['dia',1,4]};
 const KEYK=new Set(['kl1','kl2','kl3','kl4','kl5','kl6','cf1','cf2','cf3','cf4','cf5','cf6']);
-const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','cbl','obs','cua','tur','mgm','jad','ama','amb','top','esa','cri','opf','lte'];
+const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','pat','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','cbl','obs','cua','tur','mgm','jad','ama','amb','top','esa','cri','opf','lte'];
 const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13500,m:{cob:12,hie:6},p:1},{g:24000,m:{hie:12,pla:4},p:.9},{g:37500,m:{hie:16,pla:8},p:.8},{g:54000,m:{pla:14,aur:4},p:.66},{g:73500,m:{pla:18,aur:8,rub:1},p:.52},{g:96000,m:{aur:12,mit:4,esm:2},p:.4},{g:121500,m:{aur:14,mit:8,dia:1},p:.28},{g:150000,m:{mit:14,dia:3,zaf:2},p:.18},{g:220000,m:{mit:20,dia:4,des:6},p:.1},{g:320000,m:{dia:8,des:12,dco:1},p:.05}];
 /* ---------- cuentas ---------- */
 function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev:[],px:{au:0,ap:0,lt:0,bl:0,es:0,pv:0,bh:0,tr:0},vip:0,lic:0,
@@ -60,13 +60,14 @@ const avail=(a,key,sub)=>Math.max(0,resVal(a,key,sub)-reserved(a,key,sub));
 function applyRes(a,key,sub,q){const R=a.res;if(key==='gold')R.gold=Math.max(0,R.gold+q);else if(key==='g')R.g[sub]=Math.max(0,R.g[sub]+q);else if(key==='prov')R.fd[sub]=Math.max(0,R.fd[sub]+q);else if(key==='ec')R.ec[sub]=Math.max(0,R.ec[sub]+q);else if(key==='pot')R.pot=Math.max(0,Math.min(99,R.pot+q));else if(key==='mpot')R.mpot=Math.max(0,Math.min(99,R.mpot+q))}
 function forceExpired(a){const now=Date.now();let n=0;for(const d of a.dl){if(d.forced||!d.sent||now-d.sent<=CFG.dlTtl)continue;let neg=0;for(const [k,s2,q] of dKeys(d))if(q<0){applyRes(a,k,s2,q);neg=1}if(neg){d.forced=1;n++}}if(n)S.dirty();return n}
 /* ---------- validación de objetos y mascotas ---------- */
-const BASE={0:{dm:5},1:{hp:8},2:{hp:4,dm:1},3:{dm:2,hp:2},4:{hp:5},5:{sp:2}};
-function itemMax(it,k){const m=RM[it.r]*(1+it.t*.6)*2.6;let b;if(it.sl<6)b=BASE[it.sl];else b=(it.k===2||it.k===4||it.k===6)?{mp:8}:{hp:3,gd:4};return Math.ceil((b[k]||0)*m)+1}
-function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0,6,-1),t=int(x.t,0,4,-1),r=int(x.r,0,3,-1);if(sl<0||t<0||r<0)return null;
+const BASE={0:{dm:5},1:{hp:8},2:{hp:4,dm:1},3:{dm:2,hp:2},4:{hp:5},5:{sp:2},7:{dm:3},8:{hp:6,mp:3},9:{hp:3,mp:5}};/* 7 anillo, 8 amuleto, 9 pendientes */
+function itemMax(it,k){const m=RM[it.r]*(1+it.t*.6)*2.6;let b;if(it.sl<6||it.sl>=7)b=BASE[it.sl];else b=(it.k===2||it.k===4||it.k===6)?{mp:8}:{hp:3,gd:4};return Math.ceil((b[k]||0)*m)+1}
+function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0,9,-1),t=int(x.t,0,4,-1),r=int(x.r,0,3,-1);if(sl<0||t<0||r<0)return null;
  const o={sl,t,r,li:int(x.li,0,9,0),du:int(x.du,0,100,100)};if(x.k!=null){const k=int(x.k,0,7,-1);if(k<0)return null;o.k=k}
  o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.jv!=null){const jv=int(x.jv,0,300,0);if(jv)o.jv=jv}if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
  if(x.up!=null){const up=int(x.up,0,12,0);if(up)o.up=up}
+ if(x.ar!=null){const ar=int(x.ar,0,5,0);if(ar)o.ar=ar}
  if(x.en!=null){const en=int(x.en,0,8,0),el=int(x.el,0,5,0);if(en&&el){o.en=en;o.el=el}}
  for(const k of['dm','hp','sp','gd','mp']){if(x[k]==null||+x[k]===0)continue;const mx=itemMax(o,k);if(!mx||mx<=1&&k!=='hp')return null;const v=int(x[k],0,1e7,0);if(v>mx*(x.u?1:1))return null;if(v)o[k]=v}
  return o}
@@ -128,11 +129,13 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   if(!master&&!first)for(const rk in COOK){const ck=COOK[rk];if(!(ck in R.fd)||!(rk in R.fd))continue;const drop=Math.max(0,Math.max(0,R.fd[rk]+dAck('prov',rk))-qv[rk]);if(drop>0)cv[ck]=Math.ceil((drop+Math.min(drop,ra))*1.25)}
   if(!master&&!first){for(const ak in ARQ){const [mk,mc,wc]=ARQ[ak];if(!(ak in R.fd)||!(mk in R.fd)||!('mad' in R.fd))continue;const dm=Math.max(0,Math.max(0,R.fd[mk]+dAck('prov',mk))-qv[mk]),dw=Math.max(0,Math.max(0,R.fd.mad+dAck('prov','mad'))-qv.mad),bt=Math.min(Math.floor(dm/mc),Math.floor(dw/wc));if(bt>0)cv[ak]=bt*20}
    if('ar0' in R.fd){const inc=qv.ar0-Math.max(0,R.fd.ar0+dAck('prov','ar0'));if(inc>ra){const nb=Math.min(inc-ra,Math.floor(gsp*.6));if(nb>0){cv.ar0=nb;gsp-=Math.ceil(nb/.6)}}}}
-  for(const k of Object.keys(R.fd)){let q=qv[k];if(!master&&!first){const mx=Math.max(0,R.fd[k]+dAck('prov',k))+(KEYK.has(k)?0:ra)+(cv[k]||0);if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
+  /* v322: pociones por nivel (ph/pm/gh/am) pagadas con oro: cuenta el gasto declarado (pgs), limitado por el oro realmente gastado */
+  const potC=Math.max(0,int(v.pgs,0,1e15,0)-(a.res.pgs|0));let pcr=master||first?0:Math.floor(Math.max(gsp,Math.min(potC,gsp+rate))/30);
+  for(const k of Object.keys(R.fd)){let q=qv[k];if(!master&&!first){let mx=Math.max(0,R.fd[k]+dAck('prov',k))+(KEYK.has(k)?0:ra)+(cv[k]||0);if(q>mx&&/^(ph|pm|gh|am)\d$/.test(k)&&pcr>0){const ex=Math.min(q-mx,pcr);mx+=ex;pcr-=ex}if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
  if(v.ec&&typeof v.ec==='object'){const o={};let lgc=0;if(!master&&!a.calm&&v.calm!=null){a.calm=1;lgc=Math.min(int(v.calm,0,1e6,0),2500)}/* v222: calabazas viejas (antes sueltas) pasan a monedas, una sola vez y hasta 2.500 */
  for(const k of EVK){let q=int(v.ec[k],0,1e6,0);if(!master&&!first){const mx=Math.max(0,R.ec[k]+dAck('ec',k))+Math.ceil(CFG.ecRate*dt*CFG.slack+CFG.ecBurst)+(k==='hl'?lgc:0);if(q>mx){flag(u,'monedas '+k+' '+R.ec[k]+'→'+q);q=mx;fix.ec=1}}o[k]=q}v.ec=o}
  v.p=int(v.p,0,99,0);if(v.mpp!=null)v.mpp=int(v.mpp,0,99,0);const pgsNew=int(v.pgs,0,1e15,0);v.pgs=Math.max(pgsNew,a.res.pgs|0);
- /* pociones básicas: solo suben si se pagaron con oro (la más barata cuesta unos 39 🪙 en la feria) o por el goteo de botines; ya no se rellenan gratis editando el guardado */
+ /* pociones básicas: solo suben si se pagaron con oro (la más barata cuesta unos 38 🪙 en la feria) o por el goteo de botines; ya no se rellenan gratis editando el guardado */
  if(!master&&!first){const pb=a.pb&&typeof a.pb==='object'?a.pb:(a.pb={v:30,t:now});pb.v=Math.min(30,(+pb.v||0)+Math.max(0,now-(+pb.t||now))/6000);pb.t=now;
   /* el cliente anota el oro gastado en pociones (pgs); así comprar y ganar oro en la misma ventana ya no hace perder pociones.
      Lo reclamado se limita a lo que ya permite el oro (gasto neto + ritmo de ganancia), así que no abre nada nuevo. */
@@ -149,9 +152,10 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
    if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'objeto de otro jugador/duplicado '+c.id,2);return null}
    if(!r){if(!first&&!master&&!mintOk(a,'i',c.r,now)){dropped++;flag(u,'demasiados objetos nuevos de rareza '+c.r);return null}ECO.reg[c.id]={o:u,k:'i',t:now};S.dirty()}else if(r.o!==u&&master){ECO.reg[c.id]={o:u,k:'i',t:now}}}
   if(c.up){const rr=c.id&&ECO.reg[c.id],mx=(rr&&rr.up)|0;if(c.up>mx&&!master){flag(u,'potenciación falsa +'+c.up+' (permitido +'+mx+')');c.up=mx}if(!c.up)delete c.up}
+  if(c.ar){const rr=c.id&&ECO.reg[c.id],mx=(rr&&rr.ar)|0;if(c.ar>mx&&!master){flag(u,'refuerzo arácnido falso '+c.ar+' (permitido '+mx+')');c.ar=mx}if(!c.ar)delete c.ar}
   if(c.en){const rr=c.id&&ECO.reg[c.id];if(!master&&!(rr&&rr.en===c.en&&(rr.el|0)>=1)){flag(u,'encantamiento falso '+c.en+' nv'+c.el);delete c.en;delete c.el}else if(!master&&c.el>(rr.el|0))c.el=rr.el|0}
   return c};
- if(v.eq&&typeof v.eq==='object'){const e={};for(const k of Object.keys(v.eq).slice(0,7)){const c=chk(v.eq[k]);if(c)e[k]=c}v.eq=e}
+ if(v.eq&&typeof v.eq==='object'){const e={};for(const k of Object.keys(v.eq).slice(0,11)){const c=chk(v.eq[k]);if(c)e[k]=c}v.eq=e}
  if(Array.isArray(v.bag))v.bag=v.bag.slice(0,v.bgc).map(x=>chk(x)).filter(Boolean);
  if(Array.isArray(v.lb))v.lb=v.lb.slice(0,v.lgc).map(x=>chk(x)).filter(Boolean);else v.lb=[];
  if(Array.isArray(v.dep))v.dep=v.dep.slice(0,60).map(x=>chk(x)).filter(Boolean);else v.dep=[];
@@ -176,7 +180,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  v.ml=0;/* el master lo decide el servidor */
  /* ---- aceptar ---- */
  a.res.gold=v.g;a.res.bk=v.bk;a.res.g=v.i.slice();if(v.fd)a.res.fd=Object.assign({},v.fd);if(v.ec)a.res.ec=Object.assign({},v.ec);a.res.pot=v.p;a.res.pgs=v.pgs;if(v.mpp!=null){a.res.mpot=v.mpp;a.mpok=1}
- a.lv=lv;a.xp=xp;if(S.refSeen&&lv>=20&&!a.rfd)S.refSeen(u,a);if(typeof v.nm==='string'&&v.nm)a.pn=v.nm.replace(/[^\p{L}\p{N} '_-]/gu,'').slice(0,18);if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
+ a.lv=lv;a.xp=xp;if(S.refSeen&&lv>=15&&!a.rfd)S.refSeen(u,a);if(typeof v.nm==='string'&&v.nm)a.pn=v.nm.replace(/[^\p{L}\p{N} '_-]/gu,'').slice(0,18);if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
  /* lo que sigue sin aplicar (entregas pendientes) se descuenta del esperado para que no se aplique dos veces */
  return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl,p:fix.pp,mp:fix.pm,bx:fix.bx?v.bx:undefined}:null,acked:acked.map(d=>d.id)}}
 /* migración única: el mismo aviso repetido cada 8 s sumaba decenas de strikes y sacaba a jugadores del ranking; se cuentan solo los motivos distintos */

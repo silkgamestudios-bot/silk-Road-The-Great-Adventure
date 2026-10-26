@@ -1,0 +1,4 @@
+v280 — Botón 💀 de PvP (solo cliente)
+- El botón de PvP ahora es una calavera 💀 redonda en la fila de arriba a la derecha, justo antes del mapa 🗺️.
+- Apagado: calavera tenue. Encendido: borde rojo con brillo.
+- PvP y party son gratis para todos desde el nivel 1 (sin VIP). Solo comerciar (trade) sigue pidiendo servicio.

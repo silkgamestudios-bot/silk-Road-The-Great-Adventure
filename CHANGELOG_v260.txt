@@ -1,0 +1,3 @@
+v260 - Zona segura (solo cliente: play.html + sw.js, SIN Manual Deploy)
+- Dentro de los pueblos no se puede atacar: ni cuerpo a cuerpo, ni a distancia, ni habilidades, ni mascotas. Tampoco se puede dañar a un mob que esté dentro del pueblo.
+- Aviso: "Zona segura: no se puede atacar dentro del pueblo".

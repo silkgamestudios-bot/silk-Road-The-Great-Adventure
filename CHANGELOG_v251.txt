@@ -1,0 +1,2 @@
+v251
+- Los boletos de plan ahora aparecen como OBJETO en la 🎒 Mochila de uso (con su cantidad). Al tocarlo salen los botones: ✅ Canjear · 📨 Enviar a un jugador · 📢 Vender en el mercado. Al comprar un boleto el aviso dice que ya está en la mochila.

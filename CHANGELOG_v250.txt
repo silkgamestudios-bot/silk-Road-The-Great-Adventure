@@ -1,0 +1,5 @@
+v250
+- Tienda de planes en CASILLAS pequeñas (planes, boletos y bonus, uno por uno). Al tocar una casilla sale una CARTA emergente con toda la información destacada (qué incluye, precio, precio por día, estado) y sus botones.
+- Los boletos de plan se pueden VENDER POR ORO en el Mercado de jugadores: nueva categoría "Planes" en Ofertas; se publican con cantidad y precio; el servidor los retiene en custodia y los entrega al comprador (comisión 3% como el resto). Se pueden retirar. (servidor: market.js)
+- Los boletos de plan también se pueden meter en un trato (trade.tk reconoce los 4 boletos nuevos).
+- Botón "📢 Vender en el mercado" desde la carta del boleto lleva directo al formulario de oferta.

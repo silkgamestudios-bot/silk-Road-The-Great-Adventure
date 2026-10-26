@@ -1,0 +1,5 @@
+v249
+- Tienda de planes con diseño nuevo, más aireado: tarjetas grandes con lista de beneficios con check, y dos opciones de precio por plan (30 y 15 días) con precio grande y costo por día.
+- 🎟️ Boletos transferibles ahora son de los nuevos planes (Plan Jugador y Plan Mercader, 30 y 15 días): es el mismo plan guardado como objeto; se puede canjear, enviar a otro jugador por nombre o meter en un trato. También se canjea en la tienda del Pueblo de Canje (antes no aparecían allí). Siguen comprándolos solo Mercaderes y Revendedores. Los boletos antiguos que ya existan se pueden canjear/enviar (no se pueden comprar más).
+- Bonus: otra vez uno por uno (4 tarjetas independientes, cada una con su +4 h).
+- Servidor (store.js): boletos de plan (tk.buy/tk.use).

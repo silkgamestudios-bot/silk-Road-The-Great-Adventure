@@ -1,0 +1,3 @@
+v274 (solo cliente, NO requiere Manual Deploy)
+- La party ya NO requiere servicio VIP: invitar y unirse es gratis para todos.
+- El comercio (trade) sigue con el servicio Comercio (3 gemas) o Plan Jugador (7).

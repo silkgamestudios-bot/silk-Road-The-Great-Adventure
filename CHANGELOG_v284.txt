@@ -1,0 +1,4 @@
+v284 — Distintivo premium junto al nombre (SERVIDOR + CLIENTE: Manual Deploy)
+- Con un 👑 Plan Jugador o 🛒 Plan Mercader activo, eliges un distintivo (60 opciones: banderas de países y emojis) que todos ven junto a tu nombre sobre tu personaje (y en la party).
+- Se elige en 💎 Tienda › VIP, en la tarjeta del plan, con el botón "🏷️ Elegir mi distintivo". Se puede quitar o cambiar cuando quieras.
+- El servidor valida: solo con plan activo y solo de la lista (sin texto libre). Si el plan vence, el distintivo se oculta y vuelve al renovar.

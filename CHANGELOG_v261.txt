@@ -1,0 +1,3 @@
+v261 - Zona segura también con el mundo compartido (SERVIDOR: hacer Manual Deploy)
+- Cliente (world-client.js): dentro del pueblo no se puede dañar a los mobs sincronizados con el servidor (el arreglo de la v260 no cubría ese camino).
+- Servidor (world.js): ignora el daño enviado desde dentro de un pueblo o contra un mob dentro de un pueblo.

@@ -1,0 +1,3 @@
+v259 - Cuevas fluidas (solo cliente: play.html + sw.js, SIN Manual Deploy)
+- Las cuevas se pintaban dos veces por casilla (fondo exterior + cueva). Ahora se dibujan de un solo golpe desde una caché.
+- Costo de dibujo en cueva: ~29 ms -> ~16 ms (prueba CPU x4), menos que el mapa exterior.

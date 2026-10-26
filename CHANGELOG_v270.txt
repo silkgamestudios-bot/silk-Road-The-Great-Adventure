@@ -1,0 +1,5 @@
+v270 - Master: inmortal, entra a zonas VIP, teletransporte tocando el mapa (solo cliente)
+- Master no muere (boton "Inmortal" en Zona GM > Pruebas para apagarlo).
+- Master entra al Submundo sin VIP.
+- Master toca cualquier punto del mapa y aparece alli.
+- Nube voladora (ya existente) para cruzar todo.

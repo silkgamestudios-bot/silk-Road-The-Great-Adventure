@@ -1,0 +1,13 @@
+v264 - EL SUBMUNDO (fase 2)  ·  REQUIERE Manual Deploy (cambia world.js y world-client.js)
+MOBS (Nv 40 → 350 por zonas, según qué tan lejos estás de la entrada por los túneles):
+- 6 zonas: Galerías de Hades, Laberinto del Minotauro, Nido de las Lamias, Campos de Asfódelos, Ríos de Fuego, Puertas del Tártaro.
+- Minotauros, cíclopes, sátiros, lamias, medusas, centauros caídos, nigromantes, psicopompos, súcubos, titanes, Cerbero, archidemonios...
+CUEVA DEL PORTÓN (al final del Submundo):
+- Portón enorme de hierro con fuego alrededor. Se abre cuando 8 héroes pisan a la vez las 8 placas rúnicas (no importa si están en party o no).
+- Los jugadores del Submundo se ven entre sí.
+- Detrás, la Cámara de Balor: demonio de fuego Nv 400, 20.000.000 PV COMPARTIDOS entre todos. Ataques con aviso en el suelo (pisotón, onda de fuego con huecos, meteoritos, rayos giratorios).
+- Solo da EXP (mucha) y poco oro. Quien participe desbloquea el camino al Infierno (portal en la cámara; el Infierno llega en la Temporada 2).
+- Después de morir, el portón se sella 20 min.
+REFUGIO DE LETE (antes de la cueva):
+- Pueblo pequeño, en ruinas y disperso, sin gente en las calles (se esconden). Posada, Herrería, Armería, Botica, Materiales, Iglesia, Almacén y Cocinero.
+- Zona segura (no se ataca ni entran mobs) y PUNTO SEGURO: si mueres en el Submundo reapareces en su hoguera.

@@ -1,0 +1,5 @@
+v263 - EL SUBMUNDO (fase 1)
+- Nuevo sub-mundo del tamaño del mapa, bajo las ruinas griegas "Ágora Caída" (centro del mapa).
+- Entrada: requiere VIP activo (7 💎) o Combo Cazador (3 💎). Sin servicio, la escalera está sellada con aviso. Si se vence adentro, te saca.
+- 12 ciudades subterráneas unidas por túneles no lineales y cuevas; monstruos (insectos/arañas/escorpiones, serpientes, murciélagos...) aparecen por zonas.
+- Solo cliente: NO requiere Manual Deploy.

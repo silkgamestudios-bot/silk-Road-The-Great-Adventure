@@ -1,0 +1,5 @@
+v248 (reemplaza la v247)
+- Tope de precio de los servicios VIP: el jugador normal paga MÁXIMO 7 💎 al mes por todo; solo el Mercader llega a 12 💎 (por sus ventajas para ganar oro).
+  · Plan Jugador: Completo 30 días = 7 💎; Medio 15 días = 4 💎 (43% menos en total, 14% más caro por día).
+  · Plan Mercader (solo clase Mercader; suma Escolta + Licencia de Mercader): Completo = 12 💎; Medio = 7 💎.
+- Los servicios sueltos ya no se venden (ni en la tienda ni en el servidor: store.js los rechaza). Así nadie puede sumar servicios por separado y pasar el tope. Los boletos existentes siguen funcionando.

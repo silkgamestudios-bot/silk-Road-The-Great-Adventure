@@ -1,0 +1,4 @@
+v267 - Cuevas mucho mas fluidas (solo cliente: play.html + sw.js, SIN Manual Deploy)
+- Causa: dentro de una cueva el juego seguia recorriendo ~11.000 monstruos del mundo exterior en cada frame (IA, ranuras de ataque y dibujo).
+- Ahora en cueva solo procesa los monstruos de la cueva y los que estan cerca (lista que se refresca cada 0.25 s).
+- Prueba Cueva de las Aranas con CPU x4: 18 -> 54 FPS. El comportamiento de los mobs es identico al anterior.

@@ -1,0 +1,5 @@
+v273 (solo cliente, NO requiere Manual Deploy)
+- Cuevas tematicas: Arañas (mayoria aranas), Catacumbas (esqueletos/zombis/fantasmas), Pantano (serpientes/escorpiones), Abismo.
+- 6 formas nuevas de arana, mas poderosas mientras mas profundo.
+- Primer piso mas suave cerca de la entrada; cada piso +~20% mobs (tope) y mas fuertes.
+- Emboscadas escalan por piso. Evento Halloween ya no ensucia el tema de las cuevas.

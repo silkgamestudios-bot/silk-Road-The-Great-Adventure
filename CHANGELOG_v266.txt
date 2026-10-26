@@ -1,0 +1,6 @@
+v266 - Botin del Submundo
+- Mobs del Submundo: 12% equipo comun nv 30/50/60 (stats segun nivel), 5% Bolso de Fuego de 65 espacios (max 2 en tu poder).
+- Ya no sueltan equipo normal del juego. Oro y exp siguen escalando con el nivel del mob.
+- Mochila/bolsa de loot soportan 65 espacios.
+- Solo cliente: NO requiere Manual Deploy (los archivos del servidor son los de v264).
+- v266: exp por kill = xpNeed(nivel del mob)/700; oro = 12% de la exp (45% de las veces).

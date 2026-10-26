@@ -1,0 +1,6 @@
+v247
+- Tienda de gemas simplificada a DOS planes que lo incluyen todo:
+  · 👑 Plan Completo (30 días, 15 💎 = 0.50 💎/día): Loot automático, Poción automática, Comercio, Cazador PvP, Licencia de Cazador; los Mercaderes además Escolta + Licencia de Mercader.
+  · 🗓️ Plan Medio (15 días, 9 💎 = 0.60 💎/día): lo mismo a la mitad de tiempo, 40% más barato en total pero 20% más caro por día.
+- Los servicios sueltos quedan recogidos en un desplegable "Servicios sueltos" (cerrado por defecto). Los VIP Jugador/Mercader salen de la tienda (los boletos existentes siguen funcionando).
+- Servidor (store.js): nuevos servicios vpf/vph.

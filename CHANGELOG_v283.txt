@@ -1,0 +1,4 @@
+v283 — Arreglo: PvP 💀 y clic para party no aparecían (world.json regenerado) — SERVIDOR: Manual Deploy
+- Causa: el "mundo online" solo se conecta si world.json coincide con los enemigos del juego. Tras los cambios de cuevas/coliseo ya no coincidía, así que el servidor lo rechazaba y se jugaba en modo local: sin botón 💀 PvP y sin clic en jugadores (party, perfil).
+- Se regeneró world.json con el mundo actual (11 210 enemigos y terreno). Ahora "🌐 Mundo online conectado" aparece al entrar y el 💀 vuelve a su sitio junto al mapa.
+- OJO: cada vez que se cambie cómo se genera el mundo hay que regenerar world.json.

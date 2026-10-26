@@ -1,0 +1,6 @@
+v262 - Pueblos grandes (SERVIDOR: hacer Manual Deploy; sube también world.json)
+- Cada ciudad crece con un anillo exterior: ~2x más área (hasta +10 casillas a los lados y +8 arriba/abajo, menos donde hay cuevas/jefes/mazmorras cerca).
+- Anillo: calles empedradas con arcos de entrada con el nombre de la ciudad, casas con el estilo de cada ciudad (china, adobe, persa, greco-romana, tibetana), pozos, árboles temáticos y farolas. Todo con colisiones.
+- Los aldeanos también caminan por el anillo.
+- Mobs que estaban dentro del anillo se quitan; zona segura se extiende a todo el pueblo (cliente y servidor).
+- world.json: cada ciudad trae su 'ex' (extensión) para que el servidor sepa el tamaño real.

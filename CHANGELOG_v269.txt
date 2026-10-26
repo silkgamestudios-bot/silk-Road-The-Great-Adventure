@@ -1,0 +1,8 @@
+v269 - Mercader renovado + DM cambia de clase + fix Bolso de Fuego (SERVIDOR: Manual Deploy)
+- Master/DM: zona GM -> "Cambiar de clase" en cualquier momento.
+- Mercader: sin comercio de bienes (Seda, Especias, Jade, Te, Vidrio). Ahora es tienda ambulante de objetos.
+- Mi carruaje: subir objetos de la mochila con precio, abrir/cerrar tienda, % de compra.
+- Tiendas: buscador de objetos entre todas las tiendas, compra con 3% de impuesto.
+- Mapa: tiendas abiertas marcadas con carrito; tarjeta con Ver tienda / Privado / Ir.
+- Servidor: economy.js acepta Bolso de Fuego 65 (bug de v265); market.js paga al vendedor y suma rango.
+- Wiki actualizada (Novedades, Mercader).

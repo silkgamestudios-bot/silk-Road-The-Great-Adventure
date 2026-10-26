@@ -1,0 +1,5 @@
+v271 - Encargos (200 misiones simples) + arreglo cadenas de mascotas (solo cliente)
+- Nueva pestana Tareas > Encargos: 200 misiones simples, 8 al dia, poco XP/oro.
+- Contadores nuevos: casillas recorridas, a caballo, variantes de monstruos, pociones, kills en cuevas.
+- Cadenas de mascotas (perro, halcon, buho, lobo): lugares de pista y defensa ahora despejados y alcanzables; marcador en mapa.
+- Bug del perro: el punto de la pista 2 caia sobre un arbol.

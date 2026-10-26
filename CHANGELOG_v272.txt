@@ -1,0 +1,6 @@
+v272 - Ficha de jugador, Party/Comercio por VIP, panel Consumo, botones rapidos (solo cliente)
+- Tocar a un jugador abre ficha: clase, nivel, zona, party, amistad; chat privado y amigo gratis.
+- Party y Comercio bloqueados con candado: servicio "Comercio y Party" (3 gemas) o Plan Jugador (7).
+- Botones rapidos: pociones de vida/mana, todos con cantidad.
+- Panel Consumo con imagen del item y barra bajo el HUD de vida/mana.
+- Noches mas oscuras durante el evento de Halloween.

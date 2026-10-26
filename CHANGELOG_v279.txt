@@ -1,0 +1,5 @@
+v279 (SERVIDOR + cliente: REQUIERE Manual Deploy en Render)
+- GM en el Coliseo: entra gratis, ve como espectador invisible, boton Iniciar ya (solo), Modo transmision (oculta la interfaz).
+- GM ve en el Coliseo la lista de gladiadores con su vida y cuantos jugadores tienen PvP activo en el mundo.
+- GM puede usar el boton de comercio sin servicio.
+- Incluye todo de v274-v278 (party gratis, PvP gratis nivel 1, Coliseo junto a Chang'an).

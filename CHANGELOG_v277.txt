@@ -1,0 +1,4 @@
+v277 (SERVIDOR + cliente: REQUIERE Manual Deploy en Render)
+- Coliseo rehecho: arena pequena (28x18 casillas) rodeada de gradas con publico sentado (decoracion viva).
+- Suelo de arena, columnas y muros de marmol, parapeto dorado; zona que se cierra mas pequena (aro 470 px).
+- Se oculta el nivel de los rivales dentro del Coliseo; zona roja solo dentro de la arena.

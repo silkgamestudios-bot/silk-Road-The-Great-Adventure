@@ -1,0 +1,6 @@
+v276 (SERVIDOR + cliente: REQUIERE Manual Deploy en Render)
+- Coliseo Silk Road (etapa 1): fachada romana con taquillas cerca de la ciudad 5, entrada 1000 oro.
+- Arena abierta con columnas/muros, todos contra todos (2-16), vida igualada, sin perder XP ni items.
+- Combate 6 min: la zona se cierra desde el seg. 50; fuera de ella baja la vida. Gana el ultimo en pie o el de mas vida.
+- Pozo de entradas al ganador (-5% quemado). Reembolso si sales antes de empezar.
+- Archivos: world.js, server.js, world-client.js, play.html, sw.js, wiki.js.

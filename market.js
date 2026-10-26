@@ -2,7 +2,7 @@
    el servidor comprueba oro/mercancía/objeto, mueve la propiedad y entrega a cada parte (idempotente). El cliente no decide nada. */
 module.exports=function(S,E){
 const {DB}=S;const RM=E.RM;
-const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','ec_hl','ec_nv','ec_lu','ec_am','ec_nz','mpocion'];
+const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','cbl','obs','cua','tur','mgm','jad','ama','amb','top','esa','cri','opf','lte','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','ec_hl','ec_nv','ec_lu','ec_am','ec_nz','mpocion'];
 const TKA=['vpf','vph','vmf','vmh','cmb','es','lic','vipm','vipj','pv','bh'],tkAdd=(u,k,q)=>{const a=E.acct(u);a.tk=(a.tk&&typeof a.tk==='object')?a.tk:{};a.tk[k]=(a.tk[k]|0)+q;S.dirty();E.pushEnt(u)};
 const int=(v,a,b,d)=>{v=Math.floor(+v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d};
 const iv=it=>Math.round(720*RM[it.r]*(1+it.t*.6)*(it.dv?.05:1));
@@ -77,6 +77,17 @@ ops['shop.set']=(u,m)=>{const a=E.acct(u);if(!isMerc(a))return{e:'Necesitas ser 
  const ar=(x)=>Array.isArray(x)?[0,1,2,3,4].map(i=>int(x[i],0,1e12,0)):[0,0,0,0,0],mp=(x)=>{const o={};if(x&&typeof x==='object')for(const k of PVL){const v=int(x[k],0,1e12,0);if(v)o[k]=v}return o};
  const old=col('shops')[u]||{};const s={u,nm:a.nm||'Jugador',sh:String(m.sh||'').replace(/[^\p{L}\p{N} '._-]/gu,'').slice(0,24)||(a.nm+' Shop'),buy:ar(m.buy),sell:ar(m.sell),pb:mp(m.pb),ps:mp(m.ps),ib:int(m.ib,0,1000,0),tr:old.tr|0,st:[0,0,0,0,0],pst:{},bud:0,ts:now()};
  col('shops')[u]=s;shopView(u);return{ok:1}};
+/* v307: Forja de Lete. Todo lo decide el servidor: materiales, oro (+3% de impuesto), probabilidad y el objeto que sale */
+const fgStat=(it,mm)=>{const sl=it.sl,K=it.k;if(sl==0)it.dm=Math.round(5*mm);else if(sl==1)it.hp=Math.round(8*mm);else if(sl==2){it.hp=Math.round(4*mm);it.dm=Math.round(1*mm)}else if(sl==3){it.dm=Math.round(2*mm);it.hp=Math.round(2*mm)}else if(sl==4)it.hp=Math.round(5*mm);else if(sl==5)it.sp=Math.round(2*mm);else{if(K==2||K==4||K==6)it.mp=Math.round(8*mm);else{it.hp=Math.round(3*mm);if(K==0)it.gd=Math.round(4*mm)}}};
+function fgPay(u,a,c,why){const cg=c.g+Math.ceil(c.g*.03);if(E.avail(a,'gold')<cg)return{e:'Oro insuficiente (precio + 3% de impuesto)'};for(const k in c.m)if(E.avail(a,'prov',k)<c.m[k])return{e:'Te faltan materiales del Submundo'};
+ E.deliver(u,{gold:-cg,note:why+': −'+cg+' 🪙 (con 3% de impuesto)'});for(const k in c.m)E.deliver(u,{prov:{pk:k,q:-c.m[k]}});return null}
+ops['forge.make']=(u,m)=>{const a=E.acct(u),e=Math.floor(+m.e),q=Math.floor(+m.q),sl=Math.floor(+m.sl);if(!(e>=1&&e<=8)||!(q>=1&&q<=3)||!(sl>=0&&sl<=6))return{e:'Receta no válida'};
+ const c=E.FGQ[q],k=(a.cls>=0&&a.cls<=7)?a.cls:0,cs=E.forgeCost(e,q),er=fgPay(u,a,cs,'🔮 Forja de Lete');if(er)return er;
+ const it={sl,t:c.t,r:c.r,li:c.li,k,du:100,en:e,el:c.el,id:'f'+E.rid(7)};fgStat(it,E.RM[c.r]*(1+c.t*.6)*1.1);
+ E.reg()[it.id]={o:u,k:'i',t:Date.now(),en:e,el:c.el};S.dirty();E.deliver(u,{item:it,note:'🔮 ¡Forjaste un equipo encantado de '+E.ENCN[e]+' (Nv '+c.el+')! Está en tu mochila'});return{ok:1}};
+ops['forge.en']=(u,m)=>{const id=String(m.id||''),r=E.reg()[id],a=E.acct(u),e=Math.floor(+m.e);if(!r||r.o!==u)return{e:'Sincroniza primero (el objeto aún no está registrado). Inténtalo de nuevo en unos segundos.'};
+ if(!(e>=1&&e<=8))return{e:'Hechizo no válido'};const cur=r.en|0;if(cur&&cur!==e)return{e:'Ese objeto ya tiene el hechizo '+E.ENCN[cur]};const L=(cur?(r.el|0):0)+1;if(L>5)return{e:'Ya está al máximo (Nv 5)'};
+ const cs=E.encCost(e,L),er=fgPay(u,a,cs,'🔮 Encantamiento '+E.ENCN[e]+' Nv '+L);if(er)return er;const win=Math.random()<cs.p;if(win){r.en=e;r.el=L;S.dirty()}return{ok:1,en:r.en|0,el:r.el|0,won:win?1:0}};
 ops['item.up']=(u,m)=>{const id=String(m.id||''),r=E.reg()[id],a=E.acct(u);if(!r||r.o!==u)return{e:'Sincroniza primero (el objeto aún no está registrado). Inténtalo de nuevo en unos segundos.'};const L=(r.up|0)+1;if(L>12)return{e:'Ya está al máximo (+12)'};const c=E.UPC[L];
  const cg=c.g+Math.ceil(c.g*.03);if(E.avail(a,'gold')<cg)return{e:'Oro insuficiente (precio + 3% de impuesto)'};for(const k in c.m)if(E.avail(a,'prov',k)<c.m[k])return{e:'Faltan minerales'};
  E.deliver(u,{gold:-cg,note:'⚒️ Potenciación a +'+L+': −'+cg+' 🪙 (con 3% de impuesto)'});for(const k in c.m)E.deliver(u,{prov:{pk:k,q:-c.m[k]}});

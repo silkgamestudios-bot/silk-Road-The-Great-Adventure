@@ -41,6 +41,9 @@ ops['adm.gems']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const q=M
  const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u);
  gmGiveGems(o,q,'el master '+by,o===u?'pago':'');const a=E.acct(o);gmLogAdd(by,'gem',a.nm||o,q,'');
  S.log('[master] '+by+' acreditó '+q+' gemas a '+(a.nm||o)+' (total '+E.gTot(a)+')');return{ok:1,nm:a.nm||o,q,tot:E.gTot(a)}};
+ops['adm.bag']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const sz=Math.floor(+m.sz);if(!E.BAGT.includes(sz)||sz<40)return err('Tamaño de mochila no válido');
+ const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u),a=E.acct(o);
+ E.grantBag(o,sz,'el master '+by);gmLogAdd(by,'bag',a.nm||o,sz,'');S.log('[master] '+by+' entregó mochila de '+sz+' a '+(a.nm||o));return{ok:1,nm:a.nm||o,sz,bn:E.BAGN[sz]}};
 ops['adm.gold']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const q=Math.floor(+m.q);if(!(q>=1&&q<=GM_MAXO))return err('Cantidad inválida (1 a 1.000.000.000)');
  const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u),a=E.acct(o);
  gmGiveGold(o,q);gmLogAdd(by,'gold',a.nm||o,q,'');S.log('[master] '+by+' envió '+q+' de oro a '+(a.nm||o));return{ok:1,nm:a.nm||o,q}};

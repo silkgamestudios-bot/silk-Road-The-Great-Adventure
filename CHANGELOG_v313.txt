@@ -1,0 +1,4 @@
+v313 (solo cliente, SIN Manual Deploy)
+- Cada pieza de armadura de tu clase (casco, pechera, guantes, pantalón, botas) da puntos de habilidad que suman al poder de tu habilidad de clase (daño, alcance y área).
+- Puntos por pieza = 20% del nivel del set (Nv 10: 2, Nv 50: 10, Nv 75: 15, Nv 110: 22). Los sets elementales (50/75/110) dan +25%.
+- Se ve en la descripción de cada pieza ("✨ +N pts") y en el panel de habilidades ("incluye +N pts de tu equipo"). Tope total: nivel de habilidad 800.

@@ -20,7 +20,7 @@ const COOK={carne:'cocida',car2:'coc2',car3:'coc3',car4:'coc4',car5:'coc5',fi1:'
 /* fletchería (v139): lote de 20 flechas = 1 punta de mineral + madera; las básicas ar0 solo se compran con oro (5 c/u) */
 const ARQ={ar1:['pie',1,1],ar2:['cob',1,1],ar3:['hie',1,2],ar4:['pla',1,2],ar5:['aur',1,3],ar6:['mit',1,3],ar7:['dia',1,4]};
 const KEYK=new Set(['kl1','kl2','kl3','kl4','kl5','kl6','cf1','cf2','cf3','cf4','cf5','cf6']);
-const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6'];
+const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','cbl','obs','cua','tur','mgm','jad','ama','amb','top','esa','cri','opf','lte'];
 const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13500,m:{cob:12,hie:6},p:1},{g:24000,m:{hie:12,pla:4},p:.9},{g:37500,m:{hie:16,pla:8},p:.8},{g:54000,m:{pla:14,aur:4},p:.66},{g:73500,m:{pla:18,aur:8,rub:1},p:.52},{g:96000,m:{aur:12,mit:4,esm:2},p:.4},{g:121500,m:{aur:14,mit:8,dia:1},p:.28},{g:150000,m:{mit:14,dia:3,zaf:2},p:.18},{g:220000,m:{mit:20,dia:4,des:6},p:.1},{g:320000,m:{dia:8,des:12,dco:1},p:.05}];
 /* ---------- cuentas ---------- */
 function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev:[],px:{au:0,ap:0,lt:0,bl:0,es:0,pv:0,bh:0,tr:0},vip:0,lic:0,
@@ -39,6 +39,16 @@ function grantGems(u,q,ownTr,why){const a=acct(u);if(ownTr==='tr')a.gem.tr+=q;el
 /* Bonus premium (⭐🪙🛡️❤️): lo COMPRADO lo decide el servidor; el cliente solo gasta el tiempo mientras juega */
 const BX={ms:4*36e5,max:20*36e5,cost:2};
 /* ---------- entregas (idempotentes) ---------- */
+/* v307: Forja de Lete: hechizos (encantamientos) de equipo con materiales del Submundo */
+const ENCN=[null,'Llama','Escarcha','Tormenta','Arcano','Fortuna','Furia','Sabiduría','Eclipse'];
+const ENCM=[null,['mgm','amb','esa'],['cua','ama','cri'],['cbl','top','cri'],['tur','ama','esa'],['jad','top','esa'],['obs','amb','cri'],['tur','top','esa'],['ama','esa','cri']];
+const ENCL=[null,{a:6,b:0,g:3e4,p:1},{a:12,b:2,g:9e4,p:.85},{a:20,b:5,g:25e4,p:.65},{a:30,b:10,x:2,g:7e5,p:.4},{a:45,b:18,x:4,l:1,g:18e5,p:.22}];
+function encCost(e,L){const c=ENCL[L],m=ENCM[e],o={};const add=(k,q)=>{if(q>0)o[k]=(o[k]||0)+q};add(m[0],c.a);add(m[1],c.b);add(m[2],c.x||0);add('lte',c.l||0);return{m:o,g:c.g,p:c.p}}
+const FGQ=[null,{t:2,r:1,li:5,el:1,a:12,b:0,x:0,g:12e4},{t:3,r:2,li:7,el:2,a:28,b:8,x:0,g:6e5},{t:4,r:3,li:9,el:3,a:50,b:20,x:3,g:25e5}];
+function forgeCost(e,q){const c=FGQ[q],m=ENCM[e],o={};const add=(k,n)=>{if(n>0)o[k]=(o[k]||0)+n};add(m[0],c.a);add(m[1],c.b);add(m[2],c.x);return{m:o,g:c.g}}
+/* v306: mochilas 25..500. Loot: solo 40 y 65. Las demás las entrega el servidor (misiones, jefes, GM) con grantBag */
+const BAGT=[25,40,65,90,120,160,210,270,340,420,500],BAGN={40:'Bolso de Caminante',65:'Bolso de Fuego',90:'Morral del Explorador',120:'Mochila del Cazador',160:'Alforja del Mercader',210:'Mochila de Escolta',270:'Mochila del Capitán',340:'Mochila Real',420:'Mochila del Gran Maestro',500:'Mochila Sin Fondo'};
+function grantBag(u,sz,why){sz=+sz;if(!BAGT.includes(sz)||sz<40)return false;const a=acct(u);a.bgr=Math.max(a.bgr|0,sz);deliver(u,{bag:sz,note:'🎒 ¡'+(why?why+': ':'')+BAGN[sz]+' de '+sz+' espacios! Úsala desde 🎒 Objetos'});return true}
 function deliver(u,d){const a=acct(u);d.id=d.id||'d'+rid(6);d.ts=Date.now();d.sent=0;a.dl.push(d);if(a.dl.length>200)a.dl.shift();S.dirty();if(S.onDeliver)S.onDeliver(u);flushDl(u);return d}
 function flushDl(u){const a=acct(u);if(!a.dl.length||!S.online(u))return;const now=Date.now();a.dl.forEach(d=>{if(!d.sent)d.sent=now});S.push(u,{t:'dl',list:a.dl.slice(0,40)})}
 /* Modelo: R (a.res) = estado YA aplicado por el cliente. Una entrega con delta negativo reserva el recurso (no se puede gastar dos veces);
@@ -57,6 +67,7 @@ function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0
  o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.jv!=null){const jv=int(x.jv,0,300,0);if(jv)o.jv=jv}if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
  if(x.up!=null){const up=int(x.up,0,12,0);if(up)o.up=up}
+ if(x.en!=null){const en=int(x.en,0,8,0),el=int(x.el,0,5,0);if(en&&el){o.en=en;o.el=el}}
  for(const k of['dm','hp','sp','gd','mp']){if(x[k]==null||+x[k]===0)continue;const mx=itemMax(o,k);if(!mx||mx<=1&&k!=='hp')return null;const v=int(x[k],0,1e7,0);if(v>mx*(x.u?1:1))return null;if(v)o[k]=v}
  return o}
 function cleanPetS(x){if(!x||typeof x!=='object')return null;const t=String(x.t||'');if(!/^[a-z]{2,12}$/.test(t))return null;
@@ -85,7 +96,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   if((+v.lv||1)>5||(+v.g||0)>2000||cnt>6){const ids=[];const add=x=>{if(x&&x.id)ids.push(String(x.id))};if(v.eq&&typeof v.eq==='object')for(const k in v.eq)add(v.eq[k]);(Array.isArray(v.bag)?v.bag:[]).forEach(add);(Array.isArray(v.lb)?v.lb:[]).forEach(add);(Array.isArray(v.pets)?v.pets:[]).forEach(add);
    Object.assign(v,{g:0,i:[0,0,0,0,0],cb:[0,0,0,0,0],lv:1,xp:0,eq:{},bag:[],lb:[],dep:[],bk:0,bu:[],pets:[],sx:[1,1,1],fd:{},bgc:25,lgc:25});fix.rz=1;fix.g=0;fix.lv=1;fix.xp=0;fix.i=[0,0,0,0,0];fix.fd={};preBad.push(...ids);notes.push('reinicio: progreso viejo descartado')}}
  /* v269: bolsos de 40 y de 65 (Bolso de Fuego del Submundo) */
- v.bgc=(+v.bgc)>=65?65:(+v.bgc)>=40?40:25;v.lgc=(+v.lgc)>=65?65:(+v.lgc)>=40?40:25;v.bu=(Array.isArray(v.bu)?v.bu.map(x=>+x).filter(x=>x===40||x===65):[]).sort((x,y)=>y-x).slice(0,Math.max(0,2-(v.bgc>=40?1:0)-(v.lgc>=40?1:0)));
+ {const cap=Math.max(65,a.bgr|0),bt=x=>{x=+x;let r=25;for(const t of BAGT)if(t<=x&&t<=cap)r=t;return r};v.bgc=bt(v.bgc);v.lgc=bt(v.lgc);v.bu=(Array.isArray(v.bu)?v.bu.map(x=>+x).filter(x=>BAGT.includes(x)&&x>=40&&x<=cap):[]).sort((x,y)=>y-x).slice(0,Math.max(0,2-(v.bgc>=40?1:0)-(v.lgc>=40?1:0)))}
  /* clase y nombre */
  let cl=int(v.cl,0,7,0);if(a.cls>=0&&v.ch&&a.cls!==cl){if(master){a.cls=cl}/* v269: el master (DM) puede cambiar de clase cuando quiera */else{flag(u,'cambio de clase '+a.cls+'→'+cl);cl=a.cls;v.cl=cl;fix.cl=cl}}
  if(v.ch&&a.cls<0)a.cls=cl;
@@ -138,6 +149,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
    if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'objeto de otro jugador/duplicado '+c.id,2);return null}
    if(!r){if(!first&&!master&&!mintOk(a,'i',c.r,now)){dropped++;flag(u,'demasiados objetos nuevos de rareza '+c.r);return null}ECO.reg[c.id]={o:u,k:'i',t:now};S.dirty()}else if(r.o!==u&&master){ECO.reg[c.id]={o:u,k:'i',t:now}}}
   if(c.up){const rr=c.id&&ECO.reg[c.id],mx=(rr&&rr.up)|0;if(c.up>mx&&!master){flag(u,'potenciación falsa +'+c.up+' (permitido +'+mx+')');c.up=mx}if(!c.up)delete c.up}
+  if(c.en){const rr=c.id&&ECO.reg[c.id];if(!master&&!(rr&&rr.en===c.en&&(rr.el|0)>=1)){flag(u,'encantamiento falso '+c.en+' nv'+c.el);delete c.en;delete c.el}else if(!master&&c.el>(rr.el|0))c.el=rr.el|0}
   return c};
  if(v.eq&&typeof v.eq==='object'){const e={};for(const k of Object.keys(v.eq).slice(0,7)){const c=chk(v.eq[k]);if(c)e[k]=c}v.eq=e}
  if(Array.isArray(v.bag))v.bag=v.bag.slice(0,v.bgc).map(x=>chk(x)).filter(Boolean);
@@ -171,4 +183,4 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
 try{if(!ECO.fixDup){ECO.fixDup=1;let n=0;const nk=x=>String(x).replace(/[0-9+]/g,'').slice(0,60);for(const id in ECO.acc){const a=ECO.acc[id];if(!a||(a.strikes|0)<8)continue;const d=new Set((a.flags||[]).map(f=>nk(f&&f[1])));a.strikes=Math.min(a.strikes|0,Math.max(1,d.size));if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) con strikes repetidos corregidas')}}}catch(e){log('migración strikes: '+e.message)}
 /* migración única: quita los strikes falsos que el antitrampas daba por cocinar carne/pescado (ya no ocurre) */
 try{if(!ECO.fixCook){ECO.fixCook=1;let n=0;for(const id in ECO.acc){const a=ECO.acc[id];if(!a||!Array.isArray(a.flags)||!a.flags.length)continue;const bad=a.flags.filter(f=>/^provisi.n (cocida|coc\d|fc\d) /.test(String(f&&f[1])));if(!bad.length)continue;a.flags=a.flags.filter(f=>!bad.includes(f));a.strikes=Math.max(0,(a.strikes|0)-bad.length);if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) sin strikes falsos por cocinar')}}}catch(e){log('migración cocinar: '+e.message)}
-return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,audit,deliver,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,glAdd,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM,BX}};
+return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,audit,deliver,grantBag,BAGT,BAGN,ENCN,ENCM,ENCL,FGQ,encCost,forgeCost,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,glAdd,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM,BX}};

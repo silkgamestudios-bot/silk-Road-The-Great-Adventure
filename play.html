@@ -1252,7 +1252,12 @@ const CTH=[['#c0392b','#f4e3b2'],['#2471a3','#f4e3b2'],['#7d3c98','#f5cba7'],['#
 const feeR=()=>P.cls==0&&lic()?.08:.03,TEST_CAP=1200,capX=()=>TEST_CAP||(CAP+(P.cls==0&&lic()?150+6*(P.mr-1):0)+mcargo());
 const bm=()=>(P.cls==0?(lic()?.88:.92):1)*(P.b.gd>0?.9:1)*(MOB?1.1:1),sm=()=>(P.cls==0&&lic()?1.10:.85)*(P.b.gd>0?1.12:1)*(MOB?.9:1);
 /* v269: el Gremio y la tienda ambulante ya no comercian mercancías: abren el mercado de jugadores / el carruaje del Mercader */
-function openM(){if(modal)return;const c0=cityAt(P),mer=P.cls==0&&lic();if(!c0&&!mer)return;window.SHSEL=null;MS=(!c0&&mer)?1:0;HT=8;heroM(8)}
+/* v285: el Gremio de la Seda vuelve a comerciar mercancías (para las misiones de comprar/vender); el mercado de jugadores sigue en su botón y dentro del Gremio */
+function openPM(){if(modal)return;const c0=cityAt(P),mer=P.cls==0&&lic();if(!c0&&!mer)return;window.SHSEL=null;MS=(!c0&&mer)?1:0;HT=8;heroM(8)}
+function openM(){if(modal)return;const c0=cityAt(P);if(!c0&&!(P.cls==0&&lic()))return;MOB=c0?0:1;
+ mc=c0||C.reduce((a,b)=>Math.hypot(a.tx*T-P.x,a.ty*T-P.y)<Math.hypot(b.tx*T-P.x,b.ty*T-P.y)?a:b);
+ const sl=Math.floor(Date.now()/3e5),ci=C.indexOf(mc);pr=B.map((b,i)=>{const h=Math.sin(sl*12.9898+ci*78.233+i*37.719)*43758.5453;return Math.round(b*mc.f[i]*(.9+.2*(h-Math.floor(h))))});
+ MCI=ci;pB=i=>Math.round(pr[i]*dyf(MCI,i)*evf(MCI,i)*bm());pS=i=>Math.round(pr[i]*dyf(MCI,i)*evf(MCI,i)*sm());modal=1;rm()}
 const MKM=[],MKQ=[];
 function mkMax(i,m){const f=feeR();if(m=='s')return P.inv[i]|0;const c=Math.max(1,Math.round(pB(i)*(1+f)));return Math.max(0,Math.min(capX()-load(),Math.floor(P.gold/c)))}
 function rm(){const el=$('mk'),f=feeR(),old=el.scrollTop,pm=P.cls==0&&lic();el.hidden=false;ICN=ICN||['fabric','redcap','gem','greencap','ice-shard'].map(k=>icon('pk-'+k));
@@ -1270,8 +1275,8 @@ function rm(){const el=$('mk'),f=feeR(),old=el.scrollTop,pm=P.cls==0&&lic();el.h
   <div class="mkt-qq"><button data-a="qs" data-i="${i}" data-n="1">1</button><button data-a="qs" data-i="${i}" data-n="half">½</button><button data-a="qs" data-i="${i}" data-n="max">${m=='b'?'Máx.':'Todo'}</button></div>
   <button class="mkt-go" data-a="go" data-i="${i}" ${mx<1?'disabled':''}>${mx<1?why:(m=='b'?'Comprar '+q+' · −'+fmt(tot)+' 🪙':'Vender '+q+' · +'+fmt(tot)+' 🪙')}</button>
   ${m=='s'&&mx>=1&&avg?`<small class="mkt-pf ${pf>=0?'up':'dn'}">Ganancia estimada ${pf>=0?'+':''}${fmt(pf)} 🪙</small>`:''}</div>`}).join('');
- h+=`</div><p class="mkt-nt"><small>Esta casa solo mueve mercancías de la Ruta. Pociones, provisiones y lazos 🪢: busca a un Mercader 🟩 en el mapa o pregunta en Información 📜.</small></p>
- <div class="mkt-f">${MOB?'':`<button data-a="u1">Caravana +10 carga<br><small>${fmt(6000*(lvlC+1))} 🪙</small></button><button data-a="u2">Espada +5 daño<br><small>${fmt(8000*(lvlD+1))} 🪙</small></button><button data-a="rp">Herrero: reparar<br><small>${fmt(repAll())} 🪙</small></button>`}<button data-a="x" class="mkt-out">Salir</button></div></div>`;
+ h+=`</div><p class="mkt-nt"><small>Esta casa mueve las mercancías de la Ruta. Para vender objetos y equipo a otros jugadores usa el 🏛️ Mercado de jugadores (botón de abajo). Pociones, provisiones y lazos 🪢: busca a un Mercader 🟩 o pregunta en Información 📜.</small></p>
+ <div class="mkt-f">${MOB?'':`<button data-a="u1">Caravana +10 carga<br><small>${fmt(6000*(lvlC+1))} 🪙</small></button><button data-a="u2">Espada +5 daño<br><small>${fmt(8000*(lvlD+1))} 🪙</small></button><button data-a="rp">Herrero: reparar<br><small>${fmt(repAll())} 🪙</small></button>`}<button data-a="pm">🏛️ Mercado de jugadores</button><button data-a="x" class="mkt-out">Salir</button></div></div>`;
  el.innerHTML=h;el.scrollTop=old}
 $('mk').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,i=+b.dataset.i;
  if(a=='m'){MKM[i]=b.dataset.n;MKQ[i]=1}
@@ -1286,6 +1291,7 @@ $('mk').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)re
  else if(a=='h'){if((P.hp<P.mhp||P.mp<P.mmp)&&gpay(300)){P.hp=P.mhp;P.mp=P.mmp}}
  else if(a=='rp')repairAll();
  else if(a=='pv')provTrade(b.dataset.k,b.dataset.n,b.dataset.m);
+ else if(a=='pm'){modal=0;$('mk').hidden=true;openPM();return}
  else if(a=='x'){modal=0;$('mk').hidden=true;return}
  rm();chk();save()});
 $('shop').addEventListener('click',openM);
@@ -3867,12 +3873,12 @@ function gmPopClose(){const e=$('gmpop');if(e){e.style.display='none';e.innerHTM
 function gmPopRefresh(){try{if(!$('cj').hidden)cjR();else heroM()}catch(e){}}
 function gmPop(kind,key){let e=$('gmpop');if(!e){e=document.createElement('div');e.id='gmpop';e.addEventListener('click',gmPopClick);document.body.appendChild(e)}
  const g=gemSvg(1,16),can=tkCan(),mer=P.cls==0,vp=P.vip>Date.now(),f2=(ic,t,d)=>`<li><i>✓</i><div><b>${ic} ${t}</b><span>${d}</span></div></li>`,
- ln=[f2('🎁','Loot automático','El oro y los objetos van directo a tu bolsa.'),f2('🧪','Poción automática','Usa una poción sola cuando tu vida baja del 30%.'),f2('🤝','Comercio','Tratos directos entre jugadores (la party es gratis).'),f2('🎯','Licencia de Cazador','Carteles de Se Busca, cacerías y recompensas.')],
+ ln=[f2('🎁','Loot automático','El oro y los objetos van directo a tu bolsa.'),f2('🧪','Poción automática','Usa una poción sola cuando tu vida baja del 30%.'),f2('🤝','Comercio','Tratos directos entre jugadores (la party es gratis).'),f2('🎯','Licencia de Cazador','Carteles de Se Busca, cacerías y recompensas.'),f2('🏷️','Distintivo junto a tu nombre','Elige una bandera o emoji que todos ven junto a tu nombre mientras el plan esté activo.')],
  lnM=ln.concat([f2('🐗','Escolta de caravana','Tus orcos defienden el carruaje y nunca duermen.'),f2('📜','Licencia de Mercader','Carruaje con tienda ambulante: sube objetos de tu mochila, ponles precio y los jugadores te encuentran en el mapa.')]);
  let ic='',tt='',tg='',body='',acts='';
  const planInfo=k=>{const mf=k[1]=='m',half=k[2]=='h',d=half?15:30,c=GEMP[k],fk=mf?'vmf':'vpf',hk=mf?'vmh':'vph',perD=(c/d).toFixed(2);return{mf,half,d,c,fk,hk,perD,off:Math.round((1-GEMP[hk]/GEMP[fk])*100),dy:Math.round((GEMP[hk]/15)/(GEMP[fk]/30)*100-100)}};
  if(kind=='plan'){const q=planInfo(key);ic=SRIM('pl',key,72)||(q.mf?'🛒':'👑');tt='Plan '+(q.mf?'Mercader':'Jugador')+' · '+q.d+' días';tg=q.mf?'Solo clase Mercader · incluye las ventajas del comercio':'Para todas las clases';
-  body=`<ul class="plf">${(q.mf?lnM:ln).join('')}</ul><div class="gpr"><b>${g} ${q.c}</b><span>${q.d} días · ${q.perD} 💎 por día</span></div><p class="pln-n">${q.half?'El plan de 15 días cuesta un '+q.off+'% menos en total que el de 30, pero sale un '+q.dy+'% más caro por día: pagas por comprometerte menos.':'Es la forma más barata por día. Si lo compras otra vez, los días se suman (máximo 90 acumulados).'}</p><p class="pln-s">${vp?'✅ Plan activo · quedan '+rem(P.vip):'⚪ Sin plan activo'}</p>`;
+  body=`<ul class="plf">${(q.mf?lnM:ln).join('')}</ul>${vp?'<button data-bdg="1" class="best" style="margin:6px 0">🏷️ Elegir mi distintivo</button>':''}<div class="gpr"><b>${g} ${q.c}</b><span>${q.d} días · ${q.perD} 💎 por día</span></div><p class="pln-n">${q.half?'El plan de 15 días cuesta un '+q.off+'% menos en total que el de 30, pero sale un '+q.dy+'% más caro por día: pagas por comprometerte menos.':'Es la forma más barata por día. Si lo compras otra vez, los días se suman (máximo 90 acumulados).'}</p><p class="pln-s">${vp?'✅ Plan activo · quedan '+rem(P.vip):'⚪ Sin plan activo'}</p>`;
   const lock=q.mf&&!mer;acts=(lock?'<small>🔒 Solo la clase Mercader puede activarlo (tú puedes comprarlo como boleto y regalarlo o venderlo).</small>':`<button class="best" data-gp="buy:${key}">Activar · ${g} ${q.c}</button>`)+(can?`<button data-gp="tkbuy:${key}">🎟️ Comprar como boleto · ${g} ${q.c}</button>`:`<small>🎟️ Los boletos de plan los compran los Mercaderes y Revendedores.</small>`)}
  else if(kind=='tk'){const n=(P.tk||{})[key]|0,mf=key[1]=='m',d=(key[2]=='h')?15:30;ic=SRIM('tk',key,72)||VTK[key][0];tt='Boleto · '+VTK[key][1];tg='Objeto transferible · tienes '+n;
   body=`<p class="gpt">Es el <b>${VTK[key][1]}</b> guardado como objeto. Quien lo canjee recibe <b>${d} días</b> de todo lo que incluye${mf?' (solo lo puede canjear un Mercader)':''}.</p><ul class="plf">${(mf?lnM:ln).join('')}</ul><p class="pln-n">Lo puedes <b>canjear</b> tú (aquí o en el 💎 Pueblo de Canje), <b>enviar</b> a otro jugador por su nombre exacto, meterlo en un <b>trato</b> o <b>venderlo por oro</b> en el Mercado.</p>`;
@@ -4565,7 +4571,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v282';let UPD=null,RSN=0;
+const SR_V='sr-v285';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}
  /* v236: desregistra el service worker, borra cachés y recarga con un parámetro nuevo para saltarse cualquier copia vieja (en celulares a veces "no pasaba nada") */
  let done=0;const go=()=>{if(done)return;done=1;try{const u=new URL(location.href);u.searchParams.set('r',String(Date.now()));location.replace(u.toString())}catch(e){location.reload()}};
@@ -6387,7 +6393,7 @@ function ppDraw(cx,cy,now){if(!DB||DG.f&&false)return;if(DG.f&&window.SRWORLD&&S
    const tjo=!osk&&typeof o.tj=='string'&&TRJ[o.tj]&&TRJ[o.tj].c==oc&&!(typeof o.bs=='string'&&BSK[o.bs])?TRJ[o.tj]:null;if(tjo){tjAura(x,y,tjo,now);g.filter=tjF(tjo)}
    if(!(!osk&&typeof o.bs=='string'&&BSK[o.bs]&&BSK[o.bs].c==oc&&spBSA(o.bs,x,yy,2,{fl:w.d=='left',mov:w.mv,dir:w.d||'down',t:now+(o.u?String(o.u).length*.37:0),run:0,atk:-9,hit:0}))){const n2=osk?'s'+osk+oc+'-'+dk:nm;
     if(osk&&TKC[osk]){const ps=P.skin;P.skin=osk;try{tkSp(n2,x,yy,2)}finally{P.skin=ps}}else if(!osk&&o.cz&&czOn(o.cz))spCZ(n2,x,yy,2,o.cz);else sp(n2,x,yy,2)}}g.filter='none';g.globalAlpha=1;
-  const pm=mem.has(id);g.textAlign='center';g.font='bold 10px Georgia,serif';g.lineWidth=3;g.strokeStyle='#000c';const lab=(pm&&o.pl?'👑 ':'')+bdgTxt(id)+hx(o.n)+(typeof SRAR!='undefined'&&SRAR.on()?'':' Nv'+(o.l|0));g.strokeText(lab,x,y-24);g.fillStyle=BDG[id]?'#ffd666':pm?'#9af0b0':'#ffe9b8';g.fillText(lab,x,y-24);
+  const pm=mem.has(id);g.textAlign='center';g.font='bold 10px Georgia,serif';g.lineWidth=3;g.strokeStyle='#000c';const lab=(pm&&o.pl?'👑 ':'')+bdgTxt(id)+((window.SRBD&&SRBD(id))?SRBD(id)+' ':'')+hx(o.n)+(typeof SRAR!='undefined'&&SRAR.on()?'':' Nv'+(o.l|0));g.strokeText(lab,x,y-24);g.fillStyle=BDG[id]?'#ffd666':pm?'#9af0b0':'#ffe9b8';g.fillText(lab,x,y-24);
   if(pm){g.fillStyle='rgba(0,0,0,.6)';g.fillRect(x-16,y-21,32,4);g.fillStyle='#d83a3a';g.fillRect(x-15,y-20,30*Math.max(0,Math.min(1,o.h/o.H)),2)}
   w.sx=x;w.sy=y}}
 function ppTap(o,rr){if(!DB||modal)return false;let best=null,bd=rr||40;for(const id in PP.o){const q=PP.o[id],w=PP.w[id];if(!ppFresh(q)||!w||!!q.dg!==!!DG.f)continue;const d=Math.hypot(w.x-o.x,w.y-o.y+8);if(d<bd){bd=d;best=q}}if(!best)return false;ppMenu(best);return true}
@@ -7468,6 +7474,18 @@ html body>#talk{left:50%!important;right:auto!important;bottom:calc(var(--k)*150
 function cap(t){let c=document.getElementById('ctxc');if(!c){c=document.createElement('div');c.id='ctxc';document.body.appendChild(c)}c.textContent=t;c.classList.add('on');clearTimeout(capT);capT=setTimeout(()=>c.classList.remove('on'),2500)}
 function scan(){const ctx=document.getElementById('ctx');if(!ctx)return;const now=new Set(),nw=[];for(const b of ctx.querySelectorAll('button')){if(b.hidden)continue;const t=(b.textContent||'').trim();const m=re.exec(t);if(m){if(b.dataset.e!==m[1])b.dataset.e=m[1];b.title=t;b.setAttribute('aria-label',t)}else delete b.dataset.e;now.add(b.id);if(!seen.has(b.id))nw.push(t)}seen=now;if(nw.length)cap(nw.join('  ·  '))}
 setInterval(scan,300)})();
+</script>
+<script>
+/* v284: distintivo premium: con Plan Jugador/Mercader activo eliges una bandera o emoji que se ve junto a tu nombre */
+(()=>{function ov(h){let el=document.getElementById('bdgm');if(!el){el=document.createElement('div');el.id='bdgm';el.style.cssText='position:fixed;inset:0;z-index:70;background:#000b;display:flex;align-items:center;justify-content:center;padding:12px';document.body.appendChild(el);el.addEventListener('click',e=>{if(e.target===el||e.target.id=='bdgx'){el.style.display='none'}})}
+ el.innerHTML='<div style="max-width:380px;width:100%;max-height:88vh;overflow:auto;background:linear-gradient(#2a1c10,#150d08);border:3px solid #e9c46a;border-radius:14px;padding:14px;color:#f5e6c0;font:14px Georgia,serif">'+h+'</div>';el.style.display='flex'}
+ function draw(r){const l=r.l||[],cur=r.b||'';let h='<h3 style="margin:0 0 4px;color:#ffd666;text-align:center">🏷️ Mi distintivo</h3><p style="margin:0 0 8px;font-size:12px;opacity:.85;text-align:center">Se ve junto a tu nombre para todos mientras tu plan esté activo.</p>';
+  if(!r.on)h+='<p style="color:#ff9a8a;text-align:center">Necesitas un 👑 Plan Jugador o 🛒 Plan Mercader activo.</p>';
+  h+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">'+l.map(x=>'<button data-b="'+x+'" style="font-size:22px;padding:6px 0;border-radius:10px;border:2px solid '+(x===cur?'#ffd666':'#554')+';background:'+(x===cur?'#5a3a10':'#201810')+';color:#fff"'+(r.on?'':' disabled')+'>'+x+'</button>').join('')+'</div>';
+  h+='<div style="display:flex;gap:8px;margin-top:10px"><button data-b="" style="flex:1;padding:9px;border-radius:10px;border:2px solid #888;background:#222;color:#fff"'+(r.on?'':' disabled')+'>Quitar</button><button id="bdgx" style="flex:1;padding:9px;border-radius:10px;border:2px solid #888;background:#222;color:#fff">Cerrar</button></div>';
+  ov(h);document.getElementById('bdgm').querySelectorAll('button[data-b]').forEach(b=>b.onclick=()=>{mop('bdg.set',{b:b.dataset.b},rr=>{if(rr&&rr.ok){r.b=rr.b||'';draw(r);toast(rr.b?'🏷️ Distintivo '+rr.b+' activado':'Distintivo quitado',2200);try{window.SRNET&&SRNET.send({t:'wbd'})}catch(e){}}else if(rr&&rr.e)toast(rr.e,3500)})})}
+ window.bdgOpen=()=>{mop('bdg.get',{},r=>{if(r&&r.ok)draw(r)})};
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-bdg]');if(b){e.preventDefault();e.stopPropagation();window.bdgOpen()}},true)})();
 </script>
 <script>
 /* Acceso anticipado (solo master): ver, agregar o quitar hasta 3 cuentas que pueden entrar antes de la apertura. */

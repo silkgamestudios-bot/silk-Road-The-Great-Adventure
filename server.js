@@ -104,6 +104,10 @@ OPS['char.del']=(u,m)=>{const a=E.acct(u),n=Date.now();if(n-(a.cdt||0)<60000)ret
  z.res={gold:0,g:[0,0,0,0,0],fd:Object.assign({carne:0,cocida:0,pasto:0,hierba:0,lazo:0},Object.fromEntries((E.MNK||[]).map(k=>[k,0]))),ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0};
  dirty=1;log('[personaje] '+u+' borró su personaje');try{E.acct(u);E.pushEnt(u)}catch(e){}return{ok:1}};
 OPS['wa.set']=(u,m)=>{const a=E.acct(u),d=String(m.wa||'').replace(/\D/g,'');if(!d){delete a.wa;dirty=1;return{ok:1,wa:''}}if(d.length<8||d.length>15)return{e:'Escribe tu número con código de país, solo números (ej. 18091234567)'};a.wa=d;dirty=1;return{ok:1,wa:d}};
+const BDG=['🇩🇴','🇲🇽','🇨🇴','🇻🇪','🇦🇷','🇨🇱','🇵🇪','🇪🇨','🇺🇾','🇵🇾','🇧🇴','🇨🇺','🇵🇷','🇵🇦','🇨🇷','🇬🇹','🇭🇳','🇸🇻','🇳🇮','🇪🇸','🇺🇸','🇧🇷','🇨🇦','🇫🇷','🇮🇹','🇩🇪','🇬🇧','🇵🇹','🇯🇵','🇰🇷','🇨🇳','🇮🇳','🇹🇷','🇷🇺','🇺🇦','🇵🇱','🇳🇬','🇪🇬','🇲🇦','🇿🇦','👑','🔥','⭐','💎','🐉','🦁','🦅','🐺','⚔️','🛡️','🏹','🔮','🌙','☀️','⚡','❄️','🍀','🌸','💀','🎯','🏆','🦊'];
+const bdgOf=u=>{try{const a=E.acct(u);return((a.vip>Date.now()||isMaster(u))&&a.bdg)||''}catch(e){return ''}};
+OPS['bdg.get']=u=>{const a=E.acct(u);return{ok:1,b:a.bdg||'',on:(a.vip>Date.now()||isMaster(u))?1:0,l:BDG}};
+OPS['bdg.set']=(u,m)=>{const a=E.acct(u);if(!(a.vip>Date.now()||isMaster(u)))return{e:'El distintivo necesita un Plan Jugador o Mercader activo'};const b=String(m.b||'');if(b===''){delete a.bdg}else if(BDG.includes(b)){a.bdg=b}else return{e:'Distintivo no válido'};dirty=1;return{ok:1,b:a.bdg||''}};
 OPS['wa.get']=u=>({ok:1,wa:(E.acct(u).wa)||''});
 /* historial de jugadores conectados: pico por dia (hora RD) y pico total; se muestra en Zona GM > Moderadores */
 const pkDay=()=>new Date(Date.now()-4*36e5).toISOString().slice(0,10);
@@ -171,7 +175,7 @@ function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').spli
 const srv=http.createServer((q,r)=>{if(String(q.url||'').split('?')[0]==='/maint'){maintHttp(q,r);return}if(String(q.url||'').split('?')[0]==='/launch'){r.writeHead(200,{'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'*'});r.end(JSON.stringify({at:LAUNCH_AT,now:Date.now()}));return}if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain; charset=utf-8','cache-control':'no-store'});r.end(statusText())});
 const wss=new WebSocketServer({server:srv,maxPayload:450000});
 const world=require('./world')(DB,log,{
- lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),pv:u=>true,fee:(u,n)=>{const a=E.acct(u);if(!(E.avail(a,'gold')>=n))return false;E.deliver(u,{gold:-n,note:'🏛️ Entrada al Coliseo (−'+n+' 🪙)'});return true},pay:(u,n,note)=>{E.deliver(u,{gold:n,note})},kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',tjoin:u=>{try{TR.join(u)}catch(e){log('terr join '+e.message)}},
+ lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),bdg:u=>bdgOf(u),pv:u=>true,fee:(u,n)=>{const a=E.acct(u);if(!(E.avail(a,'gold')>=n))return false;E.deliver(u,{gold:-n,note:'🏛️ Entrada al Coliseo (−'+n+' 🪙)'});return true},pay:(u,n,note)=>{E.deliver(u,{gold:n,note})},kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',tjoin:u=>{try{TR.join(u)}catch(e){log('terr join '+e.message)}},
  look:u=>{const a=E.acct(u);return{lv:a.lv,gt:GD.tagOf(u),sk:a.sk}},
  mint:(u,it)=>{const c=E.cleanItem(Object.assign({},it,{id:'s'+E.rid(8)}));if(!c)return it;S.ECO.reg[c.id]={o:u,k:'i',t:Date.now()};dirty=1;return c}});
 S.world=world;try{TR.init()}catch(e){log('terr init '+e.stack)}

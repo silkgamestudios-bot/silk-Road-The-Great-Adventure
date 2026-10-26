@@ -1,0 +1,3 @@
+v285 — El Gremio de la Seda vuelve a comerciar mercancías (solo cliente)
+- Al entrar al Gremio de la Seda (y en la tienda ambulante del Mercader) se vuelve a abrir el mercado de mercancías de la Ruta: Seda, Especias, Jade, Té y Vidrio, con precios que cambian cada 5 min. Así se cumplen las misiones de "Compra o vende algo en el Mercado".
+- El mercado de jugadores sigue disponible: botón "🏛️ Mercado de jugadores" dentro del Gremio y el botón 🏛️ Mercado de la Seda del pueblo.

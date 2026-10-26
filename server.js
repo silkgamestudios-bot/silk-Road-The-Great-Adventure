@@ -47,7 +47,7 @@ async function gverify(cred){const r=await fetch(TOKINFO+encodeURIComponent(cred
 const newSes=u=>{const t=crypto.randomBytes(24).toString('hex');SES[sha(t)]={u,x:Date.now()+90*864e5};dirty=1;return t};
 const savePath=u=>SAVEDIR+'/'+String(u).replace(/[^\w-]/g,'')+'.json';
 const ONL=new Map();   // uid -> ws (una sola sesión por cuenta: evita duplicar objetos con dos pestañas)
-const S={ECO,cat,log,DB,isMaster,notify:notifyRL,dirty:()=>{dirty=1},
+const S={ECO,cat,log,DB,ACC,isMaster,notify:notifyRL,dirty:()=>{dirty=1},
  push:(u,m)=>{const w=ONL.get(u);if(w&&w.readyState===1)w.send(JSON.stringify(m))},online:u=>{const w=ONL.get(u);return !!w&&w.readyState===1},bc:(c,id,o,n)=>bc(c,id,o,n)};
 /* ===== REINICIO ÚNICO: personajes, oro y objetos desde cero (se conservan cuentas, gemas pagadas, apariencias compradas y pedidos de pago) ===== */
 /* WIPE_AT_LAUNCH=1: 3 min antes de la apertura el servidor se reinicia solo y borra los PERSONAJES de pruebas (mods/master); las cuentas (usuario/contrasena) se conservan. */
@@ -65,7 +65,7 @@ if((DB.cfg.wipe||'')!==WIPE_ID){try{
  KEEP={};if(process.env.WIPE_KEEP!=='0'&&!LW)for(const u in (ECO.acc||{})){const a=ECO.acc[u];KEEP[u]={gem:a.gem,sk:a.sk,px:a.px,vip:a.vip,lic:a.lic}}   /* WIPE_KEEP=0: tampoco se conservan gemas/apariencias/premium (todos desde cero) */
  for(const k of Object.keys(ECO))delete ECO[k];
  if(process.env.WIPE_ACCOUNTS==='1'&&!LW){for(const o of [USR,ACC,SES,TOK])for(const k of Object.keys(o))delete o[k];KEEP={};log('[REINICIO] cuentas, usuarios y sesiones borrados (copia en '+bk+')')}   /* WIPE_ACCOUNTS=1: tambien se borran usuarios/contrasenas/sesiones */
- const cfg=DB.cfg,pay=DB.gemreq;for(const c of Object.keys(DB))delete DB[c];DB.cfg=cfg;if(pay)DB.gemreq=pay;
+ const cfg=DB.cfg,pay=DB.gemreq,inf=DB.inf;for(const c of Object.keys(DB))delete DB[c];DB.cfg=cfg;if(pay)DB.gemreq=pay;if(inf)DB.inf=inf;
  DB.cfg.wipe=WIPE_ID;dirty=1;
  log('[REINICIO] '+WIPE_ID+': '+n+' personajes borrados (copia en '+bk+')');
 }catch(e){log('[REINICIO] error '+e.stack)}}
@@ -84,7 +84,7 @@ if(process.env.TRIM_ID&&DB.cfg.trim!==process.env.TRIM_ID){try{
  DB.cfg.trim=TID;dirty=1;save(1);log('[RECORTE] '+TID+': '+n+' personajes recortados, '+GEM+' gemas c/u (copia en '+bk+')');
 }catch(e){log('[RECORTE] error '+e.stack)}}
 S.onDeliver=u=>{try{if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}};
-AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster});
+AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster,refOk:c=>!!((DB.inf||{})[c])});
 const TR=require('./terr')(S,E);
 const SD=require('./seda')(S,E);
 const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops);

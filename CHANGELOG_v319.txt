@@ -1,0 +1,9 @@
+v319 (REQUIERE Manual Deploy: server.js, store.js, economy.js, accounts.js)
+- Sistema de influencers: el master crea un código (Zona GM > ⭐ Influencers > Crear código) y se lo asigna a un jugador (recibe insignia ⭐).
+- Al registrarse hay un campo "Código de influencer (opcional)". También funciona con un enlace ?ref=CODIGO.
+- Jugador válido = llega a nivel 20 (una sola vez por cuenta, no cuenta al propio influencer ni al master).
+- Premios a la mochila del influencer (transferibles, se pueden regalar o vender):
+  · 🎟️ Plan Jugador VIP 7 días: 1 por cada 10 jugadores válidos.
+  · 🎟️ Bonus de Exp 7 días: 1 por cada 5 jugadores válidos.
+- Le llega aviso cada vez que alguien nuevo llega a nivel 20 con su código.
+- Zona GM > ⭐ Influencers > Lista: jugadores válidos y premios entregados por código; se puede borrar un código.

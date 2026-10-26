@@ -176,7 +176,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  v.ml=0;/* el master lo decide el servidor */
  /* ---- aceptar ---- */
  a.res.gold=v.g;a.res.bk=v.bk;a.res.g=v.i.slice();if(v.fd)a.res.fd=Object.assign({},v.fd);if(v.ec)a.res.ec=Object.assign({},v.ec);a.res.pot=v.p;a.res.pgs=v.pgs;if(v.mpp!=null){a.res.mpot=v.mpp;a.mpok=1}
- a.lv=lv;a.xp=xp;if(typeof v.nm==='string'&&v.nm)a.pn=v.nm.replace(/[^\p{L}\p{N} '_-]/gu,'').slice(0,18);if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
+ a.lv=lv;a.xp=xp;if(S.refSeen&&lv>=20&&!a.rfd)S.refSeen(u,a);if(typeof v.nm==='string'&&v.nm)a.pn=v.nm.replace(/[^\p{L}\p{N} '_-]/gu,'').slice(0,18);if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
  /* lo que sigue sin aplicar (entregas pendientes) se descuenta del esperado para que no se aplique dos veces */
  return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl,p:fix.pp,mp:fix.pm,bx:fix.bx?v.bx:undefined}:null,acked:acked.map(d=>d.id)}}
 /* migración única: el mismo aviso repetido cada 8 s sumaba decenas de strikes y sacaba a jugadores del ranking; se cuentan solo los motivos distintos */

@@ -85,7 +85,7 @@ ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d
  ks.forEach(z=>{a.px[z]=Math.max(now,a.px[z]||0)+d*DAY});if(vm||lc||mf)a.lic=Math.max(now,a.lic||0)+d*DAY;if(vip)a.vip=Math.max(now,a.vip||0)+d*DAY;
  S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+k+' '+d+'d');return{ok:1,ent:E.ent(u),cost}};
 /* ---------- 🎟️ BOLETOS VIP (v154): el mismo servicio, pero como objeto que se puede enviar o intercambiar ---------- */
-const TKN={vpf:'👑 Plan Jugador · 30 días',vph:'👑 Plan Jugador · 15 días',vmf:'🛒 Plan Mercader · 30 días',vmh:'🛒 Plan Mercader · 15 días',cmb:'🎯 Combo Cazador',es:'🐗 Escolta de caravana',lic:'📜 Licencia de Mercader',vipm:'👑 VIP Mercader',vipj:'👑 VIP Jugador',pv:'⚔️ Cazador PvP',bh:'🎯 Licencia de Cazador'};
+const TKN={vpf:'👑 Plan Jugador · 30 días',vph:'👑 Plan Jugador · 15 días',vmf:'🛒 Plan Mercader · 30 días',vmh:'🛒 Plan Mercader · 15 días',cmb:'🎯 Combo Cazador',es:'🐗 Escolta de caravana',lic:'📜 Licencia de Mercader',vipm:'👑 VIP Mercader',vipj:'👑 VIP Jugador',pv:'⚔️ Cazador PvP',bh:'🎯 Licencia de Cazador',vpw:'👑 Plan Jugador · 7 días (Influencer)',apw:'📚 Bonus de Exp · 7 días'};
 const tkOf=a=>(a.tk&&typeof a.tk==='object')?a.tk:(a.tk={});
 const tkRes=u=>{const r=((S.DB.cfg||{}).res||{})[u];return +r>0};
 /* v221: Gremio de Cazadores vende lazos (domar monturas). Oro con 3% de impuesto, tope diario para que no se regalen. */
@@ -108,8 +108,8 @@ ops['tk.send']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),q=Math.floor(+m.q)||1
  const t=tkOf(a);if((t[k]|0)<q)return err('No tienes tantos boletos');const b=E.acct(id);t[k]-=q;const tb=tkOf(b);tb[k]=(tb[k]|0)+q;S.dirty();E.pushEnt(u);E.pushEnt(id);
  const msg='🎟️ '+(a.nm||'Un jugador')+' te envía '+(q>1?q+' boletos':'un boleto')+' '+TKN[k];if(S.online(id))S.push(id,{t:'note',m:msg,tk:1});else E.deliver(id,{note:msg});
  S.log('[boletos] '+(a.nm||u)+' → '+(b.nm||id)+' '+q+' '+k);return{ok:1,ent:E.ent(u)}};
-ops['tk.use']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),now=Date.now(),d=(k==='vph'||k==='vmh')?15:30;if(!TKN[k])return err('Boleto desconocido');const t=tkOf(a);if((t[k]|0)<1)return err('No tienes ese boleto');
- const vm=k==='vipm',vj=k==='vipj',vf=k==='vpf'||k==='vph'||k==='vmf'||k==='vmh',mf=k==='vmf'||k==='vmh',vip=vm||vj||vf,cmb=k==='cmb',lc=k==='lic',ks=vf?['lt','ap','tr','pv','bh'].concat(mf?['es']:[]):vm?['lt','ap','es','tr']:vj?['lt','ap','tr']:cmb?GCMB:lc?[]:[k];
+ops['tk.use']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),now=Date.now(),d=(k==='vph'||k==='vmh')?15:(k==='vpw'||k==='apw')?7:30;if(!TKN[k])return err('Boleto desconocido');const t=tkOf(a);if((t[k]|0)<1)return err('No tienes ese boleto');
+ const vm=k==='vipm',vj=k==='vipj',vf=k==='vpf'||k==='vph'||k==='vmf'||k==='vmh'||k==='vpw',mf=k==='vmf'||k==='vmh',vip=vm||vj||vf,cmb=k==='cmb',lc=k==='lic',ks=k==='apw'?['ap']:vf?['lt','ap','tr','pv','bh'].concat(mf?['es']:[]):vm?['lt','ap','es','tr']:vj?['lt','ap','tr']:cmb?GCMB:lc?[]:[k];
  if((vm||lc||mf)&&(a.cls!==0||a.lv<LIC_LV))return err(a.cls!==0?'Ese boleto solo lo canjea un Mercader (puedes enviarlo o intercambiarlo)':'Necesitas nivel '+LIC_LV);
  if(ks.some(z=>Math.max(now,a.px[z]||0)-now+d*DAY>90*DAY)||((vm||lc)&&Math.max(now,a.lic||0)-now+d*DAY>90*DAY)||(vip&&Math.max(now,a.vip||0)-now+d*DAY>90*DAY))return err('Máximo 90 días acumulados: canjéalo más tarde');
  t[k]--;ks.forEach(z=>{a.px[z]=Math.max(now,a.px[z]||0)+d*DAY});if(vm||lc||mf)a.lic=Math.max(now,a.lic||0)+d*DAY;if(vip)a.vip=Math.max(now,a.vip||0)+d*DAY;
@@ -164,4 +164,19 @@ ops['gmk.buy']=(u,m)=>{const id=String(m.id||''),o=GK()[id];if(!o)return err('El
 ops['adm.reseller']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const o=E.uidByName(m.name);if(!o)return err('No hay ningún jugador con ese nombre');const d=Math.floor(+m.d);if(!(d>=0&&d<=50))return err('El descuento va de 0 a 50 %');
  const cfg=S.DB.cfg=S.DB.cfg||{},old=cfg.res||{},nw=Object.assign({},old);if(d>0)nw[o]=d;else delete nw[o];cfg.res=nw;S.dirty();S.bc('cfg','res',old,nw);S.log('[master] revendedor '+(d||'quitado')+'% → '+m.name);gmLogAdd(nmOf(u),'reseller',nmOf(o),d,d?('descuento '+d+'%'):'sin descuento');return{ok:1,nm:nmOf(o),d}};
 ops['adm.reslist']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const r=((S.DB.cfg||{}).res)||{};return{ok:1,l:Object.keys(r).map(id=>({nm:nmOf(id),d:r[id]|0,on:S.online(id)?1:0}))}};
+/* ===== v319: Influencers. Código de referido -> boletos de VIP/Exp de 7 días por jugadores válidos (nivel 20) ===== */
+const INF_LV=20,INF_VIP_N=10,INF_EXP_N=5;
+const infDB=()=>{S.DB.inf=S.DB.inf||{};return S.DB.inf};
+const infCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9_]/g,'').slice(0,16);
+S.refSeen=(u,a)=>{try{const ac=S.ACC&&S.ACC[u],c=ac&&ac.rf;if(!c||a.rfd||(a.lv|0)<INF_LV||S.isMaster(u))return;const d=infDB(),i=d[c];a.rfd=1;if(!i||!i.u||i.u===u){S.dirty();return}
+  i.ok=(i.ok|0)+1;const w=Math.floor(i.ok/INF_VIP_N)-(i.gv|0),x=Math.floor(i.ok/INF_EXP_N)-(i.ga|0),b=E.acct(i.u);if(!b)return;const t=tkOf(b);
+  if(w>0){t.vpw=(t.vpw|0)+w;i.gv=(i.gv|0)+w}if(x>0){t.apw=(t.apw|0)+x;i.ga=(i.ga|0)+x}
+  S.dirty();E.pushEnt(i.u);const msg='⭐ Un jugador nuevo llegó a nivel '+INF_LV+' con tu código '+c+' ('+i.ok+' en total)'+(w>0?' · +'+w+' 🎟️ VIP 7 días':'')+(x>0?' · +'+x+' 🎟️ Bonus Exp 7 días':'');
+  if(S.online(i.u))S.push(i.u,{t:'note',m:msg,tk:1});else E.deliver(i.u,{note:msg});S.log('[influencer] '+c+' → '+i.ok+' válidos')}catch(e){S.log('[influencer] error '+e.message)}};
+ops['inf.new']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const c=infCode(m.code),o=E.uidByName(m.name);if(c.length<3)return err('Código de 3 a 16 letras o números');if(!o)return err('No hay ningún jugador con ese nombre');const d=infDB();if(d[c]&&d[c].u!==o)return err('Ese código ya es de otro influencer');
+ d[c]=d[c]||{ok:0,gv:0,ga:0,ts:Date.now()};d[c].u=o;d[c].n=E.acct(o).nm||m.name;const bd=(S.DB.cfg.badges=S.DB.cfg.badges||{});if(!bd[o])bd[o]='inf';S.dirty();S.log('[influencer] código '+c+' → '+d[c].n);return{ok:1}};
+ops['inf.del']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const c=infCode(m.code),d=infDB();if(!d[c])return err('Ese código no existe');delete d[c];S.dirty();return{ok:1}};
+ops['inf.list']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const d=infDB();return{ok:1,lv:INF_LV,vn:INF_VIP_N,en:INF_EXP_N,l:Object.keys(d).map(c=>({c,n:d[c].n,ok:d[c].ok|0,gv:d[c].gv|0,ga:d[c].ga|0}))}};
+ops['inf.me']=(u)=>{const d=infDB(),l=Object.keys(d).filter(c=>d[c].u===u).map(c=>({c,ok:d[c].ok|0,gv:d[c].gv|0,ga:d[c].ga|0}));return{ok:1,lv:INF_LV,vn:INF_VIP_N,en:INF_EXP_N,l}};
+
 return{ops,price,GEMP}};

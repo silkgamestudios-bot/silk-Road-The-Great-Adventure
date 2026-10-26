@@ -34,15 +34,16 @@ const BAD='Usuario o contraseña incorrectos';
 /* ---- mensajes previos al login. Devuelve true si los atendió ---- */
 function pre(m,ip,rep,done,E){
  const fail=e=>{rep({t:'auth',e});return true};
- if(m.reg){const r=m.reg||{},n=String(r.n||'').trim(),p=String(r.p||'').trim(),e=norm(r.e);
+ if(m.reg){const r=m.reg||{},n=String(r.n||'').trim(),p=String(r.p||'').trim(),e=norm(r.e),rc=String(r.rc||'').toUpperCase().replace(/[^A-Z0-9_]/g,'').slice(0,16);
   if(!lim('reg'+ip,5,36e5))return fail('Demasiados registros desde tu conexión. Intenta en una hora.');
   if(!NAME.test(n))return fail('Usuario: de 3 a 16 letras, números o guion bajo.');
   if(p.length<8||p.length>64)return fail('La contraseña debe tener entre 8 y 64 caracteres.');
   if(norm(p)===norm(n))return fail('La contraseña no puede ser igual al usuario.');
   if(!MAIL.test(e))return fail('Escribe un correo válido: lo necesitas para recuperar la contraseña.');
   if(USR[norm(n)])return fail('Ese usuario ya existe.');
+  if(rc&&!(ctx.refOk&&ctx.refOk(rc)))return fail('Ese código de influencer no existe. Revísalo o déjalo vacío.');
   if(Object.values(USR).some(x=>x.e===e))return fail('Ese correo ya está registrado. Entra con tu usuario o recupera tu contraseña.');
-  mkPw(p).then(pw=>{if(USR[norm(n)]){fail('Ese usuario ya existe.');return}const u=uidOf(n);USR[norm(n)]={u,n,e,h:pw.h,s:pw.s,ts:Date.now(),f:0,lk:0};ACC[u]={e,n,ts:Date.now(),pw:1};dirty();
+  mkPw(p).then(pw=>{if(USR[norm(n)]){fail('Ese usuario ya existe.');return}const u=uidOf(n);USR[norm(n)]={u,n,e,h:pw.h,s:pw.s,ts:Date.now(),f:0,lk:0};ACC[u]={e,n,ts:Date.now(),pw:1};if(rc)ACC[u].rf=rc;dirty();
    done(u,{ses:sesFor(u),email:e,name:n,uname:n,master:false,fresh:1})}).catch(()=>fail('No se pudo crear la cuenta.'));return true}
  if(m.lg){const r=m.lg||{},k=norm(r.n),p=String(r.p||'');
   if(!lim('lg'+ip,25,6e5))return fail('Demasiados intentos. Espera unos minutos.');

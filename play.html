@@ -809,14 +809,17 @@ const HC_NEED=l=>1.3+.05*l,HC_XP=.1,HC_GOLD=.021;
 const HC_GC=[.12,.12,.4,.36,.3,.3,.32,.36,.4],HC_IC=[.30,.31,.32,.32,.33,.34,.34,.35,.35],HC_PC=[.05,.06,.07,.08,.08,.09,.09,.10,.11],HC_MPC=[0,.03,.05,.06,.07,.07,.08,.09,.10],HC_MC=[.6,.5,0,0,0,0,0,0,0];
 /* zonas especiales (cuevas, zonas malditas, cripta, templo): -65% XP y oro */const arF=e=>e.cv!=null?.85:(e.dz!=null||e.dg||(typeof inTmp=='function'&&inTmp(e)))?.35:1;
 function twItem(f,el){const L=Math.round(40+70*(Math.max(1,f)-1)/599),t=Math.min(4,Math.floor((L-40)/17)),it=genItem(t);if(el&&it.r<1){it.r=1;setSt(it,RM[1]*(1+t*.6))}it.rl=L;return it}
-function hcLoot(e){const t=Math.max(0,Math.min(8,e.ty|0)),rw=e.rw||1,o={gd:0,it:null,pot:0,mpt:0,meat:0};
- if(Math.random()<HC_GC[t])o.gd=Math.max(1,Math.round((10+Math.floor(Math.random()*16))*20*(1+.5*t)*(1+eqT().gd/100)*goldM()*HC_GOLD*rw*arF(e)));
- if(Math.random()<Math.min(.6,HC_IC[t]*(rw>1?1.5:1)))o.it=genJunk(Math.min(2,t>>1),t);
+/* v301: la Cueva de las Arañas soltaba demasiado y llenaba la mochila en minutos: objetos/carne/materiales al 25% (cambia CAVE_DROP.ar a .13 para dejarlo en 13%) */
+const CAVE_GOLD={ar:.25,es:.6,se:.6,ab:.6},caveGold=()=>(typeof DG!=='undefined'&&DG.f&&CAVE_GOLD[DG.id]!=null)?CAVE_GOLD[DG.id]:1;
+const CAVE_DROP={ar:.25},caveDrop=()=>(typeof DG!=='undefined'&&DG.f&&CAVE_DROP[DG.id]!=null)?CAVE_DROP[DG.id]:1;
+function hcLoot(e){const t=Math.max(0,Math.min(8,e.ty|0)),rw=e.rw||1,o={gd:0,it:null,pot:0,mpt:0,meat:0},cd=caveDrop();
+ if(Math.random()<HC_GC[t])o.gd=Math.max(1,Math.round((10+Math.floor(Math.random()*16))*20*(1+.5*t)*(1+eqT().gd/100)*goldM()*HC_GOLD*rw*arF(e)*caveGold()));
+ if(Math.random()<Math.min(.6,HC_IC[t]*(rw>1?1.5:1))*cd)o.it=genJunk(Math.min(2,t>>1),t);
  if(e.dg&&DG.id=='to'&&!e.boss){o.it=Math.random()<(e.elite?.35:.04)?twItem(e.dg,e.elite):null}
  if(e.uwc!=null){o.it=null;o.gd=Math.random()<.45?Math.max(1,Math.round(uwXp(e)*.12*goldM())):0}if(e.ww)o.gd=Math.round((900+t*350+Math.random()*700)*goldM());
  if(Math.random()<HC_PC[t])o.pot=1;
  if(Math.random()<HC_MPC[t])o.mpt=1;
- if(Math.random()<HC_MC[t])o.meat=1;
+ if(Math.random()<HC_MC[t]*cd)o.meat=1;
  return o}
 /* ===== v14.8 · SKILLS + CARPA DE ENTRENAMIENTO =====
    El nivel (máx. LVMAX) SOLO sube vida y MP. El poder (daño, defensa, agilidad) sale de 3 skills que se entrenan en la carpa.
@@ -3836,7 +3839,7 @@ function bagDrop(e){const own=P.bu.filter(x=>x==40).length+(BCAP()==40?1:0)+(LCA
 /* v216b: prob. de objeto por tier: bajos cubren lo basico; altos bajan hasta 12% (mobs mas fuertes, no regalar) */
 const DRT=[.20,.20,.22,.17,.16,.15,.14,.13,.12];
 LT.push=function(){for(const l of arguments)l.z=LZ();return Array.prototype.push.apply(this,arguments)};
-function spawnLoot(e,gd){try{bagDrop(e)}catch(x){}const AR=(DG.f&&DG.id=='ar')?.95:1;gd=Math.round(gd*AR);const l={x:e.x+Math.random()*16-8,y:e.y+Math.random()*16-8,gd,it:e.uwc!=null?null:Math.random()<(DRT[Math.max(0,Math.min(8,e.ty|0))]+(e.rw?.05:0))*evItCap(e)*AR?(e.rw?genItem(Math.min(4,((e.ty||0)+(e.rw?1:0))>>1)):genJunk(Math.min(4,(e.ty||0)>>1))):null,l:120};LT.push(l);return l}
+function spawnLoot(e,gd){try{bagDrop(e)}catch(x){}const AR=(DG.f&&DG.id=='ar')?.95:1,CD=caveDrop();gd=Math.round(gd*AR);const l={x:e.x+Math.random()*16-8,y:e.y+Math.random()*16-8,gd,it:e.uwc!=null?null:Math.random()<(DRT[Math.max(0,Math.min(8,e.ty|0))]+(e.rw?.05:0))*evItCap(e)*AR*CD?(e.rw?genItem(Math.min(4,((e.ty||0)+(e.rw?1:0))>>1)):genJunk(Math.min(4,(e.ty||0)>>1))):null,l:120};LT.push(l);return l}
 function popKill(e,xp,l){const a=[['xp','+'+xp+' XP','#8fd3ff']],au=pa('lt');if(l.gd)a.push(['gd',(au?'+':'')+l.gd+' 🪙','#ffd666']);if(l.it)a.push(['it',(au?'+ ':'')+l.it.n,RC[l.it.r],l.it]);
  a.forEach((z,i)=>FT.push({x:e.x,y:e.y-14,t:1.7,d:i*.14,o:i*15,k:z[0],s:z[1],c:z[2],it:z[3]}));if(FT.length>40)FT.splice(0,FT.length-40)}
 /* carne: cae al suelo y dura 10 min para recogerla */function dropMeat(x,y,q,g){LT.push({x:x+Math.random()*16-8,y:y+Math.random()*16-8,gd:0,it:null,ml:q,mg:g||1,l:600})}
@@ -4573,7 +4576,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v300';let UPD=null,RSN=0;
+const SR_V='sr-v302';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}
  /* v236: desregistra el service worker, borra cachés y recarga con un parámetro nuevo para saltarse cualquier copia vieja (en celulares a veces "no pasaba nada") */
  let done=0;const go=()=>{if(done)return;done=1;try{const u=new URL(location.href);u.searchParams.set('r',String(Date.now()));location.replace(u.toString())}catch(e){location.reload()}};
@@ -5164,7 +5167,7 @@ function potPick(mp){const miss=mp?P.mmp-P.mp:P.mhp-P.hp;let best=null,big=null;
 var OV=0,OPG=0,OBN=30,_RAWL=null;
 const MTL=[{k:'tel',ic:'🕸️',n:'Tela de araña',c:'#dfe6ee',d:'Cae de las arañas (12%). Con ella se fabrican lazos en el Gremio de Cazadores (200 telas + 300 pieles + 4.000 🪙 por lazo).'},{k:'cur',ic:'🟫',n:'Piel de lobo',c:'#a06a3a',d:'Cae de los lobos (8%). Se usa para fabricar lazos en el Gremio de Cazadores.'}];
 const MATD={spider:['tel',.12,1],spiderB:['tel',.12,2],wolf:['cur',.08,1],wolfN:['cur',.08,2],wolfA:['cur',.08,3]};const LZC={tel:200,cur:300,gd:4000};
-function matDrop(e){const d=MATD[e.v];if(!d||Math.random()>=Math.min(.9,d[1]*(e.rw>1?1.3:1)))return;const q=d[2]>1?1+Math.floor(Math.random()*d[2]):1,m=MTL.find(x=>x.k==d[0]);P.fd[d[0]]=Math.min(9999,(P.fd[d[0]]|0)+q);FT.push({x:e.x,y:e.y-50,t:1.8,d:.2,o:0,k:'xp',s:'+'+q+' '+m.ic+' '+m.n.toLowerCase(),c:m.c})}
+function matDrop(e){const d=MATD[e.v];if(!d||Math.random()>=Math.min(.9,d[1]*(e.rw>1?1.3:1))*caveDrop())return;const q=d[2]>1?1+Math.floor(Math.random()*d[2]):1,m=MTL.find(x=>x.k==d[0]);P.fd[d[0]]=Math.min(9999,(P.fd[d[0]]|0)+q);FT.push({x:e.x,y:e.y-50,t:1.8,d:.2,o:0,k:'xp',s:'+'+q+' '+m.ic+' '+m.n.toLowerCase(),c:m.c})}
 function isLootK(k){if(!_RAWL)_RAWL=new Set(HRK.concat(FRK,MNL.map(m=>m.k),['mad','tel','cur']));return _RAWL.has(k)}
 function haveK(k){return k=='pot'?(P.pot|0):k=='mpot'?(P.mpot|0):(P.fd[k]|0)}
 /* v220: minerales, gemas y madera pueden pasar de la 🧺 loot a la 🎒 de uso (P.fl[k] = cantidad que ya está en la de uso) */

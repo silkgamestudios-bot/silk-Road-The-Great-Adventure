@@ -160,6 +160,7 @@ function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
  if(m.t==='wsx'){const k=String(m.k||'').slice(0,40);if(!k||k!==p.sk||!Array.isArray(m.h)||now-(p.xT||0)<60)return;p.xT=now;const pd=pid(u);if(!pd)return;const h=m.h.slice(0,12).map(a=>[typeof a[0]==='number'?(a[0]|0):String(a[0]).replace(/[^bg0-9]/g,'').slice(0,8),num(a[1],1,1e9,1)|0,a[2]?1:0]);
   if(k!=='w'){const key=pd+'|'+k;let S2=XS.get(key);if(!S2)XS.set(key,S2={m:new Map(),e:0});for(const a of h){let o=S2.m.get(a[0]);if(!o){if(S2.m.size>6000)continue;S2.m.set(a[0],o={d:0,k:0,t:now})}o.d+=a[1];o.t=now;if(a[2])o.k=now}}
   for(const q of PL.values()){if(q===p||q.sk!==k||pid(q.uid)!==pd)continue;if(k==='w'&&(q.dg||Math.hypot(q.x-p.x,q.y-p.y)>2400))continue;send(q.ws,{t:'wsx',k,h})}return}
+ if(m.t==='wsp'){const k=String(m.k||'').slice(0,40);if(!k||k==='w'||k!==p.sk||!Array.isArray(m.p)||now-(p.pT||0)<180)return;p.pT=now;const pd=pid(u);if(!pd)return;const pp=m.p.slice(0,40).map(a=>[a[0]|0,num(a[1],0,W*T,0)|0,num(a[2],0,H*T,0)|0]);for(const q of PL.values()){if(q===p||q.sk!==k||pid(q.uid)!==pd)continue;send(q.ws,{t:'wsp',k,f:u,p:pp})}return}
  if(m.t==='wsq'){const k=String(m.k||'').slice(0,40),pd=pid(u);if(!k||k==='w'||k!==p.sk||!pd)return;const S2=XS.get(pd+'|'+k);if(!S2)return;const s2=[];for(const [id,o] of S2.m){if(now-o.t>120000){S2.m.delete(id);continue}s2.push([id,o.d,o.k?now-o.k:-1])}if(s2.length)send(p.ws,{t:'wss',k,s:s2.slice(0,500)});return}
  if(m.t==='wh'){if(!p.dg)hits(p,m.h)}
  if(m.t==='wup'){if(p.uw){p.pl=num(m.p,-1,7,-1)|0;p.plT=now}return}

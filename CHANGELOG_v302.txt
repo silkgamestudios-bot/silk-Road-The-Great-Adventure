@@ -1,0 +1,7 @@
+v302 — Menos oro de mobs en cuevas (solo cliente, NO requiere Manual Deploy)
+
+- Cueva de las Arañas: el oro que sueltan los mobs baja al 25%.
+- Catacumbas, Pantano de las Serpientes y Abismo del Lodo Negro: oro al 60%.
+- Torre, Submundo y mundo abierto no cambian.
+- Ajustable en play.html: CAVE_GOLD={ar:.25,es:.6,se:.6,ab:.6}.
+Archivos: play.html, sw.js (sr-v302).

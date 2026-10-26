@@ -24,7 +24,7 @@ N.onmsg=m=>{
  else if(m.t=='wd'){if(on&&P.hp>0&&!modal){P.hp-=mountAbs(m.d*(P.sh>0?.3:1)*(P.cls==1?knRes():1));if(P.hp<=0)die()}}
  else if(m.t=='ws')snap(m);
  else if(m.t=='wpv'){PV.on=m.on?1:0;if(!PV.on)PV.t=null;if(m.e)toast(m.e,3800);pvSync();pvBtn()}
- else if(m.t=='wpd'){PVHIT=Date.now();if(P.hp>0&&!modal&&!AR.on){const d=mountAbs(m.d*(P.sh>0?.3:1)*(P.cls==1?knRes():1));P.hp-=d;if(FT.length<60)FT.push({x:P.x,y:P.y-26,t:.9,d:0,o:0,k:'dm',s:'-'+Math.round(d),c:'#ff6a6a'});if(P.hp<=0)die()}}
+ else if(m.t=='wpd'){PVHIT=Date.now();try{pvNear(m.by)}catch(e){}if(P.hp>0&&!modal&&!AR.on){const d=mountAbs(m.d*(P.sh>0?.3:1)*(P.cls==1?knRes():1));P.hp-=d;if(FT.length<60)FT.push({x:P.x,y:P.y-26,t:.9,d:0,o:0,k:'dm',s:'-'+Math.round(d),c:'#ff6a6a'});if(P.hp<=0)die()}}
  else if(m.t=='wph'){const o=OT[m.u]||(String(m.u)[0]=='L'&&AR.lm&&AR.lm[String(m.u).slice(1)]);if(FT.length<60)FT.push({x:o?o.rx:P.x,y:(o?o.ry:P.y)-30,t:.9,d:0,o:0,k:'dm',s:String(m.d),c:'#ffb36a'})}
  else if(m.t=='wpk'){pvKillMsg(m)}
  else if(m.t=='wbt'){try{btyNotify(m.b)}catch(e){}}
@@ -35,6 +35,8 @@ N.onmsg=m=>{
  else if(m.t=='wk')reward(m)};
 /* ===== PvP abierto (v148) ===== */
 const PV={on:0,t:null,sent:0},G0={pvg:1,u:'',nm:'',x:0,y:0,hp:1,mx:1,dead:1e9,ty:0,stun:0,rw:0,nv:1,sp:0,mov:0,hx:0,hy:0};PVG.push(G0);
+/* v287: si alguien te ataca en PvP, el objetivo pasa al enemigo PvP más cercano (o al atacante si está igual de cerca) */
+function pvNear(by){if(!PV.on||AR.on)return;let b=null,bd=1e9,ad=1e9;for(const u in OT){const o=OT[u];if(!o.pvp||!(o.hp>0))continue;const d=Math.hypot(o.rx-P.x,o.ry-P.y);if(u===by)ad=d;if(d<bd){bd=d;b=u}}if(by&&OT[by]&&OT[by].pvp&&ad<=bd*1.35+30)b=by;if(!b||b===PV.t)return;if(Math.hypot(OT[b].rx-P.x,OT[b].ry-P.y)>700)return;PV.t=b;pvSync();toast('🎯 Te atacan: objetivo → '+OT[b].nm,1800)}
 function pvKillMsg(m){PV.t=null;pvSync();if(m.me){toast('☠️ '+m.by+' te venció en PvP. Sin penalización. Ve al 🏹 Gremio de Cazadores y pon una recompensa por su cabeza.',8000);vib([80,40,120]);return}
  const r=m.r||{};let t='⚔️ ¡Venciste a '+m.v+'!';if(r.n)t+=' 🎯 Recompensa cobrada:'+(r.g?' +'+fmt(r.g)+' 🪙':'')+(r.m?' +'+r.m+' 💎':'')+((r.its||[]).length?' 🎁 '+r.its.join(', '):'');toast(t,7000);vib([60,40,60,40,100])}
 function pvSync(){const o=PV.t&&OT[PV.t],Ln=PV.t&&PV.t[0]=='L'&&AR.lm&&AR.lm[PV.t.slice(1)];if(PV.on&&Ln&&Ln.hp>0){G0.u=PV.t;G0.nm='🦁 León';G0.x=Ln.rx;G0.y=Ln.ry;G0.hx=Ln.rx;G0.hy=Ln.ry;G0.hp=Ln.hp;G0.mx=Math.max(1,Ln.mhp);G0.dead=0}else if(PV.on&&o&&o.pvp&&o.hp>0){G0.u=PV.t;G0.nm=o.nm;G0.x=o.rx;G0.y=o.ry;G0.hx=o.rx;G0.hy=o.ry;G0.hp=o.hp;G0.mx=Math.max(1,o.mhp);G0.dead=0}else{G0.dead=1e9;if(PV.t&&!o&&!Ln)PV.t=null}pvBar()}
@@ -46,7 +48,7 @@ function pvBar(){let el=document.getElementById('pvt');if(!el){el=document.creat
 setInterval(()=>{if(PV.t&&G0.dead<=0){const o=OT[PV.t]||(PV.t[0]=='L'&&AR.lm&&AR.lm[PV.t.slice(1)]);if(o){G0.x=o.rx;G0.y=o.ry;if(o.mhp)G0.hp=o.hp}}pvBtn()},120);
 window.SRBD=u=>(OT[u]&&OT[u].bd)||'';window.SRLIONS=()=>AR.lm;window.SRLION=(x,y)=>{if(!AR.on||AR.out||AR.spec||!PV.on)return 0;let b=null,bd=40;for(const k in(AR.lm||{})){const o=AR.lm[k],d=Math.hypot(o.rx-x,o.ry-y+24);if(d<bd){bd=d;b=k}}
  if(!b){for(const u in OT){const o=OT[u];if(!o.pvp||!(o.hp>0))continue;if(Math.abs(o.rx-x)<24&&Math.abs(o.ry-y+4)<32){if(PV.t===u){PV.t=null;pvSync();toast('🎯 Objetivo liberado',1500)}else{PV.t=u;AR.lkp=1;pvSync();toast('🎯 Objetivo fijado: '+o.nm,2000)}return 1}}return 0}if(PV.t==='L'+b){PV.t=null;pvSync();toast('🎯 Objetivo liberado',1500);return 1}PV.t='L'+b;pvSync();toast('🦁 ¡León fijado como objetivo! Ataca para abatirlo.',2500);return 1};
-window.SRPVP={click:(u,o)=>{if(!PV.on||!o.pvp)return 0;if(PV.t===u){PV.t=null;pvSync();toast('🎯 Objetivo liberado',1500);return 1}PV.t=u;pvSync();toast('🎯 Objetivo fijado: '+o.nm+' · ataca y tus golpes y hechizos van hacia él',3000);return 1},on:()=>PV.on};
+window.SRPVP={click:(u,o)=>{if(!PV.on||!o.pvp)return 0;if(PV.t===u){PV.t=null;pvSync();toast('🎯 Objetivo liberado',1500);return 1}PV.t=u;pvSync();toast('🎯 Objetivo fijado: '+o.nm+' · ataca tú: el objetivo se queda fijo',2600);return 1},on:()=>PV.on};
 function snap(m){const seen={};if(m.ud){try{window.SRUD&&SRUD(m.ud)}catch(e){}}
  for(const a of m.pl){const o=OT[a[0]]||(OT[a[0]]={rx:a[4],ry:a[5]});Object.assign(o,{nm:a[1],c:a[2],lv:a[3],x:a[4],y:a[5],hp:a[6],mhp:a[7],pt:a[8],gt:a[9]||'',bs:a[10]||'',pvp:a[11]|0,wn:a[12]|0,bd:a[13]||''});seen[a[0]]=1}
  for(const u in OT)if(!seen[u])delete OT[u];

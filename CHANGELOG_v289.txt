@@ -1,0 +1,3 @@
+v289 - Gremio de la Seda (mercado de mercancias): cantidad escrita a mano.
+Ahora puedes tocar el numero y escribir cuanto quieres comprar o vender; se ajusta solo al maximo que permiten tu oro y tu carga. Los botones -10, -, +, +10, 1, 1/2 y Max. siguen igual.
+Solo cliente (play.html, sw.js). No necesita Manual Deploy.

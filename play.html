@@ -268,7 +268,7 @@ animation:tsilk 6s ease-in-out infinite;filter:drop-shadow(0 3px 0 #3a1f16) drop
 .mkt-tg button.on{background:#2a6fdb;color:#fff}.is-s .mkt-tg button.on{background:#c98410}
 .mkt-q{display:grid;grid-template-columns:42px 44px 1fr 44px 42px;gap:4px;align-items:center}
 .mkt-q button{height:44px;padding:0;font-size:15px;background:#ffffff1a;color:#fff;border:1px solid #ffffff33;box-shadow:none;border-radius:10px}
-.mkt-n{text-align:center;line-height:1.05}.mkt-n b{font-size:24px;display:block}.mkt-n small{font-size:10px;opacity:.65}
+.mkt-n{text-align:center;line-height:1.05}.mkt-n b{font-size:24px;display:block}.mkt-n small{font-size:10px;opacity:.65}.mkt-in{width:64px;font:700 22px inherit;font-family:inherit;text-align:center;color:inherit;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:2px 0;-moz-appearance:textfield}.mkt-in::-webkit-outer-spin-button,.mkt-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .mkt-qq{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .mkt-qq button{height:32px;padding:0;font-size:13px;background:#0006;color:#ffe9a8;border:1px solid #ffd66655;box-shadow:none;border-radius:8px}
 .mkt-go{min-height:48px;font-size:15px;border-radius:12px;background:linear-gradient(180deg,#3d8bff,#1f55c4);color:#fff;border:2px solid #9cc4ff}
@@ -1271,13 +1271,15 @@ function rm(){const el=$('mk'),f=feeR(),old=el.scrollTop,pm=P.cls==0&&lic();el.h
   return `<div class="mkt-c ${m=='s'?'is-s':'is-b'}"><div class="mkt-ct"><img src="${ICN[i]}" width="34" height="34"><div class="mkt-nm"><b>${n}</b><small>Tienes <b>${P.inv[i]}</b>${avg?' · costo medio '+avg:''}</small></div></div>
   <div class="mkt-pr"><div class="${m=='b'?'on':''}"><small>Comprar a</small><b>${cost}</b></div><div class="${m=='s'?'on':''}"><small>Vender a</small><b>${net}</b>${avg?`<em class="${mg>=0?'up':'dn'}">${mg>=0?'+':''}${mg}%</em>`:''}</div></div>
   <div class="mkt-tg"><button data-a="m" data-i="${i}" data-n="b" class="${m=='b'?'on':''}">Comprar</button><button data-a="m" data-i="${i}" data-n="s" class="${m=='s'?'on':''}">Vender</button></div>
-  <div class="mkt-q"><button data-a="q" data-i="${i}" data-n="-10">−10</button><button data-a="q" data-i="${i}" data-n="-1">−</button><div class="mkt-n"><b>${mx<1?0:q}</b><small>de ${mx}</small></div><button data-a="q" data-i="${i}" data-n="1">+</button><button data-a="q" data-i="${i}" data-n="10">+10</button></div>
+  <div class="mkt-q"><button data-a="q" data-i="${i}" data-n="-10">−10</button><button data-a="q" data-i="${i}" data-n="-1">−</button><div class="mkt-n"><input class="mkt-in" type="number" inputmode="numeric" min="1" max="${mx}" data-i="${i}" value="${mx<1?0:q}" ${mx<1?'disabled':''} aria-label="Cantidad"><small>de ${mx}</small></div><button data-a="q" data-i="${i}" data-n="1">+</button><button data-a="q" data-i="${i}" data-n="10">+10</button></div>
   <div class="mkt-qq"><button data-a="qs" data-i="${i}" data-n="1">1</button><button data-a="qs" data-i="${i}" data-n="half">½</button><button data-a="qs" data-i="${i}" data-n="max">${m=='b'?'Máx.':'Todo'}</button></div>
   <button class="mkt-go" data-a="go" data-i="${i}" ${mx<1?'disabled':''}>${mx<1?why:(m=='b'?'Comprar '+q+' · −'+fmt(tot)+' 🪙':'Vender '+q+' · +'+fmt(tot)+' 🪙')}</button>
   ${m=='s'&&mx>=1&&avg?`<small class="mkt-pf ${pf>=0?'up':'dn'}">Ganancia estimada ${pf>=0?'+':''}${fmt(pf)} 🪙</small>`:''}</div>`}).join('');
  h+=`</div><p class="mkt-nt"><small>Esta casa mueve las mercancías de la Ruta. Para vender objetos y equipo a otros jugadores usa el 🏛️ Mercado de jugadores (botón de abajo). Pociones, provisiones y lazos 🪢: busca a un Mercader 🟩 o pregunta en Información 📜.</small></p>
  <div class="mkt-f">${MOB?'':`<button data-a="u1">Caravana +10 carga<br><small>${fmt(6000*(lvlC+1))} 🪙</small></button><button data-a="u2">Espada +5 daño<br><small>${fmt(8000*(lvlD+1))} 🪙</small></button><button data-a="rp">Herrero: reparar<br><small>${fmt(repAll())} 🪙</small></button>`}<button data-a="pm">🏛️ Mercado de jugadores</button><button data-a="x" class="mkt-out">Salir</button></div></div>`;
  el.innerHTML=h;el.scrollTop=old}
+$('mk').addEventListener('change',e=>{const t=e.target;if(!t.classList||!t.classList.contains('mkt-in'))return;const i=+t.dataset.i,mx=mkMax(i,MKM[i]||'b');let v=Math.floor(+t.value||1);MKQ[i]=Math.max(1,Math.min(Math.max(1,mx),v));rm()});
+$('mk').addEventListener('keydown',e=>{if(e.target.classList&&e.target.classList.contains('mkt-in')&&e.key=='Enter')e.target.blur()});
 $('mk').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,i=+b.dataset.i;
  if(a=='m'){MKM[i]=b.dataset.n;MKQ[i]=1}
  else if(a=='q'){const mx=mkMax(i,MKM[i]||'b');MKQ[i]=Math.max(1,Math.min(Math.max(1,mx),(MKQ[i]||1)+ +b.dataset.n))}
@@ -4571,7 +4573,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v285';let UPD=null,RSN=0;
+const SR_V='sr-v289';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}
  /* v236: desregistra el service worker, borra cachés y recarga con un parámetro nuevo para saltarse cualquier copia vieja (en celulares a veces "no pasaba nada") */
  let done=0;const go=()=>{if(done)return;done=1;try{const u=new URL(location.href);u.searchParams.set('r',String(Date.now()));location.replace(u.toString())}catch(e){location.reload()}};
@@ -4645,6 +4647,8 @@ document.addEventListener('keydown',e=>{if(e.target&&e.target.id=='chi'){e.stopP
 /* clic sobre otro jugador del mundo → menú */
 cv.addEventListener('click',e=>{if(modal||!window.SRWORLD)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*VW/r.width+CX,y=(e.clientY-r.top)*VH/r.height+CY;if(window.SRLION&&SRLION(x,y))return;if(!SRWORLD.on())return;const O=SRWORLD.others();
  for(const u in O){const o=O[u];if(Math.abs(o.rx-x)<22&&Math.abs(o.ry-y+4)<30){if(window.SRPVP&&SRPVP.click(u,o))return;chPopup(u,o.nm,e.clientX,e.clientY,o);return}}});
+/* v288: en PC el clic derecho abre el menú del jugador (perfil, party, trato…); el izquierdo fija el objetivo PvP */
+cv.addEventListener('contextmenu',e=>{e.preventDefault();if(modal||!window.SRWORLD||!SRWORLD.on())return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*VW/r.width+CX,y=(e.clientY-r.top)*VH/r.height+CY,O=SRWORLD.others();for(const u in O){const o=O[u];if(Math.abs(o.rx-x)<22&&Math.abs(o.ry-y+4)<30){chPopup(u,o.nm,e.clientX,e.clientY,o);return}}});
 if(window.SRNET)SRNET.onsoc=m=>{
  if(m.tr){trdView(m.v);return}
  if(m.t=='cg'){CHT.g.push(m.m);if(CHT.g.length>60)CHT.g.shift();if(CHT.open&&CHT.tab==0)chMsgsUpd();else{CHT.mini='<b>'+hx(m.m.nm)+'</b>: '+hx(m.m.t);CHT.mt=Date.now();chR();setTimeout(chR,9100)}}
@@ -6401,6 +6405,7 @@ function ppTap(o,rr){if(!DB||modal)return false;let best=null,bd=rr||40;for(cons
 function ppCss(){if(document.getElementById('ppcss'))return;const s=document.createElement('style');s.id='ppcss';s.textContent=`
 #pty{position:absolute;top:80px;left:8px;width:176px;z-index:9;color:#fff;font:600 10px system-ui,sans-serif;display:none;pointer-events:none}
 #pty .ph{display:flex;align-items:center;gap:4px;padding:3px 6px;background:linear-gradient(180deg,rgba(26,16,30,.55),rgba(10,6,14,.45));border:1px solid rgba(154,240,176,.45);border-radius:9px 9px 0 0;pointer-events:auto}
+#pty .ph{touch-action:none;cursor:grab}#pty.drag .ph{cursor:grabbing;border-color:#ffd666}#pty.drag{z-index:40}
 #pty .ph b{flex:1;font:700 10.5px Georgia,serif;color:#cfeedd}#pty .ph button{pointer-events:auto;background:#0006;border:1px solid #ffffff30;border-radius:6px;color:#fff;font-size:11px;padding:0 5px;height:18px;line-height:16px}
 #pty .pr{display:flex;gap:5px;align-items:center;padding:3px 6px;background:rgba(10,6,14,.42);border:1px solid rgba(154,240,176,.25);border-top:0;pointer-events:auto}
 #pty .pr:last-child{border-radius:0 0 9px 9px}#pty .pr img{width:22px;height:22px;image-rendering:pixelated;background:#0004;border-radius:6px}
@@ -6488,7 +6493,7 @@ function ppUi(){const d=document.getElementById('pty');if(!d)return;if(!DB||!PP.
  const all=ppAll(),n=all.length;d.style.display='block';let h=`<div class="ph"><b>👥 Party ${n}/${PPMAX}</b><button data-a="add" title="Invitar">➕</button><button data-a="menu" title="Opciones">⚙</button><button data-a="col">${PP.col?'▾':'▴'}</button></div>`;
  if(!PP.col)for(const o of all){const dist=o.me?0:Math.round(Math.hypot(o.x-P.x,o.y-P.y)/T);h+=`<div class="pr${o.dd?' dd':''}" data-u="${hx(o.u)}"><img src="${CI&&CI[o.c|0]||''}"><div class="pc"><div class="pn"><span>${o.pl?'👑':''}${hx(o.n)} <small>Nv${o.l|0}</small></span><span>${o.me?'':(o.dd?'☠️':o.dg?'🏚️':'')+dist+'c'}</span></div><div class="pb h"><i style="width:${Math.max(0,Math.min(100,100*o.h/Math.max(1,o.H)))}%"></i></div><div class="pb m"><i style="width:${Math.max(0,Math.min(100,100*o.m/Math.max(1,o.M)))}%"></i></div></div></div>`}
  d.innerHTML=h;PP.h=d.offsetHeight;ppPets()}
-function ppPets(){try{const hc=$('hc'),r=hc&&!hc.hidden?hc.getBoundingClientRect():null,b=r&&r.height?Math.round(r.bottom+6):80,base=Math.max(b,r?0:80);const rc=$('rcb');let b2=base;if(rc){rc.style.top=base+'px';if(!rc.hidden)b2=base+rc.offsetHeight+6}const pt=$('pty');if(pt)pt.style.setProperty('top',b2+'px','important');$('pc').style.setProperty('top',(b2+(PP.pid&&DB?(PP.h||0)+6:0))+'px','important')}catch(e){}}
+function ppPets(){try{const hc=$('hc'),r=hc&&!hc.hidden?hc.getBoundingClientRect():null,b=r&&r.height?Math.round(r.bottom+6):80,base=Math.max(b,r?0:80);const rc=$('rcb');let b2=base;if(rc){rc.style.top=base+'px';if(!rc.hidden)b2=base+rc.offsetHeight+6}const pt=$('pty'),cu=window.PTYPOS;if(pt){if(cu){const w=$('w'),mw=(w.offsetWidth||800)-pt.offsetWidth,mh=(w.offsetHeight||400)-30,x=Math.max(0,Math.min(mw,cu.x)),y=Math.max(0,Math.min(mh,cu.y));pt.style.setProperty('left',x+'px','important');pt.style.setProperty('top',y+'px','important')}else{pt.style.removeProperty('left');pt.style.setProperty('top',b2+'px','important')}}$('pc').style.setProperty('top',(b2+(PP.pid&&DB&&!cu?(PP.h||0)+6:0))+'px','important')}catch(e){}}
 setInterval(ppPets,400);
 function ppFollow(cx,cy){if(!PP.fol)return;const o=PP.o[PP.fol];if(!o||!ppFresh(o)){PP.fol=null;return}const dx=o.x-P.x,dy=o.y-P.y,d=Math.hypot(dx,dy);if(d<260)return;const a=Math.atan2(dy,dx),r=Math.min(VW,VH)*.4;g.save();g.translate(VW/2+Math.cos(a)*r,VH/2+Math.sin(a)*r);g.rotate(a);g.fillStyle='#9af0b0';g.strokeStyle='#000';g.lineWidth=2;g.beginPath();g.moveTo(14,0);g.lineTo(-8,-9);g.lineTo(-4,0);g.lineTo(-8,9);g.closePath();g.fill();g.stroke();g.restore();g.font='bold 10px sans-serif';g.textAlign='center';g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=3;g.strokeText(o.n+' '+Math.round(d/T)+'c',VW/2+Math.cos(a)*r,VH/2+Math.sin(a)*r+22);g.fillText(o.n+' '+Math.round(d/T)+'c',VW/2+Math.cos(a)*r,VH/2+Math.sin(a)*r+22)}
 function ppTick(dt){if(!PP.ui){PP.ui=1;ppCss();PP.t0=Date.now()}if(!DB)return;ppWrite();PP.uiT=(PP.uiT||0)-dt;if(PP.uiT<=0){PP.uiT=.8;ppUi()}}
@@ -7486,6 +7491,15 @@ setInterval(scan,300)})();
   ov(h);document.getElementById('bdgm').querySelectorAll('button[data-b]').forEach(b=>b.onclick=()=>{mop('bdg.set',{b:b.dataset.b},rr=>{if(rr&&rr.ok){r.b=rr.b||'';draw(r);toast(rr.b?'🏷️ Distintivo '+rr.b+' activado':'Distintivo quitado',2200);try{window.SRNET&&SRNET.send({t:'wbd'})}catch(e){}}else if(rr&&rr.e)toast(rr.e,3500)})})}
  window.bdgOpen=()=>{mop('bdg.get',{},r=>{if(r&&r.ok)draw(r)})};
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-bdg]');if(b){e.preventDefault();e.stopPropagation();window.bdgOpen()}},true)})();
+</script>
+<script>
+/* v286: la ventana de la party es flotante: arrastra el título "👥 Party" para moverla; doble toque en el título la devuelve a su sitio */
+(()=>{const K='sr_pty_pos';try{const v=JSON.parse(localStorage.getItem(K)||'null');if(v&&isFinite(v.x)&&isFinite(v.y))window.PTYPOS={x:+v.x,y:+v.y}}catch(e){}
+let dr=null,lt=0;const W=()=>document.getElementById('w'),sc=()=>{const w=W(),r=w.getBoundingClientRect();return{r,k:(w.offsetWidth?r.width/w.offsetWidth:1)||1}};
+document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest('#pty .ph');if(!h||e.target.closest('button'))return;const pt=document.getElementById('pty');const now=Date.now();if(now-lt<350){window.PTYPOS=null;try{localStorage.removeItem(K)}catch(x){}lt=0;try{ppPets()}catch(x){}return}lt=now;const {r,k}=sc(),pr=pt.getBoundingClientRect();dr={dx:(e.clientX-pr.left)/k,dy:(e.clientY-pr.top)/k,m:0,sx:e.clientX,sy:e.clientY};e.preventDefault()},true);
+document.addEventListener('pointermove',e=>{if(!dr)return;if(!dr.m&&Math.hypot(e.clientX-dr.sx,e.clientY-dr.sy)<6)return;dr.m=1;const pt=document.getElementById('pty');pt.classList.add('drag');const {r,k}=sc();window.PTYPOS={x:(e.clientX-r.left)/k-dr.dx,y:(e.clientY-r.top)/k-dr.dy};try{ppPets()}catch(x){}e.preventDefault()},{capture:true,passive:false});
+const end=()=>{if(!dr)return;const m=dr.m;dr=null;const pt=document.getElementById('pty');if(pt)pt.classList.remove('drag');if(m&&window.PTYPOS){const w=W(),pt2=document.getElementById('pty');window.PTYPOS.x=Math.max(0,Math.min((w.offsetWidth||800)-pt2.offsetWidth,window.PTYPOS.x));window.PTYPOS.y=Math.max(0,Math.min((w.offsetHeight||400)-30,window.PTYPOS.y));try{localStorage.setItem(K,JSON.stringify(window.PTYPOS))}catch(x){}try{ppPets()}catch(x){}}};
+document.addEventListener('pointerup',end,true);document.addEventListener('pointercancel',end,true)})();
 </script>
 <script>
 /* Acceso anticipado (solo master): ver, agregar o quitar hasta 3 cuentas que pueden entrar antes de la apertura. */

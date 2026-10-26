@@ -16,7 +16,8 @@ let WSIG=0;for(const a of J.mobs)WSIG=a?(Math.imul(WSIG,31)+(a[5]|0)*7+(a[6]|0)*
 const BY=new Map(L.map(m=>[m.id,m])),CS=512,G=new Map(),key=(a,b)=>a+','+b;
 for(const m of L){const k=key(Math.floor(m.hx/CS),Math.floor(m.hy/CS));if(!G.has(k))G.set(k,[]);G.get(k).push(m)}
 const near=(x,y,r)=>{const o=[];for(let a=Math.floor((x-r)/CS);a<=Math.floor((x+r)/CS);a++)for(let b=Math.floor((y-r)/CS);b<=Math.floor((y+r)/CS);b++){const g=G.get(key(a,b));if(g)for(const m of g)o.push(m)}return o};
-let EV=[],AT=[];const PL=new Map(),pid=u=>{const r=DB.pres&&DB.pres[u];if(r&&r.p&&Date.now()-(+r.t||0)<30000)return String(r.p);return(DB.pmem&&DB.pmem[u]&&DB.pmem[u].pid)||''},sc=p=>p.ct.dm+1.5*p.ct.tk+6*p.ct.ut;
+let EV=[],AT=[];const XS=new Map();setInterval(()=>{const n=Date.now();for(const [key,S2] of XS){const i=key.indexOf('|'),pd=key.slice(0,i),k=key.slice(i+1);let any=0;for(const q of PL.values())if(q.sk===k&&pid(q.uid)===pd){any=1;break}if(any)S2.e=0;else if(!S2.e)S2.e=n;else if(n-S2.e>15000)XS.delete(key)}},5000).unref();
+const PL=new Map(),pid=u=>{const r=DB.pres&&DB.pres[u];if(r&&r.p&&Date.now()-(+r.t||0)<30000)return String(r.p);return(DB.pmem&&DB.pmem[u]&&DB.pmem[u].pid)||''},sc=p=>p.ct.dm+1.5*p.ct.tk+6*p.ct.ut;
 const send=(ws,m)=>{if(ws.readyState===1)ws.send(JSON.stringify(m))},mvM=(m,dx,dy)=>{if(!solid(m.x+dx,m.y))m.x+=dx;if(!solid(m.x,m.y+dy))m.y+=dy};
 function step(dt,now){const act=new Set();for(const p of PL.values())for(const m of near(p.x,p.y,CFG.view+CFG.leash))act.add(m);for(const m of DYL)act.add(m);
  /* rendimiento: los jugadores atacables se agrupan por celdas; cada enemigo solo mira a los cercanos (antes revisaba a TODOS los conectados) */
@@ -75,7 +76,7 @@ function arSend(p,m){send(p.ws,m)}
 function arBc(m){for(const u of AR.ids){const p=PL.get(u);if(p&&p.ar)send(p.ws,m)}}
 function arRad(now){if(AR.st!=='fight')return ARC.rmax;const t=now-AR.t0;if(t<=ARC.safe)return ARC.rmax;const k=Math.min(1,(t-ARC.safe)/(ARC.fight*.82-ARC.safe));return Math.round(ARC.rmax+(ARC.rmin-ARC.rmax)*k)}
 function arPvn(){let n=0;for(const q of PL.values())if(q.pvp&&!q.ar)n++;return n}
-function arStatus(p){return{gm:X.gm&&X.gm(p.uid)?1:0,pvn:arPvn(),t:'wc',q:1,st:AR.st,n:AR.ids.size,max:ARC.max,min:ARC.min,left:AR.st==='lobby'?Math.max(0,AR.lobEnd-Date.now()):AR.st==='fight'?Math.max(0,AR.t0+ARC.fight-Date.now()):0,ch:CO.champ?CO.champ.nm:'',top:coTop(5),fee:ARC.fee,tfee:ARC.fee+ARC.tadd,smax:ARC.smax,sfee:ARC.sfee,mode:AR.mode,ns:AR.specs.size,me:p&&p.ar?1:0}}
+function arStatus(p){return{gm:X.gm&&X.gm(p.uid)?1:0,pvn:arPvn(),t:'wc',q:1,st:AR.st,n:AR.ids.size,max:ARC.max,min:ARC.min,left:AR.st==='lobby'?Math.max(0,AR.lobEnd-Date.now()):AR.st==='fight'?Math.max(0,AR.t0+ARC.fight-Date.now()):0,ch:CO.champ?CO.champ.nm:'',pz:CO.prize||null,top:coTop(5),fee:ARC.fee,tfee:ARC.fee+ARC.tadd,smax:ARC.smax,sfee:ARC.sfee,mode:AR.mode,ns:AR.specs.size,me:p&&p.ar?1:0}}
 function arClear(p){p.ar=0;p.aout=0;p.ahp=0;p.lp=null;if(p.pvp){p.pvp=0}p.hp=100;p.mhp=100}
 function arLeave(u,why){const p=PL.get(u);if(AR.specs.has(u)){AR.specs.delete(u);if(p){p.asp=0;send(p.ws,{t:'wc',x:1})}return}if(!AR.ids.has(u)){if(p)arClear(p);return}
  if(AR.st==='lobby'||AR.st==='idle'){AR.ids.delete(u);const sk=AR.stk.get(u)||ARC.fee;AR.stk.delete(u);if(p&&p.apaid)AR.pot=Math.max(0,AR.pot-sk);if(p&&p.apaid&&!p.aout&&X.pay)try{X.pay(u,sk,'🏛️ Reembolso de la entrada al Coliseo (+'+sk+' 🪙)')}catch(e){}
@@ -96,8 +97,9 @@ function arEnd(why){if(AR.st!=='fight')return;const now=Date.now();let best=[],b
  AR.li=[];const names=best.map(p=>p.nm);
  if(!AR.solo&&(AR.n0|0)>=ARC.min&&best.length&&pot>0){for(const w of best){const o=CO.wins[w.uid]||(CO.wins[w.uid]={nm:w.nm,w:0});o.nm=w.nm;o.w++}
   const old=CO.champ,keep=old&&best.some(w=>w.uid===old.uid);if(!keep){const nw=best[0];CO.champ={uid:nw.uid,nm:nw.nm};coAll({t:'wch',m:'🏆 '+nw.nm+' es el nuevo CAMPEÓN DEL COLISEO'+(old?' · '+old.nm+' pierde el título':''),ch:nw.uid,cn:nw.nm})}
-  coSave()}AR.res={w:names,prize:each,pot,why};AR.st='end';AR.endT=now+ARC.end;
- for(const u of AR.ids){const p=PL.get(u);if(p&&p.ar)send(p.ws,{t:'wce',w:names,prize:each,pot,why,win:best.includes(p)?1:0,burn:Math.round(pot*ARC.burn)});if(p)p.pvp=0}}
+  if(CO.prize&&X.prz)for(const w2 of best){try{X.prz(w2.uid,CO.prize.k,CO.prize.q,'🏛️ ¡Premio del Coliseo: '+CO.prize.q+' × '+CO.prize.lab+'!')}catch(e){}}
+  coSave()}AR.res={w:names,prize:each,pot,why,pz:(!AR.solo&&(AR.n0|0)>=ARC.min&&best.length&&pot>0&&CO.prize)?CO.prize:null};AR.st='end';AR.endT=now+ARC.end;
+ for(const u of AR.ids){const p=PL.get(u);if(p&&p.ar)send(p.ws,{t:'wce',pz:AR.res.pz,w:names,prize:each,pot,why,win:best.includes(p)?1:0,burn:Math.round(pot*ARC.burn)});if(p)p.pvp=0}}
 function arTick(){const now=Date.now();
  if(AR.st==='idle'){if(!AR.ids.size)AR.mode='c';if(AR.ids.size>=ARC.min||(AR.solo&&AR.ids.size>=1)){AR.st='lobby';AR.lobEnd=now+(AR.solo?5000:ARC.lobby)}}
  else if(AR.st==='lobby'){for(const u of [...AR.ids]){const p=PL.get(u);if(!p||!p.ar){AR.ids.delete(u);AR.pot=Math.max(0,AR.pot-(AR.stk.get(u)||ARC.fee));AR.stk.delete(u)}}
@@ -135,6 +137,7 @@ function arMsg(p,m){const u=p.uid;
  if(m.t==='wcl')return arLeave(u,'sale');
  if(m.t==='wcw'){if(!(X.gm&&X.gm(u)))return send(p.ws,{t:'wc',e:'Solo el GM'});p.asp=1;AR.specs.add(u);if(!AR.cx&&m.cx&&m.cy){AR.cx=num(m.cx,0,W*T,0);AR.cy=num(m.cy,0,H*T,0)}return send(p.ws,Object.assign(arStatus(p),{ok:1,spec:1}))}
  if(m.t==='wcv'){if(p.ar||p.asp)return send(p.ws,Object.assign(arStatus(p),{ok:1,spec:1}));if(p.dg)return send(p.ws,{t:'wc',e:'Sal de la mazmorra primero'});const gm=!!(X.gm&&X.gm(u));if(!gm&&!(X.fee&&X.fee(u,ARC.sfee)))return send(p.ws,{t:'wc',e:'Necesitas '+ARC.sfee+' 🪙 para el boleto'});p.asp=1;AR.specs.add(u);if(!AR.cx&&m.cx&&m.cy){AR.cx=num(m.cx,0,W*T,0);AR.cy=num(m.cy,0,H*T,0)}return send(p.ws,Object.assign(arStatus(p),{ok:1,spec:1}))}
+ if(m.t==='wcp'){if(!(X.gm&&X.gm(u)))return;const q=Math.floor(+m.q||0),k=String(m.k||'');if(!q||!k){CO.prize=null;coSave();send(p.ws,Object.assign(arStatus(p),{t:'wc',q:1,note:'Premio del Coliseo quitado'}));return}if(!X.przok||!X.przok(k)||q<1||q>100){send(p.ws,{t:'wc',e:'Premio no válido'});return}CO.prize={k,q,lab:String(m.lab||k).replace(/[<>&"]/g,'').slice(0,40)};coSave();send(p.ws,Object.assign(arStatus(p),{t:'wc',q:1,note:'Premio guardado: '+q+' × '+CO.prize.lab}));return}
  if(m.t==='wcg'){if(!(X.gm&&X.gm(u)))return;if(AR.st==='lobby'||AR.st==='idle'){if(AR.ids.size>=1){AR.solo=AR.ids.size<ARC.min?1:0;arStart(Date.now())}else send(p.ws,{t:'wc',e:'Entra primero como gladiador'})}return}
  if(m.t==='wcj'){if(p.ar)return send(p.ws,Object.assign(arStatus(p),{ok:1}));
   if(AR.st==='fight'||AR.st==='end')return send(p.ws,{t:'wc',e:'Hay un combate en curso. Entra al siguiente'+(AR.st==='fight'?' (faltan '+Math.ceil(Math.max(0,AR.t0+ARC.fight-Date.now())/1000)+' s máx.)':'')});
@@ -147,12 +150,17 @@ function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
  if(m.t==='wj'){const old=p;p={uid:u,ws,nm:String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,20)||'Viajero',c:num(m.c,0,7,0)|0,lv:num(m.lv,1,9999,1)|0,gt:String(m.gt||'').slice(0,4),bs:String(m.bs||'').slice(0,12),cz:Array.isArray(m.cz)?m.cz:[0,0,0],x:num(m.x,0,W*T,0),y:num(m.y,0,H*T,0),hp:100,mhp:100,mt:now,tok:0,tt:now,rc:[],dk:new Set(),ct:old?old.ct:{dm:0,tk:0,ut:0}};if(old&&old.ar&&AR.ids.has(u)){p.ar=old.ar;p.aout=old.aout;p.ahp=old.ahp;p.hp=old.hp;p.mhp=old.mhp;p.pvp=old.pvp;p.dg=old.dg;p.lp=old.lp}if(old&&old.asp&&AR.specs.has(u))p.asp=1;try{p.bd=X.bdg?X.bdg(u):''}catch(e){p.bd=''}p.city=inCity(p.x,p.y);PL.set(u,p);send(ws,{t:'wi',tick:CFG.tick,n:J.mobs.length,sg:WSIG});try{X.tjoin&&X.tjoin(u)}catch(e){}return}
  if(!p||p.ws!==ws)return;
  if(m.t==='wbd'){try{p.bd=X.bdg?X.bdg(u):''}catch(e){p.bd=''}return}
- if(m.t==='wcq'||m.t==='wcj'||m.t==='wcl'||m.t==='wcw'||m.t==='wcv'||m.t==='wcg')return arMsg(p,m);
+ if(m.t==='wcq'||m.t==='wcj'||m.t==='wcl'||m.t==='wcw'||m.t==='wcv'||m.t==='wcg'||m.t==='wcp')return arMsg(p,m);
  if(m.t==='wm'){const x=num(m.x,0,W*T,p.x),y=num(m.y,0,H*T,p.y),dt=Math.min(2,Math.max(.05,(now-p.mt)/1000)),d=Math.hypot(x-p.x,y-p.y),tp=m.tp&&(inCity(x,y)||(J.tpd||[]).some(t=>Math.hypot(x-t.x,y-t.y)<300))&&now-(p.tpT||0)>3000;
+  p.sk=String(m.sk||'').replace(/[^\w:.-]/g,'').slice(0,40);
   if(m.dg){p.dg=1;p.uw=m.uw?1:0;p.x=x;p.y=y;p.mt=now;if(!p.ar){p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp)}return}const wasDg=p.dg;p.dg=0;p.uw=0;p.pl=-1;
   if(wasDg&&!psolid(x,y,u)){p.x=x;p.y=y;p.mt=now;return}
   const fly=!!(m.fl&&X.gm&&X.gm(u));if(!fly&&((d>CFG.speed*dt+48&&!tp)||psolid(x,y,u))){send(ws,{t:'wp',x:p.x,y:p.y});return}if(tp)p.tpT=now;
   p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);p.lv=X.lv&&X.lv(u)?X.lv(u):num(m.lv,1,9999,p.lv)|0;p.city=inCity(x,y);p.pw=num(m.pw,1,1e13,p.pw||1);if(p.hp<=0&&p.lp)pvDie(p);return}
+ if(m.t==='wsx'){const k=String(m.k||'').slice(0,40);if(!k||k!==p.sk||!Array.isArray(m.h)||now-(p.xT||0)<60)return;p.xT=now;const pd=pid(u);if(!pd)return;const h=m.h.slice(0,12).map(a=>[typeof a[0]==='number'?(a[0]|0):String(a[0]).replace(/[^bg0-9]/g,'').slice(0,8),num(a[1],1,1e9,1)|0,a[2]?1:0]);
+  if(k!=='w'){const key=pd+'|'+k;let S2=XS.get(key);if(!S2)XS.set(key,S2={m:new Map(),e:0});for(const a of h){let o=S2.m.get(a[0]);if(!o){if(S2.m.size>6000)continue;S2.m.set(a[0],o={d:0,k:0,t:now})}o.d+=a[1];o.t=now;if(a[2])o.k=now}}
+  for(const q of PL.values()){if(q===p||q.sk!==k||pid(q.uid)!==pd)continue;if(k==='w'&&(q.dg||Math.hypot(q.x-p.x,q.y-p.y)>2400))continue;send(q.ws,{t:'wsx',k,h})}return}
+ if(m.t==='wsq'){const k=String(m.k||'').slice(0,40),pd=pid(u);if(!k||k==='w'||k!==p.sk||!pd)return;const S2=XS.get(pd+'|'+k);if(!S2)return;const s2=[];for(const [id,o] of S2.m){if(now-o.t>120000){S2.m.delete(id);continue}s2.push([id,o.d,o.k?now-o.k:-1])}if(s2.length)send(p.ws,{t:'wss',k,s:s2.slice(0,500)});return}
  if(m.t==='wh'){if(!p.dg)hits(p,m.h)}
  if(m.t==='wup'){if(p.uw){p.pl=num(m.p,-1,7,-1)|0;p.plT=now}return}
  if(m.t==='wub')return ubHit(p,m);

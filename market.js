@@ -106,9 +106,13 @@ const TR=()=>S.ECO.trd||(S.ECO.trd={});
 const trOf=u=>{const T=TR();for(const id in T){const t=T[id];if(t.a===u||t.b===u)return t}return null};
 const nmOf=u=>(E.acct(u).nm)||'Jugador';
 const mkSide=()=>({items:[],pets:[],gold:0,prov:{},tk:{},ok:0});const TKK=['vpf','vph','vmf','vmh','cmb','es','lic','vipm','vipj','pv','bh'],tkG=(a,k)=>((a.tk&&a.tk[k])|0);
-const TMAXPET=3;
+const TMAXPET=3,FFEE=1500,FSLOTS=2,FPROV=10,VIPMSG='[VIP] Ya usaste tu trato gratis de hoy. Para comerciar sin límite: 🤝 Comercio y Party (3 💎) o 👑 Plan Jugador (7 💎).';
+const isFree=u=>!S.isMaster(u)&&!((E.acct(u).px&&E.acct(u).px.tr||0)>Date.now());
+const usedFree=u=>E.acct(u).ftd===dayKey();
+const trFr=t=>!!(t.fr&&(t.fr.a||t.fr.b));
+const slotsOf=sd=>sd.items.length+Object.keys(sd.prov||{}).length;
 function trView(t,u,why){const me=t.a===u?'a':'b',th=me==='a'?'b':'a',o=x=>({items:x.items,pets:x.pets||[],gold:x.gold|0,prov:x.prov,tk:x.tk||{},ok:x.ok?1:0});
- return{id:t.id,st:why?'end':t.st,why:why||'',v:t.v,me:o(t['s'+me]),th:Object.assign(o(t['s'+th]),{u:t[th],nm:nmOf(t[th])}),ini:t.a===u?1:0,fee:TFEE,exp:t.exp}}
+ return{id:t.id,st:why?'end':t.st,why:why||'',v:t.v,me:o(t['s'+me]),th:Object.assign(o(t['s'+th]),{u:t[th],nm:nmOf(t[th])}),ini:t.a===u?1:0,fee:TFEE,fr:trFr(t)?1:0,ff:FFEE,fs:FSLOTS,exp:t.exp}}
 function trPush(t,why){for(const u of [t.a,t.b])if(S.online(u))S.push(u,{t:'dm',tr:1,v:trView(t,u,why)})}
 function trEnd(t,why){for(const [u,sd] of [[t.a,t.sa],[t.b,t.sb]])for(const it of sd.items){holdReg(it.id,u,0);E.deliver(u,{item:it,note:'↩️ Trato cancelado: objeto devuelto'})}
  for(const [u,sd] of [[t.a,t.sa],[t.b,t.sb]])for(const pt of (sd.pets||[])){holdReg(pt.id,u,0,'p');E.deliver(u,{pet:pt,note:'↩️ Trato cancelado: mascota devuelta'})}
@@ -117,37 +121,42 @@ const trChanged=t=>{t.v++;t.sa.ok=0;t.sb.ok=0;t.ts=now();t.exp=now()+10*60e3;S.d
 const trGet=(u,m)=>{const t=TR()[String(m.id||'')];if(!t||(t.a!==u&&t.b!==u))return null;return t};
 setInterval(()=>{const T=TR(),n=now();for(const id in T)if(T[id].exp<n)trEnd(T[id],'expiró')},15e3).unref();
 ops['trade.me']=(u)=>{const t=trOf(u);return{ok:1,v:t?trView(t,u):null}};
-ops['trade.req']=(u,m)=>{const to=String(m.to||''),a=E.acct(u),b=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?S.ECO.acc[to]:null;if(!b||to===u)return{e:'Jugador no válido'};{const n=Date.now(),okT=x=>(x.px&&(x.px.tr||0)>n);if(!S.isMaster(u)&&!okT(a))return{e:'🔒 El comercio directo requiere el servicio 🤝 Comercio (desde 3 💎) o un VIP'};if(!S.isMaster(to)&&!okT(b))return{e:'Ese jugador no tiene activo el servicio 🤝 Comercio'}}if(!S.online(to))return{e:'Ese jugador no está conectado'};
+ops['trade.req']=(u,m)=>{const to=String(m.to||''),a=E.acct(u),b=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?S.ECO.acc[to]:null;if(!b||to===u)return{e:'Jugador no válido'};const fa=isFree(u),fb=isFree(to);if(fa&&usedFree(u))return{e:VIPMSG};if(fb&&usedFree(to))return{e:'Ese jugador ya usó su trato gratis de hoy (sin servicio 🤝 solo tiene 1 al día).'};
+ if(fa&&E.avail(a,'gold')<FFEE)return{e:'El trato gratis cuesta '+FFEE+' 🪙 de comisión: te falta oro'};if(fb&&E.avail(b,'gold')<FFEE)return{e:'Ese jugador no tiene los '+FFEE+' 🪙 de comisión para un trato gratis'};
+ var FR={a:fa,b:fb};
+ if(!S.online(to))return{e:'Ese jugador no está conectado'};
  if((a.lv|0)<TLV||(b.lv|0)<TLV)return{e:'Para comerciar los dos necesitan Nv '+TLV+' o más'};if(trOf(u))return{e:'Ya tienes un trato abierto'};if(trOf(to))return{e:'Ese jugador está en otro trato'};
  const sc=S.ECO.soc&&S.ECO.soc[to];if(sc&&sc.bl&&sc.bl.includes(u))return{e:'Ese jugador no acepta tratos tuyos'};
- const t={id:'t'+E.rid(5),a:u,b:to,st:'req',v:0,sa:mkSide(),sb:mkSide(),ts:now(),exp:now()+60e3};TR()[t.id]=t;S.dirty();trPush(t);return{ok:1,v:trView(t,u)}};
+ const t={id:'t'+E.rid(5),a:u,b:to,fr:FR,st:'req',v:0,sa:mkSide(),sb:mkSide(),ts:now(),exp:now()+60e3};TR()[t.id]=t;S.dirty();trPush(t);return{ok:1,v:trView(t,u)}};
 ops['trade.acc']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='req'||t.b!==u)return{e:'La solicitud ya no existe'};t.st='open';t.exp=now()+10*60e3;S.dirty();trPush(t);return{ok:1,v:trView(t,u)}};
 ops['trade.cancel']=(u,m)=>{const t=trGet(u,m);if(!t)return{ok:1};trEnd(t,t.st==='req'&&t.b===u?'rechazó':'cancel');return{ok:1}};
 const trSide=(t,u)=>t.a===u?t.sa:t.sb;
-ops['trade.item']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const sd=trSide(t,u);if(sd.items.length>=TMAXI)return{e:'Máximo '+TMAXI+' objetos por trato'};
+ops['trade.item']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const sd=trSide(t,u);if(sd.items.length>=TMAXI)return{e:'Máximo '+TMAXI+' objetos por trato'};if(trFr(t)&&slotsOf(sd)>=FSLOTS)return{e:'Trato gratis: máximo '+FSLOTS+' espacios por lado'};
  const c=claimItem(u,m.item);if(c.e)return c;if(sd.items.some(x=>x.id===c.it.id))return{e:'Ya está en el trato'};holdReg(c.it.id,'T:'+t.id,1);sd.items.push(c.it);trChanged(t);return{ok:1,v:trView(t,u)}};
 ops['trade.unitem']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const sd=trSide(t,u),i=sd.items.findIndex(x=>x.id===String(m.iid||''));if(i<0)return{e:'Ese objeto no está en el trato'};
  const it=sd.items.splice(i,1)[0];holdReg(it.id,u,0);E.deliver(u,{item:it,note:'↩️ Objeto retirado del trato'});trChanged(t);return{ok:1,v:trView(t,u)}};
-ops['trade.pet']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const sd=trSide(t,u);sd.pets=sd.pets||[];if(sd.pets.length>=TMAXPET)return{e:'Máximo '+TMAXPET+' mascotas/monturas por trato'};
+ops['trade.pet']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};if(trFr(t))return{e:'Trato gratis: solo objetos y provisiones (oro, mascotas y boletos requieren 🤝 Comercio)'};const sd=trSide(t,u);sd.pets=sd.pets||[];if(sd.pets.length>=TMAXPET)return{e:'Máximo '+TMAXPET+' mascotas/monturas por trato'};
  const pt=E.cleanPetS(m.pet);if(!pt||!pt.id)return{e:'Mascota no válida'};const r=S.ECO.reg[pt.id];if(!r||r.o!==u)return{e:'Esa mascota no es tuya (o aún no está sincronizada)'};if(sd.pets.some(x=>x.id===pt.id))return{e:'Ya está en el trato'};
  holdReg(pt.id,'T:'+t.id,1,'p');sd.pets.push(pt);trChanged(t);return{ok:1,v:trView(t,u)}};
 ops['trade.unpet']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const sd=trSide(t,u),i=(sd.pets||[]).findIndex(x=>x.id===String(m.pid||''));if(i<0)return{e:'Esa mascota no está en el trato'};
  const pt=sd.pets.splice(i,1)[0];holdReg(pt.id,u,0,'p');E.deliver(u,{pet:pt,note:'↩️ Mascota retirada del trato'});trChanged(t);return{ok:1,v:trView(t,u)}};
-ops['trade.gold']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const a=E.acct(u),g=int(m.g,0,1e12,0);if(g>E.avail(a,'gold'))return{e:'No tienes tanto oro (sincroniza e inténtalo de nuevo)'};trSide(t,u).gold=g;trChanged(t);return{ok:1,v:trView(t,u)}};
-ops['trade.tk']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const k=String(m.k||''),a=E.acct(u),q=int(m.q,0,50,0);if(!TKK.includes(k))return{e:'Boleto no válido'};
+ops['trade.gold']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};if(trFr(t))return{e:'Trato gratis: solo objetos y provisiones (oro, mascotas y boletos requieren 🤝 Comercio)'};const a=E.acct(u),g=int(m.g,0,1e12,0);if(g>E.avail(a,'gold'))return{e:'No tienes tanto oro (sincroniza e inténtalo de nuevo)'};trSide(t,u).gold=g;trChanged(t);return{ok:1,v:trView(t,u)}};
+ops['trade.tk']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};if(trFr(t))return{e:'Trato gratis: solo objetos y provisiones (oro, mascotas y boletos requieren 🤝 Comercio)'};const k=String(m.k||''),a=E.acct(u),q=int(m.q,0,50,0);if(!TKK.includes(k))return{e:'Boleto no válido'};
  const sd=trSide(t,u);sd.tk=sd.tk||{};if(q>tkG(a,k))return{e:'No tienes tantos boletos'};if(q)sd.tk[k]=q;else delete sd.tk[k];trChanged(t);return{ok:1,v:trView(t,u)}};
 ops['trade.prov']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};const pk=String(m.pk||''),a=E.acct(u),q=int(m.q,0,1e6,0);if(!PVL.includes(pk))return{e:'Producto no válido'};
- if(KEYK_BLOCK.has(pk))return{e:'Eso no se puede'};const sd=trSide(t,u);if(q&&!sd.prov[pk]&&Object.keys(sd.prov).length>=TMAXP)return{e:'Máximo '+TMAXP+' tipos de provisión'};if(q>provAv(a,pk))return{e:'No tienes tantas'};
+ if(KEYK_BLOCK.has(pk))return{e:'Eso no se puede'};const sd=trSide(t,u);if(trFr(t)&&q){if(q>FPROV)return{e:'Trato gratis: máximo '+FPROV+' por provisión'};if(!sd.prov[pk]&&slotsOf(sd)>=FSLOTS)return{e:'Trato gratis: máximo '+FSLOTS+' espacios por lado'}}if(q&&!sd.prov[pk]&&Object.keys(sd.prov).length>=TMAXP)return{e:'Máximo '+TMAXP+' tipos de provisión'};if(q>provAv(a,pk))return{e:'No tienes tantas'};
  if(q)sd.prov[pk]=q;else delete sd.prov[pk];trChanged(t);return{ok:1,v:trView(t,u)}};
 const KEYK_BLOCK=new Set();
 ops['trade.ok']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El trato no está abierto'};if(+m.v!==t.v)return{e:'La oferta cambió: revísala'};if(now()-t.ts<TLOCK)return{e:'Espera un instante: la oferta acaba de cambiar'};
  const sd=trSide(t,u);sd.ok=1;if(!(t.sa.ok&&t.sb.ok)){S.dirty();trPush(t);return{ok:1,v:trView(t,u)}}
  /* cierre atómico */
  const A=E.acct(t.a),B=E.acct(t.b);
+ if(trFr(t))for(const [uu,aa,f] of [[t.a,A,t.fr.a],[t.b,B,t.fr.b]]){if(!f)continue;if(aa.ftd===dayKey()){t.sa.ok=0;t.sb.ok=0;trPush(t);return{e:(aa.nm||'Un jugador')+' ya usó su trato gratis de hoy'}}if(E.avail(aa,'gold')<FFEE+(0)){t.sa.ok=0;t.sb.ok=0;trPush(t);return{e:(aa.nm||'Un jugador')+' no tiene los '+FFEE+' 🪙 de comisión'}}}
  for(const [a,sd2] of [[A,t.sa],[B,t.sb]]){if(E.avail(a,'gold')<sd2.gold){t.sa.ok=0;t.sb.ok=0;trPush(t);return{e:(a.nm||'Un jugador')+' ya no tiene el oro ofrecido'}}
   for(const k in (sd2.tk||{}))if(tkG(a,k)<sd2.tk[k]){t.sa.ok=0;t.sb.ok=0;trPush(t);return{e:(a.nm||'Un jugador')+' ya no tiene los boletos ofrecidos'}}
   for(const pk in sd2.prov)if(provAv(a,pk)<sd2.prov[pk]){t.sa.ok=0;t.sb.ok=0;trPush(t);return{e:(a.nm||'Un jugador')+' ya no tiene las provisiones ofrecidas'}}}
  delete TR()[t.id];S.dirty();
+ if(trFr(t))for(const [uu,aa,f] of [[t.a,A,t.fr.a],[t.b,B,t.fr.b]])if(f){aa.ftd=dayKey();E.deliver(uu,{gold:-FFEE,note:'🤝 Trato gratis: comisión '+FFEE+' 🪙'})}
  for(const [from,to,fa,sd2] of [[t.a,t.b,A,t.sa],[t.b,t.a,B,t.sb]]){const get=Math.round(sd2.gold*(1-TFEE));
   if(sd2.gold)E.deliver(from,{gold:-sd2.gold,note:'🤝 Trato: enviaste '+sd2.gold+' 🪙 (comisión 3%)'});
   if(get)E.deliver(to,{gold:get,note:'🤝 Trato con '+nmOf(from)+': +'+get+' 🪙'});
@@ -155,6 +164,8 @@ ops['trade.ok']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El tra
   {const ta=E.acct(to);fa.tk=fa.tk||{};ta.tk=ta.tk||{};for(const k in (sd2.tk||{})){fa.tk[k]=Math.max(0,tkG(fa,k)-sd2.tk[k]);ta.tk[k]=tkG(ta,k)+sd2.tk[k]}if(Object.keys(sd2.tk||{}).length){E.pushEnt(from);E.pushEnt(to);if(S.online(to))S.push(to,{t:'note',m:'🎟️ Trato con '+nmOf(from)+': recibiste boletos VIP',tk:1})}}
   for(const it of sd2.items){holdReg(it.id,to,0);E.deliver(to,{item:it,note:'🤝 Trato con '+nmOf(from)+': recibiste '+it.n})}
   for(const pt of (sd2.pets||[])){holdReg(pt.id,to,0,'p');E.deliver(to,{pet:pt,note:'🤝 Trato con '+nmOf(from)+': recibiste una mascota'})}}
+ for(const [from,to,sd2] of [[t.a,t.b,t.sa],[t.b,t.a,t.sb]]){const rc={f:nmOf(from),it:sd2.items.map(x=>x.n),pets:(sd2.pets||[]).map(x=>x.nm||'Mascota'),g:Math.round(sd2.gold*(1-TFEE)),pv:sd2.prov,tk:sd2.tk||{}};
+  if((rc.it.length||rc.pets.length||rc.g||Object.keys(rc.pv).length||Object.keys(rc.tk).length)&&S.online(to))S.push(to,{t:'note',m:'📬 Recibiste de '+rc.f,rc})}
  trPush(t,'done');return{ok:1,done:1}};
 
 /* ---------- ZODÍACO: recompensa por participar en la derrota de un centinela (verifica calendario y daños compartidos) ---------- */
@@ -242,4 +253,6 @@ function pvKill(ku,vu,fresh,kn){const ka=E.acct(ku),va=E.acct(vu),t=now();ka.pvk
  if(r.n)E.pushEnt(ku);return r}
 
 function shopTr(sid){const s=col('shops')[sid];if(s){s.tr=(s.tr|0)+1;S.dirty()}}
-return{ops,shopView,iv,PVL,pvKill,btyHas}};
+const prizeOk=k=>TKA.includes(k)||(PVL.includes(k)&&!KEYK_BLOCK.has(k));
+const grant=(u,k,q,note)=>{q=Math.max(1,Math.min(1000,q|0));if(!prizeOk(k))return false;if(TKA.includes(k)){tkAdd(u,k,q);if(S.online(u))S.push(u,{t:'note',m:note||'🎁 Premio recibido'})}else E.deliver(u,Object.assign({note:note||'🎁 Premio recibido'},provDl(k,q)));return true};
+return{ops,shopView,iv,PVL,pvKill,btyHas,prizeOk,grant}};

@@ -1,0 +1,12 @@
+v300 — Party: quien entra después ve el estado real de la mazmorra (SERVIDOR: requiere Manual Deploy)
+
+Problema: si un héroe entraba más tarde a una mazmorra (bajaba un piso después), encontraba con vida los mobs que el primero ya mató.
+
+Ahora:
+- El servidor recuerda, por party y por piso, qué mobs murieron y cuánto daño recibieron.
+- Al entrar a un piso con party, el cliente pide ese estado y aplica: los mobs ya muertos aparecen muertos (con el tiempo de reaparición que les queda) y los dañados bajan de vida.
+- Un mob que muere en la pantalla de cualquier miembro queda marcado como muerto para los que lleguen después.
+- El recuerdo se borra solo cuando nadie de la party queda en ese piso (15 s), y las entradas viejas (>2 min) se descartan, así un piso nuevo siempre empieza limpio.
+- Todo lo de v299 sigue igual (daño y muertes compartidos en tiempo real).
+
+Archivos de servidor: world.js. Cliente: world-client.js, play.html, sw.js (sr-v300).

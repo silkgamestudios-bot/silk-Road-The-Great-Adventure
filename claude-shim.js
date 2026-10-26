@@ -15,7 +15,7 @@ function conn(){ws=new WebSocket(SERVER);ok=0;
   if(m.t&&m.t[0]=='w'){SRNET.onmsg&&SRNET.onmsg(m)}
   else if(m.t=='ent'){G(g=>g.ent(m.ent))}
   else if(m.t=='dl'){G(g=>g.dl(m.list))}
-  else if(m.t=='note'){G(g=>g.note(m.m))}
+  else if(m.t=='note'){if(m.rc&&window.SRRCV){try{window.SRRCV(m.rc)}catch(e){}}else G(g=>g.note(m.m))}
   else if(m.t=='gs'||m.t=='gc'||m.t=='ginv'){SRNET.ongd&&SRNET.ongd(m)}
   else if(m.t=='cg'||m.t=='dm'||m.t=='fq'||m.t=='fa'||m.t=='fr'||m.t=='fp'){SRNET.onsoc&&SRNET.onsoc(m)}
   else if(m.t=='kick'){ok=0;try{ws.onclose=null;ws.close()}catch(x){}document.body.innerHTML='<div style="padding:40px;color:#f5e6c4;font:20px Georgia;text-align:center;background:#0d1526;height:100vh">'+(m.e||'Sesión abierta en otro dispositivo')+'<br><br><button onclick="location.reload()" style="font-size:18px;padding:10px 20px">Volver a entrar</button></div>'}

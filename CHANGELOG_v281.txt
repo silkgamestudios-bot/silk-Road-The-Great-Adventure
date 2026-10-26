@@ -1,0 +1,7 @@
+v281 — Coliseo: más lejos, con colisión, entrada Gladiador/Espectador y Torneo con leones (SERVIDOR + CLIENTE: Manual Deploy)
+- El coliseo está más lejos de la primera ciudad y el edificio exterior tiene colisión: ya no se puede cruzar por encima, se entra por la puerta.
+- Al entrar se elige: ⚔️ Combate (1000 🪙), 🦁 Torneo (1000 🪙) o 🎟️ Espectador (100 🪙, se quema).
+- Torneo: a mitad del combate sueltan leones (con el sprite de león del juego). Un clic en un león o gladiador lo fija como objetivo.
+- Los leones persiguen y muerden; si caes con uno, eres "devorado".
+- Arreglo: el servidor apagaba el PvP de los gladiadores dentro del coliseo; ya no.
+- Los espectadores no se ven entre sí ni los ven los gladiadores.

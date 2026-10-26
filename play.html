@@ -900,7 +900,7 @@ const REC=t=>Math.round(t*3.5)+1,tierAt=(x,y)=>TM[Math.max(0,Math.min(H-1,Math.f
 const Z4=[0,0,0,0];var UW={on:0,s:null,pop:null,t:0,chk:0,deny:0},UWS=null,UWD=null,UB={m:0,h:0,o:0,hp:0,mx:2e7,k:0,cd:0,e:null,acc:0,fl:0,pl:-1,snt:0,oAt:0,cAt:0,dAt:0,hurtIdx:-1,hurtN:0,tk:0};const cityAt=o=>{if(UW.on)return;for(const c of C){const e=c.ex||Z4,dx=o.x/T-c.tx-.5,dy=o.y/T-c.ty-.5;if(dx>-24.6-e[0]&&dx<24.6+e[1]&&dy>-18.6-e[2]&&dy<15.6+e[3])return c}};
 let GODON=1;const FLY={on:0,i:2},FLS=[1.5,3,6,12,25];function FLYMV(dx,dy){if(!FLY.on||!gmIsM()||DG.f)return 0;const k=FLS[FLY.i];P.x=Math.max(8,Math.min(W*T-8,P.x+dx*k));P.y=Math.max(8,Math.min(H*T-8,P.y+dy*k));return 1}
 var TZB=new Map();function zsBlk(x,y,r){if(!TZB.size)return 0;const my=(typeof GD!='undefined'&&GD.g)?GD.g.id:'';for(const [a,b] of [[-r,-r],[r,-r],[-r,r],[r,r]]){const tx=Math.floor((x+a)/T),ty=Math.floor((y+b)/T),e=TZB.get(ty*W+tx);if(e){if((e.k=='G'||e.k=='d')&&my&&TZS.pl[e.id]&&TZS.pl[e.id][3]===my)continue;return 1}}return 0}
-const blk=(x,y,r)=>{for(const [a,b] of [[-r,-r],[r,-r],[-r,r],[r,r]]){const tx=Math.floor((x+a)/T),ty=Math.floor((y+b)/T);if(tx<0||ty<0||tx>=W||ty>=H||solid(M[ty][tx])||TREE[ty*W+tx])return 1}return UW.on?uwBlk(x,y,r):(fenceBlk(x,y,r)||zsBlk(x,y,r)||townBlk(x,y,r)||ruinBlk(x,y,r))};
+const blk=(x,y,r)=>{for(const [a,b] of [[-r,-r],[r,-r],[-r,r],[r,r]]){const tx=Math.floor((x+a)/T),ty=Math.floor((y+b)/T);if(tx<0||ty<0||tx>=W||ty>=H||solid(M[ty][tx])||TREE[ty*W+tx])return 1}return UW.on?uwBlk(x,y,r):(fenceBlk(x,y,r)||zsBlk(x,y,r)||townBlk(x,y,r)||ruinBlk(x,y,r)||coBlk(x,y,r))};
 var WEM=1;const mv=(o,dx,dy,r)=>{if(o!==P){dx*=WEM;dy*=WEM}if(!blk(o.x+dx,o.y,r)&&!(o===P&&peBlk(o.x+dx,o.y)))o.x+=dx;if(!blk(o.x,o.y+dy,r)&&!(o===P&&peBlk(o.x,o.y+dy)))o.y+=dy};
 const CLS=[
 {n:'Mercader',mp:60,mr:2,hp:100,dm:1,sp:125,cd:.4,rg:0,ic:'💰',sk:'Soborno',scd:20,d:'EQUILIBRADO: pelea y farmea como cualquiera, con golpes críticos. Es el único que puede abrir una tienda para comprar y vender a otros jugadores fijando sus propios precios. Desde el nivel 1 puede comprar la Licencia de Mercader (carruaje con tienda ambulante, buscador de objetos y su 🛒 visible en el mapa).'},
@@ -4565,7 +4565,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v278';let UPD=null,RSN=0;
+const SR_V='sr-v281';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}
  /* v236: desregistra el service worker, borra cachés y recarga con un parámetro nuevo para saltarse cualquier copia vieja (en celulares a veces "no pasaba nada") */
  let done=0;const go=()=>{if(done)return;done=1;try{const u=new URL(location.href);u.searchParams.set('r',String(Date.now()));location.replace(u.toString())}catch(e){location.reload()}};
@@ -4637,7 +4637,7 @@ document.addEventListener('click',e=>{const t=e.target;if(!t||!t.closest)return;
 document.addEventListener('input',e=>{if(e.target&&e.target.id=='chi'&&e.target.maxLength>14)CHT.ct=e.target.value});
 document.addEventListener('keydown',e=>{if(e.target&&e.target.id=='chi'){e.stopPropagation();if(e.key=='Enter'){chAct(CHT.tab==0?'sg':CHT.tab==1?'sd':'fa')}}},true);
 /* clic sobre otro jugador del mundo → menú */
-cv.addEventListener('click',e=>{if(modal||!window.SRWORLD||!SRWORLD.on())return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*VW/r.width+CX,y=(e.clientY-r.top)*VH/r.height+CY,O=SRWORLD.others();
+cv.addEventListener('click',e=>{if(modal||!window.SRWORLD)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*VW/r.width+CX,y=(e.clientY-r.top)*VH/r.height+CY;if(window.SRLION&&SRLION(x,y))return;if(!SRWORLD.on())return;const O=SRWORLD.others();
  for(const u in O){const o=O[u];if(Math.abs(o.rx-x)<22&&Math.abs(o.ry-y+4)<30){if(window.SRPVP&&SRPVP.click(u,o))return;chPopup(u,o.nm,e.clientX,e.clientY,o);return}}});
 if(window.SRNET)SRNET.onsoc=m=>{
  if(m.tr){trdView(m.v);return}
@@ -5925,7 +5925,7 @@ const DGSPEC=[
   th:{wa:[44,52,70],wb:[22,28,42],ra:[92,104,128],rb:[56,66,86],fa:[96,108,128],fb:[50,58,76],mud:.1,pud:.2,wat:'60,100,140',deco:'moss'},
   cf:f=>{const b=Math.min(5,Math.floor((f-1)/100));return{ty:[[3,4],[4,5],[5,6],[6,7],[7,8],[8]][b],st:(30+15*(f-1)-1)/3.5,pool:[['tw_n0','tw_n0',null,'batV','skel','zomb'],['tw_n1','tw_n1','cwarden','zombP','skelB','ghost'],['tw_n2','tw_n2','cwarden','ghostR','reap','skelB'],['tw_n3','tw_n3','cwardenR','reapB','vampH','ghostR'],['tw_n4','tw_n4','vampL','devil','reapB','cwardenR'],['tw_n5','tw_n4','tw_n5','vampL','devil','reapB']][b],tag:['Pisos de piedra','Galerías del agua','Cámaras de ceniza','Salones de sangre','Cumbres del trueno','Corona de la Torre'][b]+' · piso '+f}},
   rumor:'una torre de piedra negra que se alza junto al lago y cuyo final nadie ha visto'},
- {id:'co',nm:'Coliseo Silk Road',n:1,c:0,d0:24,d1:90,tier:3,sd:5233,w:58,h:46,rm:1,su:1,gd:{ty:0,v:null,nm:'Arena'},
+ {id:'co',nm:'Coliseo Silk Road',n:1,c:0,d0:60,d1:160,tier:3,sd:5233,w:58,h:46,rm:1,su:1,gd:{ty:0,v:null,nm:'Arena'},
   th:{wa:[150,112,72],wb:[96,70,44],ra:[196,160,106],rb:[140,108,70],fa:[226,204,142],fb:[204,180,116],mud:0,pud:0,wat:'200,170,110',deco:'bone'},
   cf:f=>({ty:[0],st:0,tag:'Arena de gladiadores'}),
   rumor:'un coliseo romano donde los gladiadores se baten por oro y gloria'}];
@@ -5950,7 +5950,7 @@ function dgNewInit(){
   if(!ent)continue;
   for(let dy=-7;dy<=7;dy++)for(let dx=-9;dx<=9;dx++)TREE[(ent.ty+dy)*W+ent.tx+dx]=0;
   const inR=(e,ox,oy,w,h,m)=>{const tx=(e.hx||e.x)/T,ty=(e.hy||e.y)/T;return tx>=ox-m&&tx<ox+w+m&&ty>=oy-m&&ty<oy+h+m};
-  for(let j=E.length-1;j>=0;j--){const e=E[j];if(e.boss||e.guard)continue;if(Math.hypot((e.hx||0)/T-ent.tx,(e.hy||0)/T-ent.ty)<7||inR(e,best[0],best[1],sp.w,sp.h,2))E.splice(j,1)}
+  for(let j=E.length-1;j>=0;j--){const e=E[j];if(e.boss||e.guard)continue;if(sp.id=='co'&&Math.abs((e.hx||0)-ent.tx*T)<260&&(e.hy||0)>ent.ty*T-260&&(e.hy||0)<ent.ty*T+90){E.splice(j,1);continue}if(Math.hypot((e.hx||0)/T-ent.tx,(e.hy||0)/T-ent.ty)<7||inR(e,best[0],best[1],sp.w,sp.h,2))E.splice(j,1)}
   for(const arr of [WL,WM]){try{for(let j=arr.length-1;j>=0;j--){if(inR(arr[j],best[0],best[1],sp.w,sp.h,2))arr.splice(j,1)}}catch(e){}}
   const c1=sp.cf(1),c2=sp.cf(sp.n);
   DGL.push({id:sp.id,nm:sp.nm,n:sp.n,w:sp.w,h:sp.h,sd:sp.sd,rm:sp.rm,su:sp.su,dn:(sp.w*sp.h)/(110*80),th:sp.th,gd:sp.gd,mb:sp.mb||0,mbd:sp.mbd,cf:sp.cf,rx:best[0],ry:best[1],ent:{tx:ent.tx,ty:ent.ty,x:ent.tx*T+16,y:ent.ty*T+16},c:sp.c,rumor:sp.rumor,lv:'Nv '+REC(c1.st*.9)+'–'+REC(c2.st*1.1),exs:null})}
@@ -5967,6 +5967,7 @@ function twLandmark(d,x,y,now){const W2=96,H2=310,bx=x-W2/2,by=y-H2+16;g.save();
  g.globalCompositeOperation='source-over';for(const s of [-1,1]){const tx=x+s*40,ty=y-4,fl=.75+.25*Math.sin(now*9+s);g.fillStyle='#2a1c10';g.fillRect(tx-2,ty-6,4,16);g.fillStyle='#6a4a2a';g.fillRect(tx-6,ty-8,12,4);g.fillStyle='rgba(255,150,40,'+fl.toFixed(2)+')';g.beginPath();g.moveTo(tx,ty-26);g.quadraticCurveTo(tx+8,ty-16,tx,ty-8);g.quadraticCurveTo(tx-8,ty-16,tx,ty-26);g.fill();g.fillStyle='rgba(255,230,120,'+fl.toFixed(2)+')';g.beginPath();g.ellipse(tx,ty-15,2.5,5,0,0,7);g.fill()}
  g.strokeStyle='#cfd3e8';g.lineWidth=2;g.beginPath();g.moveTo(x,by-6);g.lineTo(x,by-44);g.stroke();g.fillStyle='#c0392b';g.beginPath();g.moveTo(x,by-44);g.lineTo(x+30+Math.sin(now*3)*3,by-37);g.lineTo(x,by-28);g.closePath();g.fill();g.restore()}
 /* ===== COLISEO (v276): fachada romana en la superficie y arena abierta dentro ===== */
+var CO_D=null;function coBlk(x,y,r){try{if(DG.f)return 0;if(!CO_D)CO_D=DGL.find(d=>d.id=='co')}catch(e){return 0}if(!CO_D||!CO_D.ent)return 0;const e=CO_D.ent;return x+r>e.x-195&&x-r<e.x+195&&y+r>e.y-188&&y-r<e.y-20}
 function coLandmark(x,y,now){const Wd=380,Ht=210,bx=x-Wd/2,by=y-Ht+24;g.save();
  g.fillStyle='rgba(0,0,0,.3)';g.beginPath();g.ellipse(x,y+22,Wd*.56,20,0,0,7);g.fill();
  const stone='#d9c9a3',sh='#b9a67c',dk='#8f7d58',ar='#2d2318';
@@ -6419,7 +6420,7 @@ const ppCN=c=>CLS[c|0]?CLS[c|0].n:'Héroe';
 /* ===== Trato directo entre jugadores (servidor autoritativo) ===== */
 let TRD=null,TRP=0;
 const TRP_=()=>{let e=document.getElementById('trdp');if(!e){e=document.createElement('div');e.id='trdp';document.body.appendChild(e);e.addEventListener('click',trdClick);e.addEventListener('change',ev=>{if(ev.target.id=='trg'){}})}return e};
-function trdReq(o){if(!MON()||!UID){toast('Los tratos necesitan conexión con el servidor',3000);return}if(!pa('tr')){toast('🔒 El comercio directo requiere el servicio 🤝 Comercio y Party (3 💎) o el 👑 Plan Jugador (7 💎)',4500);return}if(TRD){toast('Ya tienes un trato abierto',2500);trdR();return}
+function trdReq(o){if(!MON()||!UID){toast('Los tratos necesitan conexión con el servidor',3000);return}if(!pa('tr')&&!(typeof gmIsM=='function'&&gmIsM())){toast('🔒 El comercio directo requiere el servicio 🤝 Comercio y Party (3 💎) o el 👑 Plan Jugador (7 💎)',4500);return}if(TRD){toast('Ya tienes un trato abierto',2500);trdR();return}
  mop('trade.req',{to:o.u},r=>{if(r&&r.v){TRD=r.v;trdR()}})}
 function trdView(v){const was=TRD;if(!v){TRD=null;trdClose();return}
  if(v.st=='end'){TRD=null;trdClose();toast(v.why=='done'?'🤝 ¡Trato completado!':v.why=='rechazó'?'El jugador rechazó el trato':v.why=='expiró'?'El trato expiró':'El trato fue cancelado',3500);if(v.why=='done')vib([60,40,90]);if(!$('hero').hidden)heroM();return}
@@ -7383,6 +7384,7 @@ html body #chd .chp .chm{font-size:calc(var(--k)*13px)!important}
 /* PvP: solo el boton real ON/OFF (aparece unicamente con el servicio Cazador PvP activo) */
 html body #v182-pvp{display:none!important}
 html body #pvb,html body #rc .rrow #pvb{width:auto!important;position:relative!important;inset:auto!important;left:auto!important;top:auto!important;flex:0 0 auto!important;height:calc(var(--k)*34px)!important;min-width:calc(var(--k)*58px)!important;margin:0!important;padding:0 calc(var(--k)*9px)!important;border-radius:calc(var(--k)*17px)!important;font:700 calc(var(--k)*12px) system-ui,sans-serif!important;color:#fff!important;background:var(--g1)!important;border:1px solid var(--edge)!important;box-shadow:0 2px 6px #0007!important;opacity:1!important;z-index:32!important}
+html body #rc .rrow #pvb{width:calc(var(--k)*34px)!important;min-width:0!important;padding:0!important;border-radius:50%!important;font-size:calc(var(--k)*17px)!important;filter:grayscale(.5) opacity(.9)}html body #rc .rrow #pvb.on{filter:none!important;border-color:#ff4a3a!important;box-shadow:0 0 8px #ff3a2acc!important;background:#4a0e0eee!important}
 html body #pvb[hidden]{display:none!important}
 html body #rc>#pvb{align-self:flex-end!important}
 /* v203: HUD unico, limpio y transparente (reemplaza las capas v168-v202). Distribucion tipo MMORPG movil. */

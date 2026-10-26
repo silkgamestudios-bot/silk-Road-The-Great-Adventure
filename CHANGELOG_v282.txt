@@ -1,0 +1,4 @@
+v282 — Botones de acción más discretos (solo cliente)
+- Los botones grandes del centro (Talar árbol, Mascota: ataca, Bajar, Pistas, Cavar, Entrar…) ahora son circulitos pequeños con solo el emoji, en una fila abajo al centro, sin tapar la vista.
+- Al aparecer un botón, su nombre sale 2,5 s en una línea fina encima (ej. "🪓 Talar árbol 0/5 · 🔧81") y luego se desvanece. El nombre completo también está al mantener el cursor.
+- El botón "Hablar" también es más pequeño y translúcido.

@@ -4565,7 +4565,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v281';let UPD=null,RSN=0;
+const SR_V='sr-v282';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}
  /* v236: desregistra el service worker, borra cachés y recarga con un parámetro nuevo para saltarse cualquier copia vieja (en celulares a veces "no pasaba nada") */
  let done=0;const go=()=>{if(done)return;done=1;try{const u=new URL(location.href);u.searchParams.set('r',String(Date.now()));location.replace(u.toString())}catch(e){location.reload()}};
@@ -7449,8 +7449,26 @@ html body #run.on{border-color:#7dff9a!important}
 html body #xpb{display:block!important;top:auto!important;bottom:0!important;left:0!important;right:0!important;height:calc(var(--k)*6px)!important;border:0!important;background:rgba(0,0,0,.5)!important;z-index:45!important}
 html body #xpb span{font:700 calc(var(--k)*6px)/calc(var(--k)*6px) system-ui!important;opacity:0!important}
 html body #ctx{left:50%!important;bottom:calc(var(--k)*64px)!important;transform:translateX(-50%)!important;z-index:44!important}
+/* v282: botones de acción contextual discretos: solo emoji, en fila pequeña abajo; el texto sale en una línea fina al aparecer */
+html body #ctx{flex-direction:row!important;flex-wrap:wrap!important;justify-content:center!important;align-items:center!important;gap:calc(var(--k)*6px)!important;bottom:calc(var(--k)*12px)!important;max-width:calc(var(--k)*260px)!important;pointer-events:none!important}
+html body #ctx button{pointer-events:auto!important;animation:none!important}
+html body #ctx button[data-e]{width:calc(var(--k)*36px)!important;height:calc(var(--k)*36px)!important;padding:0!important;border-radius:50%!important;font-size:0!important;border:1px solid rgba(255,214,102,.55)!important;background:rgba(20,14,30,.6)!important;backdrop-filter:blur(3px);box-shadow:0 2px 6px #0006!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+html body #ctx button[data-e]::before{content:attr(data-e);font-size:calc(var(--k)*18px);line-height:1}
+html body #ctx button:not([data-e]){font-size:calc(var(--k)*11px)!important;padding:calc(var(--k)*5px) calc(var(--k)*10px)!important;border-radius:calc(var(--k)*16px)!important;background:rgba(20,14,30,.6)!important;border:1px solid rgba(255,214,102,.55)!important}
+html body #ctx button[hidden]{display:none!important}
+html body #ctx #raid{border-color:#ff5a4a!important}
+html body>#talk{font-size:calc(var(--k)*11px)!important;padding:calc(var(--k)*5px) calc(var(--k)*11px)!important;background:rgba(20,14,30,.6)!important;border:1px solid rgba(255,214,102,.55)!important;border-radius:calc(var(--k)*16px)!important;box-shadow:0 2px 6px #0006!important;bottom:calc(var(--k)*64px)!important}
+#ctxc{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--k,1)*52px);z-index:44;max-width:80vw;padding:2px 10px;border-radius:10px;background:rgba(20,14,30,.55);color:#fff;font:600 calc(var(--k,1)*11px) system-ui,sans-serif;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ctxc.on{opacity:.92}
 html body>#talk{left:50%!important;right:auto!important;bottom:calc(var(--k)*150px)!important;transform:translateX(-50%)!important}
 </style>
+<script>
+/* v282: acción contextual discreta: cada botón de #ctx muestra solo su emoji; el nombre aparece 2,5 s en una línea fina cuando el botón aparece */
+(()=>{const re=/^(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}|\p{Emoji_Modifier})*)\s*(.*)$/su;let seen=new Set(),capT=0;
+function cap(t){let c=document.getElementById('ctxc');if(!c){c=document.createElement('div');c.id='ctxc';document.body.appendChild(c)}c.textContent=t;c.classList.add('on');clearTimeout(capT);capT=setTimeout(()=>c.classList.remove('on'),2500)}
+function scan(){const ctx=document.getElementById('ctx');if(!ctx)return;const now=new Set(),nw=[];for(const b of ctx.querySelectorAll('button')){if(b.hidden)continue;const t=(b.textContent||'').trim();const m=re.exec(t);if(m){if(b.dataset.e!==m[1])b.dataset.e=m[1];b.title=t;b.setAttribute('aria-label',t)}else delete b.dataset.e;now.add(b.id);if(!seen.has(b.id))nw.push(t)}seen=now;if(nw.length)cap(nw.join('  ·  '))}
+setInterval(scan,300)})();
+</script>
 <script>
 /* Acceso anticipado (solo master): ver, agregar o quitar hasta 3 cuentas que pueden entrar antes de la apertura. */
 document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-early]');if(!b)return;e.preventDefault();

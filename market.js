@@ -54,7 +54,7 @@ ops['offer.buy']=(u,m)=>{const id=String(m.id||''),o=col('offers')[id];if(!o||o.
  const b=E.acct(u),t=tax(o.p);if(E.avail(b,'gold')<t.pay)return{e:'Oro insuficiente: te faltan '+(t.pay-E.avail(b,'gold'))};
  delDoc('offers',id);
  const bd={gold:-t.pay,note:'🛒 Compraste'};if(o.it){bd.item=o.it;bd.note+=' '+o.it.n;holdReg(o.it.id,u,0)}else if(o.pet){bd.pet=o.pet;bd.note+=' una mascota';holdReg(o.pet.id,u,0,'p')}else if(o.pv){Object.assign(bd,provDl(o.pv,o.q|0));bd.note+=' '+o.q+' de '+o.pv}else if(o.ec){bd.ec={k:o.ec,q:o.q|0};bd.note+=' '+o.q+' monedas'}else if(o.tk){tkAdd(u,o.tk,o.q|0);bd.note+=' '+(o.q|0)+' boleto(s) de plan'}
- E.deliver(u,bd);E.deliver(o.u,{gold:t.get,note:'💰 Vendiste a '+(b.nm||'un jugador')+' (+'+t.get+' 🪙)',tr:1});return{ok:1}};
+ E.deliver(u,bd);E.deliver(o.u,{gold:t.get,note:'💰 Vendiste a '+(b.nm||'un jugador')+' (+'+t.get+' 🪙)',tr:1});shopTr(o.u);return{ok:1}};
 /* ---------- SUBASTAS (mascotas) ---------- */
 ops['auc.new']=(u,m)=>{const a=E.acct(u),pt=E.cleanPetS(m.pet),p=int(m.p,1,1e12,0),h=int(m.h,1,48,6);if(!pt||!pt.id||!p)return{e:'Datos inválidos'};const r=S.ECO.reg[pt.id];if(!r||r.o!==u)return{e:'Esa mascota no es tuya'};
  /* Sin límite artificial de publicaciones: cada mascota queda en custodia del servidor. */

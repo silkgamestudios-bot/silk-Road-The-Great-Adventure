@@ -4,7 +4,7 @@ module.exports=function(DB,log,X){X=X||{};
 const FILE=process.env.WORLD_FILE||__dirname+'/world.json';
 if(!fs.existsSync(FILE)){log('mundo: falta world.json (node tools/export-world.js) → mundo desactivado');return null}
 const J=JSON.parse(fs.readFileSync(FILE,'utf8')),W=J.W,H=J.H,T=J.T,bits=Buffer.from(J.bits,'base64');
-const CFG={tick:100,aggro:60,leash:600,view:700,pview:1800,rng:900,sview:1300,rez:30000,hitMax:14,gcap:25000,shareMin:.5,prng:600,phMax:6,pct:.035,pvMin:+process.env.PVP_MIN_LV||20,speed:480,dmg0:J.dmg0||40}; // balance: aquí se ajusta todo
+const CFG={tick:100,aggro:60,leash:600,view:700,pview:1800,rng:900,sview:1300,rez:30000,hitMax:14,gcap:25000,shareMin:.5,prng:600,phMax:6,pct:.035,pvMin:+process.env.PVP_MIN_LV||1,speed:480,dmg0:J.dmg0||40}; // balance: aquí se ajusta todo
 const solid0=(x,y)=>{const tx=Math.floor(x/T),ty=Math.floor(y/T);if(tx<0||ty<0||tx>=W||ty>=H)return true;const i=ty*W+tx;return(bits[i>>3]>>(i&7)&1)===1};
 /* v155: piezas de territorios de gremio (muros, torres…): bloquean a monstruos y jugadores; las puertas dejan pasar a los miembros del gremio dueño */
 const STRS=new Map();
@@ -46,7 +46,7 @@ function hits(p,list){if(p.city||inCity(p.x,p.y))return;const now=Date.now();p.t
 const num=(v,a,b,d)=>Number.isFinite(+v)?Math.min(b,Math.max(a,+v)):d;
 /* ===== PvP abierto (v148): solo con el Premium Cazador PvP, fuera de ciudades y mazmorras. Daño = % de la vida del rival, ajustado por poder. ===== */
 function pvSet(p,m){const now=Date.now();
- if(m.on){if(!(X.pv&&X.pv(p.uid)))return send(p.ws,{t:'wpv',on:0,e:'Necesitas el Premium Cazador PvP (💎 en Boutique › VIP y planes)'});
+ if(m.on){
   if(p.lv<CFG.pvMin)return send(p.ws,{t:'wpv',on:0,e:'El PvP se abre en el nivel '+CFG.pvMin});
   if(p.city||p.dg)return send(p.ws,{t:'wpv',on:0,e:'No puedes activar el PvP en ciudades ni mazmorras'});
   p.pvp=1;return send(p.ws,{t:'wpv',on:1})}
@@ -155,6 +155,6 @@ setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);try{ubStep(now,CFG
   const hv=EV.filter(e=>e[2]!==p.uid&&Math.hypot(e[3]-p.x,e[4]-p.y)<=CFG.sview).slice(0,30),at=AT.filter(a=>a[0]!==p.uid&&(a[5]?(p.dg&&pid(a[0])&&pid(a[0])===pid(p.uid)):!p.dg)&&Math.hypot(a[3]-p.x,a[4]-p.y)<=CFG.pview).slice(0,40);
   const o={t:'ws',pl,mb};if(p.uw)o.ud=UBUD(now);if(dd)o.dd=dd;if(dx)o.dx=dx;if(hv.length)o.hv=hv;if(at.length)o.at=at;send(p.ws,o)}EV=[];AT=[]},CFG.tick);
 log('mundo cargado: '+L.length+' enemigos, '+W+'x'+H+' casillas');
-setInterval(()=>{for(const p of PL.values()){try{p.wn=X.wanted&&X.wanted(p.uid)?1:0;if(p.pvp&&X.pv&&!X.pv(p.uid)){p.pvp=0;p.lp=null;send(p.ws,{t:'wpv',on:0,e:'Tu Premium Cazador PvP venció'})}}catch(e){}}},5000);
+setInterval(()=>{for(const p of PL.values()){try{p.wn=X.wanted&&X.wanted(p.uid)?1:0;}catch(e){}}},5000);
 return{strSet:(i,k,g,pass)=>{STRS.set(i,{k,g,pass})},strDel:i=>{STRS.delete(i)},strClear:()=>STRS.clear(),bcast:m=>{for(const p of PL.values())send(p.ws,m)},tsolid:(x,y)=>solid0(x*T+1,y*T+1),
  mobsOff:rects=>{for(const m of L)if(rects.some(r=>m.hx/T>=r[0]&&m.hx/T<r[2]&&m.hy/T>=r[1]&&m.hy/T<r[3])){m.dead=1;m.hp=0;m.rt=Infinity;m.tg=null;m.dmg={}}},dyn:()=>DYL,where:u=>{const p=PL.get(u);return p?{x:Math.round(p.x),y:Math.round(p.y),city:p.city?1:0,dg:p.dg?1:0,pvp:p.pvp?1:0}:null},handle,leave:(u,ws)=>{const p=PL.get(u);if(p&&p.ws===ws)PL.delete(u)},credit:(u,k,v)=>{const p=PL.get(u);if(p)p.ct[k]+=v},stats:()=>({players:PL.size,mobs:L.length})}};

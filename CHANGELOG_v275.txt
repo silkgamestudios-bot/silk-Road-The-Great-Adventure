@@ -1,0 +1,4 @@
+v275 (SERVIDOR + cliente: REQUIERE Manual Deploy en Render)
+- PvP abierto sin VIP y desde nivel 1 (world.js, server.js). Quitado "Cazador PvP" de la tienda VIP y de la wiki.
+- Textos VIP actualizados (Comercio ya no incluye party; party gratis).
+- % de critico visible en info de party y menu de party.

@@ -63,18 +63,22 @@ function pvDie(p){const now=Date.now(),lp=p.lp;if(!lp||now-lp.t>20000||now-(p.pv
  if(X.kill)try{r=X.kill(lp.by,p.uid,fresh,kp?kp.nm:'')}catch(e){log('pvp kill error '+e.message)}
  if(kp)send(kp.ws,{t:'wpk',v:p.nm,r});send(p.ws,{t:'wpk',by:kp?kp.nm:'un cazador',me:1})}
 /* ===== COLISEO (v276): arena abierta, todos contra todos, vida igualada, zona que se cierra ===== */
-const ARC={fee:1000,min:2,max:16,lobby:40000,fight:360000,end:7000,hp:1000,sfee:100,lionT:45000,lionEvery:55000,lionMax:5,lionHp:1200,lionBite:45,lionSp:120,burn:.05,safe:50000,rmax:470,rmin:90,zone:.06};
-const AR={st:'idle',ids:new Set(),specs:new Set(),solo:0,pot:0,lobEnd:0,t0:0,cx:0,cy:0,endT:0,res:null,seq:0,mode:'c',li:[],nextLion:0,lseq:0,lrel:0};
+const ARC={lionN:4,relFirst:18000,relMin:15000,relMax:42000,chainR:80,ea:430,eb:270,hitGap:380,tadd:200,smax:500000,fee:1000,min:2,max:16,lobby:40000,fight:360000,end:7000,hp:1000,sfee:100,lionT:45000,lionEvery:55000,lionMax:5,lionHp:1200,lionBite:45,lionSp:120,burn:.05,safe:50000,rmax:470,rmin:90,zone:.06};
+const COF=(process.env.DATA_DIR||'.')+'/coliseo.json';let CO={champ:null,wins:{}};try{const j=JSON.parse(fs.readFileSync(COF,'utf8'));if(j&&j.wins)CO=j}catch(e){}
+function coSave(){try{fs.writeFileSync(COF,JSON.stringify(CO))}catch(e){log('coliseo guardar: '+e.message)}}
+function coTop(n){return Object.entries(CO.wins).map(([u,v])=>[v.nm,v.w]).sort((a,b)=>b[1]-a[1]).slice(0,n)}
+function coAll(m){for(const q of PL.values())send(q.ws,m)}
+const AR={stk:new Map(),st:'idle',ids:new Set(),specs:new Set(),solo:0,pot:0,lobEnd:0,t0:0,cx:0,cy:0,endT:0,res:null,seq:0,mode:'c',li:[],nextLion:0,lseq:0,lrel:0};
 function arP(u){const p=PL.get(u);return p&&p.ar?p:null}
 function arAlive(){let n=0;for(const u of AR.ids){const p=PL.get(u);if(p&&p.ar&&!p.aout)n++}return n}
 function arSend(p,m){send(p.ws,m)}
 function arBc(m){for(const u of AR.ids){const p=PL.get(u);if(p&&p.ar)send(p.ws,m)}}
 function arRad(now){if(AR.st!=='fight')return ARC.rmax;const t=now-AR.t0;if(t<=ARC.safe)return ARC.rmax;const k=Math.min(1,(t-ARC.safe)/(ARC.fight*.82-ARC.safe));return Math.round(ARC.rmax+(ARC.rmin-ARC.rmax)*k)}
 function arPvn(){let n=0;for(const q of PL.values())if(q.pvp&&!q.ar)n++;return n}
-function arStatus(p){return{gm:X.gm&&X.gm(p.uid)?1:0,pvn:arPvn(),t:'wc',q:1,st:AR.st,n:AR.ids.size,max:ARC.max,min:ARC.min,left:AR.st==='lobby'?Math.max(0,AR.lobEnd-Date.now()):AR.st==='fight'?Math.max(0,AR.t0+ARC.fight-Date.now()):0,fee:ARC.fee,sfee:ARC.sfee,mode:AR.mode,ns:AR.specs.size,me:p&&p.ar?1:0}}
+function arStatus(p){return{gm:X.gm&&X.gm(p.uid)?1:0,pvn:arPvn(),t:'wc',q:1,st:AR.st,n:AR.ids.size,max:ARC.max,min:ARC.min,left:AR.st==='lobby'?Math.max(0,AR.lobEnd-Date.now()):AR.st==='fight'?Math.max(0,AR.t0+ARC.fight-Date.now()):0,ch:CO.champ?CO.champ.nm:'',top:coTop(5),fee:ARC.fee,tfee:ARC.fee+ARC.tadd,smax:ARC.smax,sfee:ARC.sfee,mode:AR.mode,ns:AR.specs.size,me:p&&p.ar?1:0}}
 function arClear(p){p.ar=0;p.aout=0;p.ahp=0;p.lp=null;if(p.pvp){p.pvp=0}p.hp=100;p.mhp=100}
 function arLeave(u,why){const p=PL.get(u);if(AR.specs.has(u)){AR.specs.delete(u);if(p){p.asp=0;send(p.ws,{t:'wc',x:1})}return}if(!AR.ids.has(u)){if(p)arClear(p);return}
- if(AR.st==='lobby'||AR.st==='idle'){AR.ids.delete(u);if(p&&p.apaid)AR.pot=Math.max(0,AR.pot-ARC.fee);if(p&&p.apaid&&!p.aout&&X.pay)try{X.pay(u,ARC.fee,'🏛️ Reembolso de la entrada al Coliseo (+'+ARC.fee+' 🪙)')}catch(e){}
+ if(AR.st==='lobby'||AR.st==='idle'){AR.ids.delete(u);const sk=AR.stk.get(u)||ARC.fee;AR.stk.delete(u);if(p&&p.apaid)AR.pot=Math.max(0,AR.pot-sk);if(p&&p.apaid&&!p.aout&&X.pay)try{X.pay(u,sk,'🏛️ Reembolso de la entrada al Coliseo (+'+sk+' 🪙)')}catch(e){}
   if(p){arClear(p);send(p.ws,{t:'wc',x:1})}
   if(AR.ids.size<ARC.min&&AR.st==='lobby'){AR.st='idle'}return}
  if(AR.st==='fight'&&p&&!p.aout){arOut(p,null,'abandonó')}
@@ -83,44 +87,49 @@ function arOut(q,by,why){if(q.aout)return;q.aout=1;q.pvp=0;q.ahp=0;q.hp=0;const 
  send(q.ws,{t:'wco',by:kp?kp.nm:'',why:why||'',pos:q.aplace});if(kp)send(kp.ws,{t:'wck',v:q.nm});
  arBc({t:'wcm',m:'☠️ '+q.nm+(why==='león'?' fue devorado por un león':kp?' cayó ante '+kp.nm:' fue eliminado')+' · quedan '+arAlive()})}
 function arCheck(){if(AR.st!=='fight')return;if(!AR.solo&&arAlive()<=1)arEnd('last')}
-function arStart(now){AR.st='fight';AR.t0=now;for(const u of AR.ids){const p=PL.get(u);if(!p||!p.ar){AR.ids.delete(u);continue}p.ahp=ARC.hp;p.aout=0;p.pvp=1;p.hp=ARC.hp;p.mhp=ARC.hp;p.lp=null}AR.li=[];AR.lrel=0;AR.nextLion=now+ARC.lionT;
- arBc({t:'wcm',m:(AR.mode==='t'?'🦁 TORNEO · ':'')+'⚔️ ¡COMIENZA EL COMBATE! '+AR.ids.size+' gladiadores · '+Math.round(ARC.fight/60000)+' min'})}
+function arStart(now){AR.st='fight';AR.t0=now;for(const u of AR.ids){const p=PL.get(u);if(!p||!p.ar){AR.ids.delete(u);continue}p.ahp=ARC.hp;p.aout=0;p.pvp=1;p.hp=ARC.hp;p.mhp=ARC.hp;p.lp=null}AR.n0=AR.ids.size;AR.li=[];AR.lrel=0;AR.nextRel=now+ARC.relFirst+Math.random()*10000;
+ if(AR.mode==='t'&&AR.cx){const a0=Math.random()*6.283;for(let i=0;i<ARC.lionN;i++){const a=a0+i*6.283/ARC.lionN,x=AR.cx+Math.cos(a)*ARC.ea*.82,y=AR.cy+Math.sin(a)*ARC.eb*.82;AR.li.push({id:++AR.lseq,x,y,ax:x,ay:y,ch:1,hp:ARC.lionHp,mhp:ARC.lionHp,tg:null,tt:0,bt:0})}}
+ arBc({t:'wcm',m:(AR.mode==='t'?'🦁 TORNEO · ':'')+'⚔️ ¡COMIENZA EL COMBATE! '+AR.ids.size+' gladiadores · '+Math.round(ARC.fight/60000)+' min'+(AR.mode==='t'?' · hay 4 leones ENCADENADOS: uno se soltará en cualquier momento':'')})}
 function arEnd(why){if(AR.st!=='fight')return;const now=Date.now();let best=[],bh=-1;for(const u of AR.ids){const p=PL.get(u);if(!p||!p.ar||p.aout)continue;if(p.ahp>bh+.5){bh=p.ahp;best=[p]}else if(Math.abs(p.ahp-bh)<=.5)best.push(p)}
  const pot=AR.pot,prize=Math.floor(pot*(1-ARC.burn)),each=best.length?Math.floor(prize/best.length):0;
  for(const w of best){if(each>0&&X.pay)try{X.pay(w.uid,each,'🏛️ ¡Ganaste el Coliseo! (+'+each+' 🪙)')}catch(e){}}
- AR.li=[];const names=best.map(p=>p.nm);AR.res={w:names,prize:each,pot,why};AR.st='end';AR.endT=now+ARC.end;
+ AR.li=[];const names=best.map(p=>p.nm);
+ if(!AR.solo&&(AR.n0|0)>=ARC.min&&best.length&&pot>0){for(const w of best){const o=CO.wins[w.uid]||(CO.wins[w.uid]={nm:w.nm,w:0});o.nm=w.nm;o.w++}
+  const old=CO.champ,keep=old&&best.some(w=>w.uid===old.uid);if(!keep){const nw=best[0];CO.champ={uid:nw.uid,nm:nw.nm};coAll({t:'wch',m:'🏆 '+nw.nm+' es el nuevo CAMPEÓN DEL COLISEO'+(old?' · '+old.nm+' pierde el título':''),ch:nw.uid,cn:nw.nm})}
+  coSave()}AR.res={w:names,prize:each,pot,why};AR.st='end';AR.endT=now+ARC.end;
  for(const u of AR.ids){const p=PL.get(u);if(p&&p.ar)send(p.ws,{t:'wce',w:names,prize:each,pot,why,win:best.includes(p)?1:0,burn:Math.round(pot*ARC.burn)});if(p)p.pvp=0}}
 function arTick(){const now=Date.now();
  if(AR.st==='idle'){if(!AR.ids.size)AR.mode='c';if(AR.ids.size>=ARC.min||(AR.solo&&AR.ids.size>=1)){AR.st='lobby';AR.lobEnd=now+(AR.solo?5000:ARC.lobby)}}
- else if(AR.st==='lobby'){for(const u of [...AR.ids]){const p=PL.get(u);if(!p||!p.ar){AR.ids.delete(u);AR.pot=Math.max(0,AR.pot-ARC.fee)}}
+ else if(AR.st==='lobby'){for(const u of [...AR.ids]){const p=PL.get(u);if(!p||!p.ar){AR.ids.delete(u);AR.pot=Math.max(0,AR.pot-(AR.stk.get(u)||ARC.fee));AR.stk.delete(u)}}
   if(AR.ids.size<(AR.solo?1:ARC.min)){AR.st='idle'}else if(AR.ids.size>=ARC.max||now>=AR.lobEnd)arStart(now)}
  else if(AR.st==='fight'){const R=arRad(now),dt=.5;
   for(const u of [...AR.ids]){const p=PL.get(u);if(!p||!p.ar){if(AR.ids.has(u)){AR.ids.delete(u)}continue}if(p.aout)continue;
    if(AR.cx&&Math.hypot(p.x-AR.cx,p.y-AR.cy)>R){p.ahp-=ARC.hp*ARC.zone*dt;p.lp=p.lp&&now-p.lp.t<20000?p.lp:null;if(p.ahp<=0){arOut(p,p.lp&&p.lp.by,'zona')}}
    p.hp=Math.max(0,p.ahp);p.mhp=ARC.hp;p.pvp=p.aout?0:1}
   if(AR.mode==='t'&&AR.cx){
-   if(now>=AR.nextLion&&AR.li.length<ARC.lionMax){const n=Math.min(AR.lrel>=2?2:1,ARC.lionMax-AR.li.length);AR.lrel++;AR.nextLion=now+ARC.lionEvery;
-    for(let i=0;i<n;i++){const a=Math.random()*6.283,rr=Math.max(150,R*.85);AR.li.push({id:++AR.lseq,x:AR.cx+Math.cos(a)*rr,y:AR.cy+Math.sin(a)*rr,hp:ARC.lionHp,mhp:ARC.lionHp,tg:null,tt:0,bt:0})}
-    arBc({t:'wcm',m:'🦁 ¡SUELTAN '+(n>1?n+' LEONES':'UN LEÓN')+' EN LA ARENA! Toca uno para fijarlo como objetivo.'});for(const u of AR.specs){const q=PL.get(u);if(q)send(q.ws,{t:'wcm',m:'🦁 ¡Sueltan '+(n>1?n+' leones':'un león')+' en la arena!'})}}
-   for(const L of AR.li){let tp=L.tg&&PL.get(L.tg);if(!tp||!tp.ar||tp.aout||!(tp.ahp>0)||now>L.tt){let bd=1e9;tp=null;for(const u of AR.ids){const q=PL.get(u);if(!q||!q.ar||q.aout||!(q.ahp>0))continue;const d=Math.hypot(q.x-L.x,q.y-L.y);if(d<bd){bd=d;tp=q}}L.tg=tp?tp.uid:null;L.tt=now+4000}
+   if(now>=AR.nextRel){const cs=AR.li.filter(l=>l.ch);if(cs.length){const L=cs[Math.floor(Math.random()*cs.length)];L.ch=0;L.tg=null;L.tt=0;AR.nextRel=now+ARC.relMin+Math.random()*(ARC.relMax-ARC.relMin);
+    arBc({t:'wcm',m:'🦁 ¡SE ROMPE LA CADENA! Un león se ha soltado'+(cs.length>1?' · quedan '+(cs.length-1)+' encadenados':'')+'. Toca al león para fijarlo.'});for(const u of AR.specs){const q=PL.get(u);if(q)send(q.ws,{t:'wcm',m:'🦁 ¡Se suelta un león!'})}}else AR.nextRel=now+30000}
+   for(const L of AR.li){if(L.ch){let bq=null,bd=ARC.chainR;for(const u of AR.ids){const q=PL.get(u);if(!q||!q.ar||q.aout||!(q.ahp>0))continue;const d=Math.hypot(q.x-L.ax,q.y-L.ay);if(d<bd){bd=d;bq=q}}
+     if(bq&&now>=L.bt){L.bt=now+1000;bq.ahp-=ARC.lionBite;bq.hp=Math.max(0,bq.ahp);send(bq.ws,{t:'wcd',d:ARC.lionBite,by:'León',hp:Math.round(Math.max(0,bq.ahp))});if(bq.ahp<=0)arOut(bq,null,'león')}continue}
+    let tp=L.tg&&PL.get(L.tg);if(!tp||!tp.ar||tp.aout||!(tp.ahp>0)||now>L.tt){let bd=1e9;tp=null;for(const u of AR.ids){const q=PL.get(u);if(!q||!q.ar||q.aout||!(q.ahp>0))continue;const d=Math.hypot(q.x-L.x,q.y-L.y);if(d<bd){bd=d;tp=q}}L.tg=tp?tp.uid:null;L.tt=now+4000}
     if(tp){const dx=tp.x-L.x,dy=tp.y-L.y,d=Math.hypot(dx,dy)||1;if(d>34){const st=Math.min(ARC.lionSp*dt,d-30);L.x+=dx/d*st;L.y+=dy/d*st}else if(now>=L.bt){L.bt=now+1000;tp.ahp-=ARC.lionBite;tp.hp=Math.max(0,tp.ahp);send(tp.ws,{t:'wcd',d:ARC.lionBite,by:'León',hp:Math.round(Math.max(0,tp.ahp))});if(tp.ahp<=0)arOut(tp,null,'león')}}
-    const cd=Math.hypot(L.x-AR.cx,L.y-AR.cy),mr=Math.max(120,R-10);if(cd>mr){L.x=AR.cx+(L.x-AR.cx)/cd*mr;L.y=AR.cy+(L.y-AR.cy)/cd*mr}}}
+    const cd=Math.hypot(L.x-AR.cx,L.y-AR.cy),mr=Math.max(120,R-10);if(cd>mr){L.x=AR.cx+(L.x-AR.cx)/cd*mr;L.y=AR.cy+(L.y-AR.cy)/cd*mr}{const ex=L.x-AR.cx,ey=L.y-AR.cy,k=Math.hypot(ex/ARC.ea,ey/ARC.eb);if(k>1){L.x=AR.cx+ex/k;L.y=AR.cy+ey/k}}}}
   if(!AR.solo&&arAlive()<=1)arEnd('last');else if(now>=AR.t0+ARC.fight)arEnd('time')}
- else if(AR.st==='end'){if(now>=AR.endT){for(const u of AR.ids){const p=PL.get(u);if(p){arClear(p);send(p.ws,{t:'wc',x:1})}}AR.ids.clear();AR.pot=0;AR.st='idle';AR.res=null;AR.solo=0;AR.mode='c';AR.li=[]}}
+ else if(AR.st==='end'){if(now>=AR.endT){for(const u of AR.ids){const p=PL.get(u);if(p){arClear(p);send(p.ws,{t:'wc',x:1})}}AR.ids.clear();AR.stk.clear();AR.pot=0;AR.st='idle';AR.res=null;AR.solo=0;AR.mode='c';AR.li=[]}}
  const left=AR.st==='fight'?Math.max(0,AR.t0+ARC.fight-now):AR.st==='lobby'?Math.max(0,AR.lobEnd-now):0,R=arRad(now),al=arAlive();
- const LI=AR.li.map(L=>[L.id,Math.round(L.x),Math.round(L.y),Math.round(L.hp),L.mhp]);
+ const LI=AR.li.map(L=>[L.id,Math.round(L.x),Math.round(L.y),Math.round(L.hp),L.mhp,L.ch?1:0]);
  const gl=[];for(const u of AR.ids){const q=PL.get(u);if(q&&q.ar)gl.push([q.nm,Math.round(Math.max(0,q.ahp||0)),q.aout?1:0])}
  for(const u of [...AR.specs]){const p=PL.get(u);if(!p||!p.asp){AR.specs.delete(u);continue}send(p.ws,{t:'wcs',spec:1,st:AR.st,left,r:R,cx:AR.cx,cy:AR.cy,al,tot:AR.ids.size,hp:0,mhp:ARC.hp,out:0,pot:AR.pot,max:ARC.max,min:ARC.min,gl,li:LI,pvn:arPvn()})}
  for(const u of AR.ids){const p=PL.get(u);if(!p||!p.ar)continue;send(p.ws,{t:'wcs',st:AR.st,left,r:R,cx:AR.cx,cy:AR.cy,al,tot:AR.ids.size,hp:Math.round(Math.max(0,p.ahp||ARC.hp)),mhp:ARC.hp,out:p.aout?1:0,pot:AR.pot,max:ARC.max,min:ARC.min,li:LI})}}
 setInterval(()=>{try{arTick()}catch(e){log('arena error '+e.message)}},500);
-function arHit(p,m){const now=Date.now();if(AR.st!=='fight'||!p.ar||p.aout)return;const ms=String(m.u||'');
+function arHit(p,m){const now=Date.now();if(AR.st!=='fight'||!p.ar||p.aout)return;if(now-(p.alh||0)<ARC.hitGap)return;p.alh=now;const ms=String(m.u||'');
  if(ms[0]==='L'){const L=AR.li.find(l=>'L'+l.id===ms);if(!L||Math.hypot(p.x-L.x,p.y-L.y)>CFG.prng)return;
   p.ptok=Math.min(CFG.phMax*2,(p.ptok||CFG.phMax)+(now-(p.ptt||now))/1000*CFG.phMax);p.ptt=now;if(p.ptok<1)return;p.ptok--;
-  const w=num(m.w,.3,4,1),dm=Math.max(1,Math.round(ARC.hp*CFG.pct*w));L.hp-=dm;L.tg=p.uid;L.tt=now+4000;send(p.ws,{t:'wph',u:ms,d:dm});
+  const dm=Math.max(1,Math.round(ARC.hp*CFG.pct));L.hp-=dm;L.tg=p.uid;L.tt=now+4000;send(p.ws,{t:'wph',u:ms,d:dm});
   if(L.hp<=0){AR.li=AR.li.filter(l=>l!==L);arBc({t:'wcm',m:'🦁 '+p.nm+' abatió a un león'})}return}
  const q=PL.get(ms);if(!q||q===p||!q.ar||q.aout||!(q.ahp>0))return;if(Math.hypot(p.x-q.x,p.y-q.y)>CFG.prng)return;
  p.ptok=Math.min(CFG.phMax*2,(p.ptok||CFG.phMax)+(now-(p.ptt||now))/1000*CFG.phMax);p.ptt=now;if(p.ptok<1)return;p.ptok--;
- const w=num(m.w,.3,4,1),dm=Math.max(1,Math.round(ARC.hp*CFG.pct*w));q.ahp-=dm;q.hp=Math.max(0,q.ahp);q.lp={by:p.uid,t:now};send(p.ws,{t:'wph',u:q.uid,d:dm});send(q.ws,{t:'wcd',d:dm,by:p.nm,hp:Math.round(Math.max(0,q.ahp))});if(q.ahp<=0){arOut(q,p.uid,'golpe');arCheck()}}
+ const dm=Math.max(1,Math.round(ARC.hp*CFG.pct));q.ahp-=dm;q.hp=Math.max(0,q.ahp);q.lp={by:p.uid,t:now};send(p.ws,{t:'wph',u:q.uid,d:dm});send(q.ws,{t:'wcd',d:dm,by:p.nm,hp:Math.round(Math.max(0,q.ahp))});if(q.ahp<=0){arOut(q,p.uid,'golpe');arCheck()}}
 function arMsg(p,m){const u=p.uid;
  if(m.t==='wcq')return send(p.ws,arStatus(p));
  if(m.t==='wcl')return arLeave(u,'sale');
@@ -130,8 +139,9 @@ function arMsg(p,m){const u=p.uid;
  if(m.t==='wcj'){if(p.ar)return send(p.ws,Object.assign(arStatus(p),{ok:1}));
   if(AR.st==='fight'||AR.st==='end')return send(p.ws,{t:'wc',e:'Hay un combate en curso. Entra al siguiente'+(AR.st==='fight'?' (faltan '+Math.ceil(Math.max(0,AR.t0+ARC.fight-Date.now())/1000)+' s máx.)':'')});
   if(AR.ids.size>=ARC.max)return send(p.ws,{t:'wc',e:'La arena está llena'});if(p.dg)return send(p.ws,{t:'wc',e:'Sal de la mazmorra primero'});
-  const gm=!!(X.gm&&X.gm(u));if(!gm&&!(X.fee&&X.fee(u,ARC.fee)))return send(p.ws,{t:'wc',e:'Necesitas '+ARC.fee+' 🪙 para la entrada'});
-  if(!AR.ids.size)AR.mode=m.mode==='t'?'t':'c';p.apaid=gm?0:1;p.ar=1;p.aout=0;p.ahp=ARC.hp;p.hp=ARC.hp;p.mhp=ARC.hp;p.pvp=0;AR.ids.add(u);if(!gm)AR.pot+=ARC.fee;if(!AR.cx&&m.cx&&m.cy){AR.cx=num(m.cx,0,W*T,0);AR.cy=num(m.cy,0,H*T,0)}
+  const gm=!!(X.gm&&X.gm(u)),md=AR.ids.size?AR.mode:(m.mode==='t'?'t':'c'),mn=ARC.fee+(md==='t'?ARC.tadd:0),stk=Math.min(ARC.smax,Math.max(mn,Math.floor(num(m.stk,0,ARC.smax*10,mn))||mn));
+  if(!gm&&!(X.fee&&X.fee(u,stk)))return send(p.ws,{t:'wc',e:'Necesitas '+stk+' 🪙 para tu apuesta (mínimo '+mn+(md==='t'?' en torneo':'')+')'});
+  if(!AR.ids.size)AR.mode=md;p.apaid=gm?0:1;if(!gm)AR.stk.set(u,stk);p.ar=1;p.aout=0;p.ahp=ARC.hp;p.hp=ARC.hp;p.mhp=ARC.hp;p.pvp=0;AR.ids.add(u);if(!gm)AR.pot+=stk;if(!AR.cx&&m.cx&&m.cy){AR.cx=num(m.cx,0,W*T,0);AR.cy=num(m.cy,0,H*T,0)}
   send(p.ws,Object.assign(arStatus(p),{ok:1}))}}
 function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
  if(m.t==='wj'){const old=p;p={uid:u,ws,nm:String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,20)||'Viajero',c:num(m.c,0,7,0)|0,lv:num(m.lv,1,9999,1)|0,gt:String(m.gt||'').slice(0,4),bs:String(m.bs||'').slice(0,12),cz:Array.isArray(m.cz)?m.cz:[0,0,0],x:num(m.x,0,W*T,0),y:num(m.y,0,H*T,0),hp:100,mhp:100,mt:now,tok:0,tt:now,rc:[],dk:new Set(),ct:old?old.ct:{dm:0,tk:0,ut:0}};if(old&&old.ar&&AR.ids.has(u)){p.ar=old.ar;p.aout=old.aout;p.ahp=old.ahp;p.hp=old.hp;p.mhp=old.mhp;p.pvp=old.pvp;p.dg=old.dg;p.lp=old.lp}if(old&&old.asp&&AR.specs.has(u))p.asp=1;try{p.bd=X.bdg?X.bdg(u):''}catch(e){p.bd=''}p.city=inCity(p.x,p.y);PL.set(u,p);send(ws,{t:'wi',tick:CFG.tick,n:J.mobs.length,sg:WSIG});try{X.tjoin&&X.tjoin(u)}catch(e){}return}
@@ -220,7 +230,7 @@ function ubStep(now,dt){const ups=[];for(const p of PL.values())if(p.uw&&p.hp>0)
  if(UBS.open&&!UBS.dead&&now-UBS.tOpen>40*60*1000)ubReset()}
 const UBUD=now=>[UBS.mask,Math.round(UBS.hold*10),UBS.open?1:0,Math.round(UBS.hp),UBM,UBS.dead?1:0,UBS.dead?Math.max(0,Math.ceil((UBS.cd-now)/1000)):0];
 setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);try{ubStep(now,CFG.tick/1000)}catch(e){log('ub error '+e.message)}
- for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||(q.asp&&!q.ar))continue;const aa=(p.ar&&q.ar)||(p.asp&&q.ar);if(!aa&&Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;if(!aa&&(!!q.dg!==!!p.dg||(q.dg&&!(p.uw&&q.uw)&&!(pid(q.uid)&&pid(q.uid)===pid(p.uid)))))continue;pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||'',q.pvp?1:0,q.wn?1:0,q.bd||''])}
+ for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||(q.asp&&!q.ar))continue;const aa=(p.ar&&q.ar)||(p.asp&&q.ar);if(!aa&&Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;if(!aa&&(!!q.dg!==!!p.dg||(q.dg&&!(p.uw&&q.uw)&&!(pid(q.uid)&&pid(q.uid)===pid(p.uid)))))continue;pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||'',q.pvp?1:0,q.wn?1:0,q.bd||'',CO.champ&&CO.champ.uid===q.uid?1:0])}
   const mb=[];let dd=null,dx=null;if(!p.dg){for(const m of near(p.x,p.y,CFG.sview+CFG.leash))if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview)mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);
    for(const m of DYL)if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview){mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);if(!p.dk.has(m.id)){p.dk.add(m.id);(dd=dd||[]).push([m.id,m.v,m.nm||'',m.ty,m.mx,m.sc||0,Math.round(m.hx),Math.round(m.hy),Math.round(m.hp),Math.round(m.x),Math.round(m.y)])}}
    for(const id of p.dk){const m=BY.get(id);if(!m||!m.dyn||Math.hypot(m.x-p.x,m.y-p.y)>CFG.sview*1.15){p.dk.delete(id);(dx=dx||[]).push(id)}}}

@@ -1,0 +1,6 @@
+v292 - Coliseo: dano igual para todos, leones encadenados, Campeon del Coliseo.
+- Todos hacen EXACTAMENTE el mismo dano en la arena (el servidor ignora nivel, arma y habilidad) y con el mismo ritmo maximo de golpes (1 cada 0,38 s).
+- Torneo: 4 leones ENCADENADOS visibles desde el inicio (muerden a quien se acerque a su cadena). De un momento a otro, al azar, se suelta uno; luego otro, etc. Los leones libres ya no salen de la arena.
+- Titulo "Campeon del Coliseo" (ranking solo del Coliseo): el que gana el combate/torneo (minimo 2 jugadores) se queda el titulo y se muestra sobre su nombre (🏆). Si otro gana, pierde el titulo. Se avisa a todo el servidor. El menu del Coliseo muestra campeon y Top 5 de victorias (se guarda en DATA_DIR/coliseo.json).
+- La zona segura de afuera del Coliseo es de la v290.
+Cambia SERVIDOR (world.js): Manual Deploy en Render.

@@ -1,0 +1,4 @@
+v278 (solo cliente, NO requiere Manual Deploy extra; incluye servidor de v277: hacer Manual Deploy si aun no)
+- Coliseo movido junto a la primera ciudad (Chang'an, ~24 casillas).
+- Dentro del Coliseo hay noche (hay que llevar antorcha) y lluvia visibles (es a cielo abierto); no afectan colision.
+- Braseros de luz en el borde de las gradas.

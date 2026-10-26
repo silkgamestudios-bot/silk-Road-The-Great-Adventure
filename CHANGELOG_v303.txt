@@ -1,0 +1,7 @@
+v303 — Hierbas medicinales a la venta en el Gremio de la Seda (solo cliente, NO requiere Manual Deploy)
+
+- El Gremio de la Seda (y la tienda ambulante del Mercader) vuelve a vender 🌿 Hierbas medicinales: Comprar 1 / ×10 / Vender 1 / Todo.
+  Precio base 1500 🪙 (aventurero paga +25%, Mercader con licencia el precio base), con el 3% de impuesto y variación por oferta y demanda.
+- Sirven para la misión "El perro del caravasar" (25 hierbas) y para curar mascotas enfermas.
+- Corregido el índice de precio dinámico de las provisiones (compra y venta usaban distinto).
+Archivos: play.html, sw.js (sr-v303).

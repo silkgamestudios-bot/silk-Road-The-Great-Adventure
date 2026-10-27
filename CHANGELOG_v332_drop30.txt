@@ -1,0 +1,8 @@
+Sprite Road — v332: ajuste de drop común
+
+- Se añadió una tirada independiente de 30% por monstruo para equipo común.
+- El oro, la experiencia, las pociones y la carne conservan su selección actual.
+- El equipo se elige del conjunto común del tipo de monstruo; los dos primeros tipos, que no tenían equipo en sus tablas, usan el conjunto común inicial disponible.
+- En grupo sigue cayendo un solo objeto por monstruo, asignado a un único integrante elegible; no se duplica para cada jugador.
+
+Nota de balance: 30% es la probabilidad por muerte, no una garantía de llenar mochilas en 40/80 minutos. Ese tiempo depende de monstruos derrotados por minuto, objetos apilables, equipo recogido y ritmo real de juego. Debe medirse en una prueba de juego antes de fijarlo como objetivo final.

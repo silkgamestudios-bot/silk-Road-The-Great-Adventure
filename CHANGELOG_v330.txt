@@ -2,3 +2,10 @@ v330 - FIX: cuevas/mazmorras sin sincronizar cuando el mundo online está descon
 - CAUSA REAL: si el servidor tiene un world.json distinto al del juego (pasa cuando se sube el juego nuevo pero no se hace Manual Deploy), el mundo compartido se apaga en silencio y cada jugador ve sus propios mobs: en la superficie y TAMBIÉN en las cuevas, aunque estén en party.
 - Arreglo: las cuevas, mazmorras, torre y mina se sincronizan entre jugadores aunque el mundo de superficie esté apagado (vida, muertes y posición de los mobs).
 - Probado: con el mundo apagado a propósito, antes el segundo jugador veía el mob con vida completa; ahora ve el mismo daño y la misma muerte.
+
+
+v331 — límites de pila en mochila de loot
+- Las pociones de monstruos en la bolsa de loot se agrupan en pilas de máximo 99 unidades por casilla (antes 400).
+- Se conserva el límite total existente de hasta 800 pociones por tipo, por lo que pueden ocupar varias pilas de 99.
+- El equipo y los objetos individuales continúan ocupando una casilla cada uno; no se apilan armas, escudos ni armaduras.
+- Nota: los materiales de farmeo que actualmente se guardan como contadores de recursos (minerales, telas, pieles, etc.) no son objetos de casilla en v330; convertirlos en pilas físicas de 99 requiere migrar el modelo de inventario y sus operaciones de crafteo/comercio, así que no se altera aquí su cantidad para evitar pérdida de materiales.

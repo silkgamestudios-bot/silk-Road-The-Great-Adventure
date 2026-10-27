@@ -1,0 +1,4 @@
+v330 - FIX: cuevas/mazmorras sin sincronizar cuando el mundo online está desconectado (no requiere Manual Deploy nuevo, pero los pendientes SÍ son necesarios: world.json, world.js, store.js, economy.js, market.js)
+- CAUSA REAL: si el servidor tiene un world.json distinto al del juego (pasa cuando se sube el juego nuevo pero no se hace Manual Deploy), el mundo compartido se apaga en silencio y cada jugador ve sus propios mobs: en la superficie y TAMBIÉN en las cuevas, aunque estén en party.
+- Arreglo: las cuevas, mazmorras, torre y mina se sincronizan entre jugadores aunque el mundo de superficie esté apagado (vida, muertes y posición de los mobs).
+- Probado: con el mundo apagado a propósito, antes el segundo jugador veía el mob con vida completa; ahora ve el mismo daño y la misma muerte.

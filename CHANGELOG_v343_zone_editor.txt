@@ -1,0 +1,9 @@
+Sprite Road v3.43 — Zone Tuning Editor
+
+- Added a Master-only zone editor to select an individual cave or event.
+- Cave settings: mob density (0–4x) and normal loot multiplier (0–5x).
+- Event settings: wave density (0–4x), event currency chance (0–100%), and currency multiplier (0–10x).
+- Zone settings persist in DB.cfg.zoneTuning and are readable by clients; only the Master can modify them.
+- Cave density applies when dungeon floors are generated; existing mobs remain until regenerated.
+- Cave loot multiplier applies to normal cave gold, equipment/junk, meat, and material drops that use the existing cave drop pipeline.
+- Event density applies to new event waves; event currency settings apply to subsequent kills during that event.

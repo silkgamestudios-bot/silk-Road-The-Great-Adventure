@@ -2,7 +2,7 @@
    Si el servidor no tiene mundo (falta world.json), el juego sigue en modo local sin cambios. */
 (function(){
 const N=window.SRNET;if(!N)return;
-let uwJ=0,WBAD=0,on=0,WFB=0,WBASE_REMOVED=0,WLOCAL={},WLOOK={},OT={},WQ=[],lx=0,ly=0,ft=0,OFX=[],SM=[],LS=0;   // WFB: modo seguro cuando el catálogo local no coincide con el servidor
+let uwJ=0,WBAD=0,on=0,OT={},WQ=[],lx=0,ly=0,ft=0,OFX=[],SM=[],LS=0;   // SM: id del servidor → enemigo (solo los 'base'); LS: último snapshot
 const ready=()=>P&&P.chosen&&P.name;
 const SKIP=e=>e.boss||e.guard||e.wild||e.tmp||e.alpha||e.vec;
 /* Solo se congelan los enemigos BASE (índice < n, los que el servidor conoce). Los creados durante la partida
@@ -13,19 +13,16 @@ function dynMk(d){if(SM[d[0]])return;const ty=d[3]|0,e={dyn:1,sync:1,sid:d[0],st
  e.mx=d[4];e.hp=d[8];if(d[2])e.nm=d[2];if(d[5])e.wsc=d[5];if(d[1]=='wwolf')e.ww=1;SM[d[0]]=e;E.push(e);NR.push(e)}
 function dynRm(id){const e=SM[id];if(!e)return;const i=E.indexOf(e);if(i>=0)E.splice(i,1);NR=NR.filter(q=>q!==e);SM[id]=null}
 window.SRWON=()=>on;
-function freeze(n){const t=Date.now();dynClr();SM=[];E.forEach((e,i)=>{if(i>=n||SKIP(e)||e.dg)return;e.sid=i;e.sync=1;e.stun=1e9;e.lt=t;SM[i]=e})}
-/* Catálogo desfasado: no se enlazan índices de dos mundos diferentes. Se ocultan los mobs base locales y se reconstruyen desde snapshots autoritativos del servidor. */
-function fallbackLook(id,ty,hx,hy){if(WLOOK[id])return WLOOK[id];const a=WLOCAL[ty]||[];let best=null,bd=Infinity;for(const q of a){const d=(q.hx-hx)*(q.hx-hx)+(q.hy-hy)*(q.hy-hy);if(d<bd){bd=d;best=q}}return WLOOK[id]=best||{}}
-function fallbackWorld(n){dynClr();SM=[];if(!WBASE_REMOVED){WLOCAL={};WLOOK={};const rm=new Set();E.forEach((e,i)=>{if(i<n&&!SKIP(e)&&!e.dg&&!e.dyn){rm.add(e);const a=WLOCAL[e.ty]||(WLOCAL[e.ty]=[]);a.push({hx:e.hx,hy:e.hy,v:e.v||'',nm:e.nm||''})}});if(rm.size){for(let i=E.length-1;i>=0;i--)if(rm.has(E[i]))E.splice(i,1);NR=NR.filter(e=>!rm.has(e))}WBASE_REMOVED=1}WFB=1;on=1;WBAD=1;toast('🌐 Mundo online · sincronización segura',2600)}
-N.onopen=()=>{uwJ=0;on=0;WBAD=0;WFB=0;PV.on=0;PV.t=null};
+function freeze(n){const t=Date.now();dynClr();SM=[];E.forEach((e,i)=>{if(i>=n||SKIP(e))return;e.sid=i;e.sync=1;e.stun=1e9;e.lt=t;SM[i]=e})}   // la IA local se apaga: manda el servidor
+N.onopen=()=>{uwJ=0;on=0;WBAD=0;PV.on=0;PV.t=null};
 N.onmsg=m=>{
  if(m.t=='wsx'){try{xRecv(m)}catch(e){}return}
  if(m.t=='wss'){try{xState(m)}catch(e){}return}
  if(m.t=='wsp'){try{xPos(m)}catch(e){}return}
  if(m.t=='wi'){let sg=0,n=m.n|0;if(m.sg!=null&&n>0&&E.length>=n){for(let i=0;i<n;i++){const e=E[i];sg=(!e||SKIP(e)||e.dg)?(Math.imul(sg,31)+3)|0:(Math.imul(sg,31)+Math.round(e.hx)*7+Math.round(e.hy)*13+(e.ty|0)*17+1)|0}}
-  if(m.sg!=null&&(E.length<n||sg!==(m.sg|0))){console.warn('mundo: catálogo local distinto; se activa sincronización autoritativa',n,E.length,sg,m.sg);fallbackWorld(n)}
-  else{WFB=0;on=1;WBAD=0;freeze(n);toast('🌐 Mundo online conectado',2200)}}
- else if(m.t=='wx'){on=0;WFB=0;dynClr()}
+  if(m.sg!=null&&(E.length<n||sg!==(m.sg|0))){on=0;WBAD=1;console.log('mundo: versión distinta',n,E.length,sg,m.sg);/* v268: aviso quitado (se juega en modo local sin molestar) */}
+  else{on=1;WBAD=0;freeze(n);toast('🌐 Mundo online conectado',2200)}}
+ else if(m.t=='wx'){on=0;dynClr()}
  else if(m.t=='wp'){P.x=m.x;P.y=m.y}
  else if(m.t=='wd'){if(on&&P.hp>0&&!modal){P.hp-=mountAbs(m.d*(P.sh>0?.3:1)*(P.cls==1?knRes():1));if(P.hp<=0)die()}}
  else if(m.t=='ws')snap(m);
@@ -59,7 +56,7 @@ function snap(m){const seen={};if(m.ud){try{window.SRUD&&SRUD(m.ud)}catch(e){}}
  for(const a of m.pl){const o=OT[a[0]]||(OT[a[0]]={rx:a[4],ry:a[5]});Object.assign(o,{nm:a[1],c:a[2],lv:a[3],x:a[4],y:a[5],hp:a[6],mhp:a[7],pt:a[8],gt:a[9]||'',bs:a[10]||'',pvp:a[11]|0,wn:a[12]|0,bd:a[13]||'',ch:a[14]|0,mo:a[15]||''});seen[a[0]]=1}
  for(const u in OT)if(!seen[u])delete OT[u];
  if(m.dx)for(const id of m.dx)dynRm(id);if(m.dd&&!(typeof DG!=='undefined'&&DG.f))for(const d of m.dd)dynMk(d);
- LS=Date.now();if(typeof DG!=='undefined'&&DG.f)m.mb=[];for(const b of m.mb){let e=SM[b[0]];if(!e&&WFB&&b.length>=9){const ty=b[5]|0,hx=b[7]||b[1],hy=b[8]||b[2],look=fallbackLook(b[0],ty,hx,hy),d=[b[0],b[9]||look.v||'',b[10]||look.nm||'',ty,b[6]||mobHP(ty),0,hx,hy,b[3],b[1],b[2]];dynMk(d);e=SM[b[0]];if(e){e.rw=b[11]==null?1:b[11];e.dm=b[12]==null?1:b[12]}}if(!e)continue;if(!e.sync){e.sync=1;e.sid=b[0];e.stun=1e9;e.gs=0}e.lt=LS;if(b[4]){e.hp=0;e.dead=1e9;continue}
+ LS=Date.now();if(typeof DG!=='undefined'&&DG.f)m.mb=[];for(const b of m.mb){const e=SM[b[0]];if(!e)continue;if(!e.sync){e.sync=1;e.sid=b[0];e.stun=1e9;e.gs=0}e.lt=LS;if(b[4]){e.hp=0;e.dead=1e9;continue}
   if(e.dead>0)e.dead=0;e.stun=1e9;const dx=b[1]-e.x,dy=b[2]-e.y;e.mov=Math.abs(dx)+Math.abs(dy)>.5?1:0;
   if(e.mov)e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');if(Math.abs(dx)+Math.abs(dy)>220){e.x=b[1];e.y=b[2]}else{e.gx=b[1];e.gy=b[2];e.gs=1}e.hp=b[3]}
  if(m.hv)for(const h of m.hv){if(FT.length>=60)break;FT.push({x:h[3]+Math.random()*14-7,y:h[4]-14,t:.9,d:0,o:0,k:'dm',s:String(h[1]),c:'#8fd8ff'})}
@@ -79,8 +76,7 @@ const _h=hitE;hitE=function(e,dm){if(!e.pvg&&(cityAt(P)||cityAt(e)||(typeof uwSa
 let XK='',XM=[],XQ=[],XT=0;
 function xBuild(){const d=typeof DG!=='undefined'&&DG.f&&DG.id!='co'&&DG.id!='uw';if(!d){XK='';XM=[];return}
  const k=DG.id+':'+DG.f;if(XK.indexOf(k+':')===0&&XM[0]&&XM[0].dg===DG.f&&E.indexOf(XM[0])>=0)return;
- XM=[];let s=0;for(const e of E){if(e.dg!==DG.f||e.tmp)continue;e.xid=XM.length;XM.push(e);s=(Math.imul(s,31)+(e.ty|0)*17+(e.band|0)*7+1)|0;const v=String(e.v||e.nm||'');for(let j=0;j<v.length;j++)s=(Math.imul(s,31)+v.charCodeAt(j))|0}
- /* No se usan coordenadas iniciales aleatorias; el hash de composición evita compartir IDs si el orden/tipo de los mobs difiere. */
+ XM=[];let s=0;for(const e of E){if(e.dg!==DG.f||e.tmp)continue;e.xid=XM.length;XM.push(e);s=(Math.imul(s,31)+Math.round(e.hx!=null?e.hx:e.x)*7+Math.round(e.hy!=null?e.hy:e.y)*13)|0}
  XK=XM.length?k+':'+XM.length+':'+(s>>>0).toString(36):''}
 function xScope(){try{xBuild()}catch(e){XK='';XM=[]}if(typeof DG!=='undefined'&&DG.f)return XK;return 'w'}
 const xId=e=>e.dg?(e.xid!=null&&XM[e.xid]===e?e.xid:null):e.boss&&e.bi!=null?'b'+e.bi:(e.guard&&!e.horde&&e.li!=null)?'g'+e.li:null;

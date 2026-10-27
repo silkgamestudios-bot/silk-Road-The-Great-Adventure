@@ -6338,7 +6338,21 @@ function dgSet(f,from,nomove,idx){idx=idx|0;
   if(!DG.sM){DG.sM=[];DG.sT=[];for(let y=0;y<DG.h;y++){DG.sM.push(Array.from(M[DG.ry+y].slice(DG.rx,DG.rx+DG.w)));DG.sT.push(TREE.slice((DG.ry+y)*W+DG.rx,(DG.ry+y)*W+DG.rx+DG.w))}}
   if(DG.id=='uw'&&!UW.on)uwStash();const b=DG.id=='uw'?uwBuild():dgBuild(f),pt=i=>({x:(DG.rx+b.rooms[i].cx)*T+16,y:(DG.ry+b.rooms[i].cy)*T+16});DG.f=f;
   DG.ups=b.ups.map(pt);DG.dns=f<DG.n?b.dns.map(pt):[];
-  if(DG.id!='uw'&&DG.id!='co')dgSpawn(f,b);if(DG.id=='mi')miInit(f);
+  /* v330: los mobs de cuevas se generan con RNG aislado y reproducible por cueva/piso.
+   Antes dependían del estado global de R()/Math.random(), que cambia según lo que cada jugador hizo
+   antes de entrar; por eso dos clientes podían crear listas/posiciones distintas en la misma cueva. */
+  if(DG.id!='uw'&&DG.id!='co'){
+   const _seedSave=seed,_mathRandomSave=Math.random;
+   let _caveSeed=2166136261;
+   const _caveKey=String(DG.id||'')+':'+String(DG.sd||9100)+':'+String(f);
+   for(let _i=0;_i<_caveKey.length;_i++)_caveSeed=Math.imul(_caveSeed^_caveKey.charCodeAt(_i),16777619)>>>0;
+   _caveSeed=(_caveSeed%2147483646)+1;
+   seed=_caveSeed;
+   let _mr=_caveSeed;
+   Math.random=()=>{_mr=(_mr+0x6D2B79F5)|0;let _t=_mr;_t=Math.imul(_t^_t>>>15,_t|1);_t^=_t+Math.imul(_t^_t>>>7,_t|61);return((_t^_t>>>14)>>>0)/4294967296};
+   try{dgSpawn(f,b)}finally{seed=_seedSave;Math.random=_mathRandomSave}
+  }
+  if(DG.id=='mi')miInit(f);
   const s=(from&&from>f&&DG.dns.length)?DG.dns[idx%DG.dns.length]:DG.ups[idx%DG.ups.length];P.x=s.x+T;P.y=s.y;DG.lx=-1;
   if(DG.id=='to'){DG.tl=[];for(let y=2;y<DG.h-2;y++)for(let x=2;x<DG.w-2;x++){const v=M[DG.ry+y][DG.rx+x];if((v==9||v==2)&&M[DG.ry+y+1][DG.rx+x]==8&&(((DG.rx+x)*5+(DG.ry+y)*3+f)%9==0))DG.tl.push({x:(DG.rx+x)*T+16,y:(DG.ry+y)*T+22,ph:x*.7+y})}}else DG.tl=null;
   dgFlow();dgReveal();DG.ft=0;DG.amb=14;

@@ -1,0 +1,16 @@
+SPRITE ROAD v3.42 — MERCHANT + EVENT CONFIG FIX
+
+Fixed:
+1. Added the missing merchantLootAccess() helper referenced by the merchant-only loot/storage buttons. It follows the existing active Merchant License check.
+2. Added the public mobcfg.get read operation so all clients can receive the Master-configured respawn/event spawn settings. Changing the settings remains Master-only.
+3. Fixed event currency logic so the configured chance applies to event-wave monsters as well as regular monsters. Event-wave monsters retain their event-specific base reward, scaled by the configured multiplier.
+4. Updated the event reward description to indicate that probability and quantity are configurable from the Master panel.
+
+Validation performed:
+- node --check server.js
+- node --check market.js, economy.js, store.js
+- Syntax check of all non-empty inline JavaScript blocks extracted from play.html
+- ZIP integrity check after packaging
+
+Limitations:
+- The individual player's loading-screen failure cannot be conclusively diagnosed without that account's server log/error or reproduction. No player/account data was deleted or reset. This build fixes a confirmed missing merchant helper that could crash merchant loot/storage UI paths, but it does not claim to have verified a live Render login for the affected account.

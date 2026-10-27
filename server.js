@@ -119,6 +119,8 @@ OPS['early.del']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};cons
 /* Control de mobs y respawn: configuración persistente, solo master puede cambiarla. */
 const MOB_DEFAULTS={normalRespawn:20,dungeonRespawn:360,eventDensity:1,eventCap:4,eventBatch:2,eventInterval:30};
 function mobCfg(){const x=((DB.cfg||{}).mobControl)||{};return{normalRespawn:Math.max(5,Math.min(180,Number(x.normalRespawn)||MOB_DEFAULTS.normalRespawn)),dungeonRespawn:Math.max(15,Math.min(1800,Number(x.dungeonRespawn)||MOB_DEFAULTS.dungeonRespawn)),eventDensity:Math.max(.1,Math.min(1,Number(x.eventDensity)||MOB_DEFAULTS.eventDensity)),eventCap:Math.max(0,Math.min(20,Math.floor(Number.isFinite(+x.eventCap)?+x.eventCap:MOB_DEFAULTS.eventCap))),eventBatch:Math.max(1,Math.min(8,Math.floor(Number(x.eventBatch)||MOB_DEFAULTS.eventBatch))),eventInterval:Math.max(10,Math.min(180,Number(x.eventInterval)||MOB_DEFAULTS.eventInterval))}}
+/* v342 FIX: every client needs to read global mob settings; only the Master setter remains restricted. */
+OPS['mobcfg.get']=u=>({cfg:mobCfg()});
 const EV_DROP_DEFAULTS={hl:{chance:40,mult:1},nv:{chance:40,mult:1},lu:{chance:40,mult:1},am:{chance:40,mult:1},nz:{chance:40,mult:1}};
 function evDropCfg(){const src=((DB.cfg||{}).eventDrops)||{},out={};for(const k of Object.keys(EV_DROP_DEFAULTS)){const d=EV_DROP_DEFAULTS[k],v=src[k]||{};out[k]={chance:Math.max(0,Math.min(100,Number.isFinite(+v.chance)?+v.chance:d.chance)),mult:Math.max(0,Math.min(10,Number.isFinite(+v.mult)?+v.mult:d.mult))}}return out}
 OPS['eventdrops.get']=u=>({cfg:evDropCfg()});

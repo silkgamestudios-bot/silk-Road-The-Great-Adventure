@@ -1,0 +1,10 @@
+Sprite Road v3.37 — Licencia de Mercader: transferencia Loot ↔ Almacén
+
+- Añadida la acción «Pasar al almacén» al seleccionar un objeto de la Mochila de Loot.
+- Añadida la acción «Pasar a mochila de loot» al seleccionar botín guardado en el almacén.
+- Las acciones solo aparecen para la clase Mercader con Licencia de Mercader activa.
+- La autorización se valida también en el servidor (clase Mercader y a.lic vigente); ocultar el botón no es la única protección.
+- El movimiento usa transacciones idempotentes del almacén para evitar duplicaciones al reintentar una solicitud.
+- Al retirar botín, la entrega del servidor lo dirige a P.lb (Mochila de Loot), no a la mochila de uso.
+- Se corrigió la proyección de elementos del almacén en la interfaz para conservar type/item/k y mostrar acciones compatibles.
+- Se conserva el resto de las funciones y la estructura de los archivos.

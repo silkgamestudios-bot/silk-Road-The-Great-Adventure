@@ -1,0 +1,5 @@
+Sprite Road v3.39 — Fix de actualización
+
+- Se unificó el identificador de versión del cliente (play.html) y del servidor (sw.js) en sr-v339.
+- El botón Actualizar ahora recarga con parámetro de versión para evitar HTML antiguo en caché.
+- No se modificó reload.json para evitar activar un mantenimiento forzado al arrancar.

@@ -1,0 +1,9 @@
+Sprite Road v3.40 — Monitor Master de eventos
+
+- Añade monitor de eventos en Zona GM > Control de mobs.
+- Muestra evento activo por calendario y lista de eventos previstos (Halloween, Navidad, Año Nuevo Lunar, Amor y Amistad y Nowruz).
+- Cuenta monstruos de evento vivos y los cercanos en la instancia local del jugador.
+- Muestra límite de mobs, tamaño de oleada, intervalo y recomendaciones automáticas para evitar saturación o baja intensidad.
+- Conserva los controles existentes de respawn normal, mazmorras, densidad y oleadas.
+- El contador se identifica expresamente como local; no representa una métrica global de todos los jugadores.
+- Versión cliente/service worker: sr-v340.

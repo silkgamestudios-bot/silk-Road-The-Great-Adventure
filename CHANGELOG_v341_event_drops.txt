@@ -1,0 +1,8 @@
+Sprite Road v3.41 — Editor de drops de eventos (Master)
+
+- Añade controles de probabilidad de moneda por enemigo (0–100%) y multiplicador de cantidad (0–10) para Halloween, Navidad, Año Nuevo Lunar, Amor y Nowruz.
+- El Master puede cargar, editar y guardar la configuración desde Zona GM > Control de mobs y eventos.
+- La configuración se guarda en DB.cfg del servidor y se expone a clientes mediante una operación de lectura; solo el Master puede modificarla.
+- Los drops de monstruos especiales de evento conservan su cantidad base EVC y aplican el multiplicador configurado.
+- Los enemigos normales durante el evento usan la probabilidad y el multiplicador configurados.
+- Actualiza la versión del cliente y del service worker a sr-v341.

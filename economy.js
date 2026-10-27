@@ -57,7 +57,7 @@ const dKeys=d=>{const o=[];if(d.gold)o.push(['gold',null,d.gold]);if(d.goods)o.p
 function reserved(a,key,sub){let t=0;for(const d of a.dl){if(d.forced)continue;for(const [k,s2,q] of dKeys(d))if(k===key&&q<0&&(sub==null||s2===sub))t-=q}return t}
 function resVal(a,key,sub){const R=a.res;return key==='gold'?R.gold:key==='g'?R.g[sub]:key==='prov'?R.fd[sub]:key==='ec'?R.ec[sub]:key==='pot'?R.pot:key==='mpot'?R.mpot:0}
 const avail=(a,key,sub)=>Math.max(0,resVal(a,key,sub)-reserved(a,key,sub));
-function applyRes(a,key,sub,q){const R=a.res;if(key==='gold')R.gold=Math.max(0,R.gold+q);else if(key==='g')R.g[sub]=Math.max(0,R.g[sub]+q);else if(key==='prov')R.fd[sub]=Math.max(0,R.fd[sub]+q);else if(key==='ec')R.ec[sub]=Math.max(0,R.ec[sub]+q);else if(key==='pot')R.pot=Math.max(0,Math.min(99,R.pot+q));else if(key==='mpot')R.mpot=Math.max(0,Math.min(99,R.mpot+q))}
+function applyRes(a,key,sub,q){const R=a.res;if(key==='gold')R.gold=Math.max(0,R.gold+q);else if(key==='g')R.g[sub]=Math.max(0,R.g[sub]+q);else if(key==='prov')R.fd[sub]=Math.max(0,R.fd[sub]+q);else if(key==='ec')R.ec[sub]=Math.max(0,R.ec[sub]+q);else if(key==='pot')R.pot=Math.max(0,Math.min(800,R.pot+q));else if(key==='mpot')R.mpot=Math.max(0,Math.min(800,R.mpot+q))}
 function forceExpired(a){const now=Date.now();let n=0;for(const d of a.dl){if(d.forced||!d.sent||now-d.sent<=CFG.dlTtl)continue;let neg=0;for(const [k,s2,q] of dKeys(d))if(q<0){applyRes(a,k,s2,q);neg=1}if(neg){d.forced=1;n++}}if(n)S.dirty();return n}
 /* ---------- validación de objetos y mascotas ---------- */
 const BASE={0:{dm:5},1:{hp:8},2:{hp:4,dm:1},3:{dm:2,hp:2},4:{hp:5},5:{sp:2},7:{dm:3},8:{hp:6,mp:3},9:{hp:3,mp:5}};/* 7 anillo, 8 amuleto, 9 pendientes */
@@ -134,7 +134,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   for(const k of Object.keys(R.fd)){let q=qv[k];if(!master&&!first){let mx=Math.max(0,R.fd[k]+dAck('prov',k))+(KEYK.has(k)?0:ra)+(cv[k]||0);if(q>mx&&/^(ph|pm|gh|am)\d$/.test(k)&&pcr>0){const ex=Math.min(q-mx,pcr);mx+=ex;pcr-=ex}if(q>mx){flag(u,'provisión '+k+' '+R.fd[k]+'→'+q);q=mx;fix.fd=1}}o[k]=q}v.fd=o}
  if(v.ec&&typeof v.ec==='object'){const o={};let lgc=0;if(!master&&!a.calm&&v.calm!=null){a.calm=1;lgc=Math.min(int(v.calm,0,1e6,0),2500)}/* v222: calabazas viejas (antes sueltas) pasan a monedas, una sola vez y hasta 2.500 */
  for(const k of EVK){let q=int(v.ec[k],0,1e6,0);if(!master&&!first){const mx=Math.max(0,R.ec[k]+dAck('ec',k))+Math.ceil(CFG.ecRate*dt*CFG.slack+CFG.ecBurst)+(k==='hl'?lgc:0);if(q>mx){flag(u,'monedas '+k+' '+R.ec[k]+'→'+q);q=mx;fix.ec=1}}o[k]=q}v.ec=o}
- v.p=int(v.p,0,99,0);if(v.mpp!=null)v.mpp=int(v.mpp,0,99,0);const pgsNew=int(v.pgs,0,1e15,0);v.pgs=Math.max(pgsNew,a.res.pgs|0);
+ v.p=int(v.p,0,800,0);if(v.mpp!=null)v.mpp=int(v.mpp,0,800,0);const pgsNew=int(v.pgs,0,1e15,0);v.pgs=Math.max(pgsNew,a.res.pgs|0);
  /* pociones básicas: solo suben si se pagaron con oro (la más barata cuesta unos 38 🪙 en la feria) o por el goteo de botines; ya no se rellenan gratis editando el guardado */
  if(!master&&!first){const pb=a.pb&&typeof a.pb==='object'?a.pb:(a.pb={v:30,t:now});pb.v=Math.min(30,(+pb.v||0)+Math.max(0,now-(+pb.t||now))/6000);pb.t=now;
   /* el cliente anota el oro gastado en pociones (pgs); así comprar y ganar oro en la misma ventana ya no hace perder pociones.

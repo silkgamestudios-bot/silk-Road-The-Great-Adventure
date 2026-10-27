@@ -83,7 +83,7 @@ const xId=e=>e.dg?(e.xid!=null&&XM[e.xid]===e?e.xid:null):e.boss&&e.bi!=null?'b'
 function xFind(id){if(typeof id=='number')return XM[id]||null;const t=String(id),n=+t.slice(1);for(const e of E){if(t[0]=='b'&&e.boss&&e.bi===n)return e;if(t[0]=='g'&&e.guard&&!e.horde&&e.li===n)return e}return null}
 function xRecv(m){const sc=xScope();if(!sc||sc!==m.k)return;for(const a of (m.h||[])){const e=xFind(a[0]);let dm=Math.max(1,Math.min(1e9,+a[1]|0));if(!e||e.dead>0||!(e.hp>0)||e.pvg)continue;
   const d=Math.hypot(e.x-P.x,e.y-P.y);window.__xrx=1;try{if(d<900)hitE(e,dm);else if(e.boss||e.guard)e.hp=Math.max(1,e.hp-dm);else{e.hp-=dm;if(e.hp<=0){e.hp=0;e.dead=e.dg?(DG.id=='to'?20:80):20}}}finally{window.__xrx=0}if((e.hp<=0||e.dead>0)&&XQ.length<24)XQ.push([a[0],1,1])}}
-{const _hx=hitE;hitE=function(e,dm){let id=null;try{if(!window.__xrx&&on&&dm>0&&!e.pvg&&!e.tmp&&typeof PP!='undefined'&&PP.pid)id=xId(e)}catch(x){}const r=_hx.apply(this,arguments);try{if(id!=null&&XQ.length<24)XQ.push([id,Math.round(dm),e.hp<=0?1:0])}catch(x){}return r}}
+{const _hx=hitE;hitE=function(e,dm){let id=null;try{if(!window.__xrx&&on&&dm>0&&!e.pvg&&!e.tmp&&(e.dg||(typeof PP!='undefined'&&PP.pid)))id=xId(e)}catch(x){}const r=_hx.apply(this,arguments);try{if(id!=null&&XQ.length<24)XQ.push([id,Math.round(dm),e.hp<=0?1:0])}catch(x){}return r}}
 /* quien entra después a un piso recibe el estado actual: mobs ya muertos y daño acumulado */
 let XL='',XA=new Set(),XAk='';
 function xState(m){const sc=xScope();if(!sc||sc!==m.k)return;if(XAk!==sc){XAk=sc;XA=new Set()}
@@ -94,8 +94,8 @@ let XPT=0;
 function xPos(m){const sc=xScope();if(!sc||sc!==m.k||typeof UID=='undefined'||!(String(m.f)<String(UID)))return;
  for(const a of (m.p||[])){const e=XM[a[0]];if(!e||e.dead>0||!(e.hp>0)||e.pvg)continue;if(Math.hypot(e.x-P.x,e.y-P.y)<110)continue;
   if(Math.hypot(a[1]-e.x,a[2]-e.y)>320){e.x=a[1];e.y=a[2];e.gs=0}else if(Math.hypot(a[1]-e.x,a[2]-e.y)>14){e.gx=a[1];e.gy=a[2];e.gs=1}}}
-function xSendPos(){const n=Date.now();if(n-XPT<220)return;XPT=n;const k=xScope();if(!k||k==='w'||typeof PP=='undefined'||!PP.pid)return;const L=[];for(const e of XM){if(!e||e.dead>0||!(e.hp>0))continue;if(Math.abs(e.x-P.x)>600||Math.abs(e.y-P.y)>600)continue;L.push([e.xid,Math.round(e.x),Math.round(e.y)]);if(L.length>=40)break}if(L.length)N.send({t:'wsp',k,p:L})}
-function xTick(){try{xSendPos()}catch(e){}const k=xScope();if(k!==XL){XL=k;if(k&&k!=='w'&&typeof PP!='undefined'&&PP.pid){setTimeout(()=>{if(xScope()===k)N.send({t:'wsq',k})},700);setTimeout(()=>{if(xScope()===k)N.send({t:'wsq',k})},3500)}}}
+function xSendPos(){const n=Date.now();if(n-XPT<220)return;XPT=n;const k=xScope();if(!k||k==='w')return;const L=[];for(const e of XM){if(!e||e.dead>0||!(e.hp>0))continue;if(Math.abs(e.x-P.x)>600||Math.abs(e.y-P.y)>600)continue;L.push([e.xid,Math.round(e.x),Math.round(e.y)]);if(L.length>=40)break}if(L.length)N.send({t:'wsp',k,p:L})}
+function xTick(){try{xSendPos()}catch(e){}const k=xScope();if(k!==XL){XL=k;if(k&&k!=='w'){setTimeout(()=>{if(xScope()===k)N.send({t:'wsq',k})},700);setTimeout(()=>{if(xScope()===k)N.send({t:'wsq',k})},3500)}}}
 if(typeof drawTemple=='function'){const _t=drawTemple;drawTemple=function(cx,cy,now){_t(cx,cy,now);others(cx,cy,now)}}
 const OCOL=['#ffd24a','#9ad0ff','#b07dff','#e8d9a8','#7fffb0','#ffb070','#7fe06a','#ff8a8a'];
 function drawOFX(cx,cy){const n=Date.now();OFX=OFX.filter(f=>n-f.t<(f.ty?800:560));for(const f of OFX){const q=OT[f.u],bx=q?q.rx:f.x,by=q?q.ry:f.y,L=f.ty?800:560,k=(n-f.t)/L,x=bx-cx,y=by-cy;if(x<-400||x>VW+400||y<-400||y>VH+400)continue;const c=f.k,ca=Math.cos(f.a),sa=Math.sin(f.a);g.save();g.globalAlpha=1-k*.8;
@@ -125,7 +125,7 @@ setInterval(()=>{if(!ready()||!N.up())return;
  const tp=Math.hypot(P.x-lx,P.y-ly)>300;lx=P.x;ly=P.y;
  N.send({t:'wm',x:Math.round(P.x),y:Math.round(P.y),hp:Math.round(P.hp),mhp:Math.round(P.mhp),lv:P.lv,tp:tp?1:0,dg:(typeof DG!=='undefined'&&DG.f)?1:0,uw:(typeof UW!=='undefined'&&UW.on)?1:0,pw:PV.on?Math.round(dmg()):0,fl:(typeof FLY!=='undefined'&&FLY.on&&gmIsM())?1:0,sk:xScope(),mo:typeof myMo=='function'?myMo():''});
  try{xTick()}catch(e){}
- if(XQ.length){const k=xScope();if(k&&typeof PP!='undefined'&&PP.pid)N.send({t:'wsx',k,h:XQ.splice(0,12)});else XQ.length=0}
+ if(XQ.length){const k=xScope();if(k&&(k!=='w'||(typeof PP!='undefined'&&PP.pid)))N.send({t:'wsx',k,h:XQ.splice(0,12)});else XQ.length=0}
  if(typeof DG!=='undefined'&&DG.f)WQ.length=0;
  if(WQ.length)N.send({t:'wh',h:WQ.splice(0,12)})},100);
 setInterval(()=>{if(!on||!LS)return;const n=Date.now();if(n-LS>1500)return;   // vigilante: si el servidor no reporta un enemigo cercano en 4 s, vuelve a modo local (nunca queda inmortal)

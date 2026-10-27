@@ -16,7 +16,7 @@ let WSIG=0;for(const a of J.mobs)WSIG=a?(Math.imul(WSIG,31)+(a[5]|0)*7+(a[6]|0)*
 const BY=new Map(L.map(m=>[m.id,m])),CS=512,G=new Map(),key=(a,b)=>a+','+b;
 for(const m of L){const k=key(Math.floor(m.hx/CS),Math.floor(m.hy/CS));if(!G.has(k))G.set(k,[]);G.get(k).push(m)}
 const near=(x,y,r)=>{const o=[];for(let a=Math.floor((x-r)/CS);a<=Math.floor((x+r)/CS);a++)for(let b=Math.floor((y-r)/CS);b<=Math.floor((y+r)/CS);b++){const g=G.get(key(a,b));if(g)for(const m of g)o.push(m)}return o};
-let EV=[],AT=[];const XS=new Map();setInterval(()=>{const n=Date.now();for(const [key,S2] of XS){const i=key.indexOf('|'),pd=key.slice(0,i),k=key.slice(i+1);let any=0;for(const q of PL.values())if(q.sk===k&&pid(q.uid)===pd){any=1;break}if(any)S2.e=0;else if(!S2.e)S2.e=n;else if(n-S2.e>15000)XS.delete(key)}},5000).unref();
+let EV=[],AT=[];const XS=new Map();setInterval(()=>{const n=Date.now();for(const [key,S2] of XS){const i=key.indexOf('|'),pd=key.slice(0,i),k=key.slice(i+1);let any=0;for(const q of PL.values())if(q.sk===k&&(pd==='*'||pid(q.uid)===pd)){any=1;break}if(any)S2.e=0;else if(!S2.e)S2.e=n;else if(n-S2.e>15000)XS.delete(key)}},5000).unref();
 const PL=new Map(),pid=u=>{const r=DB.pres&&DB.pres[u];if(r&&r.p&&Date.now()-(+r.t||0)<30000)return String(r.p);return(DB.pmem&&DB.pmem[u]&&DB.pmem[u].pid)||''},sc=p=>p.ct.dm+1.5*p.ct.tk+6*p.ct.ut;
 const send=(ws,m)=>{if(ws.readyState===1)ws.send(JSON.stringify(m))},mvM=(m,dx,dy)=>{if(!solid(m.x+dx,m.y))m.x+=dx;if(!solid(m.x,m.y+dy))m.y+=dy};
 function step(dt,now){const act=new Set();for(const p of PL.values())for(const m of near(p.x,p.y,CFG.view+CFG.leash))act.add(m);for(const m of DYL)act.add(m);
@@ -157,11 +157,11 @@ function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
   if(wasDg&&!psolid(x,y,u)){p.x=x;p.y=y;p.mt=now;return}
   const fly=!!(m.fl&&X.gm&&X.gm(u));if(!fly&&((d>CFG.speed*dt+48&&!tp)||psolid(x,y,u))){send(ws,{t:'wp',x:p.x,y:p.y});return}if(tp)p.tpT=now;
   p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);p.lv=X.lv&&X.lv(u)?X.lv(u):num(m.lv,1,9999,p.lv)|0;p.city=inCity(x,y);p.pw=num(m.pw,1,1e13,p.pw||1);if(p.hp<=0&&p.lp)pvDie(p);return}
- if(m.t==='wsx'){const k=String(m.k||'').slice(0,40);if(!k||k!==p.sk||!Array.isArray(m.h)||now-(p.xT||0)<60)return;p.xT=now;const pd=pid(u);if(!pd)return;const h=m.h.slice(0,12).map(a=>[typeof a[0]==='number'?(a[0]|0):String(a[0]).replace(/[^bg0-9]/g,'').slice(0,8),num(a[1],1,1e9,1)|0,a[2]?1:0]);
+ if(m.t==='wsx'){const k=String(m.k||'').slice(0,40);if(!k||k!==p.sk||!Array.isArray(m.h)||now-(p.xT||0)<60)return;p.xT=now;const pd=k==='w'?pid(u):'*';if(!pd)return;const h=m.h.slice(0,12).map(a=>[typeof a[0]==='number'?(a[0]|0):String(a[0]).replace(/[^bg0-9]/g,'').slice(0,8),num(a[1],1,1e9,1)|0,a[2]?1:0]);
   if(k!=='w'){const key=pd+'|'+k;let S2=XS.get(key);if(!S2)XS.set(key,S2={m:new Map(),e:0});for(const a of h){let o=S2.m.get(a[0]);if(!o){if(S2.m.size>6000)continue;S2.m.set(a[0],o={d:0,k:0,t:now})}o.d+=a[1];o.t=now;if(a[2])o.k=now}}
-  for(const q of PL.values()){if(q===p||q.sk!==k||pid(q.uid)!==pd)continue;if(k==='w'&&(q.dg||Math.hypot(q.x-p.x,q.y-p.y)>2400))continue;send(q.ws,{t:'wsx',k,h})}return}
- if(m.t==='wsp'){const k=String(m.k||'').slice(0,40);if(!k||k==='w'||k!==p.sk||!Array.isArray(m.p)||now-(p.pT||0)<180)return;p.pT=now;const pd=pid(u);if(!pd)return;const pp=m.p.slice(0,40).map(a=>[a[0]|0,num(a[1],0,W*T,0)|0,num(a[2],0,H*T,0)|0]);for(const q of PL.values()){if(q===p||q.sk!==k||pid(q.uid)!==pd)continue;send(q.ws,{t:'wsp',k,f:u,p:pp})}return}
- if(m.t==='wsq'){const k=String(m.k||'').slice(0,40),pd=pid(u);if(!k||k==='w'||k!==p.sk||!pd)return;const S2=XS.get(pd+'|'+k);if(!S2)return;const s2=[];for(const [id,o] of S2.m){if(now-o.t>120000){S2.m.delete(id);continue}s2.push([id,o.d,o.k?now-o.k:-1])}if(s2.length)send(p.ws,{t:'wss',k,s:s2.slice(0,500)});return}
+  for(const q of PL.values()){if(q===p||q.sk!==k||(pd!=='*'&&pid(q.uid)!==pd))continue;if(k==='w'&&(q.dg||Math.hypot(q.x-p.x,q.y-p.y)>2400))continue;send(q.ws,{t:'wsx',k,h})}return}
+ if(m.t==='wsp'){const k=String(m.k||'').slice(0,40);if(!k||k==='w'||k!==p.sk||!Array.isArray(m.p)||now-(p.pT||0)<180)return;p.pT=now;const pd='*';const pp=m.p.slice(0,40).map(a=>[a[0]|0,num(a[1],0,W*T,0)|0,num(a[2],0,H*T,0)|0]);for(const q of PL.values()){if(q===p||q.sk!==k)continue;send(q.ws,{t:'wsp',k,f:u,p:pp})}return}
+ if(m.t==='wsq'){const k=String(m.k||'').slice(0,40),pd='*';if(!k||k==='w'||k!==p.sk)return;const S2=XS.get(pd+'|'+k);if(!S2)return;const s2=[];for(const [id,o] of S2.m){if(now-o.t>120000){S2.m.delete(id);continue}s2.push([id,o.d,o.k?now-o.k:-1])}if(s2.length)send(p.ws,{t:'wss',k,s:s2.slice(0,500)});return}
  if(m.t==='wh'){if(!p.dg)hits(p,m.h)}
  if(m.t==='wup'){if(p.uw){p.pl=num(m.p,-1,7,-1)|0;p.plT=now}return}
  if(m.t==='wub')return ubHit(p,m);

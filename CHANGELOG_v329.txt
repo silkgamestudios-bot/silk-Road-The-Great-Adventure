@@ -2,3 +2,11 @@ v329 - POCIONES: MÁXIMO 800 (REQUIERE Manual Deploy: economy.js; siguen pendien
 - El límite de pociones sube de 99 a 800 de cada una (vida y maná, y todas las de nivel: menor…divina, brebajes de guerra y esencias arcanas).
 - Se apilan de 400 por espacio: en Objetos, las pociones de la mochila de loot se muestran en pilas de máximo 400 (800 = 2 pilas).
 - Aplica en Botica, comerciante, pociones que sueltan los monstruos y jefes, y en el servidor (economy.js).
+
+v330 - FIX DE SINCRONIZACIÓN DE MOBS
+- Si la firma del catálogo de monstruos del cliente no coincide con la del servidor, el cliente ya no vuelve silenciosamente a un mundo local independiente.
+- En ese caso, se ocultan los mobs base locales y se reconstruyen a partir de los snapshots autoritativos del servidor, para que los jugadores compartan posiciones, vida y muertes.
+- Los snapshots incluyen los campos mínimos del mob base para crear su representación local de respaldo.
+- En mazmorras y zonas especiales, el scope compartido ya no depende de coordenadas iniciales aleatorias; usa la cantidad y la composición ordenada de los mobs para evitar mezclar listas distintas.
+- Se mantienen intactos el contenido de juego, mapas, inventario, economía, misiones y habilidades.
+- Nota: world.json original no se regeneró a ciegas; el modo de respaldo mantiene la sincronización aun si el catálogo incluido está desfasado.

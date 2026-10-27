@@ -1,0 +1,8 @@
+Sprite Road v3.36 — GM Gold Audit
+
+- Zona GM > Oro now displays the selected player's server-recorded gold balance.
+- Added a master-only server RPC to query balance and to add or subtract gold.
+- Every adjustment requires a reason, confirmation, and is recorded in the GM log and server log.
+- Anomaly alerts are logged when a player's recorded gold reaches 100,000,000 or more, or an adjustment is at least 10,000,000.
+- Player search results now include gold and a visible anomaly marker for high recorded balances.
+- The existing positive-only adm.gold operation remains available for compatibility.

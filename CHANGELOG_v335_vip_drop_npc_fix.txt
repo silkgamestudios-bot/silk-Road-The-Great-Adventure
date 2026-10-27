@@ -1,0 +1,8 @@
+Sprite Road v3.35 — VIP drops / NPC sale fix
+
+- Telas de araña no aparecen como vendibles en el menú de Materiales.
+- El manejador de acciones rechaza ventas de telas/patas de araña a NPC, aunque se invoque una acción antigua.
+- Las telas de araña y patas de araña solo caen de arañas si el jugador tiene VIP activo (misma validación que el Submundo).
+- Se conserva la fabricación de lazos, el refuerzo arácnido, el afilado y el comercio entre jugadores.
+
+Nota: esta validación de drops ocurre en el cliente actual; si se requiere protección contra clientes modificados, el drop debe validarse también en una autoridad de servidor para el inventario del personaje.

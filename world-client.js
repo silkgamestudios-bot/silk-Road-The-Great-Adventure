@@ -61,11 +61,15 @@ function snap(m){const seen={};if(m.ud){try{window.SRUD&&SRUD(m.ud)}catch(e){}}
   if(e.mov)e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');if(Math.abs(dx)+Math.abs(dy)>220){e.x=b[1];e.y=b[2]}else{e.gx=b[1];e.gy=b[2];e.gs=1}e.hp=b[3]}
  if(m.hv)for(const h of m.hv){if(FT.length>=60)break;FT.push({x:h[3]+Math.random()*14-7,y:h[4]-14,t:.9,d:0,o:0,k:'dm',s:String(h[1]),c:'#8fd8ff'})}
  if(m.at){const n=Date.now();for(const a of m.at)OFX.push({u:a[0],k:a[1],a:a[2],x:a[3],y:a[4],t:n,ty:a[6]||'',r:a[7]|0});if(OFX.length>80)OFX.splice(0,OFX.length-80)}pvSync()}
-function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100));
- if(g>0){P.gold+=g;t.push('+'+g+' 🪙')}if(m.x>0){gainXp(m.x);t.push('+'+m.x+' XP')}
+function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100)),auto=typeof pa==='function'&&pa('lt');
+ /* El VIP Loot automático es el único que recoge sin pulsar 🎁 Tomar. Sin VIP, oro y equipo común quedan en el suelo. La recogida manual usa grab() y lootAdd(), que manda equipo común a P.lb. */
+ let ground=null;
+ if(g>0){if(auto&&LF&&LF.gd){P.gold+=g;t.push('+'+g+' 🪙')}else{ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:g,it:null,l:120};t.push('🪙 '+g+' en el suelo')}}
+ if(m.x>0){gainXp(m.x);t.push('+'+m.x+' XP')}
  if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty)}catch(e){}}
  if(m.pot&&typeof P.pot=='number')P.pot=Math.min(99,P.pot+1);
- if(m.it){const it=cleanIt(m.it);/* v333: el mundo online solo entrega equipo común de mobs; va a la bolsa de loot, nunca a la mochila de equipo/especiales. Marcamos junk para que también se enrute bien si queda en el suelo y luego se recoge. */it.junk=1;if(P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{LT.push({x:P.x,y:P.y,gd:0,it,l:300});t.push('🧺 Bolsa de loot llena: objeto en el suelo')}}
+ if(m.it){const it=cleanIt(m.it);it.junk=1;if(auto&&LF&&LF.it&&P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{if(!ground)ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:0,it:null,l:120};ground.it=it;t.push('🎁 '+it.n+' en el suelo')}}
+ if(ground)LT.push(ground);
  if(t.length&&FT.length<60)FT.push({x:P.x,y:P.y-30,t:1.6,d:0,o:0,k:'dm',s:t.join(' '),c:'#ffd666'});
  try{chk();save()}catch(e){}}
 const _h=hitE;hitE=function(e,dm){if(!e.pvg&&(cityAt(P)||cityAt(e)||(typeof uwSafe=='function'&&(uwSafe(P)||uwSafe(e))))){if(!window.__szT||Date.now()-window.__szT>2500){window.__szT=Date.now();toast('🛡️ Zona segura: no se puede atacar dentro del pueblo',2200)}return}if(e.pvg){pvStrike(e,dm);return}if(!on||!e.sync||SM[e.sid]!==e)return _h(e,dm);if(e.dead>0)return;dm=Math.max(1,Math.round(dm));WQ.push([e.sid,dm]);e.hp=Math.max(1,e.hp-dm);

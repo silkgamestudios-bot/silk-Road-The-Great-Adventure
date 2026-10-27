@@ -1,0 +1,9 @@
+Sprite Road v335 — Economía de materiales de araña
+
+- Telas de araña: probabilidad base de drop reducida del 12% al 5%.
+- Patas de araña: drop añadido al 3% para arañas normales y arañas spiderB.
+- Las descripciones informan que los NPC no compran estos materiales y que su valor lo determina el mercado entre jugadores.
+- Se mantienen las recetas de crafteo y afilado existentes.
+- No se modificaron los sistemas VIP ni las bolsas de loot.
+
+Nota: la probabilidad final puede recibir los modificadores existentes de cueva y rareza de enemigo.

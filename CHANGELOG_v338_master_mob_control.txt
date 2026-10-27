@@ -1,0 +1,11 @@
+Sprite Road v3.38 — Panel Master: control de mobs y respawn
+
+- Añadida una sección exclusiva del Master para ajustar respawn de mobs normales y de mazmorra.
+- Añadidos controles de densidad de mobs de eventos, límite de mobs vivos por oleada, cantidad por oleada e intervalo.
+- La configuración se guarda en DB.cfg del servidor y sobrevive a reinicios.
+- El servidor valida permisos Master y limita los rangos admitidos.
+- Los clientes consultan la configuración del servidor al entrar y cada 60 segundos.
+- Los cambios afectan nuevas apariciones y los temporizadores de respawn posteriores; los enemigos ya presentes no se eliminan inmediatamente.
+- Validación sintáctica de server.js y scripts inline de play.html completada.
+
+Nota: la simulación de mobs se ejecuta en el cliente en esta versión. La configuración se distribuye desde el servidor, pero no convierte todavía la simulación en autoritativa de servidor; un cliente modificado podría ignorar parámetros de spawn.

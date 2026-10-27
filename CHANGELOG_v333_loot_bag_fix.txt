@@ -1,0 +1,7 @@
+Sprite Road — v333: corrección de destino del botín online
+
+- El equipo común que llega desde el mundo online se deposita en la Bolsa de Loot (P.lb), respetando su capacidad LCAP().
+- Ya no se introduce automáticamente en la Mochila principal (P.bag), reservada para equipo especial/de jefes y objetos que el jugador decide transferir.
+- Si la Bolsa de Loot está llena, el objeto queda en el suelo durante el tiempo de recogida; al recogerlo conserva la marca de botín común y vuelve a intentar entrar en la Bolsa de Loot, no en la mochila principal.
+- Se mantienen las funciones existentes para vender, desguazar y transferir desde la Bolsa de Loot.
+- Validación realizada: node --check world-client.js y comprobación de integridad del ZIP.

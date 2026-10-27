@@ -1,0 +1,10 @@
+Sprite Road v334 — Corrección de recogida de botín y requisito VIP
+
+- El equipo común que cae de monstruos online ya NO se añade automáticamente a la bolsa de loot para jugadores sin el servicio VIP de Loot automático.
+- Sin VIP, el equipo común y el oro de los monstruos online aparecen en el suelo y se recogen con el botón 🎁 Tomar, dentro del radio normal.
+- La recogida manual conserva la ruta de lootAdd(): equipo común marcado junk va a la Bolsa de Loot, no a la mochila principal de equipo especial.
+- Con VIP Loot automático activo, se aplica la selección de recogida configurada (LF.it para objetos y LF.gd para oro); si la bolsa de loot está llena, el objeto queda en el suelo para recogerlo manualmente.
+- La experiencia continúa otorgándose normalmente. El ajuste de probabilidad de drop se conserva.
+
+Pruebas ejecutadas: node --check world-client.js; comprobación de estructura ZIP.
+Pendiente: prueba funcional dentro del navegador/servidor del juego.

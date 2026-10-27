@@ -65,7 +65,7 @@ function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100));
  if(g>0){P.gold+=g;t.push('+'+g+' 🪙')}if(m.x>0){gainXp(m.x);t.push('+'+m.x+' XP')}
  if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty)}catch(e){}}
  if(m.pot&&typeof P.pot=='number')P.pot=Math.min(99,P.pot+1);
- if(m.it){const it=cleanIt(m.it);if(P.bag.length<24)P.bag.push(it);else LT.push({x:P.x,y:P.y,gd:0,it,l:300});t.push('🎁 '+it.n)}
+ if(m.it){const it=cleanIt(m.it);/* v333: el mundo online solo entrega equipo común de mobs; va a la bolsa de loot, nunca a la mochila de equipo/especiales. Marcamos junk para que también se enrute bien si queda en el suelo y luego se recoge. */it.junk=1;if(P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{LT.push({x:P.x,y:P.y,gd:0,it,l:300});t.push('🧺 Bolsa de loot llena: objeto en el suelo')}}
  if(t.length&&FT.length<60)FT.push({x:P.x,y:P.y-30,t:1.6,d:0,o:0,k:'dm',s:t.join(' '),c:'#ffd666'});
  try{chk();save()}catch(e){}}
 const _h=hitE;hitE=function(e,dm){if(!e.pvg&&(cityAt(P)||cityAt(e)||(typeof uwSafe=='function'&&(uwSafe(P)||uwSafe(e))))){if(!window.__szT||Date.now()-window.__szT>2500){window.__szT=Date.now();toast('🛡️ Zona segura: no se puede atacar dentro del pueblo',2200)}return}if(e.pvg){pvStrike(e,dm);return}if(!on||!e.sync||SM[e.sid]!==e)return _h(e,dm);if(e.dead>0)return;dm=Math.max(1,Math.round(dm));WQ.push([e.sid,dm]);e.hp=Math.max(1,e.hp-dm);

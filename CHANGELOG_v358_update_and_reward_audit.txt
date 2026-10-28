@@ -1,0 +1,14 @@
+Silk Road: The Great Adventure — v358
+
+Cambios de esta entrega:
+- Sincroniza la versión del cliente play.html y el archivo sw.js en sr-v358, para que el aviso de actualización no compare contra una versión antigua incrustada en el cliente.
+- El servidor guarda un registro persistente y limitado (últimas 500 operaciones) de las entregas del Master realizadas mediante adm.item: fecha, emisor, destinatario, ranura, rareza, nivel, mejora, durabilidad, cantidad y clase de arma.
+- Mantiene los archivos del proyecto directamente en la raíz del ZIP.
+
+Pruebas realizadas en el paquete:
+- Comprobación de sintaxis de server.js y de los scripts JavaScript extraídos de play.html.
+- Comprobación de integridad del ZIP.
+
+Limitaciones conocidas:
+- Esta versión no implementa todavía el selector de múltiples personajes ni la Carpa Mística/cambio de clase. No se declara completada la integración de esas funciones.
+- La prueba del premio es estática/de validación; no se ha ejecutado contra un servidor desplegado con cuentas reales.

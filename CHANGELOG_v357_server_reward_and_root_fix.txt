@@ -1,0 +1,12 @@
+Silk Road v357 — corrección del paquete y entrega GM de objetos
+
+Cambios incluidos:
+- Archivos del proyecto en la raíz del ZIP (sin carpeta contenedora adicional).
+- sw.js anuncia sr-v357; server.js lee esta versión para notificar a los clientes.
+- Nueva operación de servidor adm.item: exclusiva del master, valida campos, crea identificadores únicos y guarda el premio en la partida del destinatario, incluso si está desconectado.
+- El premio se agrega a la mochila y se fuerza reconexión del destinatario conectado para evitar que una copia antigua sobrescriba el guardado.
+
+Límites importantes:
+- Esta entrega NO implementa todavía selector de múltiples personajes ni Carpa Mística/cambio de clase. No se deben considerar terminados.
+- La entrega GM de objetos se limita al catálogo de equipo (ranuras 0–9, rareza común/rara/épica/legendaria, tier 0–4, mejora 0–9, durabilidad 1–100 y hasta 20 unidades).
+- Requiere desplegar server.js y los archivos del cliente juntos; subir solo play.html no basta.

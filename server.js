@@ -113,6 +113,38 @@ OPS['wa.get']=u=>({ok:1,wa:(E.acct(u).wa)||''});
 const pkDay=()=>new Date(Date.now()-4*36e5).toISOString().slice(0,10);
 setInterval(()=>{try{const n=ONL.size;DB.cfg=DB.cfg||{};const P=DB.cfg.pk=DB.cfg.pk||{d:{},all:{n:0,t:0}},k=pkDay(),c=P.d[k]||(P.d[k]={n:0,t:0});if(n>c.n){c.n=n;c.t=Date.now();dirty=1;if(n>P.all.n){P.all={n,t:Date.now()};log('[online] nuevo pico de jugadores conectados: '+n)}}const ks=Object.keys(P.d).sort();if(ks.length>90)for(const q of ks.slice(0,ks.length-90))delete P.d[q]}catch(e){}},30000);
 OPS['adm.peak']=u=>{if(!isMaster(u))return{e:'operación desconocida'};const P=(DB.cfg||{}).pk||{d:{},all:{n:0,t:0}};return{ok:1,now:ONL.size,max:MAXP,all:P.all,days:Object.keys(P.d).sort().reverse().slice(0,14).map(k=>({d:k,n:P.d[k].n,t:P.d[k].t}))}};
+/* v357: entrega GM de equipo validada por servidor, disponible también para jugadores desconectados. */
+OPS['adm.item']=(u,m)=>{
+ if(!isMaster(u))return{e:'operación desconocida'};
+ const name=String(m.name||'').trim().slice(0,80);if(!name)return{e:'Selecciona el personaje'};
+ const id=E.uidByName(name);if(!id)return{e:'No encontré al personaje "'+name+'"'};
+ const sl=Math.floor(Number(m.sl)),r=Math.floor(Number(m.r)),t=Math.floor(Number(m.t)),li=Math.floor(Number(m.li)),du=Math.floor(Number(m.du)),q=Math.floor(Number(m.q));
+ if(!Number.isInteger(sl)||sl<0||sl>9)return{e:'Ranura no válida'};
+ if(!Number.isInteger(r)||r<0||r>3)return{e:'Rareza no válida'};
+ if(!Number.isInteger(t)||t<0||t>4)return{e:'Nivel del objeto no válido'};
+ if(!Number.isInteger(li)||li<0||li>9)return{e:'Mejora no válida'};
+ if(!Number.isInteger(du)||du<1||du>100)return{e:'Durabilidad no válida'};
+ if(!Number.isInteger(q)||q<1||q>20)return{e:'Cantidad entre 1 y 20'};
+ const k=m.k==null?null:Math.floor(Number(m.k));if(k!==null&&(!Number.isInteger(k)||k<0||k>7))return{e:'Clase de arma no válida'};
+ let saveObj;try{saveObj=JSON.parse(fs.readFileSync(savePath(id),'utf8'))}catch(e){return{e:'El personaje todavía no tiene una partida guardada en el servidor'}}
+ let v;try{v=JSON.parse(saveObj.d)}catch(e){return{e:'La partida guardada está dañada; no se modificó'}};
+ if(!v||typeof v!=='object')return{e:'Partida no válida'};
+ v.bag=Array.isArray(v.bag)?v.bag:[];
+ if(v.bag.length+q>500)return{e:'La mochila no tiene espacio suficiente para ese premio'};
+ const items=[];for(let i=0;i<q;i++){
+  const it={id:crypto.randomBytes(8).toString('hex'),sl,t,li,r,du,up:li,n:'Recompensa del Master'};
+  if(k!==null&&sl===0)it.k=k;
+  v.bag.push(it);items.push(it.id);
+ }
+ saveObj.d=JSON.stringify(v);saveObj.ts=Date.now();
+ try{fs.writeFileSync(savePath(id)+'.tmp',JSON.stringify(saveObj));fs.renameSync(savePath(id)+'.tmp',savePath(id))}catch(e){try{fs.unlinkSync(savePath(id)+'.tmp')}catch(_){}return{e:'No se pudo guardar el premio; inténtalo de nuevo'}}
+ const audit={at:Date.now(),by:u,to:id,nm:String(E.acct(id).nm||name).slice(0,40),q,sl,r,t,li,du,k:k===null?null:k};
+ DB.cfg=DB.cfg||{};DB.cfg.gmItemLog=Array.isArray(DB.cfg.gmItemLog)?DB.cfg.gmItemLog:[];DB.cfg.gmItemLog.push(audit);if(DB.cfg.gmItemLog.length>500)DB.cfg.gmItemLog.splice(0,DB.cfg.gmItemLog.length-500);dirty=1;
+ log('[GM ITEM] '+u+' entregó '+q+' objeto(s) [slot='+sl+', rareza='+r+', tier='+t+', mejora='+li+'] a '+id);
+ const w=ONL.get(id);if(w){try{w.send(JSON.stringify({t:'bad',e:'Has recibido un premio del Master. Vuelve a entrar para cargarlo de forma segura.'}));setTimeout(()=>{try{w.close()}catch(e){}},350)}catch(e){}}
+ return{q,rar:['Común','Raro','Épico','Legendario'][r],slot:['Arma','Casco','Pechera','Guantes','Pantalones','Botas','Escudo','Anillo','Amuleto','Pendientes'][sl],nm:(E.acct(id).nm||name),online:!!w,ids:items.length};
+};
+
 OPS['early.list']=u=>isMaster(u)?{list:earlyList(),max:3,env:EARLY_ENV}:{e:'operación desconocida'};
 OPS['early.add']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase().slice(0,120);if(!w)return{e:'Escribe el correo, usuario o uid'};const L=earlyList();if(L.includes(w))return{list:L,max:3};if(L.length>=3)return{e:'Ya hay 3 accesos anticipados. Quita uno primero.'};DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).concat(w);dirty=1;log('early.add '+w);return{list:earlyList(),max:3}};
 OPS['early.del']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase();DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).filter(x=>String(x).toLowerCase()!==w);dirty=1;log('early.del '+w);return{list:earlyList(),max:3,env:EARLY_ENV}};

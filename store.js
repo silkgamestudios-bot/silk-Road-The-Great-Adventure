@@ -22,6 +22,13 @@ ops['name.change']=(u,m)=>{const a=E.acct(u),first=(a.nch|0)===0,n=String(m.name
  if(first){const nt=NAME_GOLD+TAXP(NAME_GOLD);if(E.avail(a,'gold')<nt)return err('Te faltan '+(nt-E.avail(a,'gold'))+' 🪙 (con 3% de impuesto)')}else if(E.gTot(a)<1)return err('Necesitas 1 💎');
  if(first)E.deliver(u,{gold:-(NAME_GOLD+TAXP(NAME_GOLD)),note:'✏️ Cambio de nombre (+3% impuesto)'});else if(!E.spendGems(a,1,false,'Cambio de nombre'))return err('Saldo insuficiente');
  const r=E.claimName(u,n,1);if(r.e)return r;a.nch=(a.nch|0)+1;S.dirty();E.pushEnt(u);S.log('[nombre] '+u+' → '+n);return{ok:1,nm:r.nm,ent:E.ent(u)}};
+ops['skin.halloween.buy']=(u,m)=>{const id='halloween_maga',a=E.acct(u),method=String(m.method||'gem'),q=SK[id];if(!q)return err('Apariencia no disponible');if(a.sk.includes(id))return err('Ya tienes esta apariencia');
+ const ec=a.res&&(a.res.ec||{}),pump=ec?(ec.hl|0):0;
+ if(method==='pump'){if(pump<300)return err('Necesitas 300 Calabazas.');if(E.gTot(a)<5)return err('Te faltan '+(5-E.gTot(a))+' 💎');if(!E.spendGems(a,5,false,'Oferta Halloween '+id))return err('Saldo insuficiente');ec.hl=pump-300}
+ else if(method==='gem'){if(E.gTot(a)<7)return err('Te faltan '+(7-E.gTot(a))+' 💎');if(!E.spendGems(a,7,false,'Apariencia Halloween '+id))return err('Saldo insuficiente')}
+ else return err('Método de pago inválido');
+ a.sk.push(id);S.dirty();E.pushEnt(u);S.log('[Halloween] '+(a.nm||u)+' obtuvo '+id+' pagando '+(method==='pump'?'5 gemas + 300 calabazas':'7 gemas'));
+ return{ok:1,ent:Object.assign({},E.ent(u),{ec:{hl:ec.hl|0}})}};
 ops['skin.buy']=(u,m)=>{const q=SK[String(m.id||'')],a=E.acct(u);if(!q)return err('Apariencia desconocida');if(a.sk.includes(q.id))return err('Ya la tienes');
  if(E.gTot(a)<q.g)return err('Te faltan '+(q.g-E.gTot(a))+' 💎');if(!E.spendGems(a,q.g,false,'Apariencia '+q.id))return err('Saldo insuficiente');a.sk.push(q.id);S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+q.id);return{ok:1,ent:E.ent(u)}};
 

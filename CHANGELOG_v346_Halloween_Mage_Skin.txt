@@ -1,0 +1,16 @@
+SILK ROAD: THE GREAT ADVENTURE — v3.46
+Halloween Mage Skin + Gem Store Promo
+
+- Added the original 4x4 pixel-art sprite sheet skin_halloween_maga.png.
+- Added the Mage-only appearance “Bruja de la Noche Violeta” to the Gem Store.
+- Stats: +2 PV (armor display), +2% defense, +2% magical damage (Mage-only skin), +1% movement speed while equipped.
+- Added a Halloween promotion panel shown when a named player enters the game, positioned at the right side below the top HUD/minimap area.
+- Payment options: 7 Gems OR 5 Gems + 300 Halloween pumpkins.
+- Added server-side purchase validation, currency deduction, and ownership entitlement.
+- The skin is added to the player's appearances; it auto-equips only for Mage characters.
+- Bumped service worker/client cache version to sr-v346.
+
+Validation performed:
+- ZIP integrity checked.
+- Node syntax checked for server.js, catalog.js, store.js, and all inline play.html scripts.
+- Live Render deployment and in-game behavior still need confirmation after deployment.

@@ -15,3 +15,7 @@ Proyecto optimizado para subir a GitHub y desplegar en Render.
 
 ## Importante
 El juego usa un servidor Node.js (`server.js` y la dependencia `ws`), por lo que GitHub almacena el código, pero GitHub Pages por sí solo no ejecuta ese servidor. Para la versión completa con servidor, usa Render u otro hosting Node.js.
+
+
+## v3.46 — Halloween Mage Skin
+Nueva apariencia de Halloween para el Mago y promoción de tienda: 7 Gemas o 5 Gemas + 300 Calabazas. Consulta `CHANGELOG_v346_Halloween_Mage_Skin.txt`.

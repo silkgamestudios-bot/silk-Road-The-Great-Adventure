@@ -1,4 +1,4 @@
-const V='sr-v345';
+const V='sr-v346';
 /* v238: este archivo YA NO guarda nada ni instala app. Solo sirve para que los aparatos con la versión vieja (atajo anclado / app instalada)
    se limpien solos: borra las cachés, se desregistra y recarga la página. El servidor lee V para avisar de versiones nuevas. */
 self.addEventListener('install',()=>self.skipWaiting());

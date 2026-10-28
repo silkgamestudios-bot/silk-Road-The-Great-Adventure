@@ -21,6 +21,8 @@ const DEF=[
 const SKINS={};
 for(const [c,t,ix,n,el] of DEF){const st=ESTILO[c],b=TIER[t],m=MUL[st],id='b'+c+'_'+t,R=k=>Math.round(b[k]*m[k]);
  SKINS[id]={id,c,t,ix,n,el,st,g:b.g,ar:R('ar'),df:R('df'),er:R('er'),pr:R('pr'),hit:R('hit'),el_:R('el'),cr:R('cr')}}
+/* Skin especial de Halloween: maga violeta, exclusiva de la clase Mago. */
+SKINS.halloween_maga={id:'halloween_maga',c:2,t:2,ix:0,n:'Bruja de la Noche Violeta',el:'sombra',st:'magic',g:7,ar:2,df:2,er:0,pr:0,hit:2,el_:0,cr:0};
 /* servicios (buffs) que se pagan con gemas propias: ver precios en el juego */
 const BUFFS={cmb:{n:'Combo Cazador',g:5,d:'Loot automático + poción automática'},es:{n:'Escolta de caravana',g:3,d:'Tus orcos defienden el carruaje'},lic:{n:'Licencia de Mercader',g:10,d:'Carruaje y tienda de jugadores'},vipm:{n:'VIP Mercader',g:15,d:'Todo incluido para Mercader'},vipj:{n:'VIP Jugador',g:6,d:'Combo + Bendición'}};
 const GUILD={precio:10,max:500,tagMin:2,tagMax:4,nameMin:3,nameMax:20};

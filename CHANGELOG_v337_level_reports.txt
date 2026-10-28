@@ -1,0 +1,9 @@
+Silk Road v337 — Reportes de nivel y herramientas GM
+
+- Añade un botón de reporte para jugadores con problemas de nivel/vida.
+- El servidor crea un informe con UID, personaje, nivel/XP de cuenta y un resumen del guardado encontrado; el texto del jugador es solo contexto, no prueba.
+- Los reportes se guardan en DB.levelReports (máximo 200) y envían notificación por los canales configurados en el servidor (WhatsApp/ntfy; si no están configurados, queda registro en el log del servidor).
+- Añade Zona GM > Incidencias > Reportes de nivel para revisar evidencia y marcar informes como revisados.
+- Conserva la herramienta existente para ajustar manualmente el nivel desde Zona GM > Jugadores/herramientas GM (adm.lv).
+
+Seguridad: un reporte no demuestra trampas por sí solo. Revisar evidencia antes de sancionar. El ajuste de nivel y la lectura/cierre de reportes requieren permisos master en el servidor.

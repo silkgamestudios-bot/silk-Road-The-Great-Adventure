@@ -96,6 +96,21 @@ OPS['adm.lv']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const n
  a.lv=lv;a.xp=0;dirty=1;log('[GM] '+u+' puso a '+id+' ('+(a.nm||a.pn||'?')+') en nivel '+lv+' (antes '+old+')');
  const w=ONL.get(id);if(w){try{w.send(JSON.stringify({t:'bad',e:'Un GM ajustó tu nivel a '+lv+'. Vuelve a entrar al juego.'}));setTimeout(()=>{try{w.close()}catch(e){}},500)}catch(e){}}
  return{ok:1,id,nm:a.nm||a.pn||id,old,lv,online:!!w,saved:ok}};
+/* v337: reportes de integridad de nivel. La evidencia del personaje la crea el servidor; el texto del jugador nunca se toma como prueba. */
+OPS['bug.level.report']=(u,m)=>{
+ const note=String(m.note||'').replace(/[<>]/g,'').trim().slice(0,600);
+ const a=E.acct(u)||{};let snap={},fileFound=0;
+ try{const f=savePath(u),o=JSON.parse(fs.readFileSync(f,'utf8')),v=JSON.parse(o.d||'{}');fileFound=1;
+  for(const k of ['lv','xp','hp','mp','cls','gold','name','nm','chosen','ch','sx','eq','inv','i','sk','skin','ts'])if(v[k]!==undefined)snap[k]=v[k];
+ }catch(e){}
+ const report={id:crypto.randomBytes(6).toString('hex'),ts:Date.now(),uid:u,nm:String(a.nm||a.pn||'').slice(0,40),account:String((ACC[u]&&ACC[u].e)||'').slice(0,100),level:Number(a.lv)||Number(snap.lv)||0,xp:Number(a.xp)||Number(snap.xp)||0,cls:Number(a.cls??snap.cls)||0,note,serverEvidence:{fileFound,acctLevel:Number(a.lv)||0,acctXp:Number(a.xp)||0,saved:snap},status:'open'};
+ DB.levelReports=Array.isArray(DB.levelReports)?DB.levelReports:[];DB.levelReports.unshift(report);DB.levelReports=DB.levelReports.slice(0,200);dirty=1;
+ log('[REPORTE_NIVEL] '+report.id+' uid='+u+' name='+(report.nm||'?')+' level='+report.level+' evidence='+fileFound);
+ notifyRL('⚠️ Silk Road · Reporte de nivel '+report.id+'\nPersonaje: '+(report.nm||'?')+' · nivel de cuenta: '+report.level+' · XP: '+report.xp+'\nUID: '+u+'\nMotivo: '+(note||'(sin detalle)')+'\nEvidencia del servidor guardada en Zona GM > Incidencias.');
+ return{ok:1,id:report.id,message:'Reporte enviado al GM con evidencia del servidor.',ts:report.ts};
+};
+OPS['adm.level.reports']=(u)=>{if(!isMaster(u))return{e:'operación desconocida'};const l=Array.isArray(DB.levelReports)?DB.levelReports:[];return{l:l.slice(0,50).map(r=>({id:r.id,ts:r.ts,uid:r.uid,nm:r.nm,account:r.account,level:r.level,xp:r.xp,cls:r.cls,note:r.note,status:r.status,fileFound:!!(r.serverEvidence&&r.serverEvidence.fileFound),saved:r.serverEvidence&&r.serverEvidence.saved}))}};
+OPS['adm.level.resolve']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const id=String(m.id||'').slice(0,32),r=(DB.levelReports||[]).find(x=>x.id===id);if(!r)return{e:'Reporte no encontrado'};r.status='reviewed';r.reviewedAt=Date.now();r.reviewedBy=u;dirty=1;log('[GM] reporte de nivel revisado '+id+' por '+u);return{ok:1,id}};
 OPS['char.del']=(u,m)=>{const a=E.acct(u),n=Date.now();if(n-(a.cdt||0)<60000)return{e:'Espera un minuto antes de borrar otra vez'};if(isMaster(u))return{e:'El personaje del master no se borra desde aquí'};
  try{fs.unlinkSync(savePath(u))}catch(e){}
  if(a.nm&&ECO.names[a.nm.toLowerCase()]===u)delete ECO.names[a.nm.toLowerCase()];

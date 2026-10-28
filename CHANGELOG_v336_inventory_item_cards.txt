@@ -1,0 +1,7 @@
+Silk Road v336 — Inventario más claro
+
+- Los filtros de equipo ahora muestran el nombre de cada ranura además del icono: Arma, Torso, Cabeza, Guantes, Piernas, Botas y Escudo.
+- La carta del objeto muestra una sección visible de detalles con ranura, rareza y clase compatible.
+- Se conserva la carta de información al seleccionar un objeto, con sus estadísticas, comparación, durabilidad/valor cuando corresponda y acciones existentes.
+- Se conserva el botón Cancelar (✕) para cerrar la carta sin ejecutar una acción.
+- No se modifican las reglas de equipamiento, estadísticas, economía ni persistencia.

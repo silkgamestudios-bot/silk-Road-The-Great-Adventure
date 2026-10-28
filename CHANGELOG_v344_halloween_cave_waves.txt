@@ -1,0 +1,11 @@
+Sprite Road v3.44 — Halloween leash and cave waves
+
+- Halloween event mobs move at 70% of their previous movement speed (30% slower).
+- Halloween event mobs stop chasing after about 22 seconds and return to their spawn point.
+- Cave floors are limited to 20 regular wave mobs at a time; bosses and elites are preserved.
+- Cave wave mobs stop chasing after about 18 seconds and return to their spawn point.
+- Killed cave wave mobs respawn individually after a randomized 50–90 seconds.
+- Cave ambushes respect the 20 regular-mob cap.
+- Updated client/service-worker cache version to sr-v344.
+
+Validation performed: server syntax and inline JavaScript syntax checks, archive integrity and file count. Live Render behavior was not verified from this environment.

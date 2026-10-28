@@ -1,0 +1,7 @@
+Silk Road: The Great Adventure v350 — Carriage Loot Fix
+
+- Fixed a false “Botín inválido, no sincronizado o no te pertenece” response when a carriage deposit succeeded server-side but the response was lost and the client retried.
+- The server now checks whether the exact loot ID is already in the player’s carriage before enforcing the original ownership check. If already present, it returns the current carriage list as success; it does not add a second copy or relax ownership checks for new items.
+- Original ownership validation remains in place for items not already stored in the carriage.
+
+Validation: JavaScript syntax check and ZIP integrity check performed locally. Live-server deployment and multi-client testing are still required.

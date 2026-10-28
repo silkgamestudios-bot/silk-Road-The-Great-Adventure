@@ -3673,7 +3673,7 @@ function nearW(){return null;/* v269: sin mercancías no hay nada que saquear */
 function raidHit(){if(modal||RAIDCD>0)return;const w=nearW();if(!w)return;RAIDCD=.7;DB.collection('hits').doc().set({w:w.u,a:UID,an:P.name,d:Math.min(600,dmg()*3),ts:Date.now()}).then(()=>toast('⚔️ Golpeas a los orcos de '+w.nm,1200)).catch(()=>{});vib(20)}
 let SEL=0,MS=0,DB=null,UID=null,SHOP={},OFFERS={},INC={},OUT={};const PROC={};
 const hx=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const cleanIt0=it=>{it=it||{};const lg=it.li==null,s0=it.sl|0,t=Math.min(4,Math.max(0,it.t|0)),li=lg?Math.min(9,2*t):Math.min(9,Math.max(0,it.li|0)),sl=Math.min(9,Math.max(0,lg&&s0==3?5:s0)),r=Math.min(3,Math.max(0,it.r|0)),kk=it.k==null?null:Math.min(7,Math.max(0,it.k|0));const o={sl,t,li,r,n:kk==null?((IN[sl]&&IN[sl][t])||SN[sl]):iname(kk,sl,t,li)};if(kk!=null)o.k=kk;if(sl>=7){o.n=String(it.n||SN[sl]).replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,34)||SN[sl];if(it.rl)o.rl=Math.min(1200,it.rl|0)}if(it.u){o.u=1;o.n=String(it.n||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,30)||o.n}for(const k of['dm','hp','sp','gd','mp'])if(it[k])o[k]=Math.min(9999,Math.max(0,+it[k]|0));if(it.up)o.up=Math.min(12,Math.max(0,it.up|0));if(it.ar)o.ar=Math.min(5,Math.max(0,it.ar|0));if(it.en>=1&&it.en<=8&&it.el>=1){o.en=it.en|0;o.el=Math.min(5,it.el|0)}o.du=Math.min(100,Math.max(0,it.du==null?100:+it.du|0));return o};
+const cleanIt0=it=>{it=it||{};const lg=it.li==null,s0=it.sl|0,t=Math.min(4,Math.max(0,it.t|0)),li=lg?Math.min(9,2*t):Math.min(9,Math.max(0,it.li|0)),sl=Math.min(9,Math.max(0,lg&&s0==3?5:s0)),r=Math.min(3,Math.max(0,it.r|0)),kk=it.k==null?null:Math.min(7,Math.max(0,it.k|0));const o={sl,t,li,r,n:kk==null?((IN[sl]&&IN[sl][t])||SN[sl]):iname(kk,sl,t,li)};if(kk!=null)o.k=kk;if(sl>=7){o.n=String(it.n||SN[sl]).replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,34)||SN[sl];if(it.rl)o.rl=Math.min(1200,it.rl|0)}if(it.u){o.u=1;o.n=String(it.n||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,30)||o.n}if(it.junk)o.junk=1;if(it.jv!=null)o.jv=Math.min(300,Math.max(0,it.jv|0));for(const k of['dm','hp','sp','gd','mp'])if(it[k])o[k]=Math.min(9999,Math.max(0,+it[k]|0));if(it.up)o.up=Math.min(12,Math.max(0,it.up|0));if(it.ar)o.ar=Math.min(5,Math.max(0,it.ar|0));if(it.en>=1&&it.en<=8&&it.el>=1){o.en=it.en|0;o.el=Math.min(5,it.el|0)}o.du=Math.min(100,Math.max(0,it.du==null?100:+it.du|0));return o};
 const MSN=['🏪 Tiendas','🛒 Mi carruaje','🏷️ Ofertas','📦 Órdenes'],okP=(i,p)=>p>=1&&p<=1e12,mktR=()=>{if(!$('hero').hidden&&HT==8&&!(document.activeElement&&document.activeElement.tagName=='INPUT'))heroM()};
 function pubShop(){if(MON()){if(!lic()||!ONL())return;const m=P.mkt;SRNET.rpc({t:'x',op:'shop.set',sh:m.shop||(P.name+' Shop'),buy:m.buy,sell:m.sell,pb:m.pb,ps:m.ps,ib:m.ib|0}).catch(e=>toast(String(e.message||''),3500));return}if(!DB||!lic())return;const m=P.mkt;DB.collection('shops').doc(UID).set({u:UID,nm:P.name,sh:m.shop||(P.name+' Shop'),buy:m.buy,sell:m.sell,pb:m.pb,ps:m.ps,ib:m.ib|0,pst:{carne:P.fd.carne|0,cocida:P.fd.cocida|0,pasto:P.fd.pasto|0,hierba:P.fd.hierba|0,lazo:P.fd.lazo|0,ec_hl:P.ec.hl|0,ec_nv:P.ec.nv|0,ec_lu:P.ec.lu|0,ec_am:P.ec.am|0,ec_nz:P.ec.nz|0,pocion:P.pot|0},st:P.inv.slice(),bud:Math.floor(P.gold),tr:m.tr,ts:Date.now()}).catch(()=>{})}
 function mShop(){if(!DB||!lic())return;const m=P.mkt,nb=[],ns=[],pb={},ps={};for(let i=0;i<5;i++){const b=Math.floor(+($('pb'+i).value||0)),v=Math.floor(+($('ps'+i).value||0));if(b&&!okP(i,b)||v&&!okP(i,v)){toast(G[i]+': pon un precio válido (mínimo 1)');return}nb.push(b);ns.push(v)}
@@ -4509,7 +4509,7 @@ function spBS(id,x,y,k,flip,fr){const q=BSK[id];if(!q)return 0;const w=16*k;g.sa
 let BSAT=-9,BSAL=0;
 function bsaSt(now){if(P.cd>BSAL+.02)BSAT=now;BSAL=P.cd||0;return{fl:P.face<0,mov:P.mov&&!(RIDE&&petM()),dir:P.dir||'down',run:runOn(),t:now,hit:P.hit>0,atk:BSAT,dead:P.hp<=0}}
 function spBSA(id,x,y,k,o){const q=BSK[id];if(!q)return 0;const w=16*k,t=o.t,rate=o.run?9:6.5,mv=!!o.mov;
- if(id===HAL_SKIN_ID&&HAL_IMG.complete&&HAL_IMG.naturalWidth){const row=({'down':0,'left':1,'right':2,'up':3})[o.dir]??0,fr=mv?(Math.floor(t*rate)&1):0;const ph=t*rate*Math.PI,bob=mv?Math.abs(Math.sin(ph))*2.6*k/2:0;g.save();g.translate(Math.round(x),Math.round(y+w/2-bob));if(o.dead){g.rotate((o.fl?-1:1)*1.45);g.translate(0,-w*.12)}else if(o.dir==='left')g.scale(-1,1);g.imageSmoothingEnabled=false;if(o.hit)g.filter='brightness(1.9) sepia(1) saturate(4) hue-rotate(-25deg)';else if(o.dir==='up')g.filter='brightness(.72)';g.drawImage(HAL_IMG,fr*51,row*51,51,51,-w*.72,-w*1.38,w*1.44,w*1.44);g.restore();return 1}
+ if(id===HAL_SKIN_ID&&HAL_IMG.complete&&HAL_IMG.naturalWidth){const row=({'down':0,'left':1,'right':2,'up':3})[o.dir]??0,fr=mv?(Math.floor(t*rate)&1):0;const ph=t*rate*Math.PI,bob=mv?Math.abs(Math.sin(ph))*2.6*k/2:0;g.save();g.translate(Math.round(x),Math.round(y+w/2-bob));if(o.dead){g.rotate((o.fl?-1:1)*1.45);g.translate(0,-w*.12)}/* v352: la hoja de Halloween ya contiene filas direccionales independientes. La fila 1 mira a la izquierda; no reflejarla, o caminará mirando al lado contrario. */g.imageSmoothingEnabled=false;if(o.hit)g.filter='brightness(1.9) sepia(1) saturate(4) hue-rotate(-25deg)';else if(o.dir==='up')g.filter='brightness(.72)';g.drawImage(HAL_IMG,fr*51,row*51,51,51,-w*.72,-w*1.38,w*1.44,w*1.44);g.restore();return 1}
  if(!BSP.complete||!BSP.naturalWidth)return 0;
  const ph=t*rate*Math.PI,fr=mv?(Math.floor(t*rate)&1):(Math.floor(t*1.3)&1);
  const bob=mv?Math.abs(Math.sin(ph))*2.6*k/2:0,sx=1+(mv?Math.sin(ph*2)*.04:Math.sin(t*2.1)*.02),sy=1+(mv?-Math.sin(ph*2)*.05:Math.sin(t*2.1+1.2)*.03);
@@ -4880,7 +4880,7 @@ let BPG=0;function heroM(t){P.tc.mn=1;if(t==16&&!gmIsM())t=11;const h=$('hero'),
  const old=$('zc'),sc=old?old.scrollTop:0;window._tsl=$('ztabs')?$('ztabs').scrollLeft:(window._tsl||0);h.hidden=false;let body='',det='';
  if(HT==0){flNorm();const OBL=OV===2?(P.storage||[]).map((x,i)=>({...x,rc:'#d9b35a',cat:x.type==='item'?'Equipo':'Recurso',d:x.type==='item'?'Objeto guardado en el almacén general.':'Recurso guardado en el almacén general.',b:[['whout'+i,'↩️ Retirar']]})):OV===3?(P.wagon||[]).map((x,i)=>({...x,rc:'#d9a441',cat:'Botín del carruaje',d:'Botín guardado sin penalización de valor.',b:[['wgout'+i,'🧺 Retirar a loot']]})):objList(OV),PGS=30,TOT=Math.max(PGS,Math.ceil(OBL.length/PGS)*PGS),NP=TOT/PGS,UN=ov=>objList(ov).reduce((a,x)=>a+(typeof x.q=='number'&&!x.nc?x.q:0),0),qf=q=>typeof q=='number'&&q>=10000?fmt(q):q;OBN=TOT;OPG=Math.max(0,Math.min(OPG,NP-1));if(SEL>=TOT||SEL<0)SEL=OPG*PGS;
   const sl=(i,x)=>x?`<button class="zs q ob${SEL==i?' sel':''}" style="--rc:${x.rc||'#d9a441'}" data-h="sel${i}" title="${hx(x.n)}">${x.img?zimg(x.img):'<span class="oe">'+(x.ic||'')+'</span>'}<b class="qt">${qf(x.q)}</b></button>`:`<button class="zs ob${SEL==i?' sel':''}" data-h="sel${i}"><span class="ph"></span></button>`;
-  body=`<div class="pnl obw"><div class="eqh obh"><span class="lvt"><button data-h="ov0" class="${OV?'':'on'}">🎒 Mochila de uso <small>${UN(0)}</small></button><button data-h="ov1" class="${OV===1?'on':''}">🧺 Mochila de loot <small>${UN(1)}</small></button><button data-h="ov2" class="${OV===2?'on':''}">🏦 Almacén general <small>${(P.storage||[]).length}</small></button>${merchantLootAccess()?`<button data-h="ov3" class="${OV===3?'on':''}">🛒 Carruaje <small>${(P.wagon||[]).length}</small></button>`:''}${OV===2?'<button data-h="whdeposit">📥 Guardar recursos</button>':''}</span><span class="pgr"><span class="obc">${OBL.length}/${TOT} espacios</span>${NP>1?`<button data-h="op${OPG-1}"${OPG?'':' disabled'}>‹</button><small>${OPG+1}/${NP}</small><button data-h="op${OPG+1}"${OPG<NP-1?'':' disabled'}>›</button>`:''}</span></div>${OV===3?'<div class="mkc" style="display:flex;align-items:center;gap:12px;margin:8px 0;padding:8px"><img src="merchant_wagon.png" alt="Carruaje del mercader" style="width:112px;height:78px;object-fit:contain;image-rendering:pixelated"><div><b>🛒 Almacén del carruaje</b><br><small>Botín protegido · valor completo · independiente del almacén general</small></div></div>':''}<div class="zg bag ob">${Array.from({length:PGS},(_,j)=>{const i=OPG*PGS+j;return sl(i,OBL[i])}).join('')}</div></div>`;
+  body=`<div class="pnl obw"><div class="eqh obh"><span class="lvt"><button data-h="ov0" class="${OV?'':'on'}">🎒 Mochila de uso <small>${UN(0)}</small></button><button data-h="ov1" class="${OV===1?'on':''}">🧺 Mochila de loot <small>${UN(1)}</small></button><button data-h="ov2" class="${OV===2?'on':''}">🏦 Almacén general <small>${(P.storage||[]).length}</small></button>${merchantLootAccess()?`<button data-h="ov3" class="${OV===3?'on':''}">🛒 Carruaje <small>${(P.wagon||[]).length}</small></button>`:''}${OV===2?'<button data-h="whdeposit">📥 Guardar recursos</button>':''}${(OV===1||OV===3)&&merchantLootAccess()&&P.lb.length?'<button data-h="wgalldep">🛒 Guardar todo en carruaje</button>':''}</span><span class="pgr"><span class="obc">${OBL.length}/${TOT} espacios</span>${NP>1?`<button data-h="op${OPG-1}"${OPG?'':' disabled'}>‹</button><small>${OPG+1}/${NP}</small><button data-h="op${OPG+1}"${OPG<NP-1?'':' disabled'}>›</button>`:''}</span></div>${OV===3?'<div class="mkc" style="display:flex;align-items:center;gap:12px;margin:8px 0;padding:8px"><img src="merchant_wagon.png" alt="Carruaje del mercader" style="width:112px;height:78px;object-fit:contain;image-rendering:pixelated"><div><b>🛒 Almacén del carruaje</b><br><small>Botín protegido · valor completo · independiente del almacén general</small></div></div>':''}<div class="zg bag ob">${Array.from({length:PGS},(_,j)=>{const i=OPG*PGS+j;return sl(i,OBL[i])}).join('')}</div></div>`;
   const o=OBL[SEL];det=OV===3?(o?`<b>${hx(o.n)}</b> ×${o.q}<br><small>Almacén exclusivo del carruaje. El objeto conserva su valor de botín; retirarlo no aplica la penalización del 95%.</small><div class="row2"><button data-h="wgout${SEL}">🧺 Retirar a mochila de loot</button></div>`:'<small>El carruaje está vacío. Pasa aquí el botín desde la mochila de loot.</small>'):OV===2?(o?`<b>${hx(o.n)}</b> ×${o.q}<br><small>Almacén general gratuito e ilimitado. En línea se guarda en el servidor.</small><div class="row2"><button data-h="whout${SEL}">↩️ Retirar a mochila</button>${merchantLootAccess()&&o.type==='item'&&o.item&&o.item.junk?`<button data-h="whlootout${SEL}">🧺 Pasar a mochila de loot</button>`:''}${(o.type==='item'||warehouseMarketKey(o.k))?`<button data-h="whpub${SEL}">📢 Vender en mercado</button>`:''}</div>`:'<small>Almacén general vacío. Guarda recursos y objetos aquí; no tiene límite de capacidad. En línea, el servidor conserva los objetos.</small>'):o?`<b>${o.n}</b> ×${o.q} <small style="color:${o.rc||'inherit'}">· ${o.cat||''}</small><br><small>${o.d}</small>${o.b&&o.b.length?`<div class="row2">${o.b.map(([a,l])=>`<button data-h="${a}">${l}</button>`).join('')}</div>`:''}`:(OBL.length?'<small>Casilla vacía.</small>':'<small>'+(OV?'La mochila de loot está vacía: aquí caen la carne, el pescado, los minerales y las pociones que sueltan los monstruos al farmear.':'Tu mochila de uso está vacía. Compra pociones en la Botica o cocina en la Carpa del Cocinero.')+'</small>')}
  else if(HT==1){const o=eqT(),nx=xpNeed(P.lv),PG=20,LST=LV?P.lb:P.bag,TOT=Math.max(LV?LCAP():BCAP(),LST.length),NP=Math.ceil(TOT/PG);if(LV&&SEL>=0&&SEL<1000)SEL=-1;if(!LV&&SEL>=1000)SEL=-1;BPG=Math.max(0,Math.min(BPG,NP-1));
   const elG=it=>{const r=resOf(it);return r?';border-color:'+ELCOL[r.e]+';box-shadow:0 0 12px '+ELCOL[r.e]+'99,inset 0 0 8px '+ELCOL[r.e]+'55':''},setSum=()=>{const rs={};for(let s=1;s<=5;s++){const it=P.eq[s],r=it&&resOf(it);if(r)rs[r.e]=(rs[r.e]||0)+r.p}const g=gearSk(),pt=Object.entries(rs).map(([e,p])=>'<span style="color:'+ELCOL[e]+'">'+ELI[e]+' −'+Math.min(45,p)+'% '+e+'</span>');if(g)pt.push('<span style="color:#c9b3ff">✨ +'+g+' pts '+hx(SKA[P.cls|0]||'habilidad')+'</span>');return pt.length?'<div class="eqset">'+pt.join('<br>')+'</div>':''},jwRow='<div class="jwr" title="Próximamente: joyería de Nv 10 a 1200">'+[['💍','Anillo'],['💍','Anillo'],['📿','Amuleto'],['✨','Pendientes']].map(a=>'<span class="jw"><i>'+a[0]+'</i><small>'+a[1]+'</small></span>').join('')+'<small class="jws">Joyería: próximamente</small></div>';
@@ -5010,6 +5010,7 @@ $('hero').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)
  else if(k.startsWith('tkb_')){const q=k.split('_'),op=q[1],kk=q[2];if(op=='sell'){window.MVW=1;window.MSL='t|'+kk;window.MCAT='all';MS=2;HT=8;heroM(8)}else vtAct(op+':'+kk).then(()=>heroM())}
  else if(/^whout\d+$/.test(k)){warehouseOut(+k.slice(5))}
  else if(/^whitem\d+$/.test(k)){warehouseItem(+k.slice(6));SEL=-1;window.MSL=''}
+ else if(k==='wgalldep'){wagonLootDepositAll();}
  else if(/^wgdep\d+$/.test(k)){wagonLootDeposit(+k.slice(5));}
  else if(/^wgout\d+$/.test(k)){wagonLootWithdraw(+k.slice(5));}
  else if(/^whlootdep\d+$/.test(k)){warehouseLootDeposit(+k.slice(9));}
@@ -5373,7 +5374,59 @@ function usePotSp(l,t){if(!PLN[l]||!potOk(l))return;const mp=PLN[l].mp?1:0,k=pot
 function whTx(){return 'wh'+Date.now().toString(36)+Math.random().toString(36).slice(2,10)}
 async function warehouseRefresh(){if(!MON())return;try{const r=await SRNET.rpc({t:'x',op:'wh.list'});if(r&&r.ok&&Array.isArray(r.l)){P.storage=r.l;save();if(OV===2&&!$('hero').hidden)heroM()}}catch(e){toast('No se pudo sincronizar el almacén: '+String(e.message||''),3500)}}
 async function wagonRefresh(){if(!MON()||!merchantLootAccess())return;try{const r=await SRNET.rpc({t:'x',op:'wagon.list'});if(r&&r.ok&&Array.isArray(r.l)){P.wagon=r.l;save();if(OV===3&&!$('hero').hidden)heroM()}}catch(e){toast('No se pudo sincronizar el carruaje: '+String(e.message||''),3500)}}
-async function wagonLootDeposit(i){if(!merchantLootAccess())return toast('🔒 Solo Mercader con Licencia activa');const it=P.lb[i];if(!it||!it.junk)return toast('Solo puedes guardar botín de monstruos');if(!it.id)it.id=nid();const clean=cleanIt(it);if(!clean||!clean.id)return toast('Botín inválido');if(MON()){const tx=whTx();try{save();if(SRNET.flush)await SRNET.flush();let r=await SRNET.rpc({t:'x',op:'wagon.loot.deposit',item:clean,tx});if(!r||!r.ok){const msg=String(r&&r.e||'');if(/no sincronizado|inválido/i.test(msg)){/* v350: el guardado de personaje y el registro de propiedad pueden llegar en mensajes consecutivos. Reintentar una vez con el mismo tx evita carreras y no duplica el depósito. */if(SRNET.flush)await SRNET.flush();r=await SRNET.rpc({t:'x',op:'wagon.loot.deposit',item:clean,tx})}if(!r||!r.ok)throw new Error(r&&r.e||'No se pudo guardar')}P.wagon=Array.isArray(r.l)?r.l:P.wagon||[];const j=P.lb.findIndex(x=>x&&x.id===it.id);if(j>=0)P.lb.splice(j,1);save();toast('🛒 Botín guardado en el carruaje; conserva su valor');heroM()}catch(e){toast(String(e.message||'No se pudo guardar el botín'),4500)}return}P.wagon=Array.isArray(P.wagon)?P.wagon:[];if(P.wagon.some(x=>x&&x.item&&x.item.id===it.id))return toast('Ese botín ya está en el carruaje');P.wagon.push({k:clean.id,n:clean.n,q:1,type:'item',item:clean});P.lb.splice(i,1);save();toast('🛒 Botín guardado en el carruaje; conserva su valor');heroM()}
+async function wagonLootDeposit(i,quiet=false){
+ if(!merchantLootAccess()){if(!quiet)toast('🔒 Solo Mercader con Licencia activa');return false}
+ const it=P.lb[i];if(!it||!it.junk){if(!quiet)toast('Solo puedes guardar botín de monstruos');return false}
+ if(!it.id)it.id=nid();
+ const clean=cleanIt(it);
+ if(!clean||!clean.id){if(!quiet)toast('Botín inválido');return false}
+ /* Preservar junk/jv en cleanIt es esencial: el servidor los usa para distinguir botín de equipo normal. */
+ if(MON()){
+  const tx=whTx();
+  try{
+   save();
+   if(SRNET.flush)await SRNET.flush();
+   let r=await SRNET.rpc({t:'x',op:'wagon.loot.deposit',item:clean,tx});
+   if(!r||!r.ok){
+    const msg=String(r&&r.e||'');
+    if(/no sincronizado|inválido|no te pertenece/i.test(msg)){
+     /* Dejar que el guardado del personaje registre la propiedad antes de reintentar. */
+     if(SRNET.flush)await SRNET.flush();
+     await new Promise(resolve=>setTimeout(resolve,250));
+     r=await SRNET.rpc({t:'x',op:'wagon.loot.deposit',item:clean,tx});
+    }
+    if(!r||!r.ok)throw new Error(r&&r.e||'No se pudo guardar');
+   }
+   P.wagon=Array.isArray(r.l)?r.l:P.wagon||[];
+   const j=P.lb.findIndex(x=>x&&x.id===it.id);if(j>=0)P.lb.splice(j,1);
+   save();
+   if(!quiet)toast('🛒 Botín guardado en el carruaje; conserva su valor');
+   heroM();
+   return true;
+  }catch(e){if(!quiet)toast(String(e.message||'No se pudo guardar el botín'),4500);return false}
+ }
+ P.wagon=Array.isArray(P.wagon)?P.wagon:[];
+ if(P.wagon.some(x=>x&&x.item&&x.item.id===it.id)){if(!quiet)toast('Ese botín ya está en el carruaje');return false}
+ P.wagon.push({k:clean.id,n:clean.n,q:1,type:'item',item:clean});
+ P.lb.splice(i,1);save();
+ if(!quiet)toast('🛒 Botín guardado en el carruaje; conserva su valor');
+ heroM();return true;
+}
+async function wagonLootDepositAll(){
+ if(!merchantLootAccess())return toast('🔒 Solo Mercader con Licencia activa');
+ const initial=P.lb.length;
+ if(!initial)return toast('No hay botín para guardar');
+ let moved=0,failed=0;
+ /* De mayor a menor para que quitar un objeto no cambie los índices pendientes. */
+ for(let i=initial-1;i>=0;i--){
+  if(P.lb[i]&&P.lb[i].junk){
+   const ok=await wagonLootDeposit(i,true);
+   if(ok)moved++;else failed++;
+  }
+ }
+ toast('🛒 Guardar todo: '+moved+' objeto(s) guardado(s)'+(failed?' · '+failed+' no se pudieron guardar':'')+'.',5000);
+ heroM();
+}
 async function wagonLootWithdraw(i){if(!merchantLootAccess())return toast('🔒 Solo Mercader con Licencia activa');const x=(P.wagon||[])[i];if(!x||!x.item||!x.item.junk)return toast('Ese botín no está en el carruaje');if(P.lb.length>=LCAP())return toast('La mochila de loot está llena');if(MON()){try{const r=await SRNET.rpc({t:'x',op:'wagon.loot.withdraw',i,k:x.k,itemId:x.item.id,tx:whTx()});if(!r||!r.ok)throw new Error(r&&r.e||'No se pudo retirar');P.wagon=Array.isArray(r.l)?r.l:P.wagon;save();toast('🧺 Botín retirado del carruaje sin penalización');heroM()}catch(e){toast(String(e.message||'No se pudo retirar'),4500)}return}const it=cleanIt(x.item);if(!it||!it.id)return toast('Botín almacenado inválido');if(P.lb.some(y=>y&&y.id===it.id))return toast('Ese botín ya está en la mochila de loot');P.lb.push(it);P.wagon.splice(i,1);save();toast('🧺 Botín retirado del carruaje sin penalización');heroM()}
 function warehouseStore(k,n,q,type='res',item=null){
  q=Math.floor(Number(q)||0);k=String(k||'');if(!k||q<1||!Number.isSafeInteger(q))return 0;

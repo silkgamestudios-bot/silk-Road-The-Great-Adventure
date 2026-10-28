@@ -1,0 +1,8 @@
+Silk Road: The Great Adventure v352 — Halloween Left Walk Fix
+
+- Fixed the Halloween mage's left-facing animation. The custom 4x4 sprite sheet already has separate directional rows: row 1 faces left and row 2 faces right. Removed the extra horizontal flip that reversed the left-facing row.
+- Kept the existing directional row selection and two-frame walking animation.
+- Preserved v351 carriage loot fixes and the Save All button.
+- No mob/world synchronization changes.
+
+Validation: JavaScript syntax and ZIP integrity checked; live in-game movement still requires deployment testing.

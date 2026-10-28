@@ -1,0 +1,8 @@
+Silk Road: The Great Adventure v351 — Carriage Save All Fix
+
+- Fixed the root cause of the carriage's “Botín inválido” response: the client item sanitizer removed the `junk` flag before sending loot to the server. The sanitizer now preserves `junk` and the bounded `jv` value.
+- Added “Guardar todo en carruaje” to the Loot tab for Mercader characters with an active license. It deposits eligible loot one item at a time, in reverse index order, and reports successes/failures.
+- Improved the individual deposit retry path by flushing and briefly allowing the ownership sync to settle before retrying with the same transaction ID.
+- Kept server ownership checks and transaction idempotency; did not change mob/world systems.
+
+Validation: inline JavaScript, market.js and server.js syntax checks passed; ZIP integrity check passed. Live server testing is still required. Live server testing is still required.

@@ -1,0 +1,9 @@
+Silk Road: The Great Adventure v353 — Menú de apariencias
+
+- Añadido acceso directo “🎭 Apariencias” desde el menú de opciones y desde Stats.
+- El acceso abre la boutique completa, con los controles existentes para equipar o quitar.
+- Renombrada la entrada principal de Boutique para que sea fácil de localizar.
+- Añadida la pestaña “🎒 Mis apariencias”, que filtra skins y trajes ya desbloqueados.
+- Se conserva la boutique, la compra de skins, los filtros por clase y el guardado existente.
+
+Basado en v352 Halloween Left Walk Fix. No se han modificado las reglas del servidor ni los precios.

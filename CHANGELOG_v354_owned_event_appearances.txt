@@ -1,0 +1,8 @@
+Silk Road: The Great Adventure v354 — Apariencias desbloqueadas
+
+- La pestaña “Mis apariencias” ahora incluye también los atuendos de evento que el jugador ya consiguió.
+- Los atuendos de evento muestran su estado y permiten equipar/quitar desde el mismo apartado, usando el manejador existente.
+- El contador de apariencias incluye los atuendos de evento desbloqueados.
+- No se cambiaron precios, recompensas, datos de cuentas ni operaciones del servidor.
+
+Basado en v353 Appearance Menu. Validación realizada: comprobación sintáctica de los scripts JavaScript incluidos y externos. No sustituye una prueba de juego conectado al servidor.

@@ -1,0 +1,19 @@
+Silk Road · v355 · Herramientas de premios y audio
+
+1) Zona GM > Oro y premios > Entregar objeto
+   - El master puede elegir jugador, ranura de equipo, rareza (Común, Raro, Épico, Legendario), nivel de objeto, mejora, durabilidad y cantidad (1–20).
+   - La entrega se realiza por el servidor mediante el sistema de entregas existente, con IDs únicos por pieza.
+   - Solo master; se exige jugador válido y confirmación. Cada operación queda registrada en el historial GM.
+   - Los premios pueden entregarse a jugadores conectados o desconectados a través de la cola de entregas.
+
+2) Opciones > Silenciar todo / Activar audio
+   - Un control combinado permite silenciar o reactivar música y efectos de sonido en PC y móvil.
+   - La preferencia de efectos se guarda en el dispositivo; la música se conserva con los ajustes de la partida.
+   - El botón se muestra dentro de la cuadrícula adaptable de Opciones.
+
+Validación realizada:
+- node --check para server.js y store.js.
+- Sintaxis revisada en todos los bloques JavaScript inline de play.html.
+- ZIP verificado con unzip -t.
+
+Pendiente de prueba funcional en servidor desplegado: entrega real a un jugador conectado/desconectado y comprobación visual en PC/Android.

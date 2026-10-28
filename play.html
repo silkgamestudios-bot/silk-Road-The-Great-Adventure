@@ -4502,14 +4502,14 @@ function skB(){const q=P.bsk&&BSK[P.bsk];if(!q||P.skin||q.c!=P.cls||!P.bown.incl
 function TJB(){const q=P.tj&&TRJ[P.tj];if(!q||P.skin||q.c!=P.cls||!P.bown.includes(P.tj))return TJZ;const o=Object.assign({},TJZ);o[q.bn[0]]=q.bn[1]/100;return o}
 function skDefM(e){return skDefM0(e)*(1-TJB().df)*(1-gearRes(e))}
 function skDefM0(e){const b=skB();if(!b.df&&!b.er&&!b.pr)return 1;const r=b.df+((e&&(e.boss||e.dg||e.v||e.alpha))?b.er:0);let m=1-Math.min(25,r)/100;if(b.pr&&Math.random()<b.pr/100){m*=.5;if(FT.length<80)FT.push({x:P.x,y:P.y-30,t:.9,d:0,o:0,z:13,k:'dm',s:'🛡️ Bloqueo',c:'#9fd8ff'})}return m}
-function spBS(id,x,y,k,flip,fr){const q=BSK[id];if(!q)return 0;const w=16*k;g.save();g.translate(Math.round(x),Math.round(y));if(flip)g.scale(-1,1);g.imageSmoothingEnabled=false;if(id===HAL_SKIN_ID&&HAL_IMG.complete&&HAL_IMG.naturalWidth){g.drawImage(HAL_IMG,(fr?1:0)*51,0,51,51,-w/2,-w/2,w,w)}else{if(!BSP.complete||!BSP.naturalWidth){g.restore();return 0}g.drawImage(BSP,(q.c*2+(fr?1:0))*16,q.t*16,16,16,-w/2,-w/2,w,w)}g.restore();return 1}
+function spBS(id,x,y,k,flip,fr){const q=BSK[id];if(!q)return 0;const w=16*k;g.save();g.translate(Math.round(x),Math.round(y));if(flip)g.scale(-1,1);g.imageSmoothingEnabled=false;if(id===HAL_SKIN_ID&&HAL_IMG.complete&&HAL_IMG.naturalWidth){g.drawImage(HAL_IMG,(fr?1:0)*51,0,51,51,-w*.72,-w*.72,w*1.44,w*1.44)}else{if(!BSP.complete||!BSP.naturalWidth){g.restore();return 0}g.drawImage(BSP,(q.c*2+(fr?1:0))*16,q.t*16,16,16,-w/2,-w/2,w,w)}g.restore();return 1}
 
 /* v151: skins base (16x16, 2 poses de frente): animación procedural completa. Camina con rebote y balanceo, mira a izquierda/derecha (voltea),
    de espaldas se oscurece un poco, respira en reposo, se lanza al atacar, parpadea al recibir daño y cae al morir. */
 let BSAT=-9,BSAL=0;
 function bsaSt(now){if(P.cd>BSAL+.02)BSAT=now;BSAL=P.cd||0;return{fl:P.face<0,mov:P.mov&&!(RIDE&&petM()),dir:P.dir||'down',run:runOn(),t:now,hit:P.hit>0,atk:BSAT,dead:P.hp<=0}}
 function spBSA(id,x,y,k,o){const q=BSK[id];if(!q)return 0;const w=16*k,t=o.t,rate=o.run?9:6.5,mv=!!o.mov;
- if(id===HAL_SKIN_ID&&HAL_IMG.complete&&HAL_IMG.naturalWidth){const row=({'down':0,'left':1,'right':2,'up':3})[o.dir]??0,fr=mv?(Math.floor(t*rate)&1):0;const ph=t*rate*Math.PI,bob=mv?Math.abs(Math.sin(ph))*2.6*k/2:0;g.save();g.translate(Math.round(x),Math.round(y+w/2-bob));if(o.dead){g.rotate((o.fl?-1:1)*1.45);g.translate(0,-w*.12)}else if(o.dir==='left')g.scale(-1,1);g.imageSmoothingEnabled=false;if(o.hit)g.filter='brightness(1.9) sepia(1) saturate(4) hue-rotate(-25deg)';else if(o.dir==='up')g.filter='brightness(.72)';g.drawImage(HAL_IMG,fr*51,row*51,51,51,-w/2,-w,w,w);g.restore();return 1}
+ if(id===HAL_SKIN_ID&&HAL_IMG.complete&&HAL_IMG.naturalWidth){const row=({'down':0,'left':1,'right':2,'up':3})[o.dir]??0,fr=mv?(Math.floor(t*rate)&1):0;const ph=t*rate*Math.PI,bob=mv?Math.abs(Math.sin(ph))*2.6*k/2:0;g.save();g.translate(Math.round(x),Math.round(y+w/2-bob));if(o.dead){g.rotate((o.fl?-1:1)*1.45);g.translate(0,-w*.12)}else if(o.dir==='left')g.scale(-1,1);g.imageSmoothingEnabled=false;if(o.hit)g.filter='brightness(1.9) sepia(1) saturate(4) hue-rotate(-25deg)';else if(o.dir==='up')g.filter='brightness(.72)';g.drawImage(HAL_IMG,fr*51,row*51,51,51,-w*.72,-w*1.38,w*1.44,w*1.44);g.restore();return 1}
  if(!BSP.complete||!BSP.naturalWidth)return 0;
  const ph=t*rate*Math.PI,fr=mv?(Math.floor(t*rate)&1):(Math.floor(t*1.3)&1);
  const bob=mv?Math.abs(Math.sin(ph))*2.6*k/2:0,sx=1+(mv?Math.sin(ph*2)*.04:Math.sin(t*2.1)*.02),sy=1+(mv?-Math.sin(ph*2)*.05:Math.sin(t*2.1+1.2)*.03);
@@ -4692,7 +4692,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v346';let UPD=null,RSN=0;
+const SR_V='sr-v347';let UPD=null,RSN=0;
 function updGo(){try{save()}catch(e){}
  /* v236: desregistra el service worker, borra cachés y recarga con un parámetro nuevo para saltarse cualquier copia vieja (en celulares a veces "no pasaba nada") */
  let done=0;const go=()=>{if(done)return;done=1;try{const u=new URL(location.href);u.searchParams.set('v',SR_V);u.searchParams.set('r',String(Date.now()));location.replace(u.toString())}catch(e){location.reload()}};
@@ -7807,28 +7807,28 @@ document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.c
 <div id="halPromo" aria-label="Oferta de Halloween" hidden>
  <button id="halPromoClose" class="halX" aria-label="Cerrar promoción">×</button>
  <div class="halHead"><span>🎃 OFERTA DE HALLOWEEN</span><b>LIMITADA</b></div>
- <div class="halBody"><div class="halArt"><img src="/skin_halloween_maga.png" alt="Bruja de la Noche Violeta"></div><div class="halInfo"><small>SKIN EXCLUSIVA · MAGO</small><h3>Bruja de la Noche Violeta</h3><p class="halStats">🔮 Magia +2% · 👟 Velocidad +1% · 🛡️ Armadura +2 PV</p><p class="halDesc">Un poder violeta para dominar la noche.</p><button id="halBuyGem" class="halBuy">💎 Comprar por 7 Gemas</button><button id="halBuyPump" class="halBuy alt">🎃 5 Gemas + 300 Calabazas</button><small class="halFoot">La skin se guarda en Apariencias de la tienda de Gemas.</small></div></div>
+ <div class="halBody"><div class="halArt"><img src="/skin_halloween_preview.png" alt="Bruja de la Noche Violeta"></div><div class="halInfo"><small>SKIN EXCLUSIVA · MAGO</small><h3>Bruja de la Noche Violeta</h3><p class="halStats">🔮 Magia +2% · 👟 Velocidad +1% · 🛡️ Armadura +2 PV</p><p class="halDesc">Un poder violeta para dominar la noche.</p><button id="halBuyGem" class="halBuy">💎 Comprar por 7 Gemas</button><button id="halBuyPump" class="halBuy alt">🎃 5 Gemas + 300 Calabazas</button><small class="halFoot">La skin se guarda en Apariencias de la tienda de Gemas.</small></div></div>
  <div class="halRibbon">💎 LAS GEMAS AZULES SIEMPRE DESTACAN</div>
 </div>
 <style>
-#halPromo{position:fixed;right:14px;top:112px;width:min(390px,calc(100vw - 24px));z-index:99990;background:linear-gradient(155deg,#10152e 0%,#291342 52%,#101d3c 100%);border:2px solid #52bfff;border-radius:16px;box-shadow:0 0 0 2px #152d53,0 0 24px #4ab8ff66,0 14px 45px #000b;color:#f7f2ff;overflow:hidden;font-family:Georgia,serif}
+#halPromo{position:fixed;right:12px;top:132px;width:min(420px,calc(100vw - 24px));z-index:2147483000;background:linear-gradient(155deg,#10152e 0%,#291342 52%,#101d3c 100%);border:2px solid #52bfff;border-radius:16px;box-shadow:0 0 0 2px #152d53,0 0 24px #4ab8ff66,0 14px 45px #000b;color:#f7f2ff;overflow:hidden;font-family:Georgia,serif}
 #halPromo[hidden]{display:none!important}.halX{position:absolute;right:7px;top:7px;z-index:2;border:1px solid #82d8ff;background:#101a35;color:#fff;border-radius:9px;width:30px;height:30px;font-size:23px;line-height:20px;cursor:pointer}
 .halHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 43px 10px 13px;background:linear-gradient(90deg,#3c1760,#173e77);border-bottom:1px solid #61caff;font-weight:bold;font-size:13px;color:#fff}
 .halHead b{font:900 9px Arial,sans-serif;letter-spacing:1px;background:#ff7b27;color:#210d20;border-radius:5px;padding:5px}
-.halBody{display:flex;gap:12px;padding:12px;align-items:center}.halArt{width:104px;height:120px;flex:0 0 104px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#6540a5 0,#201b46 65%,#10162e 100%);border:1px solid #7c6aff;border-radius:12px;overflow:hidden}
-.halArt img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 8px #b15cff)}
+.halBody{display:flex;gap:12px;padding:12px;align-items:center}.halArt{width:132px;height:146px;flex:0 0 132px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#6540a5 0,#201b46 65%,#10162e 100%);border:1px solid #7c6aff;border-radius:12px;overflow:hidden}
+.halArt img{width:100%;height:100%;object-fit:contain;transform:scale(1.12);image-rendering:pixelated;filter:drop-shadow(0 0 8px #b15cff)}
 .halInfo{min-width:0;flex:1}.halInfo small{color:#91dcff;font:700 9px Arial,sans-serif;letter-spacing:1px}.halInfo h3{font-size:17px;line-height:1.1;margin:5px 0 8px;color:#ffe0ff;text-shadow:0 0 9px #c34fff}
 .halStats{font:700 11px Arial,sans-serif;color:#bfeaff;line-height:1.5;margin:0 0 5px}.halDesc{font:12px Arial,sans-serif;color:#e2d9f9;margin:0 0 9px}
 .halBuy{width:100%;border:1px solid #78d8ff;border-radius:9px;padding:9px 7px;margin:3px 0;background:linear-gradient(#2f9df4,#1458ba);box-shadow:0 0 12px #168dff55;color:white;font-weight:900;font-size:12px;cursor:pointer}
 .halBuy.alt{background:linear-gradient(#8e49d8,#5121a2);border-color:#d4a4ff}.halFoot{display:block;margin-top:4px;color:#b9b9dc;font:10px Arial,sans-serif;line-height:1.3}
 .halRibbon{text-align:center;padding:7px 5px;background:#08142c;border-top:1px solid #355b94;color:#54c6ff;font:900 9px Arial,sans-serif;letter-spacing:1px}
-@media(max-width:760px){#halPromo{top:auto;right:8px;bottom:8px;width:min(360px,calc(100vw - 16px));max-height:48vh;overflow:auto}.halBody{gap:8px;padding:9px}.halArt{width:82px;height:100px;flex-basis:82px}.halInfo h3{font-size:15px}.halBuy{padding:8px 5px}}
+@media(max-width:760px){#halPromo{top:auto;right:8px;bottom:8px;width:min(390px,calc(100vw - 16px));max-height:72vh;overflow:auto}.halBody{gap:8px;padding:9px}.halArt{width:104px;height:118px;flex-basis:104px}.halInfo h3{font-size:15px}.halBuy{padding:8px 5px}}
 </style>
 <script>
 (()=>{const $h=id=>document.getElementById(id),box=$h('halPromo');if(!box)return;let shown=false;
- function maybe(){const hero=$h('hero');if(shown||!window.P||!P.name||!hero||hero.hidden)return;shown=true;box.hidden=false}
- $h('halPromoClose').onclick=()=>{box.hidden=true;try{sessionStorage.setItem('sr_hal_promo_closed','1')}catch(e){}};
- function closed(){try{return sessionStorage.getItem('sr_hal_promo_closed')==='1'}catch(e){return false}}
+ function maybe(){if(shown||!window.P||!P.name)return;shown=true;box.hidden=false}
+ $h('halPromoClose').onclick=()=>{box.hidden=true;try{sessionStorage.setItem('sr_hal_promo_closed_v347','1')}catch(e){}};
+ function closed(){try{return sessionStorage.getItem('sr_hal_promo_closed_v347')==='1'}catch(e){return false}}
  const orig=maybe;function maybe2(){if(closed()||(window.P&&P.bown&&P.bown.includes(HAL_SKIN_ID)))return;orig()}setInterval(maybe2,1200);
  async function buy(mode){if(!window.P||!P.name){return}const btn=mode==='gem'?$h('halBuyGem'):$h('halBuyPump');btn.disabled=true;const old=btn.textContent;btn.textContent='Procesando…';
  try{

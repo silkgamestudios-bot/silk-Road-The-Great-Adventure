@@ -1,0 +1,11 @@
+SILK ROAD: THE GREAT ADVENTURE — v3.47
+Halloween Mage Skin Visibility Fix
+
+- Increased the in-world Halloween Mage skin rendering scale by 44%, preserving nearest-neighbor pixel art.
+- Added a single-frame preview image for the promo; the panel no longer displays the entire 4x4 sprite sheet as a tiny character.
+- Enlarged the promo art and moved the panel to the right side below the top HUD/minimap area.
+- Fixed popup trigger: it now appears after the player profile/name is loaded and no longer incorrectly depends on the hero menu being hidden.
+- Changed the session dismissal key and cache version to sr-v347 so the previous hidden/dismissed state and cached assets do not suppress the updated promo.
+- Mobile layout uses a bottom-right panel with a larger character preview.
+
+Validation: ZIP integrity and JavaScript syntax checks performed. Live deployment and in-game rendering still require verification after publishing.

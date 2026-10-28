@@ -1,0 +1,10 @@
+SILK ROAD: THE GREAT ADVENTURE — v3.48
+
+- Rediseño de la promoción de la Bruja de la Noche Violeta para verse en la parte derecha, debajo del minimapa, con botón de cierre.
+- La promoción aparece al entrar al mundo con un personaje y no aparece si ya se posee la skin. El cierre se conserva durante la sesión actual.
+- Oferta permanente: compra por 7 Gemas azules. La skin sigue listada en Apariencias después de Halloween.
+- Oferta de evento: 5 Gemas + 300 Calabazas; se oculta fuera de las fechas de Halloween y el servidor también valida la fecha antes de cobrar.
+- Bonificaciones aplicadas tanto en el catálogo cliente como en el catálogo del servidor: Vida +15 PV, Defensa +3%, Resistencia elemental +2%, Golpe mágico +8%, Poder elemental +2%, Crítico +5%.
+- Versión de caché actualizada a sr-v348 cuando el proyecto incluye service worker.
+
+Pruebas locales: node --check en server.js, store.js y catalog.js; comprobación de sintaxis de scripts inline de play.html; integridad ZIP. No se ha probado la compra en un Render real.

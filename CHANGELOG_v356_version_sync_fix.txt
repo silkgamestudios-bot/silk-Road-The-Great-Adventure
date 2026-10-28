@@ -1,0 +1,19 @@
+Silk Road: The Great Adventure v356 — Corrección de versión y actualización
+
+Problema encontrado en v355:
+- play.html declaraba SR_V='sr-v350', por eso la interfaz identificaba el cliente como versión 350.
+- sw.js declaraba V='sr-v352'; server.js lee esa constante para anunciar BUILD a los clientes conectados.
+- La discrepancia podía mostrar números distintos y hacer que la actualización no se coordinara correctamente.
+
+Corrección:
+- play.html y sw.js ahora declaran sr-v356.
+- server.js permanece sin cambios y anunciará v356 al desplegarse junto con este sw.js.
+- Se mantienen los cambios de v353, v354 y v355 incluidos en el paquete base.
+
+Importante para publicar:
+- Desplegar el paquete completo, incluido server.js y sw.js, en el mismo servicio/entorno.
+- Si solo se actualiza el HTML o solo se publica el frontend, el servidor antiguo seguirá anunciando su propia versión.
+- Tras desplegar, verificar el log de build/arranque y probar con una cuenta de prueba en PC y móvil.
+
+Validación local: comprobar sintaxis de JavaScript, coincidencia de constantes y ZIP íntegro.
+No se ha probado el servicio de producción desde este entorno.

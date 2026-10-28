@@ -1,0 +1,11 @@
+Sprite Road v3.45 — Carruaje del Mercader y almacén de botín independiente
+
+- Añadido un almacén del carruaje separado del almacén general.
+- El botón de la mochila de loot ahora ofrece «Guardar en carruaje» para Mercaderes con licencia.
+- El botín se mueve como el mismo objeto, conservando su ID y sus datos; no se convierte en objeto de mochila ni recibe la penalización del 95%.
+- Añadidas operaciones de servidor idempotentes para listar, guardar y retirar botín del carruaje, con comprobación de Mercader + licencia y propiedad del objeto.
+- Añadida una pestaña de carruaje con el sprite pixel art proporcionado, recortado y con fondo transparente.
+- Retirar botín del carruaje lo devuelve a la mochila de loot, sin penalización.
+- Se mantiene separado del almacén general.
+
+Nota: la selección de venta directa del carruaje en la interfaz del NPC aún requiere una integración posterior; por ahora se puede retirar el botín a la mochila de loot y venderlo desde el NPC como antes.

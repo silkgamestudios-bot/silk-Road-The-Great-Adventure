@@ -7,10 +7,10 @@ if(GATED){try{document.documentElement.classList.add('sr-sync');const st=documen
 let uid=null,tok=null,ses=LS.get('sr_ses'),idRes,idP=new Promise(r=>idRes=r),me={};
 let LOC0=LS.get('silkroad_v1'),first0=1;   /* v237: copia del aparato tal como estaba al abrir la página, antes de que el juego (o el servidor) la modifique */
 if(!GATED){uid=LS.get('sr_uid');tok=LS.get('sr_tok');if(!uid){const r=()=>crypto.randomUUID().replace(/-/g,'');uid='p'+r().slice(0,20);tok=r();LS.set('sr_uid',uid);LS.set('sr_tok',tok)}idRes(uid)}
-let ws,q=[],subs={},rq={},sid=0,rid=0,ok=0;
+let ws,q=[],subs={},rq={},sid=0,rid=0,ok=0,pendingPre=null;
 const raw=m=>{const s=JSON.stringify(m);if(ws&&ws.readyState==1&&ok)ws.send(s);else q.push(s)};
 function conn(){ws=new WebSocket(SERVER);ok=0;
- ws.onopen=()=>{ws.send(JSON.stringify(GATED?(ses?{t:'hi',ses}:{t:'hi',noauth:1}):{t:'hi',uid,tok}))};
+ ws.onopen=()=>{ws.send(JSON.stringify(GATED?(ses?{t:'hi',ses}:{t:'hi',noauth:1}):{t:'hi',uid,tok}));if(pendingPre){const m=pendingPre;pendingPre=null;try{ws.send(JSON.stringify(m))}catch(e){pendingPre=m}}};
  ws.onmessage=e=>{got=1;let m;try{m=JSON.parse(e.data)}catch(x){return}
   if(m.t&&m.t[0]=='w'){SRNET.onmsg&&SRNET.onmsg(m)}
   else if(m.t=='ent'){G(g=>g.ent(m.ent))}
@@ -21,7 +21,7 @@ function conn(){ws=new WebSocket(SERVER);ok=0;
   else if(m.t=='kick'){ok=0;try{ws.onclose=null;ws.close()}catch(x){}document.body.innerHTML='<div style="padding:40px;color:#f5e6c4;font:20px Georgia;text-align:center;background:#0d1526;height:100vh">'+(m.e||'Sesión abierta en otro dispositivo')+'<br><br><button onclick="location.reload()" style="font-size:18px;padding:10px 20px">Volver a entrar</button></div>'}
   else if(m.t=='auth'){ses=null;LS.del('sr_ses');showLogin(m.e)}
   else if(m.t=='rec'){recMsg(m)}
-  else if(m.t=='ok'){if(m.ent)G(g=>g.ent(m.ent));setTimeout(()=>G(g=>g.onok&&g.onok()),800);if(GATED){uid=m.uid;me=m;if(m.ses){ses=m.ses;LS.set('sr_ses',ses)}if(m.uname)LS.set('sr_lu',m.uname);hideLogin();idRes(uid);chipUpdate();setTimeout(()=>{try{document.documentElement.classList.remove('sr-sync')}catch(e){}},30000);cloudSync()}ok=1;SRNET.onopen&&SRNET.onopen();for(const s in subs)ws.send(JSON.stringify({t:'sub',sid:+s,col:subs[s].c,w:subs[s].w}));q.splice(0).forEach(s=>ws.send(s))}
+  else if(m.t=='ok'){stopWt();pendingPre=null;if(m.ent)G(g=>g.ent(m.ent));setTimeout(()=>G(g=>g.onok&&g.onok()),800);if(GATED){uid=m.uid;me=m;if(m.ses){ses=m.ses;LS.set('sr_ses',ses)}if(m.uname)LS.set('sr_lu',m.uname);hideLogin();idRes(uid);chipUpdate();setTimeout(()=>{try{document.documentElement.classList.remove('sr-sync')}catch(e){}},30000);cloudSync()}ok=1;SRNET.onopen&&SRNET.onopen();for(const s in subs)ws.send(JSON.stringify({t:'sub',sid:+s,col:subs[s].c,w:subs[s].w}));q.splice(0).forEach(s=>ws.send(s))}
   else if(m.t=='snap'){const b=subs[m.sid];if(b){b.docs=m.docs||{};b.cb(snap(b.docs))}}
   else if(m.t=='ch'){const b=subs[m.sid];if(b){if(m.d)b.docs[m.id]=m.d;else delete b.docs[m.id];b.cb(snap(b.docs))}}
   else if(m.t=='r'){const p=rq[m.rid];if(p){delete rq[m.rid];m.ok?p.ok(m):p.no(new Error(m.e||'error'))}}};
@@ -44,7 +44,7 @@ window.claude=window.claude||{use:async k=>k=='db'?db:k=='user'?{id:()=>idP}:nul
 window.SRACC={get:()=>me,logout:()=>logout(),open:()=>accOpen(),state:()=>ST};
 /* ---- Inicio de sesión: usuario y contraseña (+ Google si está configurado) ---- */
 let ov=null,tab='in';let wt=null,cl=0;let got=0,cov=null,cT0=0;const stopWt=()=>{if(wt){clearTimeout(wt);wt=null}};
-const pre=m=>{if(ws&&ws.readyState==1){ws.send(JSON.stringify(m));return true}return false};
+const pre=m=>{if(ws&&ws.readyState==1){try{ws.send(JSON.stringify(m));return true}catch(e){pendingPre=m;return true}}pendingPre=m;return true};
 const CSS='width:100%;box-sizing:border-box;padding:11px 12px;margin:5px 0;border-radius:10px;border:2px solid #6b4a17;background:#0b1224;color:#f5e6c4;font:16px Georgia,serif';
 const BTN='width:100%;padding:12px;margin:8px 0 2px;border-radius:10px;border:0;background:linear-gradient(#e0434a,#b3262e);color:#fff;font:700 17px Georgia,serif;cursor:pointer;box-shadow:0 3px 0 #6f1319';
 const LNK='background:none;border:0;box-shadow:none;color:#ffd66b;font:14px Georgia,serif;text-decoration:underline;cursor:pointer;padding:6px';

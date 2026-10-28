@@ -113,61 +113,9 @@ OPS['wa.get']=u=>({ok:1,wa:(E.acct(u).wa)||''});
 const pkDay=()=>new Date(Date.now()-4*36e5).toISOString().slice(0,10);
 setInterval(()=>{try{const n=ONL.size;DB.cfg=DB.cfg||{};const P=DB.cfg.pk=DB.cfg.pk||{d:{},all:{n:0,t:0}},k=pkDay(),c=P.d[k]||(P.d[k]={n:0,t:0});if(n>c.n){c.n=n;c.t=Date.now();dirty=1;if(n>P.all.n){P.all={n,t:Date.now()};log('[online] nuevo pico de jugadores conectados: '+n)}}const ks=Object.keys(P.d).sort();if(ks.length>90)for(const q of ks.slice(0,ks.length-90))delete P.d[q]}catch(e){}},30000);
 OPS['adm.peak']=u=>{if(!isMaster(u))return{e:'operación desconocida'};const P=(DB.cfg||{}).pk||{d:{},all:{n:0,t:0}};return{ok:1,now:ONL.size,max:MAXP,all:P.all,days:Object.keys(P.d).sort().reverse().slice(0,14).map(k=>({d:k,n:P.d[k].n,t:P.d[k].t}))}};
-/* v357: entrega GM de equipo validada por servidor, disponible también para jugadores desconectados. */
-OPS['adm.item']=(u,m)=>{
- if(!isMaster(u))return{e:'operación desconocida'};
- const name=String(m.name||'').trim().slice(0,80);if(!name)return{e:'Selecciona el personaje'};
- const id=E.uidByName(name);if(!id)return{e:'No encontré al personaje "'+name+'"'};
- const sl=Math.floor(Number(m.sl)),r=Math.floor(Number(m.r)),t=Math.floor(Number(m.t)),li=Math.floor(Number(m.li)),du=Math.floor(Number(m.du)),q=Math.floor(Number(m.q));
- if(!Number.isInteger(sl)||sl<0||sl>9)return{e:'Ranura no válida'};
- if(!Number.isInteger(r)||r<0||r>3)return{e:'Rareza no válida'};
- if(!Number.isInteger(t)||t<0||t>4)return{e:'Nivel del objeto no válido'};
- if(!Number.isInteger(li)||li<0||li>9)return{e:'Mejora no válida'};
- if(!Number.isInteger(du)||du<1||du>100)return{e:'Durabilidad no válida'};
- if(!Number.isInteger(q)||q<1||q>20)return{e:'Cantidad entre 1 y 20'};
- const k=m.k==null?null:Math.floor(Number(m.k));if(k!==null&&(!Number.isInteger(k)||k<0||k>7))return{e:'Clase de arma no válida'};
- let saveObj;try{saveObj=JSON.parse(fs.readFileSync(savePath(id),'utf8'))}catch(e){return{e:'El personaje todavía no tiene una partida guardada en el servidor'}}
- let v;try{v=JSON.parse(saveObj.d)}catch(e){return{e:'La partida guardada está dañada; no se modificó'}};
- if(!v||typeof v!=='object')return{e:'Partida no válida'};
- v.bag=Array.isArray(v.bag)?v.bag:[];
- if(v.bag.length+q>500)return{e:'La mochila no tiene espacio suficiente para ese premio'};
- const items=[];for(let i=0;i<q;i++){
-  const it={id:crypto.randomBytes(8).toString('hex'),sl,t,li,r,du,up:li,n:'Recompensa del Master'};
-  if(k!==null&&sl===0)it.k=k;
-  v.bag.push(it);items.push(it.id);
- }
- saveObj.d=JSON.stringify(v);saveObj.ts=Date.now();
- try{fs.writeFileSync(savePath(id)+'.tmp',JSON.stringify(saveObj));fs.renameSync(savePath(id)+'.tmp',savePath(id))}catch(e){try{fs.unlinkSync(savePath(id)+'.tmp')}catch(_){}return{e:'No se pudo guardar el premio; inténtalo de nuevo'}}
- const audit={at:Date.now(),by:u,to:id,nm:String(E.acct(id).nm||name).slice(0,40),q,sl,r,t,li,du,k:k===null?null:k};
- DB.cfg=DB.cfg||{};DB.cfg.gmItemLog=Array.isArray(DB.cfg.gmItemLog)?DB.cfg.gmItemLog:[];DB.cfg.gmItemLog.push(audit);if(DB.cfg.gmItemLog.length>500)DB.cfg.gmItemLog.splice(0,DB.cfg.gmItemLog.length-500);dirty=1;
- log('[GM ITEM] '+u+' entregó '+q+' objeto(s) [slot='+sl+', rareza='+r+', tier='+t+', mejora='+li+'] a '+id);
- const w=ONL.get(id);if(w){try{w.send(JSON.stringify({t:'bad',e:'Has recibido un premio del Master. Vuelve a entrar para cargarlo de forma segura.'}));setTimeout(()=>{try{w.close()}catch(e){}},350)}catch(e){}}
- return{q,rar:['Común','Raro','Épico','Legendario'][r],slot:['Arma','Casco','Pechera','Guantes','Pantalones','Botas','Escudo','Anillo','Amuleto','Pendientes'][sl],nm:(E.acct(id).nm||name),online:!!w,ids:items.length};
-};
-
 OPS['early.list']=u=>isMaster(u)?{list:earlyList(),max:3,env:EARLY_ENV}:{e:'operación desconocida'};
 OPS['early.add']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase().slice(0,120);if(!w)return{e:'Escribe el correo, usuario o uid'};const L=earlyList();if(L.includes(w))return{list:L,max:3};if(L.length>=3)return{e:'Ya hay 3 accesos anticipados. Quita uno primero.'};DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).concat(w);dirty=1;log('early.add '+w);return{list:earlyList(),max:3}};
 OPS['early.del']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const w=String(m.who||'').trim().toLowerCase();DB.cfg=DB.cfg||{};DB.cfg.early=(DB.cfg.early||[]).filter(x=>String(x).toLowerCase()!==w);dirty=1;log('early.del '+w);return{list:earlyList(),max:3,env:EARLY_ENV}};
-/* Control de mobs y respawn: configuración persistente, solo master puede cambiarla. */
-const MOB_DEFAULTS={normalRespawn:20,dungeonRespawn:360,eventDensity:1,eventCap:4,eventBatch:2,eventInterval:30};
-function mobCfg(){const x=((DB.cfg||{}).mobControl)||{};return{normalRespawn:Math.max(5,Math.min(180,Number(x.normalRespawn)||MOB_DEFAULTS.normalRespawn)),dungeonRespawn:Math.max(15,Math.min(1800,Number(x.dungeonRespawn)||MOB_DEFAULTS.dungeonRespawn)),eventDensity:Math.max(.1,Math.min(1,Number(x.eventDensity)||MOB_DEFAULTS.eventDensity)),eventCap:Math.max(0,Math.min(20,Math.floor(Number.isFinite(+x.eventCap)?+x.eventCap:MOB_DEFAULTS.eventCap))),eventBatch:Math.max(1,Math.min(8,Math.floor(Number(x.eventBatch)||MOB_DEFAULTS.eventBatch))),eventInterval:Math.max(10,Math.min(180,Number(x.eventInterval)||MOB_DEFAULTS.eventInterval))}}
-/* v342 FIX: every client needs to read global mob settings; only the Master setter remains restricted. */
-OPS['mobcfg.get']=u=>({cfg:mobCfg()});
-const EV_DROP_DEFAULTS={hl:{chance:40,mult:1},nv:{chance:40,mult:1},lu:{chance:40,mult:1},am:{chance:40,mult:1},nz:{chance:40,mult:1}};
-function evDropCfg(){const src=((DB.cfg||{}).eventDrops)||{},out={};for(const k of Object.keys(EV_DROP_DEFAULTS)){const d=EV_DROP_DEFAULTS[k],v=src[k]||{};out[k]={chance:Math.max(0,Math.min(100,Number.isFinite(+v.chance)?+v.chance:d.chance)),mult:Math.max(0,Math.min(10,Number.isFinite(+v.mult)?+v.mult:d.mult))}}return out}
-OPS['eventdrops.get']=u=>({cfg:evDropCfg()});
-OPS['adm.eventdrops.get']=u=>isMaster(u)?{cfg:evDropCfg()}:{e:'operación desconocida'};
-OPS['adm.eventdrops.set']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const src=m.cfg||{},out={};for(const k of Object.keys(EV_DROP_DEFAULTS)){const v=src[k]||{},chance=Number(v.chance),mult=Number(v.mult);if(!Number.isFinite(chance)||!Number.isFinite(mult))return{e:'Valor no válido para '+k};out[k]={chance:Math.round(Math.max(0,Math.min(100,chance))),mult:+Math.max(0,Math.min(10,mult)).toFixed(2)}}DB.cfg=DB.cfg||{};DB.cfg.eventDrops=out;DB.cfg.zoneTuning=DB.cfg.zoneTuning||zoneDefaults();DB.cfg.zoneTuning.events=DB.cfg.zoneTuning.events||{};for(const k of Object.keys(out)){const prev=DB.cfg.zoneTuning.events[k]||{density:1};DB.cfg.zoneTuning.events[k]={density:prev.density==null?1:prev.density,chance:out[k].chance,mult:out[k].mult}}dirty=1;log('[GM EVENT DROPS] '+u+' guardó '+JSON.stringify(out));return{ok:1,cfg:out}};
-/* v343: ajuste independiente por cueva/evento desde el panel Master. */
-const ZONE_CAVES=['ar','es','se','ab','to','co','mi','uw',''];
-const ZONE_EVENTS=['hl','nv','lu','am','nz'];
-const zoneDefaults=()=>({caves:{ar:{density:1,loot:1},es:{density:1,loot:1},se:{density:1,loot:1},ab:{density:1,loot:1},to:{density:1,loot:1},co:{density:1,loot:1},mi:{density:1,loot:1},uw:{density:1,loot:1},cr:{density:1,loot:1}},events:{hl:{density:1,chance:40,mult:1},nv:{density:1,chance:40,mult:1},lu:{density:1,chance:40,mult:1},am:{density:1,chance:40,mult:1},nz:{density:1,chance:40,mult:1}}});
-function zoneCfg(){const d=zoneDefaults(),s=((DB.cfg||{}).zoneTuning)||{};for(const k of Object.keys(d.caves)){const v=s.caves&&s.caves[k]||{};d.caves[k]={density:Math.max(0,Math.min(4,Number.isFinite(+v.density)?+v.density:1)),loot:Math.max(0,Math.min(5,Number.isFinite(+v.loot)?+v.loot:1))}}for(const k of ZONE_EVENTS){const v=s.events&&s.events[k]||{},legacy=((DB.cfg||{}).eventDrops||{})[k]||{};d.events[k]={density:Math.max(0,Math.min(4,Number.isFinite(+v.density)?+v.density:1)),chance:Math.max(0,Math.min(100,Number.isFinite(+v.chance)?+v.chance:(Number.isFinite(+legacy.chance)?+legacy.chance:40))),mult:Math.max(0,Math.min(10,Number.isFinite(+v.mult)?+v.mult:(Number.isFinite(+legacy.mult)?+legacy.mult:1)))}}return d}
-OPS['zonecfg.get']=u=>({cfg:zoneCfg()});
-OPS['adm.zonecfg.get']=u=>isMaster(u)?{cfg:zoneCfg()}:{e:'operación desconocida'};
-OPS['adm.zonecfg.set']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const id=String(m.id||''),v=m.values||{},z=zoneCfg();const num=(k,lo,hi)=>{const n=Number(v[k]);if(!Number.isFinite(n))throw Error('Valor no válido: '+k);return Math.max(lo,Math.min(hi,n))};try{if(id.startsWith('cave:')){const k=id.slice(5);if(!Object.prototype.hasOwnProperty.call(z.caves,k))return{e:'Cueva no reconocida'};z.caves[k]={density:+num('density',0,4).toFixed(2),loot:+num('loot',0,5).toFixed(2)}}else if(id.startsWith('event:')){const k=id.slice(6);if(!ZONE_EVENTS.includes(k))return{e:'Evento no reconocido'};z.events[k]={density:+num('density',0,4).toFixed(2),chance:Math.round(num('chance',0,100)),mult:+num('mult',0,10).toFixed(2)}}else return{e:'Zona no reconocida'}}catch(e){return{e:e.message}}DB.cfg=DB.cfg||{};DB.cfg.zoneTuning=z;DB.cfg.eventDrops=DB.cfg.eventDrops||{};for(const k of ZONE_EVENTS)DB.cfg.eventDrops[k]={chance:z.events[k].chance,mult:z.events[k].mult};dirty=1;log('[GM ZONE TUNING] '+u+' '+id+' '+JSON.stringify(id.startsWith('cave:')?z.caves[id.slice(5)]:z.events[id.slice(6)]));return{ok:1,cfg:z}};
-OPS['adm.mobcfg.get']=u=>isMaster(u)?{cfg:mobCfg()}:{e:'operación desconocida'};
-OPS['adm.mobcfg.set']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const num=(k,lo,hi,def)=>{const v=Number(m[k]);if(!Number.isFinite(v))throw Error('Valor no válido: '+k);return Math.max(lo,Math.min(hi,v))};let c;try{c={normalRespawn:Math.round(num('normalRespawn',5,180,20)),dungeonRespawn:Math.round(num('dungeonRespawn',15,1800,360)),eventDensity:+num('eventDensity',.1,1,1).toFixed(2),eventCap:Math.round(num('eventCap',0,20,4)),eventBatch:Math.round(num('eventBatch',1,8,2)),eventInterval:Math.round(num('eventInterval',10,180,30))}}catch(e){return{e:e.message}}DB.cfg=DB.cfg||{};DB.cfg.mobControl=c;dirty=1;log('[GM MOB] '+u+' actualizó control de mobs: '+JSON.stringify(c));return{ok:1,c}};
 for(const k of ['gmk.sell','gmk.buy','gmk.cancel'])OPS[k]=()=>({e:'Este mercado se renovó: usa el 🏛️ Mercado de Gemas nuevo (recarga con Ctrl+Shift+R)'});
 setInterval(()=>{for(const u in ECO.acc){const a=ECO.acc[u];if(a.dl&&a.dl.length)E.forceExpired(a)}},30000);
 /* REGLAS de las colecciones libres: quién puede crear/editar (u = jugador autenticado, id, d = doc nuevo, o = doc anterior) */

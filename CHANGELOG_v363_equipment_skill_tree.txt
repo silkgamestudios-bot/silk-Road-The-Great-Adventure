@@ -1,0 +1,7 @@
+v363 — Botón visible del Árbol de habilidades dentro de Equipo
+
+- Se reemplazó la entrada discreta por una tarjeta visible dentro de la pantalla Equipo.
+- Incluye descripción y botón ABRIR ÁRBOL conectado al evento sr:open-tree existente.
+- Estilo Silk Road dorado/azul y adaptación móvil.
+- Actualización de versión del service worker a sr-v363.
+- No modifica el sistema de guardado ni las mecánicas del personaje.

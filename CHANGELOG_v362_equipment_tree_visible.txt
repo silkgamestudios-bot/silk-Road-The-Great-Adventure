@@ -1,0 +1,8 @@
+v362 — Corrección del botón del Árbol de habilidades en Equipo
+
+- Añadido el botón visible al HTML que realmente renderiza el panel Equipo (heroM, HT==1).
+- El botón abre el árbol mediante un evento directo del módulo, sin depender del botón oculto del HUD.
+- Diseño adaptable para móvil.
+- sw.js actualizado a sr-v362.
+
+Comprobaciones: sintaxis JavaScript de bloques inline, estructura ZIP y presencia del punto de inserción verificadas. Prueba visual en servidor publicado pendiente.

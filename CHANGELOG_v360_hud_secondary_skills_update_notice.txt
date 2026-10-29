@@ -1,0 +1,11 @@
+Silk Road v360 — HUD de habilidades y aviso de actualización
+
+Cambios:
+- Se elimina el aviso persistente con botón «Actualizar ahora». La comprobación de versión y la actualización programada del servidor se mantienen.
+- Los espacios secundarios vacíos ya no aparecen en el HUD de combate.
+- Solo se muestran habilidades secundarias equipadas, desbloqueadas y procedentes de una clase distinta de la clase activa.
+- Los accesos secundarios son circulares, compactos y se ubican cerca de la zona de accesos rápidos del HUD.
+- Se conserva el Árbol de Habilidades para aprender/equipar habilidades.
+- Se sincroniza la versión de cliente y service worker a sr-v360.
+
+Pruebas: ZIP íntegro y sintaxis JavaScript comprobada. La validación visual en un servidor publicado sigue pendiente.

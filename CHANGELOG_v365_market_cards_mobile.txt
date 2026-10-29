@@ -1,0 +1,12 @@
+Silk Road v365 — Rediseño responsive de Mercado de la Seda y Mercado de Gemas
+
+Cambios:
+- Catálogo de objetos en tarjetas compactas con icono, categoría, disponibilidad y precio mínimo.
+- Paginación de 12 artículos por página y controles anterior/siguiente.
+- Al tocar una tarjeta se abre una ficha emergente con botón de cerrar (X), descripción breve, disponibilidad y acciones Ver ofertas / Cancelar.
+- El buscador y los filtros reinician la paginación.
+- Adaptación responsive: 3 columnas en móviles, 2 en pantallas muy estrechas; panel usa altura dinámica del viewport.
+- El panel del Mercado de Gemas comparte la misma cabecera, controles y tratamiento visual existente.
+- Se conserva el RPC del servidor para comprar, vender y publicar; no se simula una compra en la ficha emergente.
+
+Verificación local: ZIP íntegro y scripts JavaScript comprobados sintácticamente. No se ha realizado una prueba de compra en servidor real ni validación visual en dispositivos físicos.

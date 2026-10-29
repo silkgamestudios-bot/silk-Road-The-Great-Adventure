@@ -1,0 +1,5 @@
+Silk Road v364 — Cueva de las Arañas y Reina
+
+Cambios aplicados en el código del cliente: más densidad de mobs en la Cueva de las Arañas, mayor variedad de arañas por piso y ajuste del estado inicial de la Reina para evitar estados de bloqueo, además de reducir moderadamente su defensa para que los impactos sean visibles.
+
+Validaciones: comprobar sintaxis JS, integridad del ZIP y consistencia de los archivos raíz. La prueba de combate dentro del servidor publicado sigue pendiente.

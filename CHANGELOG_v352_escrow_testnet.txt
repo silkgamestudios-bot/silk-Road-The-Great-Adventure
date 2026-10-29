@@ -1,0 +1,7 @@
+Silk Road v352 — contrato de garantía para pruebas
+
+- Añadido contracts/SilkRoadEscrow.sol: depósito ERC-20, liberación tras autorización del resolver, comisión del 5%, disputas y reembolsos.
+- Añadido MockUSDT únicamente para pruebas, pruebas Hardhat y script de despliegue BSC Testnet.
+- El resolver de Silk Road paga gas de liberación/reembolso, así que el vendedor no necesita BNB para recibir el pago.
+- La UI MetaMask permanece sin enviar pagos hasta integrar endpoints del servidor, reserva de inventario, verificación de confirmaciones e idempotencia.
+- No es una versión de producción; no usar fondos reales ni desplegar sin verificar token, revisar seguridad y auditar.

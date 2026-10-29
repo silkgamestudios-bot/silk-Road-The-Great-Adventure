@@ -1,0 +1,9 @@
+Silk Road v355 — Efectividad de habilidades secundarias
+
+- Las habilidades de la profesión activa siguen funcionando con la mecánica normal (100%).
+- Las habilidades equipadas cuyo origen es otra profesión se ejecutan usando su profesión de origen, pero el daño infligido mediante hitE se reduce al 30%.
+- Las curaciones directas de habilidades secundarias se reducen al 30%.
+- Se añade una indicación visual de la regla del 30% en el árbol.
+- Se conservan los 3 espacios secundarios y el registro de habilidades del personaje.
+
+Nota técnica: esta implementación aplica el multiplicador a daño y curaciones directas. Efectos no basados en daño/curación (por ejemplo, guardia, control, mejoras, restauración de MP o daño diferido) necesitan revisión individual para escalar todos sus parámetros al 30% sin cambiar el equilibrio de habilidades originales.

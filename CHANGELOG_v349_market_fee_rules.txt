@@ -1,0 +1,6 @@
+Silk Road v349 — reglas iniciales del Bazar Global USDT
+
+- Confirmada configuración de trabajo: BNB Smart Chain, USDT, 1 Gema = 1 USDT como referencia de compra, publicación 5 Gemas, compra 3 Gemas y comisión de vendedor 5%.
+- Añadido usdt-market-config.js con cotización pura de comisión y neto del vendedor en centavos enteros para evitar errores de coma flotante.
+- Esta versión NO integra todavía la comisión en las ofertas existentes basadas en oro, NO procesa pagos reales, NO acredita Gemas y NO transfiere USDT.
+- Antes de producción se requieren órdenes persistentes, vínculo de orden con cuenta, protección contra reutilización de txHash+logIndex, entrega idempotente de Gemas y liquidación segura del bazar.

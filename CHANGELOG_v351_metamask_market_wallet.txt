@@ -1,0 +1,11 @@
+Silk Road v351 - Boton MetaMask dedicado al Bazar USDT
+
+- Se agrega acceso flotante independiente: “Bazar USDT · MetaMask”.
+- Conecta una cuenta mediante window.ethereum sin solicitar frases semilla ni claves privadas.
+- Permite solicitar cambio a BNB Smart Chain Testnet (chainId 97).
+- Deja preparada la lectura de saldo ERC-20, pero requiere configurar el contrato USDT testnet verificado y sus decimales.
+- El boton de pago permanece bloqueado hasta integrar una orden de pago generada por el servidor.
+- No se envian fondos ni se acreditan Gemas desde el cliente en esta version.
+- Receptor configurado en el panel: 0x98Bc386F8276C6fB20792768125a0597847A16AA.
+
+Pendiente para pagos end-to-end: endpoint servidor para crear orden, importe exacto y referencia unica; token oficial verificado; verificacion on-chain, confirmaciones e idempotencia; luego habilitar transferencia USDT con wallet_sendTransaction/transfer.

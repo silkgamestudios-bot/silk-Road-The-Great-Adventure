@@ -1,0 +1,6 @@
+Silk Road v348 — preparación inicial de pagos BNB
+- Añadido bnb-payments.js para verificar recibos y logs de transferencia ERC-20.
+- Configuración por variables de entorno; testnet por defecto y comprobación de chain ID.
+- Validación de hash, estado exitoso, token, receptor, importe exacto, remitente opcional y confirmaciones.
+- El módulo NO acredita Gemas ni ejecuta liquidaciones: requiere órdenes persistentes e idempotencia en una fase posterior.
+- Añadida guía BNB_PAYMENTS_SETUP.md. No habilitar pagos reales aún.

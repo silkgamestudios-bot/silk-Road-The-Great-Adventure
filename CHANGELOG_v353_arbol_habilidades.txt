@@ -1,0 +1,8 @@
+Silk Road v353 — Árbol de Linaje de Habilidades
+
+- Añadido panel visual de árbol con el personaje activo como raíz y ramas para las 8 profesiones.
+- Cada rama muestra habilidades de clase y habilidades avanzadas con sus descripciones y requisitos de nivel.
+- Añadidos tres espacios de habilidades secundarias; no permite equipar una cuarta.
+- La selección se guarda dentro del estado del personaje mediante el sistema de guardado existente.
+- La interfaz se añade de forma aislada a play.html; no modifica el bazar, los pagos ni las reglas de cambio de clase.
+- Importante: los tres espacios son una selección persistente de árbol; la ejecución de habilidades secundarias en combate todavía requiere integración separada con el sistema de combate/atajos.

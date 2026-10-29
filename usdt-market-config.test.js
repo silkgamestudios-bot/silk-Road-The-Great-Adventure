@@ -1,0 +1,10 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const M = require('./usdt-market-config');
+test('publicar artículo de 1 USDT cuesta 0.05 Gemas', () => assert.equal(M.quoteListing('1.00').listingFeeGems, '0.0500'));
+test('publicar artículo de 10 USDT cuesta 0.5 Gemas', () => assert.equal(M.quoteListing('10.00').listingFeeGems, '0.5000'));
+test('personaje cuesta tarifa fija de 5 Gemas', () => assert.equal(M.quoteListing('1.00', 'character').listingFeeGems, '5.0000'));
+test('venta de 100 USDT cobra 5 USDT y deja 95', () => { const q=M.quoteSale('100.00'); assert.equal(q.commissionUsdt,'5.00'); assert.equal(q.sellerNetUsdt,'95.00'); });
+test('no se aplica tarifa adicional al comprador', () => assert.equal(M.quoteSale('1.00').buyerFeeGems, '0.0000'));
+test('rechaza importes con más de dos decimales', () => assert.throws(() => M.quoteListing('1.001')));

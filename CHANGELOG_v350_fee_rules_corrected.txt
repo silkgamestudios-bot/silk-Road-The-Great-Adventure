@@ -1,0 +1,8 @@
+Silk Road v350 — reglas corregidas del Bazar Global
+
+- Corregida tarifa de publicación de artículos normales: 5% del precio publicado, pagada en Gemas fraccionarias.
+- Personajes conservan tarifa fija especial de 5 Gemas.
+- Comisión del vendedor: 5% de una venta completada.
+- Eliminada la tarifa fija adicional de 3 Gemas al comprador; no forma parte de las reglas actuales acordadas.
+- Añadida precisión interna de 0.0001 Gema mediante unidades enteras y funciones de cotización.
+- Se mantienen pagos en modo de preparación/testnet: no se acredita saldo, no se crean órdenes persistentes y no se transfieren USDT.

@@ -7815,6 +7815,28 @@ async function srSendLevelReport(){try{if(!window.SRNET||!SRNET.rpc||!UID){toast
 @media(max-width:600px){#sr351-wallet-launch{top:8px;right:8px;padding:8px 10px;font-size:12px}}
 </style>
 <button id="sr351-wallet-launch" type="button">💳 Bazar USDT · MetaMask</button>
+<script id="sr-v357-market-close-fix">
+(function(){
+  function ready(){
+    var launch=document.getElementById('sr351-wallet-launch');
+    var overlay=document.getElementById('sr351-wallet-overlay');
+    var close=document.getElementById('sr351-wallet-close');
+    if(!overlay) return;
+    function hide(){ overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); }
+    function show(){ overlay.style.display='flex'; overlay.setAttribute('aria-hidden','false'); }
+    if(launch) launch.addEventListener('click',show);
+    if(close) close.addEventListener('click',hide);
+    overlay.addEventListener('click',function(e){if(e.target===overlay)hide();});
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape' && getComputedStyle(overlay).display!=='none'){
+        hide(); e.preventDefault(); e.stopPropagation();
+      }
+    },true);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready,{once:true});
+  else ready();
+})();
+</script>
 <div id="sr351-wallet-overlay" role="dialog" aria-modal="true" aria-labelledby="sr351-wallet-title">
  <div id="sr351-wallet-card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><h2 id="sr351-wallet-title">Bazar Global · USDT</h2><button class="sr351-btn" id="sr351-wallet-close" type="button" aria-label="Cerrar">✕</button></div>
  <p>Conecta MetaMask para este mercado. La red de pruebas es BNB Smart Chain Testnet (Chain ID 97). No se enviará ningún pago sin una orden válida generada por el servidor.</p>
@@ -7845,6 +7867,91 @@ if(window.ethereum){window.ethereum.on?.('accountsChanged',a=>{account=(a&&a[0])
 
 
 <style id="sr-lineage-combat-css">#srLineageCombat{position:fixed;z-index:9000;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;max-width:96vw;overflow-x:auto;padding:7px;border:1px solid #a9874d;border-radius:12px;background:rgba(12,16,24,.94);box-shadow:0 4px 22px #0009}#srLineageCombat button{max-width:150px;min-width:74px;min-height:42px;padding:7px 9px;border:1px solid #8b754b;border-radius:8px;background:linear-gradient(135deg,#292b35,#171922);color:#ffe7b0;font:600 12px Georgia,serif;cursor:pointer}#srLineageCombat button:disabled{opacity:.55;cursor:default}#srLineageCombat button:not(:disabled):active{filter:brightness(1.35);transform:translateY(1px)}@media(max-width:600px){#srLineageCombat{bottom:5px;gap:4px;padding:4px}#srLineageCombat button{min-width:62px;max-width:110px;font-size:10px;padding:5px}}</style>
+<style id="sr-lineage-title-visibility">
+/* Oculta el HUD de linaje en la portada; sus posiciones de juego se conservan. */
+body.sr-title-screen #srLineageCombat,
+body.sr-title-screen #srTreeLaunch {
+  display: none !important;
+}
+/* El HUD de combate permanece dentro de la zona segura y no invade la barra del sistema. */
+#srLineageCombat {
+  bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+  max-width: calc(100vw - 16px) !important;
+  box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  #srLineageCombat {
+    bottom: max(6px, env(safe-area-inset-bottom, 0px)) !important;
+    max-width: calc(100vw - 10px) !important;
+  }
+}
+</style>
+<style id="sr-v357-menu-market-modal-fixes">
+/* El árbol de habilidades pertenece al HUD de partida, no a la portada. */
+body.sr-title-screen #srTreeLaunch { display:none !important; }
+/* El Bazar sí es la entrada al Mercado de la Seda y permanece disponible. */
+/* Ventanas largas: desplazamiento vertical interno, también en móvil. */
+#sr351-wallet-overlay {
+  overflow-y:auto !important;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#sr351-wallet-card {
+  margin:auto;
+  max-height:calc(100dvh - 32px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  box-sizing:border-box;
+}
+#srTreeShade { overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+#srTreePanel { max-height:none; }
+#srTreePanel .srt-layout { min-width:0; }
+.srt-close, #sr351-wallet-close { min-width:40px; min-height:40px; font-size:18px; }
+@media(max-width:600px) {
+  #sr351-wallet-overlay { padding:8px !important; }
+  #sr351-wallet-card { width:100%; max-height:calc(100dvh - 16px); padding:12px; }
+  #srTreePanel { min-height:0; }
+  .srt-layout { grid-template-columns:minmax(0,1fr) !important; }
+  .srt-map { min-height:360px !important; }
+}
+</style>
+<script id="sr-lineage-title-visibility-js">
+(function(){
+  function updateLineageHudScreen(){
+    var t = document.getElementById('tps');
+    if(!t) return;
+    var cs = window.getComputedStyle(t);
+    var r = t.getBoundingClientRect();
+    var titleVisible = !t.hidden && cs.display !== 'none' &&
+      cs.visibility !== 'hidden' && Number(cs.opacity || 1) > 0.01 &&
+      r.width > 0 && r.height > 0;
+    document.body.classList.toggle('sr-title-screen', titleVisible);
+  }
+  function install(){
+    updateLineageHudScreen();
+    var t = document.getElementById('tps');
+    if(t && window.MutationObserver){
+      new MutationObserver(updateLineageHudScreen).observe(t, {
+        attributes:true, attributeFilter:['hidden','style','class','aria-hidden']
+      });
+    }
+    if(window.MutationObserver){
+      new MutationObserver(updateLineageHudScreen).observe(document.body, {
+        attributes:true, attributeFilter:['class'],
+        subtree:true, childList:true
+      });
+    }
+    window.addEventListener('resize', updateLineageHudScreen, {passive:true});
+    window.addEventListener('orientationchange', updateLineageHudScreen, {passive:true});
+    /* Respaldo para cambios de visibilidad realizados por animaciones o scripts antiguos. */
+    window.setInterval(updateLineageHudScreen, 500);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', install, {once:true});
+  else install();
+})();
+</script>
 <script id="sr-lineage-tree">
 (()=>{
  const $t=id=>document.getElementById(id);
@@ -7858,6 +7965,11 @@ if(window.ethereum){window.ethereum.on?.('accountsChanged',a=>{account=(a&&a[0])
  function learned(e){return P.treeSkills.includes(e.id)}
  function open(){initState();recordActiveClass();branch=Number(P.cls)||0;$t('srTreeShade').classList.add('open');render()}
  function close(){$t('srTreeShade').classList.remove('open')}
+  function bindTreeClose(){
+    const sh=$t('srTreeShade'); if(!sh||sh.dataset.v357Close)return;
+    sh.dataset.v357Close='1';
+    sh.addEventListener('click',e=>{if(e.target===sh)close()});
+  }
  function render(){initState();const shade=$t('srTreeShade');if(!shade)return;
   const active=Number(P.cls)||0;let lines='';pos.forEach((p,i)=>{lines+=`<line class="srt-line ${i===branch?'active':''}" x1="50%" y1="50%" x2="${p[0]}%" y2="${p[1]}%"/>`});
   let nodes='';pos.forEach((p,i)=>{const im=sprite(i);nodes+=`<button class="srt-class ${i===branch?'active':''} ${i===active?'current':''}" data-srt-class="${i}" style="left:${p[0]}%;top:${p[1]}%">${im?`<img src="${im}" alt="">`:`<span style="font-size:25px">${CLS[i].ic||'✦'}</span>`}<b>${names[i]}</b><small>${i===active?'Clase activa':(SP[i]||[]).length+' habilidades'}</small></button>`});
@@ -7873,7 +7985,7 @@ if(window.ethereum){window.ethereum.on?.('accountsChanged',a=>{account=(a&&a[0])
  document.addEventListener('click',e=>{const b=e.target.closest('[data-srt-cast]');if(b){castSecondary(Number(b.dataset.srtCast));return}});
  document.addEventListener('click',e=>{const launch=e.target.closest('#srTreeLaunch');if(launch){open();return}if(e.target.closest('[data-srt-close]')){close();return}if(e.target.id==='srTreeShade'){close();return}const c=e.target.closest('[data-srt-class]');if(c){branch=Number(c.dataset.srtClass);render();return}if(e.target.closest('[data-srt-root]')){branch=Number(P.cls)||0;render();return}const sl=e.target.closest('[data-srt-slot]');if(sl){const i=Number(sl.dataset.srtSlot);if(P.treeSlots[i]){P.treeSlots[i]=null;saveState();render()}return}const sk=e.target.closest('[data-srt-skill]');if(sk){initState();const id=sk.dataset.srtSkill,e=allEntries().find(z=>z.id===id);if(!e||!learned(e))return;const i=P.treeSlots.indexOf(id);if(i>=0){P.treeSlots[i]=null}else{const empty=P.treeSlots.indexOf(null);if(empty<0){toast('Ya tienes 3 habilidades secundarias equipadas. Quita una antes de añadir otra.',3200);return}P.treeSkills.push(id);P.treeSkills=[...new Set(P.treeSkills)];P.treeSlots[empty]=id}saveState();render();return}});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$t('srTreeShade')?.classList.contains('open'))close()});
- function mount(){mountCombatSlots();if($t('srTreeLaunch'))return;const b=document.createElement('button');b.id='srTreeLaunch';b.type='button';b.textContent='✧ Árbol de habilidades';document.body.appendChild(b);const sh=document.createElement('div');sh.id='srTreeShade';document.body.appendChild(sh)}
+ function mount(){mountCombatSlots();bindTreeClose();if($t('srTreeLaunch'))return;const b=document.createElement('button');b.id='srTreeLaunch';b.type='button';b.textContent='✧ Árbol de habilidades';document.body.appendChild(b);const sh=document.createElement('div');sh.id='srTreeShade';document.body.appendChild(sh)}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
 </script>

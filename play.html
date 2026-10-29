@@ -4010,7 +4010,7 @@ async function smLoad(){if(!ONL())return;try{const o={t:'x',op:'sm.list',mk:SM.m
 async function smCall(op,o,okMsg){if(SM.busy)return null;if(!ONL()){toast('Necesitas conexión con el servidor',3000);return null}SM.busy=1;try{idAll();save();if(SRNET.flush)await SRNET.flush();const r=await SRNET.rpc(Object.assign({t:'x',op},o||{}));if(r.ent)applyEnt(r.ent);if(okMsg)toast(okMsg,4200);vib([40,30,60]);return r}catch(e){toast(String(e.message||'No se pudo completar'),4800);return null}finally{SM.busy=0}}
 const smPub=()=>!SM.d||SM.d.pub==1;
 function smItRow(it,right,extra){const c=RC[it.r|0];return `<div class="smr"><img src="${ik(it)}" class="smi" style="border-color:${c}"><div class="smn"><b style="color:${c}">${hx(it.n)}</b>${typeof upTag=='function'?upTag(it):''} <small>${RN[it.r|0]}${it.k!=null&&it.k!=P.cls?' · otra clase':''}</small><br><small>${hx(stTxt(it)||'—')}${extra?' · '+extra:''}</small></div><div class="smb">${right}</div></div>`}
-function smHead(){const g=SM.mk=='g';return `<div class="smh"><span class="smhi">${g?gemSvg(5,40):'<span style="font-size:34px">🏛️</span>'}</span><div><h3>${g?'Mercado de Gemas':'Mercado de la Seda'}</h3><small>${g?'Compra y vende gemas y boletos de servicio entre jugadores':'Compra y vende objetos entre jugadores'} · comisión 3% maker y taker</small></div><button data-s="x" class="smx">✕</button></div>
+function smHead(){const g=SM.mk=='g';return `<div class="smh"><span class="smhi">${g?gemSvg(5,40):'<span style="font-size:34px">🏛️</span>'}</span><div><h3>${g?'Mercado de Gemas':'Mercado de la Seda'}</h3><small>${g?'Compra y vende gemas y boletos de servicio entre jugadores':'Compra y vende objetos entre jugadores'} · comisión 3% maker y taker</small><div class="sr-market-extra"><button type="button" id="sr351-wallet-market-launch">💳 Bazar USDT · MetaMask</button></div></div><button data-s="x" class="smx">✕</button></div>
  <div class="smst"><span>🪙 <b>${fmt(P.gold)}</b></span><span>💎 <b>${P.gem|0}</b></span><span>🎁 <b>${P.gemT|0}</b></span>${SM.d&&SM.d.avg?`<span>📈 Promedio <b>${fmt(SM.d.avg)}</b></span>`:''}</div>
  ${smPub()?'':`<div class="smwarn">🔒 Para <b>publicar</b> ofertas necesitas el servicio <b>🎯 Combo Cazador</b> (o VIP). Comprar lo ya publicado es libre. Cómpralo en Gemas → Servicios, con oro o gemas.</div>`}
  <div class="smt">${(g?[['m','💎 Gemas'],['t','🎟️ Boletos'],['o','📋 Mis ofertas'],['h','🧾 Historial']]:[['m','🛒 Mercado'],['o','📋 Mis ofertas'],['h','🧾 Historial']]).map(([k,l])=>`<button data-s="tab:${k}" class="${SM.tab==k?'on':''}">${l}${k=='o'&&SM.d&&SM.d.mine?' ('+SM.d.mine.length+')':''}</button>`).join('')}</div>`}
@@ -4831,7 +4831,7 @@ document.addEventListener('input',e=>{if(e.target&&e.target.id=='bgf'){window.BG
 const optRow=(k,l,on)=>`<button class="opt${on?' on':''}" data-h="${k}"><span class="cb">${on?'✔':''}</span>${l}</button>`;
 const tbtn=i=>{const n=TABS[i],q=n.indexOf(' ');return `<button class="${i==HT?'on':''}" data-h="t${i}" title="${n.slice(q+1)}"><i>${n.slice(0,q)}${i==3&&anyClaim()?'<u>!</u>':''}${P.lv<TLV[i]?'<em>🔒</em>':''}</i><span>${n.slice(q+1)}</span></button>`};
 function tabsHtml(){if(!gmIsM()&&[11,17,18].includes(HT))HT=0;const ok=tordF(),gs=TGRP.map(g=>({ic:g[0],n:g[1],t:g[2].filter(i=>ok.includes(i))})).filter(g=>g.t.length&&(g.n!=='Sistema'||gmIsM())),cg=gs.find(g=>g.t.includes(HT))||gs[0];
- return '<div class="tg">'+gs.map(g=>`<button class="${g===cg?'on':''}" data-h="t${g.t.includes(HT)?HT:g.t[0]}" title="${g.n}"><i>${g.ic}${g.t.includes(3)&&anyClaim()?'<u>!</u>':''}${g.t.includes(18)&&NTN()?'<u>'+NTN()+'</u>':''}</i><span>${g.n}</span></button>`).join('')+'</div>'+(cg.t.length>1?'<div class="ts">'+cg.t.map(tbtn).join('')+'</div>':'')}
+ return '<div class="tg">'+gs.map(g=>`<button class="${g===cg?'on':''}" data-h="t${g.t.includes(HT)?HT:g.t[0]}" title="${g.n}"><i>${g.ic}${g.t.includes(3)&&anyClaim()?'<u>!</u>':''}${g.t.includes(18)&&NTN()?'<u>'+NTN()+'</u>':''}</i><span>${g.n}</span></button>`).join('')+'</div>'+(cg.t.length>1?'<div class="ts">'+cg.t.map(tbtn).join('')+'</div>':'')+'<div class="sr-menu-extras"><button type="button" data-sr-open-tree>✧ Árbol de habilidades</button></div>'}
 function statsHtml(){const nx=xpNeed(P.lv),left=P.lv>=LVMAX?0:Math.max(0,nx-P.xp),bl=pa('bl'),row=(ic,l,v,cl)=>`<div class="sti"><i>${ic}</i><div><small>${l}</small><b${cl?` class="${cl}"`:''}>${v}</b></div></div>`;
  return `<div class="stw"><div class="stl">${row('🏅','EXP',fmt(xpTotP()))}${row('⏳','EXP restante',P.lv>=LVMAX?'MÁX':fmt(left))}${row('🙏','Bendición',bl?'Activa':'Sin bendición',bl?'ok':'bad')}${row('💎','Gemas',gmTot()+' <small>(propias '+(P.gem|0)+')</small>')}${row('🪙','Oro',fmt(P.gold))}${row('🏦','Banco',fmt(P.bank|0))}</div><div class="stc"><div class="chr"><img src="${(!P.skin&&P.bsk&&bsIcon(P.bsk))||hnUrl(P.cls)||CI[P.cls]}"><span class="ped"></span><b>${hx(P.name||CL().n)}</b><small>${CL().n} · Nv ${P.lv}</small><div class="xpm xpl"><i style="width:${P.lv>=LVMAX?100:100*P.xp/nx}%"></i><em>Nv ${P.lv} / ${LVMAX} · ${P.lv>=LVMAX?'MÁX':Math.floor(100*P.xp/nx)+'%'}</em></div></div><div class="stb"><button data-h="t15">🏆 Rango</button><button data-h="t1">🎒 Equipo</button><button data-h="t14">🏰 Gremio</button><button data-h="skn">🎭 Atuendo</button></div></div><div class="str">${skBars()}</div></div>`}
 let NTSEEN=0;const NTN=()=>NTF.filter(x=>x.t>NTSEEN).length;
@@ -7807,12 +7807,13 @@ async function srSendLevelReport(){try{if(!window.SRNET||!SRNET.rpc||!UID){toast
 </script>
 
 <style id="sr351-metamask-market-wallet">
-#sr351-wallet-launch{position:fixed;z-index:99990;right:14px;top:14px;border:1px solid #f4c96b;border-radius:12px;background:linear-gradient(135deg,#24153c,#4c286b);color:#fff;padding:10px 13px;font:700 13px system-ui;box-shadow:0 5px 18px #0008;cursor:pointer}
+#sr351-wallet-launch{display:none !important;position:fixed;z-index:99990;right:14px;top:14px;border:1px solid #f4c96b;border-radius:12px;background:linear-gradient(135deg,#24153c,#4c286b);color:#fff;padding:10px 13px;font:700 13px system-ui;box-shadow:0 5px 18px #0008;cursor:pointer}
 #sr351-wallet-overlay{position:fixed;inset:0;z-index:99999;background:#090611d9;display:none;align-items:center;justify-content:center;padding:16px;font:14px system-ui;color:#fff}
 #sr351-wallet-card{width:min(440px,96vw);background:#1a1330;border:1px solid #f4c96b;border-radius:18px;padding:18px;box-shadow:0 20px 80px #000b}
 #sr351-wallet-card h2{margin:0 0 6px;font-size:21px;color:#ffe09a}#sr351-wallet-card p{line-height:1.45;color:#e3d9f4}
 .sr351-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.sr351-btn{border:1px solid #8468a6;border-radius:10px;padding:10px 12px;background:#33204b;color:#fff;font-weight:700;cursor:pointer}.sr351-btn.primary{background:#f0c15b;color:#24152d;border-color:#f0c15b}.sr351-btn:disabled{opacity:.45;cursor:not-allowed}.sr351-line{padding:9px 10px;background:#100b1e;border-radius:9px;margin-top:8px;overflow-wrap:anywhere}.sr351-small{font-size:12px;color:#c9badf}.sr351-status{min-height:20px;margin-top:10px;color:#ffe09a}
-@media(max-width:600px){#sr351-wallet-launch{top:8px;right:8px;padding:8px 10px;font-size:12px}}
+.sr-market-extra{margin-top:7px}.sr-market-extra button{border:1px solid #e5bd63;border-radius:999px;background:linear-gradient(135deg,#3b2856,#6a3978);color:#fff1c8;padding:7px 12px;font:700 12px Georgia,serif;cursor:pointer;box-shadow:0 2px 10px #0005}
+@media(max-width:600px){.sr-market-extra button{padding:7px 10px;font-size:11px}}
 </style>
 <button id="sr351-wallet-launch" type="button">💳 Bazar USDT · MetaMask</button>
 <script id="sr-v357-market-close-fix">
@@ -7998,3 +7999,20 @@ body.sr-title-screen #srTreeLaunch { display:none !important; }
 
 
 
+
+<style id="sr-v359-hud-market-menu-polish">
+#srTreeLaunch{display:none !important}
+.sr-menu-extras{display:flex;justify-content:flex-start;margin:8px 0 2px}
+.sr-menu-extras button{border:1px solid #d8b45e;border-radius:999px;padding:9px 15px;background:linear-gradient(135deg,#172536,#263c4d);color:#ffe7a5;font:700 13px Georgia,serif;box-shadow:inset 0 0 0 1px #fff1,0 3px 10px #0005;cursor:pointer}
+#srLineageCombat{left:auto;right:clamp(82px,10vw,140px);bottom:clamp(76px,12vh,112px);transform:none;max-width:min(46vw,390px);flex-wrap:wrap;justify-content:flex-end;background:transparent;border:0;box-shadow:none;overflow:visible;padding:0;gap:7px}
+#srLineageCombat button{min-width:68px;max-width:105px;min-height:38px;border-radius:999px;border:1px solid #e4bd64;background:linear-gradient(145deg,#24394a,#111c28);box-shadow:0 2px 8px #0008,inset 0 0 0 1px #ffffff12;color:#ffe9b0;font-size:11px}
+@media(max-width:700px){#srLineageCombat{right:78px;bottom:92px;max-width:calc(100vw - 150px);gap:5px}#srLineageCombat button{min-width:58px;max-width:86px;min-height:34px;padding:5px 7px;font-size:10px}.sr-menu-extras button{width:100%}}
+</style>
+<script id="sr-v359-hud-market-menu-actions">
+document.addEventListener('click',function(e){
+ const tree=e.target.closest('[data-sr-open-tree]');
+ if(tree){const b=document.getElementById('srTreeLaunch');if(b)b.click();else if(typeof toast==='function')toast('Árbol de habilidades no disponible en esta pantalla.',2500);}
+ const wallet=e.target.closest('#sr351-wallet-market-launch');
+ if(wallet){const b=document.getElementById('sr351-wallet-launch');if(b)b.click();const o=document.getElementById('sr351-wallet-overlay');if(o){o.style.display='flex';o.setAttribute('aria-hidden','false');}}
+});
+</script>

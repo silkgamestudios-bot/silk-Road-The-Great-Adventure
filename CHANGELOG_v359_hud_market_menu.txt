@@ -1,0 +1,15 @@
+Silk Road v359 — Ajustes de HUD y acceso al bazar
+
+Cambios en play.html:
+- El acceso Bazar USDT · MetaMask deja de flotar sobre el HUD y se ofrece dentro de la cabecera del Mercado de la Seda.
+- El botón Árbol de habilidades se incorpora a la navegación del menú del juego en lugar de mostrarse como botón flotante permanente.
+- Los espacios de habilidades secundarias pasan a un estilo ovalado y compacto alrededor de la zona de combate, con ajustes para móvil.
+- Se conserva el panel existente de MetaMask y su estado actual de seguridad: la función de pago sigue bloqueada hasta configurar contrato y órdenes verificadas del servidor.
+
+Actualización:
+- sw.js anuncia sr-v359 para que el servidor pueda informar la versión del cliente.
+
+Verificaciones realizadas:
+- Sintaxis JavaScript de los scripts inline de play.html comprobada con node --check.
+- Sintaxis de server.js y market.js comprobada con node --check.
+- Pendiente de validar en una sesión real del servidor el flujo visual y de interacción del juego.

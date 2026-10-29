@@ -8012,6 +8012,14 @@ body.sr-title-screen #srTreeLaunch { display:none !important; }
 .sr-eq-tree-entry button:active{transform:scale(.98);filter:brightness(1.2)}
 @media(max-width:600px){.sr-eq-tree-entry{justify-content:stretch}.sr-eq-tree-entry button{width:100%;min-height:42px}}
 </style>
+
+<style id="sr-v367-market-zoom-reduction">
+/* v367: reduce el zoom visual de los dos mercados un 40%, manteniendo el centro de la pantalla. */
+#smp .smbox, #gkp .gkb {
+  transform: scale(.6) !important;
+  transform-origin: center center !important;
+}
+</style>
 </body></html>
 
 

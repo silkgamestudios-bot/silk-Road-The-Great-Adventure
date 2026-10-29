@@ -7,3 +7,9 @@ Silk Road v337 — Reportes de nivel y herramientas GM
 - Conserva la herramienta existente para ajustar manualmente el nivel desde Zona GM > Jugadores/herramientas GM (adm.lv).
 
 Seguridad: un reporte no demuestra trampas por sí solo. Revisar evidencia antes de sancionar. El ajuste de nivel y la lectura/cierre de reportes requieren permisos master en el servidor.
+
+Interfaz v337 — ajuste solicitado:
+- El botón «Reportar problema de nivel» ya está dentro del menú Sistema; se quitó el botón flotante.
+- En Zona GM > Incidencias > Reportes de nivel ahora está también la herramienta para subir o bajar el nivel.
+- La herramienta reutiliza el buscador por nombre y permite seleccionar al jugador antes de aplicar el nivel objetivo.
+- Se mantiene la validación de permisos master del servidor y la confirmación antes de cambiar el nivel.

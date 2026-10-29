@@ -67,7 +67,7 @@ function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100)),auto=ty
  if(g>0){if(auto&&LF&&LF.gd){P.gold+=g;t.push('+'+g+' 🪙')}else{ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:g,it:null,l:120};t.push('🪙 '+g+' en el suelo')}}
  if(m.x>0){gainXp(m.x);t.push('+'+m.x+' XP')}
  if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty)}catch(e){}}
- if(m.pot&&typeof P.pot=='number')P.pot=Math.min(99,P.pot+1);
+ if(m.pot&&typeof P.pot=='number')P.pot=Math.min(800,P.pot+1);
  if(m.it){const it=cleanIt(m.it);it.junk=1;if(auto&&LF&&LF.it&&P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{if(!ground)ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:0,it:null,l:120};ground.it=it;t.push('🎁 '+it.n+' en el suelo')}}
  if(ground)LT.push(ground);
  if(t.length&&FT.length<60)FT.push({x:P.x,y:P.y-30,t:1.6,d:0,o:0,k:'dm',s:t.join(' '),c:'#ffd666'});

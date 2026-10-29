@@ -1,0 +1,14 @@
+Silk Road MMORPG — v346
+
+Mejora: confirmación visual del cambio de profesión en la Iglesia.
+
+- Al elegir una profesión se abre una ficha emergente con sprite, nombre, vida, maná, ataque estimado, velocidad, alcance, especialidad y habilidades.
+- La ficha muestra el saldo de gemas propias y el costo de 1 gema propia.
+- Incluye los botones «Confirmar cambio · 1 gema» y «Cancelar».
+- Antes de enviar la operación, verifica que haya al menos 1 gema propia y solicita confirmación final.
+- Si no hay gemas propias, muestra un mensaje claro y no intenta cobrar.
+- El servidor sigue siendo la autoridad final y rechaza cambios sin la gema propia requerida; las gemas transferidas no cuentan.
+- Conserva nombre, nivel, inventario y progreso; se conserva el mensaje de éxito tras confirmar el cambio.
+- Se actualizan play.html y script_2.js para mantener las copias de cliente alineadas.
+
+Validación: scripts inline de play.html y script_2.js comprobados con node --check. No se ha realizado una prueba de juego con servidor en vivo.

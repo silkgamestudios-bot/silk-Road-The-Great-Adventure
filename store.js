@@ -6,6 +6,17 @@ const price=(k,d)=>{const b=GEMP[k]||0;if(GMON.includes(k)){if(k==='es'||k==='pv
 const blGold=lv=>Math.round(2000*Math.pow(1.28,Math.min(29,Math.max(0,lv-1))));
 const NAME_GOLD=2000,TAXP=c=>Math.ceil(Math.round(c)*.03),err=e=>({e});/* impuesto 3% sobre todo lo que se paga con oro */const ops={};
 ops['me.get']=(u)=>({ok:1,ent:E.ent(u)});
+/* v338: cambio de clase por 1 gema propia; el servidor valida la clase y realiza el cobro. */
+ops['class.change']=(u,m)=>{
+ const a=E.acct(u),cl=Math.floor(+m.cl);
+ if(!(cl>=0&&cl<=7))return err('Clase no válida');
+ if(a.cls==null||a.cls<0||!a.nm&&!a.pn)return err('Primero crea tu personaje');
+ if((a.cls|0)===cl)return err('Ya tienes esa clase');
+ if(!E.spendGems(a,1,true,'Cambio de clase'))return err('Necesitas 1 gema propia para cambiar de clase');
+ const old=a.cls|0;a.cls=cl;S.dirty();E.pushEnt(u);
+ S.log('[clase] '+(a.nm||a.pn||u)+' cambió de clase '+old+' → '+cl+' por 1 gema');
+ return{ok:1,ent:E.ent(u),cl,old,cost:1};
+};
 ops['name.claim']=(u,m)=>{const r=E.claimName(u,m.name);if(r.e)return r;E.pushEnt(u);return{ok:1,nm:r.nm}};
 /* ---- Ranking: los 100 mejores por nivel o por habilidad, global o por clase. Lo calcula el servidor con datos ya validados ---- */
 const RKC={},RKTTL=+process.env.RK_TTL||8e3;/* ranking: se recalcula cada 8 s (antes 45 s: un héroe nuevo o que subía de nivel tardaba casi un minuto en aparecer) */
@@ -146,7 +157,7 @@ ops['hal.find']=(u,m)=>{const a=E.acct(u),j=Math.floor(+m.j),p=String(m.p||'');
 ops['gem.log']=(u)=>{const a=E.acct(u);return{ok:1,own:a.gem.own,tr:a.gem.tr,l:(a.gl||[]).slice(-25).reverse()}};
 ops['buff.gold']=(u,m)=>{const a=E.acct(u),now=Date.now(),c0=blGold(a.lv),c=c0+TAXP(c0);if(m.k!=='bl')return err('Servicio no válido');
  if((a.px.bl||0)>now)return err('Ya tienes una Bendición activa');if(E.avail(a,'gold')<c)return err('⚠️ Oro insuficiente: te faltan '+(c-E.avail(a,'gold'))+' 🪙');
- E.deliver(u,{gold:-c,note:'🙏 Bendición (30 días o hasta tu próxima muerte, +3% impuesto)'});a.px.bl=now+30*DAY;S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u),cost:c}};
+ E.deliver(u,{gold:-c,note:'🙏 Bendición para esta vida (hasta la próxima muerte, +3% impuesto)'});a.px.bl=now+365*DAY;S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u),cost:c}};
 ops['bl.lose']=(u)=>{const a=E.acct(u);if((a.px.bl||0)>Date.now()){a.px.bl=0;S.dirty();E.pushEnt(u)}return{ok:1,ent:E.ent(u)}};
 ops['gem.tx']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=1e6))return err('Cantidad inválida');let to=String(m.to||'').trim();
  const t=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?to:E.uidByName(to);if(!t||t===u)return err('Jugador no encontrado (usa su nombre exacto o su código)');

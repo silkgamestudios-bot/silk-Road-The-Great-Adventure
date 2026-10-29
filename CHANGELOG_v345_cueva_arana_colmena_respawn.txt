@@ -1,0 +1,9 @@
+SILK ROAD MMORPG — v345
+Cueva de las Arañas: población tipo colmena y reaparición limitada
+
+- La Cueva de las Arañas (id ar), ubicada cerca del primer pueblo, ahora genera una población mucho más abundante de monstruos.
+- Se priorizan variantes de arañas en sus pisos; se eliminan murciélagos y escorpiones de los grupos normales de esta cueva.
+- Las arañas normales generadas en la cueva tienen un temporizador de reaparición de 60 segundos.
+- Cada araña puede reaparecer un máximo de 3 veces; después de su cuarta muerte queda fuera de combate y no reaparece en esa instancia.
+- El límite afecta solo a los mobs generados para la Cueva de las Arañas. Las demás cuevas, jefes y enemigos del mundo conservan sus reglas.
+- Se conservan los cambios de v344 de transferencia entre mochila y almacén.

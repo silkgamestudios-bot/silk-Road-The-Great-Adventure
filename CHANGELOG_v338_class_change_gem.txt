@@ -1,0 +1,7 @@
+Silk Road v338 — Fusión de cambios
+
+- Base conservada: v337, con reportes de nivel y acceso desde el menú Sistema.
+- Añadido el cambio de clase desde el panel de equipo del personaje.
+- Precio: 1 gema propia, cobrada y validada por el servidor en store.js.
+- Se conserva el nivel, nombre, inventario y progreso del personaje; la clase nueva se aplica tras confirmar.
+- Los ajustes GM para subir/bajar nivel y revisar reportes siguen en Zona GM > Incidencias > Reportes de nivel.

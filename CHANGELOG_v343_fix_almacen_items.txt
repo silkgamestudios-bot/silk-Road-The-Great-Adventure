@@ -1,0 +1,10 @@
+Silk Road v343 — Corrección de transferencia de objetos entre mochila y almacén
+
+- El depósito de equipo en modo online solo retira el objeto de la mochila después de que el servidor confirma que quedó guardado.
+- El retiro online valida el objeto, evita duplicados y bloquea la operación si la mochila está llena.
+- Las entregas de equipo no se marcan como recibidas si la mochila no tiene espacio; quedan pendientes para reintentarse.
+- La entrega evita duplicar un objeto que ya esté en la mochila o equipado.
+- El servidor devuelve una instantánea del almacén para evitar referencias mutables y emite sincronización de entidad tras cambios de propiedad.
+- Se mantiene el flujo local/offline existente.
+
+Validación: sintaxis Node de market.js y script_2.js; comprobación de scripts inline de play.html; integridad del ZIP. No se ha probado una sesión multijugador real.

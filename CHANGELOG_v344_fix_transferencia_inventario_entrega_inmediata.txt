@@ -1,0 +1,9 @@
+Silk Road v344 — Corrección de transferencia mochila/almacén
+
+- Las operaciones online de depósito/retiro de recursos devuelven ahora la entrega idempotente confirmada por el servidor.
+- El cliente aplica esa entrega inmediatamente al recibir la confirmación, sin depender de que el siguiente mensaje push llegue a tiempo.
+- Retirar equipo del almacén aplica inmediatamente la entrega con el ID original del objeto; se conserva la deduplicación por ID de entrega y por ID del objeto.
+- Se valida explícitamente la respuesta de depósito de recursos; ante un rechazo del servidor, no se muestra éxito.
+- Los mensajes de entrega siguen siendo idempotentes: si el push del servidor llega después, el ID ya aplicado evita duplicar el objeto o recurso.
+
+Pruebas estáticas realizadas: sintaxis JS, scripts inline de play.html e integridad del ZIP. No sustituye prueba de juego con servidor real.

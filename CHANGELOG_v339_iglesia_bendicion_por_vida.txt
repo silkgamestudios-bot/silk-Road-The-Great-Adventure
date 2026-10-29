@@ -1,0 +1,9 @@
+Silk Road v339 — Iglesia, Bendición por vida y cambio de clase
+
+- Se reutiliza la Iglesia para ambos servicios; no se crea una carpa nueva.
+- La Bendición se compra con oro según el nivel: base 2.000 en nivel 1, multiplicador 1,28 por nivel adicional hasta nivel 30, más 3% de impuesto.
+- La Bendición protege todo el oro, la mochila, la bolsa de loot y la mercancía al morir.
+- La Bendición se consume al morir y debe volver a comprarse para la siguiente vida.
+- Con Bendición, la pérdida de XP al morir es 25% de la XP necesaria para el nivel actual; sin Bendición continúa la penalización normal.
+- El cambio de clase se ofrece en la Iglesia y cuesta exclusivamente 1 gema propia; el servidor valida y descuenta la gema.
+- Se mantiene el nivel, nombre, inventario y progreso al cambiar de clase.

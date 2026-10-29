@@ -1,0 +1,15 @@
+Silk Road v340 — colisiones de edificios y consistencia de pociones
+
+1. Colisiones de edificios
+- Se añaden hitboxes a los edificios del pueblo usando las posiciones reales de BLD/TBL.
+- La iglesia incluye la torre alta en la zona sólida; el personaje ya no puede caminar sobre el edificio.
+- El área de colisión termina antes del punto exterior de interacción frente a la puerta.
+- Se aplica el mismo criterio al resto de edificios y carpas del pueblo.
+
+2. Pociones HP/MP
+- Límite coherente de 800 pociones HP y 800 MP en compra, carga, guardado, botín y almacén.
+- Se corrigen límites antiguos de 99 que descartaban pociones al recibir botín o al editar recursos.
+- Las pilas visuales de loot pueden seguir siendo de 99 por casilla; esto no limita el total que puede tener el personaje.
+- El almacén del servidor conserva cantidades acumuladas como una única cantidad por tipo de recurso y permite retirar cantidades parciales.
+
+Validación pendiente: ejecutar el juego conectado al servidor real y comprobar movimiento y compras/depósitos con una cuenta de prueba.

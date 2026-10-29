@@ -1,0 +1,11 @@
+Silk Road MMORPG v347 — Hordas y población persistente de cuevas
+
+- Cuevas con población tipo colmena y grupos de hasta 30 enemigos.
+- Población inicial por piso: 30 enemigos base, aumenta por profundidad y lejanía de ciudades, con límite de 240 por piso.
+- La población de cada cueva/piso queda guardada en P.dc (guardado del personaje).
+- Cada enemigo derrotado reduce la población disponible. Si el piso queda agotado, la reposición se programa a 90 días.
+- Al volver a entrar en un piso, se generan solamente los enemigos que queden en su población guardada.
+- Los enemigos de cuevas conservan la persecución y el retorno a su territorio mediante el límite de distancia existente.
+- La Torre y el Submundo mantienen sus reglas propias.
+
+Nota: los estados de población se guardan en la partida local del personaje; no son un contador global compartido entre todos los jugadores del servidor.

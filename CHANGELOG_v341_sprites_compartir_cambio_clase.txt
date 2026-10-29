@@ -1,0 +1,19 @@
+Silk Road v341 — sprites, botones de compartir/cancelar y cambio de clase
+
+1. Sprites nuevos de personajes
+- Los ocho sprites hn_*.png se activan por defecto aunque el navegador conserve una preferencia antigua que los desactivaba.
+- Se valida que las hojas tengan dimensiones mínimas de 96x128 antes de usarlas.
+- Se limpian las cachés de sprites/render al terminar la carga y se actualiza la versión de caché a v340.
+
+2. Cambio de clase en la iglesia
+- La compra exige una respuesta confirmada del servidor con la clase solicitada.
+- Se bloquean los botones durante la operación para evitar doble cobro o doble solicitud.
+- Se refrescan las gemas desde la respuesta del servidor, se aplica la clase, se guarda y se solicita sincronización.
+- El servidor incluye la clase autoritativa en el objeto de entitlements, para que el cliente mantenga la misma clase después de sincronizar.
+- El coste sigue siendo exactamente 1 gema propia; el servidor sigue siendo quien valida y cobra.
+
+3. Compartir
+- Se añadió Compartir en el menú de título y en la pantalla de introducción.
+- Usa el menú nativo de compartir si el navegador lo admite; si no, copia el enlace o muestra un campo para copiarlo.
+
+Validación realizada: sintaxis Node.js del servidor y economía; sintaxis de los scripts inline de play.html; integridad del ZIP. La prueba interactiva en un servidor real aún debe realizarse.

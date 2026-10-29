@@ -1,0 +1,18 @@
+Silk Road v342 — corrección de sprites, compartir y cambio de clase
+
+1. Botones del cambio de clase
+- Corregido el enrutamiento: Confirmar y Cancelar estaban dentro de #cls, fuera de #hero, pero sus acciones solo estaban conectadas al manejador de #hero. Ahora se procesan directamente en el modal correcto.
+- Cancelar cierra el modal y libera el estado de interacción; Escape también cierra el menú de cambio de clase.
+- Se mantiene el coste de exactamente 1 gema propia validado y cobrado por el servidor.
+- Se exige respuesta de servidor confirmada con clase y entitlements actualizados; los errores de sincronización posteriores no muestran una compra ya confirmada como fallida.
+
+2. Sprites nuevos de personajes
+- Actualizada la versión de consulta de las ocho hojas hn_*.png para evitar reutilizar archivos antiguos en caché.
+- Al cargar cada hoja se valida que mida al menos 96x128, se limpian las cachés de render y se fuerza una actualización de la interfaz.
+- Los sprites siguen activados por defecto, sin respetar la preferencia antigua que los dejaba apagados.
+
+3. Compartir
+- Se conserva el botón Compartir tanto en el menú de título como en la introducción.
+- Usa el diálogo nativo cuando está disponible; si no, copia el enlace o abre el campo de copia como alternativa.
+
+Validación técnica: sintaxis Node.js de store.js, script_2.js y server.js; sintaxis de los 12 bloques script de play.html; integridad del ZIP. No se ha probado en un servidor real ni en todos los navegadores.

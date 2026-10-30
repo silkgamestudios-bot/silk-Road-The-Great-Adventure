@@ -1674,7 +1674,7 @@ function cfOpen(c){if(P.bag.length>=BCAP()){toast('Mochila llena');return}const 
  if(MON()){mop('chest.open',{c,k:P.cls|0},r=>{if(r&&r.ok)toast('📦 ¡Cofre abierto!',3000)});return}
  P.fd[kk]--;P.fd[ff]--;const it=cfGen(c);P.bag.push(it);toast('📦 '+it.n+' ('+RN[it.r]+') · Nv '+it.rl,5000);vib([40,30,80]);chk();save();heroM()}
 const CX1='<div class="row2"><button data-h="x">Cerrar</button></div>';
-function eqHtml(){const o=eqT();let h=`<div class="eq-title-row"><h2>Equipo</h2><button type="button" class="sr-equipment-tree" data-sr-open-tree>✧ Árbol de habilidades</button></div><p>⚔️ +${o.dm}% daño · ❤️ +${o.hp} vida · 👟 +${o.sp}% vel. · 🪙 +${o.gd}% oro</p><div class="eqg">`;
+function eqHtml(){const o=eqT();let h=`<div class="eq-title-row"><h2>Equipo</h2></div><p>⚔️ +${o.dm}% daño · ❤️ +${o.hp} vida · 👟 +${o.sp}% vel. · 🪙 +${o.gd}% oro</p><div class="eqg">`;
  for(let s=0;s<NSL;s++){const it=P.eq[s];h+=`<button class="sl" data-h="un${s}">${it?`<img src="${ik(it)}" width="36" height="36" style="image-rendering:pixelated"><br><small style="color:${RC[it.r]}">${it.n}</small>`:`<span style="opacity:.55;font-size:12px">${SN[s]}<br>vacío</span>`}</button>`}
  h+=`</div><p style="margin:10px 0 2px"><b>Mochila (${P.bag.length}/${BCAP()})</b> · toca un espacio para desequipar</p>`;
  P.bag.forEach((it,i)=>{h+=`<div class="row" style="grid-template-columns:auto 1fr auto"><img src="${ik(it)}" width="32" height="32" style="image-rendering:pixelated"><span style="color:${RC[it.r]}"><b>${it.n}</b>${upTag(it)} · ${RN[it.r]}<br><small>${stTxt(it)}</small></span><button data-h="eq${i}">Equipar</button></div>`});
@@ -4867,7 +4867,7 @@ let BPG=0;function heroM(t){P.tc.mn=1;if(t==16&&!gmIsM())t=11;const h=$('hero'),
  else if(HT==1){const o=eqT(),nx=xpNeed(P.lv),PG=20,LST=LV?P.lb:P.bag,TOT=Math.max(LV?LCAP():BCAP(),LST.length),NP=Math.ceil(TOT/PG);if(LV&&SEL>=0&&SEL<1000)SEL=-1;if(!LV&&SEL>=1000)SEL=-1;BPG=Math.max(0,Math.min(BPG,NP-1));
   const elG=it=>{const r=resOf(it);return r?';border-color:'+ELCOL[r.e]+';box-shadow:0 0 12px '+ELCOL[r.e]+'99,inset 0 0 8px '+ELCOL[r.e]+'55':''},setSum=()=>{const rs={};for(let s=1;s<=5;s++){const it=P.eq[s],r=it&&resOf(it);if(r)rs[r.e]=(rs[r.e]||0)+r.p}const g=gearSk(),pt=Object.entries(rs).map(([e,p])=>'<span style="color:'+ELCOL[e]+'">'+ELI[e]+' −'+Math.min(45,p)+'% '+e+'</span>');if(g)pt.push('<span style="color:#c9b3ff">✨ +'+g+' pts '+hx(SKA[P.cls|0]||'habilidad')+'</span>');return pt.length?'<div class="eqset">'+pt.join('<br>')+'</div>':''},jwRow='<div class="jwr" title="Próximamente: joyería de Nv 10 a 1200">'+[['💍','Anillo'],['💍','Anillo'],['📿','Amuleto'],['✨','Pendientes']].map(a=>'<span class="jw"><i>'+a[0]+'</i><small>'+a[1]+'</small></span>').join('')+'<small class="jws">Joyería: próximamente</small></div>';
   const EM=['⚔️','🥋','⛑️','🧤','👖','🥾','🛡️'],sq=(i,it)=>it?`<button class="zs q${SEL==i?' sel':''}" style="--rc:${RC[it.r]}${elG(it)}" data-n="${hx(it.n).toLowerCase()}" data-sl="${it.sl}" data-h="sel${i}">${ZI(it)}${i>=NSL&&i<1000&&eqUp(it)?'<span class="upm">▲</span>':''}${i<NSL?`<span class="du${du(it)<30?' lo':''}"><b style="width:${du(it)}%"></b></span>`:''}</button>`:`<button class="zs${SEL==i?' sel':''}" data-h="sel${i}"><span class="ph">${i<NSL?EM[i]:''}</span></button>`,sl=x=>sq(x,P.eq[x]);
-  body=`<div class="sr-eq-tree-choice"><div class="sr-eq-tree-choice-icon">✧</div><div class="sr-eq-tree-choice-copy"><b>Árbol de habilidades</b><small>Explora las ramas de las clases y equipa hasta 3 habilidades secundarias.</small></div><button type="button" data-sr-open-tree>ABRIR ÁRBOL ›</button></div><div class="eqw"><div class="pnl"><div class="dl"><div class="col">${[2,1,4,5].map(sl).join('')}</div><div class="chr"><img src="${(!P.skin&&P.bsk&&bsIcon(P.bsk))||hnUrl(P.cls)||CI[P.cls]}"><span class="ped"></span><b>${P.name||CL().n}</b><small>${CL().n} · Nv ${P.lv}</small><div class="xpm xpl"><i style="width:${P.lv>=LVMAX?100:100*P.xp/nx}%"></i><em>Nv ${P.lv} / ${LVMAX} · ${P.lv>=LVMAX?'MÁX':Math.floor(100*P.xp/nx)+'%'}</em></div>${setSum()}</div><div class="col">${[0,6,3].map(sl).join('')}</div></div>${jwr()}<div class="eqst"><span>⚔️ ${dmg()}</span><span>❤️ ${Math.round(P.hp)}/${P.mhp}</span><span>💧 ${Math.floor(P.mp)}/${P.mmp}</span><span>👟 ${Math.round(CL().sp*.5*(1+o.sp/100)*mspd())}</span><span>🪙 ${sgn(o.gd)}%</span><span>📦 ${load()}/${capX()}</span></div>${skBars()}</div><div class="pnl"><div class="eqh"><span class="lvt"><button data-h="ev0" class="${LV?'':'on'}">🎒 Mochila <small>${P.bag.length}/${BCAP()}</small></button><button data-h="ev1" class="${LV?'on':''}">🧺 Loot <small>${P.lb.length}/${LCAP()}</small></button></span><span class="pgr"><input id="bgf" class="bgf" type="search" placeholder="Filtrar objeto…" value="${hx(window.BGF||'')}" autocomplete="off"><button data-h="eqall" title="Equipa automáticamente lo mejor de tu mochila">⚡<span class="eqlb"> Lo mejor</span></button><button data-h="zb${BPG-1}"${BPG?'':' disabled'}>‹</button><small>${BPG+1}/${NP}</small><button data-h="zb${BPG+1}"${BPG<NP-1?'':' disabled'}>›</button></span></div><div class="bgcats">${[[-1,'📦','Todo'],[0,'⚔️','Arma'],[1,'🥋','Torso'],[2,'⛑️','Cabeza'],[3,'🧤','Guantes'],[4,'👖','Piernas'],[5,'🥾','Botas'],[6,'🛡️','Escudo']].map(c=>`<button data-h="bgc" data-c="${c[0]}" class="${(window.BGC==null?-1:window.BGC)==c[0]?'on':''}"><span>${c[1]}</span><small>${c[2]}</small></button>`).join('')}</div><div class="zg bag">${Array.from({length:PG},(_,j)=>{const i=BPG*PG+j;return i<TOT?sq((LV?1000:NSL)+i,LST[i]):''}).join('')}</div></div></div>`;
+  body=`<div class="eqw"><div class="pnl"><div class="dl"><div class="col">${[2,1,4,5].map(sl).join('')}</div><div class="chr"><img src="${(!P.skin&&P.bsk&&bsIcon(P.bsk))||hnUrl(P.cls)||CI[P.cls]}"><span class="ped"></span><b>${P.name||CL().n}</b><small>${CL().n} · Nv ${P.lv}</small><div class="xpm xpl"><i style="width:${P.lv>=LVMAX?100:100*P.xp/nx}%"></i><em>Nv ${P.lv} / ${LVMAX} · ${P.lv>=LVMAX?'MÁX':Math.floor(100*P.xp/nx)+'%'}</em></div>${setSum()}</div><div class="col">${[0,6,3].map(sl).join('')}</div></div>${jwr()}<div class="eqst"><span>⚔️ ${dmg()}</span><span>❤️ ${Math.round(P.hp)}/${P.mhp}</span><span>💧 ${Math.floor(P.mp)}/${P.mmp}</span><span>👟 ${Math.round(CL().sp*.5*(1+o.sp/100)*mspd())}</span><span>🪙 ${sgn(o.gd)}%</span><span>📦 ${load()}/${capX()}</span></div>${skBars()}</div><div class="pnl"><div class="eqh"><span class="lvt"><button data-h="ev0" class="${LV?'':'on'}">🎒 Mochila <small>${P.bag.length}/${BCAP()}</small></button><button data-h="ev1" class="${LV?'on':''}">🧺 Loot <small>${P.lb.length}/${LCAP()}</small></button></span><span class="pgr"><input id="bgf" class="bgf" type="search" placeholder="Filtrar objeto…" value="${hx(window.BGF||'')}" autocomplete="off"><button data-h="eqall" title="Equipa automáticamente lo mejor de tu mochila">⚡<span class="eqlb"> Lo mejor</span></button><button data-h="zb${BPG-1}"${BPG?'':' disabled'}>‹</button><small>${BPG+1}/${NP}</small><button data-h="zb${BPG+1}"${BPG<NP-1?'':' disabled'}>›</button></span></div><div class="bgcats">${[[-1,'📦','Todo'],[0,'⚔️','Arma'],[1,'🥋','Torso'],[2,'⛑️','Cabeza'],[3,'🧤','Guantes'],[4,'👖','Piernas'],[5,'🥾','Botas'],[6,'🛡️','Escudo']].map(c=>`<button data-h="bgc" data-c="${c[0]}" class="${(window.BGC==null?-1:window.BGC)==c[0]?'on':''}"><span>${c[1]}</span><small>${c[2]}</small></button>`).join('')}</div><div class="zg bag">${Array.from({length:PG},(_,j)=>{const i=BPG*PG+j;return i<TOT?sq((LV?1000:NSL)+i,LST[i]):''}).join('')}</div></div></div>`;
   const cmpC=(it,q)=>['dm','hp','sp','gd','mp'].map(k=>{const df=Math.round((it[k]||0)*sgOf(it)-(q&&q[k]||0)*sgOf(q));return df?`<span class="${df>0?'up':'dn'}">${df>0?'▲':'▼'} ${Math.abs(df)} ${LB[k]}</span>`:''}).join(''),
   dtl=(it,chips,btns,dur)=>icard(it,chips,btns,dur);
   if(SEL<0)det='<small>Toca un objeto: equiparlo o tirarlo.</small>';
@@ -8085,6 +8085,30 @@ body.sr-title-screen #srTreeLaunch { display:none !important; }
  #srTreeLaunch{top:max(5px,env(safe-area-inset-top,0px))!important;right:5px!important;max-width:132px!important;font-size:10px!important;padding:5px 7px!important}
 }
 body.sr-title-screen #srTreeLaunch{display:none!important}
+</style>
+
+<style id="sr-v372-vertical-secondary-controls">
+/* v372: tres controles secundarios en columna vertical, en el hueco derecho
+   bajo el minimapa y por encima del paquete principal de acciones. */
+html body #sk, html body #sk2, html body #sk3{
+  position:absolute!important;
+  left:auto!important;
+  right:calc(var(--k,1)*22px)!important;
+  width:calc(var(--k,1)*48px)!important;
+  height:calc(var(--k,1)*48px)!important;
+  min-width:0!important;min-height:0!important;
+  margin:0!important;transform:none!important;
+  border-radius:50%!important;
+  z-index:49!important;
+}
+html body #sk{top:24%!important;bottom:auto!important}
+html body #sk2{top:32%!important;bottom:auto!important}
+html body #sk3{top:40%!important;bottom:auto!important}
+@media(max-height:520px){
+ html body #sk{top:22%!important}
+ html body #sk2{top:32%!important}
+ html body #sk3{top:42%!important}
+}
 </style>
 </body>
 <style id="sr-v371-secondary-controls-reposition">

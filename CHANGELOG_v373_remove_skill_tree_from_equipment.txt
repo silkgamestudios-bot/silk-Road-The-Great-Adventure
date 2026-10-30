@@ -1,0 +1,5 @@
+Silk Road v373 — Retirar acceso al Árbol de habilidades desde Equipo
+- Se eliminó el botón Árbol de habilidades del encabezado del panel Equipo.
+- Se eliminó la tarjeta ABRIR ÁRBOL dentro del contenido de Equipo.
+- El árbol de habilidades y sus funciones globales no se borran; solo se retira su acceso desde Equipo.
+- Se conserva el HUD v372 y el resto de las funciones.

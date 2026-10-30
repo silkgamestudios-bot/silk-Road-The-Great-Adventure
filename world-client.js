@@ -85,21 +85,63 @@ function xBuild(){const d=typeof DG!=='undefined'&&DG.f&&DG.id!='co'&&DG.id!='uw
 function xScope(){try{xBuild()}catch(e){XK='';XM=[]}if(typeof DG!=='undefined'&&DG.f)return XK;return 'w'}
 const xId=e=>e.dg?(e.xid!=null&&XM[e.xid]===e?e.xid:null):e.boss&&e.bi!=null?'b'+e.bi:(e.guard&&!e.horde&&e.li!=null)?'g'+e.li:null;
 function xFind(id){if(typeof id=='number')return XM[id]||null;const t=String(id),n=+t.slice(1);for(const e of E){if(t[0]=='b'&&e.boss&&e.bi===n)return e;if(t[0]=='g'&&e.guard&&!e.horde&&e.li===n)return e}return null}
-function xRecv(m){const sc=xScope();if(!sc||sc!==m.k)return;for(const a of (m.h||[])){const e=xFind(a[0]);let dm=Math.max(1,Math.min(1e9,+a[1]|0));if(!e||e.dead>0||!(e.hp>0)||e.pvg)continue;
-  const d=Math.hypot(e.x-P.x,e.y-P.y);window.__xrx=1;try{if(d<900)hitE(e,dm);else if(e.boss||e.guard)e.hp=Math.max(1,e.hp-dm);else{e.hp-=dm;if(e.hp<=0){e.hp=0;e.dead=e.dg?(DG.id=='to'?20:80):20}}}finally{window.__xrx=0}if((e.hp<=0||e.dead>0)&&XQ.length<24)XQ.push([a[0],1,1])}}
-{const _hx=hitE;hitE=function(e,dm){let id=null;try{if(!window.__xrx&&(on||uwJ)&&dm>0&&!e.pvg&&!e.tmp&&(e.dg||(typeof PP!='undefined'&&PP.pid)))id=xId(e)}catch(x){}const r=_hx.apply(this,arguments);try{if(id!=null&&XQ.length<24)XQ.push([id,Math.round(dm),e.hp<=0?1:0])}catch(x){}return r}}
-/* quien entra después a un piso recibe el estado actual: mobs ya muertos y daño acumulado */
+/* ===== v379: cuevas — todos ven los mismos enemigos =====
+   1) Daño y muertes: lo que pega un jugador llega a los demás (como antes), pero ahora la MUERTE se impone en todos los celulares
+      (aviso de muerte + repetición 3 s en el latido + consulta periódica al servidor), con la misma duración de reaparición (xResp).
+   2) Posición y vida: cada enemigo activo lo "maneja" el jugador más cercano a él (empate = uid menor). Ese celular manda
+      [id,x,y,vida,marca] cada ~0,2 s; los demás lo siguen (no corren su IA ni lo regeneran) y solo reciben su golpe si los alcanza.
+   3) Cada latido trae la posición del emisor (q) → todos saben quién está en la cueva (XU), también sin party. */
+const xN=()=>Date.now();
+let XU={},XHB=0,XQT=0;
+/* al entrar alguien más, las emboscadas personales que ya tenía (nadie más las ve) se disipan, salvo las que me están peleando */
+function xAmbClean(){for(let i=E.length-1;i>=0;i--){const e=E[i];if(!e||!e.amb||e.dg!==DG.f||e.dead>0)continue;if(Math.hypot(e.x-P.x,e.y-P.y)<420&&(e.hp<e.mx||e.ch>0))continue;E.splice(i,1)}}
+function xShared(){const n=xN();for(const u in XU)if(n-XU[u].t<5000)return true;return false}
+window.srXShared=xShared;
+function xKill(e,near){
+ if(!e||e.dead>0||!(e.hp>0)||e.boss||e.guard||e.pvg||e.ubs||e.drg||e.hzOff)return;
+ if(near){window.__xrx=1;try{hitE(e,Math.ceil(e.hp*(typeof egH=='function'?egH(e):1)/(1-Math.min(.9,e.df||0)))+2)}catch(x){}finally{window.__xrx=0}}
+ if(e.dead<=0){e.hp=0;e.dead=xResp(e)}}
+function xRecv(m){const sc=xScope();if(!sc||sc!==m.k)return;for(const a of (m.h||[])){const e=xFind(a[0]);if(!e||e.pvg||e.dead>0||!(e.hp>0))continue;const dm=Math.max(1,Math.min(1e9,+a[1]|0));
+  const d=Math.hypot(e.x-P.x,e.y-P.y);window.__xrx=1;try{if(d<900)hitE(e,dm);else if(e.boss||e.guard)e.hp=Math.max(1,e.hp-dm);else{e.hp-=dm;if(e.hp<=0){e.hp=0;e.dead=xResp(e)}}}catch(x){}finally{window.__xrx=0}
+  e.xhT=xN();if(a[2]&&e.dead<=0&&e.hp>0)xKill(e,d<900);
+  if((e.hp<=0||e.dead>0)&&XQ.length<24)XQ.push([a[0],1,1])}}
+{const _hx=hitE;hitE=function(e,dm){let id=null;try{if(!window.__xrx&&(on||uwJ)&&dm>0&&!e.pvg&&!e.tmp&&(e.dg||(typeof PP!='undefined'&&PP.pid)))id=xId(e)}catch(x){}const r=_hx.apply(this,arguments);try{if(e&&e.dg)e.xhT=xN();if(id!=null&&XQ.length<24)XQ.push([id,Math.round(dm),e.hp<=0?1:0])}catch(x){}return r}}
+/* quien entra después a un piso recibe el estado actual: mobs ya muertos y daño acumulado (se repite cada 15 s por si algún aviso se perdió) */
 let XL='',XA=new Set(),XAk='';
 function xState(m){const sc=xScope();if(!sc||sc!==m.k)return;if(XAk!==sc){XAk=sc;XA=new Set()}
- for(const a of (m.s||[])){const id=a[0];if(XA.has(id))continue;XA.add(id);const e=xFind(id);if(!e||e.dead>0)continue;
-  if(a[2]>=0){e.hp=0;e.dead=Math.max(4,(DG.id=='to'?20:80)-a[2]/1000)}else{const dm=+a[1]||0;if(dm>0&&e.hp>1)e.hp=Math.max(1,e.hp-dm)}}}
-/* posiciones: cada jugador manda dónde están los mobs cercanos a él; los demás con uid mayor los copian (así todos ven al mismo mob en el mismo sitio) */
+ for(const a of (m.s||[])){const id=a[0],e=xFind(id);if(!e)continue;const first=!XA.has(id);XA.add(id);if(e.dead>0)continue;
+  if(a[2]>=0){const rs=xResp(e)*1000;if(a[2]<rs-3000&&e.hp>0&&!e.hzOff&&!e.boss&&!e.guard){e.hp=0;e.dead=Math.max(4,(rs-a[2])/1000)}}
+  else if(first){const dm=+a[1]||0;if(dm>0&&e.hp>1)e.hp=Math.max(1,e.hp-dm)}}}
+/* ¿este celular es quien manda al mob e? = el jugador más cercano (con 90 px de tolerancia; el que ya lo manejaba tiene 60 px de ventaja; empate → uid menor) */
+function xDrv(e,n){const me=String(UID);let dmin=Math.hypot(e.x-P.x,e.y-P.y)-((e.xd&&n-(e.xdT||0)<900)?60:0);const L=[[me,dmin]];
+ for(const u in XU){const o=XU[u];if(n-o.t>2500)continue;const d=Math.hypot(e.x-o.x,e.y-o.y)-((e.xu===u&&n-(e.xut||0)<900)?60:0);L.push([u,d]);if(d<dmin)dmin=d}
+ let bu=null;for(const [u,d] of L)if(d<=dmin+90&&(bu===null||u<bu))bu=u;return bu===me}
 let XPT=0;
-function xPos(m){const sc=xScope();if(!sc||sc!==m.k||typeof UID=='undefined'||!(String(m.f)<String(UID)))return;
- for(const a of (m.p||[])){const e=XM[a[0]];if(!e||e.dead>0||!(e.hp>0)||e.pvg)continue;if(Math.hypot(e.x-P.x,e.y-P.y)<110)continue;
-  if(Math.hypot(a[1]-e.x,a[2]-e.y)>320){e.x=a[1];e.y=a[2];e.gs=0}else if(Math.hypot(a[1]-e.x,a[2]-e.y)>14){e.gx=a[1];e.gy=a[2];e.gs=1}}}
-function xSendPos(){const n=Date.now();if(n-XPT<220)return;XPT=n;const k=xScope();if(!k||k==='w')return;const L=[];for(const e of XM){if(!e||e.dead>0||!(e.hp>0))continue;if(Math.abs(e.x-P.x)>600||Math.abs(e.y-P.y)>600)continue;L.push([e.xid,Math.round(e.x),Math.round(e.y)]);if(L.length>=40)break}if(L.length)N.send({t:'wsp',k,p:L})}
-function xTick(){try{xSendPos()}catch(e){}const k=xScope();if(k!==XL){XL=k;if(k&&k!=='w'){setTimeout(()=>{if(xScope()===k)N.send({t:'wsq',k})},700);setTimeout(()=>{if(xScope()===k)N.send({t:'wsq',k})},3500)}}}
+function xPos(m){const sc=xScope();if(!sc||sc!==m.k||typeof UID=='undefined')return;const n=xN(),f=String(m.f),me=String(UID);if(f===me)return;
+ if(Array.isArray(m.q)){const was=xShared(),o=XU[f]||(XU[f]={x:0,y:0,t:0});o.x=+m.q[0]||0;o.y=+m.q[1]||0;o.t=n;if(!was){try{xAmbClean()}catch(x){}}}
+ for(const a of (m.p||[])){const e=XM[a[0]];if(!e||e.pvg||e.hzOff)continue;
+  if((a[4]|0)&1){if(e.dead<=0&&e.hp>0)xKill(e,Math.hypot(e.x-P.x,e.y-P.y)<900);continue}
+  if(e.dead>0||!(e.hp>0))continue;
+  if(e.xd&&n-(e.xdT||0)<900&&f>me)continue;   // lo manejo yo y mi uid es menor: el otro cede
+  e.xfT=n;e.xu=f;e.xut=n;e.xd=0;
+  const dd=Math.hypot(a[1]-e.x,a[2]-e.y);if(dd>320){e.x=a[1];e.y=a[2];e.gs=0}else if(dd>3){e.gx=a[1];e.gy=a[2];e.gs=1}
+  if(a[3]>0&&n-(e.xhT||0)>600)e.hp=Math.min(e.mx,a[3])}}
+function xSendPos(){const n=xN();if(n-XPT<220)return;XPT=n;const k=xScope();if(!k||k==='w'||typeof UID=='undefined')return;const me=String(UID),C=[];
+ if(!xShared()){if(n-XHB>700){XHB=n;N.send({t:'wsp',k,p:[]})}return}   // solo en la cueva: solo aviso que estoy (así me descubren), sin enviar enemigos a nadie
+ for(const e of XM){if(!e||e.hzOff)continue;
+  if(e.dead>0){if(e.xal){e.xal=0;e.xkT=n}if(e.xkT&&n-e.xkT<3000&&e.dead<1e8)C.push([0,e,1]);continue}
+  e.xkT=0;e.xal=1;if(!(e.hp>0)||Math.abs(e.x-P.x)>700||Math.abs(e.y-P.y)>700)continue;
+  if(!(e.mov||e.hp<e.mx||Math.abs(e.x-e.hx)+Math.abs(e.y-e.hy)>8||e.ch>0||e.stun>0)){e.xd=0;continue}
+  if(e.xfT&&n-e.xfT<900&&String(e.xu)<me){e.xd=0;continue}
+  if(!xDrv(e,n)){e.xd=0;continue}
+  if(e.xfT&&n-e.xfT>400)e.xfT=0;   // el anterior dejó de mandar: retomo su IA ya
+  C.push([Math.hypot(e.x-P.x,e.y-P.y),e,0])}
+ C.sort((a,b)=>a[0]-b[0]);const L=[];
+ for(const [d,e,fl] of C){if(L.length>=40)break;const x=Math.round(e.x),y=Math.round(e.y),hp=Math.round(e.hp);
+  if(!fl){const s=e.xs;if(s&&s[0]===x&&s[1]===y&&s[2]===hp&&n-s[3]<600)continue;e.xs=[x,y,hp,n];e.xd=1;e.xdT=n}
+  L.push([e.xid,x,y,hp,fl])}
+ if(L.length||n-XHB>700){XHB=n;N.send({t:'wsp',k,p:L})}}
+function xTick(){try{xSendPos()}catch(e){}const k=xScope(),n=xN();if(k!==XL){XL=k;XU={};XQT=n;if(k&&k!=='w'){setTimeout(()=>{if(xScope()===k)N.send({t:'wsq',k})},700);setTimeout(()=>{if(xScope()===k)N.send({t:'wsq',k})},3500)}}else if(k&&k!=='w'&&n-XQT>15000){XQT=n;N.send({t:'wsq',k})}}
 if(typeof drawTemple=='function'){const _t=drawTemple;drawTemple=function(cx,cy,now){_t(cx,cy,now);others(cx,cy,now)}}
 const OCOL=['#ffd24a','#9ad0ff','#b07dff','#e8d9a8','#7fffb0','#ffb070','#7fe06a','#ff8a8a'];
 function drawOFX(cx,cy){const n=Date.now();OFX=OFX.filter(f=>n-f.t<(f.ty?800:560));for(const f of OFX){const q=OT[f.u],bx=q?q.rx:f.x,by=q?q.ry:f.y,L=f.ty?800:560,k=(n-f.t)/L,x=bx-cx,y=by-cy;if(x<-400||x>VW+400||y<-400||y>VH+400)continue;const c=f.k,ca=Math.cos(f.a),sa=Math.sin(f.a);g.save();g.globalAlpha=1-k*.8;
@@ -136,7 +178,7 @@ setInterval(()=>{if(!ready()||!N.up())return;
  if(WQ.length)N.send({t:'wh',h:WQ.splice(0,12)})},100);
 setInterval(()=>{if(!on||!LS)return;const n=Date.now();if(n-LS>1500)return;   // vigilante: si el servidor no reporta un enemigo cercano en 4 s, vuelve a modo local (nunca queda inmortal)
  for(const e of NR){if(!e.sync||n-(e.lt||0)<4000||Math.abs(e.x-P.x)>800||Math.abs(e.y-P.y)>800)continue;if(e.dyn){dynRm(e.sid);continue}e.sync=0;e.stun=0;e.gs=0;e.sid=-1;if(!(e.hp>0))e.hp=Math.max(1,Math.round(e.mx*.05))}},1000);
-setInterval(()=>{if(!on)return;for(const e of E){if(!e.gs)continue;const dx=e.gx-e.x,dy=e.gy-e.y;if(Math.abs(dx)+Math.abs(dy)<1.5){e.x=e.gx;e.y=e.gy;e.gs=0}else{e.x+=dx*.4;e.y+=dy*.4}}},33);
+setInterval(()=>{const dgOn=typeof DG!=='undefined'&&DG.f&&XM.length>0;if(!on&&!dgOn)return;for(const e of (dgOn?XM:E)){if(!e||!e.gs)continue;const dx=e.gx-e.x,dy=e.gy-e.y;if(Math.abs(dx)+Math.abs(dy)<1.5){e.x=e.gx;e.y=e.gy;e.gs=0;if(dgOn)e.mov=0}else{e.x+=dx*.4;e.y+=dy*.4;if(dgOn){e.mov=1;e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')}}}},33);
 const _sk=skill;skill=function(i){const s0=P.sc?+P.sc[i]||0:0;_sk(i);if(on&&P.sc&&(+P.sc[i]||0)>s0+.2){const sp=(SP[P.cls|0]||[])[i]||{};const fd={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[P.dir||'down'];let b=null,bd=560;for(const e of E){if(!e.sync||e.dead>0)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;b=e}}N.send({t:'wa',k:P.cls|0,a:b?Math.atan2(b.y-P.y,b.x-P.x):fd,ty:String(sp.t||'hit'),r:Math.round((sp.r||90))})}};
 const _atk=atk;atk=function(auto){const c0=P.cd;_atk(auto);if(on&&!(c0>0)&&P.cd>0){let b=null,bd=560;for(const e of E){if(!e.sync||e.dead>0)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;b=e}}const fd={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[P.dir||'down'];N.send({t:'wa',k:P.cls|0,a:b?Math.atan2(b.y-P.y,b.x-P.x):fd})}};
 /* ===== COLISEO (v276): cliente de la arena. El servidor manda: tiempo, zona, vida igualada y premio. ===== */

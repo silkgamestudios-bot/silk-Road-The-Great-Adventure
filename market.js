@@ -219,7 +219,7 @@ ops['shop.item']=(u,m)=>{const r=shopOf(m,u);if(r.e)return r;const {s,sid,sa}=r,
  holdReg(c.it.id,sid,0);E.deliver(u,{gold:t.get,note:'💰 Vendiste '+c.it.n+' (+'+t.get+' 🪙)'});E.deliver(sid,{gold:-t.pay,item:c.it,note:'🎁 Compraste '+c.it.n,tr:1});shopTr(sid);return{ok:1}};
 
 /* ---------- 🎯 RECOMPENSAS POR JUGADORES (PvP, v148) ----------
-   Quien muere en PvP puede poner recompensa por la cabeza de su verdugo (oro, 💎 propias y/u objeto). El servidor retiene todo en custodia;
+   Quien muere en PvP puede poner recompensa por la cabeza de su verdugo (oro, 💎 y/u objeto). El servidor retiene todo en custodia;
    la cobra quien mate al buscado con la Licencia de Cazador activa. Si nadie la cobra en 72 h se devuelve (oro −10%). Poner el cartel cuesta 10% de oro extra. */
 const BTY_MIN=10000,BTY_FEE=.10,BTY_H=72,BTY_POSTED=3,BTY_ACC=5;
 const hOk=a=>(+a.px.bh||0)>now(),btyAll=()=>col('bty');
@@ -239,9 +239,9 @@ ops['bty.post']=(u,m)=>{btyClean();const a=E.acct(u),t=now(),tu=String(m.tu||'')
  const g=int(m.g,0,1e11,0),gems=int(m.m,0,100000,0),hasIt=m.item&&typeof m.item==='object';
  if(g<1&&gems<1&&!hasIt)return{e:'Pon una recompensa: oro, 💎 u objeto'};if(g>0&&g<BTY_MIN)return{e:'El oro mínimo es '+BTY_MIN.toLocaleString('es')+' 🪙'};
  const fee=Math.round(g*BTY_FEE);if(g>0&&E.avail(a,'gold')<g+fee)return{e:'⚠️ Oro insuficiente: necesitas '+(g+fee).toLocaleString('es')+' 🪙 (recompensa + 10% del cartel)'};
- if(gems>0&&(a.gem.own|0)<gems)return{e:'Te faltan '+(gems-(a.gem.own|0))+' 💎 propias (las transferidas no valen aquí)'};
+ if(gems>0&&E.gTot(a)<gems)return{e:'Te faltan '+(gems-E.gTot(a))+' 💎'};
  let it=null;if(hasIt){const c=claimItem(u,m.item);if(c.e)return c;it=c.it}
- const id='b'+E.rid(6);if(g>0)E.deliver(u,{gold:-(g+fee),note:'🎯 Cartel de recompensa por '+(ta.nm||'?')+' (−'+g+' y 10% de cartel)'});if(gems>0)E.spendGems(a,gems,true,'Recompensa por '+(ta.nm||'?'));
+ const id='b'+E.rid(6);if(g>0)E.deliver(u,{gold:-(g+fee),note:'🎯 Cartel de recompensa por '+(ta.nm||'?')+' (−'+g+' y 10% de cartel)'});if(gems>0)E.spendGems(a,gems,false,'Recompensa por '+(ta.nm||'?'));
  if(it)holdReg(it.id,'B:'+id,1);
  const b={id,t:tu,tn:ta.nm||(kb&&kb.n)||'Jugador',tc:ta.cls|0,tl:ta.lv|0,tb:ta.lbs||'',u,un:a.nm||'Jugador',g,m:gems,it,ts:t,ex:t+BTY_H*36e5,ac:[]};setDoc('bty',id,b);E.pushEnt(u);
  const v=btyView(b,'');for(const hu in S.ECO.acc){if(hu===u||hu===tu)continue;const ha=S.ECO.acc[hu];if(hOk(ha)&&S.online(hu))S.push(hu,{t:'wbt',b:btyView(b,hu)})}
@@ -264,7 +264,7 @@ function pvKill(ku,vu,fresh,kn){const ka=E.acct(ku),va=E.acct(vu),t=now();ka.pvk
  btyClean();const r={g:0,m:0,n:0,its:[]};if(!fresh||!hOk(ka))return r;
  for(const id in btyAll()){const b=btyAll()[id];if(b.t!==vu||b.u===ku)continue;
   if(b.g>0){E.deliver(ku,{gold:b.g,note:'🎯 Recompensa por '+b.tn+' (+'+b.g+' 🪙)'});r.g+=b.g}
-  if(b.m>0){E.grantGems(ku,b.m,'tr','Recompensa por '+b.tn);r.m+=b.m}
+  if(b.m>0){E.grantGems(ku,b.m,'own','Recompensa por '+b.tn);r.m+=b.m}
   if(b.it){holdReg(b.it.id,ku,0);E.deliver(ku,{item:b.it,note:'🎯 Recompensa: '+b.it.n});r.its.push(b.it.n)}
   r.n++;delDoc('bty',id);if(S.online(b.u))S.push(b.u,{t:'note',m:'🎯 '+(ka.nm||'Un cazador')+' cobró tu recompensa por '+b.tn+'.'})}
  if(r.n)E.pushEnt(ku);return r}

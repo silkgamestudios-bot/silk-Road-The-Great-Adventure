@@ -1,6 +1,6 @@
 /* 🏰 TERRITORIOS DE GREMIO (v155)
    20 tierras lejanas de 60×60 casillas. Un gremio reclama UNA y elige tamaño (pequeño/mediano/grande según sus miembros).
-   Planos = gemas propias del líder/oficial. Territorio y tributo = oro del tesoro del gremio. Construcción manual (barra de progreso, más gente = más rápido).
+   Planos = gemas del líder/oficial. Territorio y tributo = oro del tesoro del gremio. Construcción manual (barra de progreso, más gente = más rápido).
    Cualquier gremio rival puede destruir piezas; si cae la Bandera, el territorio queda libre y el atacante tiene 60 min de prioridad para reclamarlo.
    Todo (colisión, vida de las piezas, costos) lo decide el servidor. */
 module.exports=function(S,E){
@@ -17,7 +17,7 @@ if(process.env.TERR_MIN!=null)for(const k in SZ)SZ[k].min=+process.env.TERR_MIN;
 /* piezas: vida, materiales (provisiones del mercado: mad=madera, pie=piedra, hie=hierro), segundos de construcción, pass=los miembros del gremio pasan */
 const PC={W:{n:'Muro',hp:9000,m:{mad:2,pie:2},t:5},G:{n:'Puerta',hp:12000,m:{mad:4,hie:2},t:8,pass:1},T:{n:'Torre',hp:20000,m:{mad:8,pie:8,hie:4},t:12},
  h:{n:'Pared de casa',hp:6000,m:{mad:3,pie:1},t:4},d:{n:'Puerta de casa',hp:5000,m:{mad:3},t:4,pass:1},F:{n:'Bandera',hp:0,m:{},t:0}};
-/* planos (se compran una vez por gremio con 💎 propias) */
+/* planos (se compran una vez por gremio con 💎) */
 const BP={muroH:{n:'Muralla horizontal (5)',plan:'muro',w:5,h:1,f:(x,y)=>'W'},muroV:{n:'Muralla vertical (5)',plan:'muro',w:1,h:5,f:()=>'W'},
  puerta:{n:'Puerta',plan:'puerta',w:1,h:1,f:()=>'G'},torre:{n:'Torre',plan:'torre',w:1,h:1,f:()=>'T'},
  casa:{n:'Casa (5×4)',plan:'casa',w:5,h:4,f:(x,y)=>(x===0||y===0||x===4||y===3)?((x===2&&y===3)?'d':'h'):null}};
@@ -67,7 +67,7 @@ function fall(i,byG,why){const t=TT[i];if(!t)return;const g=gOf(t.g),by=gOf(byG)
 /* ---------- consulta para el panel ---------- */
 function view(u){const gid=gidOf(u),g=gOf(gid),a=E.acct(u),r=rankOf(g,u),id=g?terrOfG(gid):null,t=id!=null?TT[id]:null;
  const o={ok:1,plots:metaAll(),sz:SZ,plan:PLAN,bpl:Object.fromEntries(Object.entries(BP).map(([k,b])=>[k,{n:b.n,plan:b.plan,w:b.w,h:b.h}])),pcd:Object.fromEntries(Object.entries(PC).map(([k,p])=>[k,{n:p.n,hp:p.hp,m:p.m,t:p.t}])),
-  me:{r,gid,leader:g&&g.leader===u?1:0,n:g?nMem(g):0,bank:g?g.bank|0:0,plans:g?(g.plans||{}):{},gem:a.gem.own},
+  me:{r,gid,leader:g&&g.leader===u?1:0,n:g?nMem(g):0,bank:g?g.bank|0:0,plans:g?(g.plans||{}):{},gem:E.gTot(a)},
   top:Object.values(G()).map(x=>({tag:x.tag,name:x.name,pw:power(x)})).filter(x=>x.pw>0).sort((p,q)=>q.pw-p.pw).slice(0,10)};
  if(t){const s=SZ[t.sz],week=weekly(t,g),ar=area(+id,t.sz),f=Object.entries(t.pcs).find(([,p])=>p[0]==='F');
   const ghl=Object.entries(t.gh).map(([k,kk])=>{const [x,y]=k.split(',').map(Number);return[x,y,kk]});
@@ -82,14 +82,14 @@ ops['tr.claim']=(u,m)=>{const gid=gidOf(u),g=gOf(gid),i=Math.floor(+m.plot),sz=S
  const r=RS[i];if(r&&r.until>now()&&r.g!==gid)return err('Reservada unos minutos para el gremio que destruyó su Bandera');
  const s=SZ[sz];if(nMem(g)<s.min)return err('Para el tamaño '+s.n+' necesitas '+s.min+' miembros (tienes '+nMem(g)+')');
  if((g.bank|0)<s.gold)return err('El tesoro necesita '+s.gold+' 🪙 (tiene '+(g.bank|0)+')');const a=E.acct(u);
- if(!E.spendGems(a,s.gems,true,'Plano de territorio '+s.n))return err('Te faltan '+(s.gems-a.gem.own)+' 💎 propias para el plano');
+ if(!E.spendGems(a,s.gems,false,'Plano de territorio '+s.n))return err('Te faltan '+(s.gems-E.gTot(a))+' 💎 para el plano');
  g.bank-=s.gold;delete RS[i];const t=TT[i]={g:gid,sz,ts:now(),pcs:{},gh:{},next:now()+WEEK,debt:0,warn:0};
  const ar=area(i,sz);let cx=Math.floor((ar.x0+ar.x1)/2),cy=Math.floor((ar.y0+ar.y1)/2),best=null;
  for(let d=0;d<12&&!best;d++)for(let yy=cy-d;yy<=cy+d&&!best;yy++)for(let xx=cx-d;xx<=cx+d;xx++){if(Math.max(Math.abs(xx-cx),Math.abs(yy-cy))!==d)continue;if(!W().tsolid(xx,yy)){best=[xx,yy];break}}
  const c=best||[cx,cy];putPiece(i,t,c[0],c[1],'F',a.nm);glog(g,'🏰 '+(a.nm||'El líder')+' reclamó Tierra '+(i+1)+' ('+s.n+') por '+s.gold+' 🪙');
  S.dirty();E.pushEnt(u);pushMeta();flush();S.log('[territorio] '+g.tag+' reclama '+i+' '+sz);return view(u)};
 ops['tr.buybp']=(u,m)=>{const gid=gidOf(u),g=gOf(gid),k=String(m.plan||'');if(!g||rankOf(g,u)<1)return err('Solo líder u oficiales compran planos');if(!PLAN[k])return err('Plano desconocido');
- g.plans=g.plans||{};if(g.plans[k])return err('Tu gremio ya tiene ese plano');const a=E.acct(u);if(!E.spendGems(a,PLAN[k].gems,true,'Plano '+PLAN[k].n))return err('Te faltan '+(PLAN[k].gems-a.gem.own)+' 💎 propias');
+ g.plans=g.plans||{};if(g.plans[k])return err('Tu gremio ya tiene ese plano');const a=E.acct(u);if(!E.spendGems(a,PLAN[k].gems,false,'Plano '+PLAN[k].n))return err('Te faltan '+(PLAN[k].gems-E.gTot(a))+' 💎');
  g.plans[k]=1;glog(g,'📐 '+(a.nm||'Un oficial')+' compró el plano de '+PLAN[k].n);S.dirty();E.pushEnt(u);return view(u)};
 const ptile=(u)=>{const w=W().where(u);if(!w||w.dg||w.city)return null;return{x:w.x/32,y:w.y/32}};
 ops['tr.plan']=(u,m)=>{const gid=gidOf(u),g=gOf(gid),i=terrOfG(gid),b=BP[String(m.bp||'')];if(!g||i==null)return err('Tu gremio no tiene territorio');if(rankOf(g,u)<1)return err('Solo líder u oficiales colocan planos');if(!b)return err('Plano desconocido');

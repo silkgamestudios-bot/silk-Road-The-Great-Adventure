@@ -24,11 +24,11 @@ function gTranslate(text,target){
   const rq=require('https').request({hostname:'translation.googleapis.com',path:'/language/translate/v2?key='+encodeURIComponent(TR_KEY),method:'POST',headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)},timeout:6000},r=>{let d='';r.on('data',c=>{d+=c;if(d.length>20000)r.destroy()});r.on('end',()=>{try{const j=JSON.parse(d),x=j.data.translations[0];res(done({t:String(x.translatedText||'').slice(0,400),src:String(x.detectedSourceLanguage||'').slice(0,5)}))}catch(e){rej(new Error('bad'))}})});
   rq.on('timeout',()=>rq.destroy(new Error('timeout')));rq.on('error',rej);rq.end(body)})}
 ops['soc.lang']=(u,m)=>{const l=String(m.l||'');if(!LANGS.includes(l))return err('Idioma no válido');acctOf(u).lang=l;S.dirty();return{ok:1,lg:l}};
-/* servicio premium 🌐 Traducción: 10 💎 propias = 30 días (máx. 90 acumulados), igual que los demás servicios de la tienda */
+/* servicio premium 🌐 Traducción: 10 💎 = 30 días (máx. 90 acumulados), igual que los demás servicios de la tienda */
 const TL_GEMS=10,TL_D=30,DAYMS=864e5,tlOf=u=>{const a=acctOf(u);return(a.px&&+a.px.tl)||0};
 ops['tl.buy']=(u)=>{const a=acctOf(u),t=now(),cur=tlOf(u);if(!a.px)a.px={};
  if(Math.max(t,cur)-t+TL_D*DAYMS>90*DAYMS)return err('Máximo 90 días acumulados');
- if(!E.spendGems(a,TL_GEMS,true,'Traducción premium '+TL_D+' d'))return err('Te falta '+TL_GEMS+' 💎 propia (las transferidas solo valen para apariencias)');
+ if(!E.spendGems(a,TL_GEMS,false,'Traducción premium '+TL_D+' d'))return err('Te faltan 💎: la traducción cuesta '+TL_GEMS+' 💎');
  a.px.tl=Math.max(t,cur)+TL_D*DAYMS;S.dirty();E.pushEnt(u);if(S.log)S.log('[tienda] '+(a.nm||u)+' compró traducción '+TL_D+'d');return{ok:1,ent:E.ent(u),tl:a.px.tl,cost:TL_GEMS}};
 ops['chat.tr']=async(u,m)=>{const a=acctOf(u),lg=langOf(u);if(!lg)return err('Elige primero tu idioma');
  if(tlOf(u)<=now())return{ok:1,need:1,cost:TL_GEMS,days:TL_D};
@@ -79,4 +79,6 @@ ops['soc.unblock']=(u,m)=>{const t=String(m.u||''),s=so(u);s.bl=s.bl.filter(x=>x
 const presence=(u,on)=>{const s=ECO.soc[u];if(!s)return;for(const f of s.fr)if(S.online(f))S.push(f,{t:'fp',u,nm:nm(u),on:on?1:0})};
 /* mensaje de sistema en el chat global (avisos de reinicio, etc.) */
 const sys=t=>{const msg={u:'sys',nm:'📢 Servidor',gt:'',t:String(t).slice(0,200),ts:now(),sys:1};GLOB.push(msg);if(GLOB.length>GMAX)GLOB.shift();for(const id of Object.keys(ECO.acc))if(S.online(id))S.push(id,{t:'cg',m:msg})};
-return{ops,presence,state,sys,tagOf:null}};
+/* v382: al vender un personaje se borran sus amigos, solicitudes, bloqueos y mensajes (y los hilos que otros tenían con él): el comprador empieza limpio y nadie confunde al nuevo dueño con el anterior. Los bloqueos que otros pusieron se mantienen. */
+function wipe(t){t=String(t);for(const p of Object.keys(ECO.soc)){if(p===t)continue;const o=ECO.soc[p];if(!o)continue;if(Array.isArray(o.fr))o.fr=o.fr.filter(x=>x!==t);if(Array.isArray(o.rq))o.rq=o.rq.filter(x=>x!==t);if(o.dm&&has(o.dm,t))delete o.dm[t]}delete ECO.soc[t];S.dirty()}
+return{ops,presence,state,sys,wipe,tagOf:null}};

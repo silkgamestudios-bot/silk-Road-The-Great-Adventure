@@ -174,9 +174,9 @@ P.misiones=()=>head('Misiones diarias','Objetivos que se renuevan cada día')
 P.carpas=()=>head('Carpas y edificios','Los servicios que encuentras en cada ciudad')
  +'<div class="grid g3">'+W.bld.map(b=>'<div class="card"><span class="ico">'+b.ic+'</span><h3>'+esc(b.n)+'</h3><p>'+esc(b.d)+'</p></div>').join('')+'</div>';
 
-P.premium=()=>head('Servicios premium','Se pagan con gemas propias. Mejoran la comodidad, no la fuerza')
+P.premium=()=>head('Servicios premium','Se pagan con gemas. Mejoran la comodidad, no la fuerza')
  +tbl(['','Servicio','Qué hace','Duración y precio'],W.prem.map(p=>[p.ic,'<b>'+esc(p.n)+'</b>',esc(p.d),p.dur.map((d,i)=>d+' días: '+gem(p.p[i])).join('<br>')]))
- +note('Máximo 90 días acumulados por servicio. Las gemas <b>propias</b> se usan para servicios; las <b>transferidas</b> solo valen para apariencias.')
+ +note('Máximo 90 días acumulados por servicio. Todas las gemas valen para todo: servicios, apariencias, Bonus, boletos y gremios, vengan de una recarga, del Mercado de Gemas o de otro jugador.')
  +note('<b>🌐 Traducción del chat:</b> 10 💎 por 30 días. Pulsa 🌐 junto a cualquier mensaje de otro idioma para leerlo en el tuyo. Elegir tu idioma es gratis.');
 
 P.gremios=()=>head('Gremios y territorios','Une a tus amigos y reclama tu pedazo de la Ruta')

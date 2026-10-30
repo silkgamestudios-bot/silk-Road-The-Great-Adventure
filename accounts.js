@@ -67,7 +67,7 @@ function pre(m,ip,rep,done,E){
   mkPw(p).then(pw=>{a.h=pw.h;a.s=pw.s;a.rc=null;a.f=0;a.lk=0;for(const t in SES)if(SES[t].u===a.u)delete SES[t];dirty();rep({t:'rec',ok:1,done:1,m:'Contraseña cambiada. Ya puedes entrar.'})}).catch(()=>bad());return true}
  return false}
 /* ---- operaciones con sesión iniciada ---- */
-const byUid=u=>Object.values(USR).find(x=>x.u===u);
+const byUid=u=>{if(ctx.prim)u=ctx.prim(u);return Object.values(USR).find(x=>x.u===u)};   /* v381: un personaje adicional se resuelve a su cuenta */
 const ops={
  'acc.info':u=>{const a=byUid(u);return a?{n:a.n,e:a.e,pw:1}:{pw:0}},
  'acc.pw':async(u,m)=>{const a=byUid(u);if(!a)return{e:'Esta cuenta no usa contraseña'};if(u===masterUid)return{e:'La contraseña del master se cambia en Render'};

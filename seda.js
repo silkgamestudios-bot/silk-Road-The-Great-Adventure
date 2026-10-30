@@ -3,7 +3,7 @@
    · Publicar (vender o poner una orden de compra) exige tener activo el 🎯 Combo Cazador (o VIP, que ya lo incluye). Comprar lo ya publicado: libre.
    · Comisión 3% al que publica (maker: se cobra al publicar y NO se devuelve) y 3% al que acepta la oferta (taker).
    · Las ofertas duran 8 días; al vencer o al retirarlas, lo publicado vuelve a su dueño (la comisión de publicar no).
-   · Las gemas que se compran aquí llegan como TRANSFERIDAS (solo apariencias/Bonus, nunca Premium/VIP): igual que antes. */
+   · v380: las gemas que se compran aquí son gemas normales: valen para TODO (apariencias, VIP, boletos, Bonus, gremios…). */
 module.exports=function(S,E){
 const DB=S.DB,ops={},err=e=>({e}),now=()=>Date.now(),DAY=864e5,EXP_MS=+process.env.SEDA_EXP_MS||8*DAY,MAXO=20;
 const int=(v,a,b,d)=>{v=Math.floor(+v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d};
@@ -23,7 +23,7 @@ const note=(u,m)=>{E.deliver(u,{note:m})};
 function giveBack(o,why){const a=E.acct(o.u);
  if(o.mk==='i'&&o.sd==='s'){holdReg(o.it.id,o.u,0);E.deliver(o.u,{item:o.it,note:'↩️ '+why+': te devolvemos '+o.it.n})}
  else if(o.mk==='i'||o.mk==='g'&&o.sd==='b'){const g=(o.q|0)*(o.p|0);if(g>0)E.deliver(o.u,{gold:g,note:'↩️ '+why+': te devolvemos '+g+' 🪙 de tu orden de compra'})}
- else if(o.mk==='g'){a.gem.own+=o.ow|0;a.gem.tr+=o.tr|0;E.glAdd(a,o.q|0,'Mercado de Gemas: '+why);S.dirty();E.pushEnt(o.u);note(o.u,'↩️ '+why+': te devolvemos '+o.q+' 💎')}
+ else if(o.mk==='g'){a.gem.own+=(o.ow|0)+(o.tr|0);E.glAdd(a,o.q|0,'Mercado de Gemas: '+why);S.dirty();E.pushEnt(o.u);note(o.u,'↩️ '+why+': te devolvemos '+o.q+' 💎')}
  else if(o.mk==='t'){const t=tkOf(a);t[o.tk]=(t[o.tk]|0)+(o.q|0);S.dirty();E.pushEnt(o.u);note(o.u,'↩️ '+why+': te devolvemos '+o.q+' × '+(TKN[o.tk]||o.tk))}}
 function sweep(){try{const t=now(),M=SM();let n=0;for(const id of Object.keys(M)){const o=M[id];if(o.exp<=t){delete M[id];giveBack(o,'Tu oferta venció (8 días)');n++}}if(n){S.dirty();S.log('[mercado] vencieron '+n+' ofertas')}}catch(e){S.log('mercado sweep: '+e.message)}}
 /* ---------- migración del mercado de gemas anterior (gmk) ---------- */
@@ -41,7 +41,7 @@ ops['sm.new']=(u,m)=>{const a=E.acct(u),mk=String(m.mk||''),sd=String(m.sd||'');
   const best=Object.values(SM()).filter(o=>o.mk==='i'&&o.sd==='s'&&o.ck===s0+'|'+n&&o.it.r>=rmin).sort((x,y)=>x.p-y.p)[0];if(best&&best.p<=p)return err('Ya hay uno en venta a '+best.p+' 🪙: cómpralo directo');
   E.deliver(u,{gold:-(cost+fee),note:'🧾 Orden de compra: '+cost+' 🪙 en depósito + '+fee+' de comisión (no se devuelve)'});SM()[id]=Object.assign(base,{ck:s0+'|'+n,sl:s0,n,rmin,q});S.dirty();return{ok:1,id,ent:E.ent(u)}}
  if(mk==='g'&&sd==='s'){const q=int(m.q,1,1e6,0);if(!q)return err('Cantidad inválida');if(E.gTot(a)<q)return err('No tienes tantas gemas');const fee=mkF(q*p);if(gold()<fee)return err('Necesitas '+fee+' 🪙 para la comisión de publicar (3%)');
-  const tr=Math.min(a.gem.tr,q),ow=q-tr;if(!E.spendGems(a,q,false,'Mercado de Gemas: puestas en venta'))return err('Saldo insuficiente');
+  const tr=0,ow=q;if(!E.spendGems(a,q,false,'Mercado de Gemas: puestas en venta'))return err('Saldo insuficiente');
   const best=Object.values(SM()).filter(o=>o.mk==='g'&&o.sd==='b').sort((x,y)=>y.p-x.p)[0];
   E.deliver(u,{gold:-fee,note:'🧾 Comisión de publicar: −'+fee+' 🪙 (no se devuelve)'});SM()[id]=Object.assign(base,{q,ow,tr});S.dirty();E.pushEnt(u);return{ok:1,id,ent:E.ent(u),cross:best&&best.p>=p?best.p:0}}
  if(mk==='g'&&sd==='b'){const q=int(m.q,1,1e6,0);if(!q)return err('Cantidad inválida');const cost=q*p,fee=mkF(cost);if(gold()<cost+fee)return err('Necesitas '+(cost+fee)+' 🪙 ('+cost+' en depósito + '+fee+' de comisión)');
@@ -61,10 +61,10 @@ function buyFrom(u,id,n){const o=SM()[id];if(!o||o.sd!=='s')return err('La ofert
  const so=E.acct(o.u);let what='';
  if(o.mk==='i'){what=o.it.n;delete SM()[id];holdReg(o.it.id,u,0);E.deliver(u,{gold:-(cost+fee),item:o.it,note:'🛒 Compraste '+o.it.n+' (−'+(cost+fee)+' 🪙, incluye 3% de comisión)'});E.deliver(o.u,{gold:cost,note:'💰 Vendiste '+o.it.n+' a '+(b.nm||'un jugador')+': +'+cost+' 🪙'})}
  else if(o.mk==='g'){what=n+' gemas';const t=Math.min(o.tr|0,n);o.tr=(o.tr|0)-t;o.ow=(o.ow|0)-(n-t);o.q-=n;if(o.q<=0)delete SM()[id];
-  E.deliver(u,{gold:-(cost+fee),note:'💎 Compraste '+n+' gemas (−'+(cost+fee)+' 🪙, incluye 3% de comisión) · llegan como transferidas'});E.deliver(o.u,{gold:cost,note:'💰 Vendiste '+n+' gemas a '+(b.nm||'un jugador')+': +'+cost+' 🪙'});
-  b.gem.tr+=n;E.glAdd(b,n,'(transferidas) Mercado de Gemas a '+o.p+' 🪙');E.pushEnt(u)}
+  E.deliver(u,{gold:-(cost+fee),note:'💎 Compraste '+n+' gemas (−'+(cost+fee)+' 🪙, incluye 3% de comisión) · valen para todo'});E.deliver(o.u,{gold:cost,note:'💰 Vendiste '+n+' gemas a '+(b.nm||'un jugador')+': +'+cost+' 🪙'});
+  b.gem.own+=n;E.glAdd(b,n,'Mercado de Gemas a '+o.p+' 🪙');E.pushEnt(u)}
  else{what=n+' × '+(TKN[o.tk]||o.tk);o.q-=n;if(o.q<=0)delete SM()[id];
-  if(o.cur==='m'){E.spendGems(b,cost+fee,false,'Compra de boleto '+o.tk);so.gem.tr+=cost;E.glAdd(so,cost,'(transferidas) venta de boleto '+o.tk);E.deliver(o.u,{note:'💰 Vendiste '+what+' a '+(b.nm||'un jugador')+': +'+cost+' 💎 (llegan como transferidas)'});E.pushEnt(o.u)}
+  if(o.cur==='m'){E.spendGems(b,cost+fee,false,'Compra de boleto '+o.tk);so.gem.own+=cost;E.glAdd(so,cost,'venta de boleto '+o.tk);E.deliver(o.u,{note:'💰 Vendiste '+what+' a '+(b.nm||'un jugador')+': +'+cost+' 💎'});E.pushEnt(o.u)}
   else{E.deliver(u,{gold:-(cost+fee),note:'🎟️ Compraste '+what+' (−'+(cost+fee)+' 🪙, incluye 3% de comisión)'});E.deliver(o.u,{gold:cost,note:'💰 Vendiste '+what+' a '+(b.nm||'un jugador')+': +'+cost+' 🪙'})}
   const t=tkOf(b);t[o.tk]=(t[o.tk]|0)+n;E.pushEnt(u);if(o.cur==='m')S.push&&0}
  hist({ts:now(),mk:o.mk,s:o.u,b:u,n,p:o.p,cur:o.cur||'g',w:what,sn:so.nm||'',bn:b.nm||''});S.dirty();S.log('[mercado] '+(b.nm||u)+' compró '+what+' a '+(so.nm||o.u)+' por '+cost);return{ok:1,paid:cost+fee,ent:E.ent(u)}}
@@ -75,7 +75,7 @@ function sellInto(u,id,n,raw){const o=SM()[id];if(!o||o.sd!=='b')return err('La 
   hist({ts:now(),mk:'i',s:u,b:o.u,n:1,p:cost,cur:'g',w:it.n,sn:a.nm||'',bn:bo.nm||''});S.dirty();return{ok:1,got:cost-fee,ent:E.ent(u)}}
  if(o.mk==='g'){n=int(n,1,o.q,0);if(!n)return err('Cantidad no disponible (piden '+o.q+')');if(E.gTot(a)<n)return err('No tienes tantas gemas');const cost=n*o.p,fee=tkF(cost);
   if(!E.spendGems(a,n,false,'Vendidas en el Mercado de Gemas'))return err('Saldo insuficiente');o.q-=n;if(o.q<=0)delete SM()[id];
-  bo.gem.tr+=n;E.glAdd(bo,n,'(transferidas) Mercado de Gemas a '+o.p+' 🪙');E.pushEnt(o.u);E.deliver(o.u,{note:'💎 Se cumplió tu orden: recibiste '+n+' gemas (transferidas)'});E.deliver(u,{gold:cost-fee,note:'💰 Vendiste '+n+' gemas a '+(bo.nm||'un jugador')+': +'+(cost-fee)+' 🪙 (−3% de comisión)'});
+  bo.gem.own+=n;E.glAdd(bo,n,'Mercado de Gemas a '+o.p+' 🪙');E.pushEnt(o.u);E.deliver(o.u,{note:'💎 Se cumplió tu orden: recibiste '+n+' gemas'});E.deliver(u,{gold:cost-fee,note:'💰 Vendiste '+n+' gemas a '+(bo.nm||'un jugador')+': +'+(cost-fee)+' 🪙 (−3% de comisión)'});
   hist({ts:now(),mk:'g',s:u,b:o.u,n,p:o.p,cur:'g',w:n+' gemas',sn:a.nm||'',bn:bo.nm||''});S.dirty();E.pushEnt(u);return{ok:1,got:cost-fee,ent:E.ent(u)}}
  return err('Esa orden no se puede llenar')}
 ops['sm.sell']=(u,m)=>sellInto(u,String(m.id||''),m.n,m.item);

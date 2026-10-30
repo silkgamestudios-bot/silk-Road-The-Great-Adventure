@@ -22,20 +22,86 @@ const ARQ={ar1:['pie',1,1],ar2:['cob',1,1],ar3:['hie',1,2],ar4:['pla',1,2],ar5:[
 const KEYK=new Set(['kl1','kl2','kl3','kl4','kl5','kl6','cf1','cf2','cf3','cf4','cf5','cf6']);
 const MNK=['pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','pat','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','cbl','obs','cua','tur','mgm','jad','ama','amb','top','esa','cri','opf','lte'];
 const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13500,m:{cob:12,hie:6},p:1},{g:24000,m:{hie:12,pla:4},p:.9},{g:37500,m:{hie:16,pla:8},p:.8},{g:54000,m:{pla:14,aur:4},p:.66},{g:73500,m:{pla:18,aur:8,rub:1},p:.52},{g:96000,m:{aur:12,mit:4,esm:2},p:.4},{g:121500,m:{aur:14,mit:8,dia:1},p:.28},{g:150000,m:{mit:14,dia:3,zaf:2},p:.18},{g:220000,m:{mit:20,dia:4,des:6},p:.1},{g:320000,m:{dia:8,des:12,dco:1},p:.05}];
+/* ---------- v381: VARIOS PERSONAJES POR CUENTA ----------
+   Cada personaje es un jugador completo (uid, guardado, nombre, nivel, gremio y mercado propios). El PRIMERO es el uid de la cuenta de siempre (no se migra nada);
+   los demás se anotan en ACC[cuenta].ch y ACC[cuenta].cc recuerda el último elegido. La CARTERA de la cuenta (gemas, apariencias, VIP, licencias, boletos, idioma,
+   avisos antitrampa) existe UNA sola vez, en el registro de la cuenta: los otros personajes la leen y escriben a través de ella (nunca hay dos copias).
+   CHAR_SLOTS (variable de Render) cambia cuántos personajes caben por cuenta (por defecto 3). */
+const CHR=Object.create(null),BOUND=new WeakSet();
+const SHARED=['gem','gl','sk','ev','px','vip','lic','tk','tks','strikes','flags','lang','wa'];
+const CH_MAX=Math.max(1,Math.min(8,parseInt(process.env.CHAR_SLOTS||'3',10)||3));
+const prim=u=>CHR[u]||u;
+function chIndex(){for(const k in CHR)delete CHR[k];for(const p in (S.ACC||{})){const l=S.ACC[p]&&S.ACC[p].ch;if(Array.isArray(l))for(const c of l)if(typeof c==='string'&&c&&c!==p)CHR[c]=p}}
+function bindW(a,p){if(!a||BOUND.has(a))return;BOUND.add(a);for(const k of SHARED){try{delete a[k]}catch(e){}Object.defineProperty(a,k,{get(){return acct(p)[k]},set(v){acct(p)[k]=v},enumerable:false,configurable:true})}}
+chIndex();for(const c in CHR)if(ECO.acc[c])bindW(ECO.acc[c],CHR[c]);
 /* ---------- cuentas ---------- */
 function acct(u){let a=ECO.acc[u];if(!a){a=ECO.acc[u]={gem:{own:0,tr:0},sk:[],ev:[],px:{au:0,ap:0,lt:0,bl:0,es:0,pv:0,bh:0,tr:0},vip:0,lic:0,
   res:{gold:0,g:[0,0,0,0,0],fd:Object.assign({carne:0,cocida:0,pasto:0,hierba:0,lazo:0},Object.fromEntries(MNK.map(k=>[k,0]))),ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0},
-  ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}for(const k of MNK)if(a.res&&a.res.fd&&a.res.fd[k]==null)a.res.fd[k]=0;if(!a.bxl)a.bxl={t:[0,0,0,0],a:[0,0,0,0],x:[0,0,0,0],m:0};if(!Array.isArray(a.gl))a.gl=[];if(!a.hl)a.hl={f:{},n:{},ts:0};return a}
+  ts:0,lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,dl:[],mint:{},gb:{v:0,t:0},strikes:0,flags:[],gld:'',nmts:0,created:Date.now()};S.dirty()}if(CHR[u]&&!BOUND.has(a))bindW(a,CHR[u]);for(const k of MNK)if(a.res&&a.res.fd&&a.res.fd[k]==null)a.res.fd[k]=0;if(!a.bxl)a.bxl={t:[0,0,0,0],a:[0,0,0,0],x:[0,0,0,0],m:0};if(!Array.isArray(a.gl))a.gl=[];if(!a.hl)a.hl={f:{},n:{},ts:0};if(a.gem&&a.gem.tr>0){/* v380: ya no existen gemas "transferidas": todas valen para todo */a.gem.own+=a.gem.tr;a.gem.tr=0;S.dirty()}return a}
+/* v380: migración única al arrancar — las gemas transferidas de todas las cuentas pasan a gemas normales */
+(function(){let n=0,t=0;for(const id in ECO.acc){const a=ECO.acc[id];if(a&&a.gem&&a.gem.tr>0){t+=a.gem.tr;a.gem.own=(a.gem.own|0)+a.gem.tr;a.gem.tr=0;n++}}if(n){S.dirty();log('[gemas] v380: '+t+' gemas transferidas unificadas en '+n+' cuentas')}})();
 const ent=u=>{const a=acct(u),L=a.bxl;return{sk:a.sk,ev:a.ev,gem:a.gem.own,gemT:a.gem.tr,cls:a.cls>=0?a.cls:undefined,px:a.px,vip:a.vip,lic:a.lic,tk:a.tk||{},tks:Array.isArray(a.tks)?a.tks:[],nm:a.nm,gld:a.gld,nch:a.nch|0,bx:L.x.map((x,i)=>x+Math.max(0,L.t[i]-L.a[i])),bxt:L.t.slice()}};
 const pushEnt=u=>S.push(u,{t:'ent',ent:ent(u)});
+/* v381: lista, creación y cambio de personajes de una cuenta */
+const chBlank=a=>!a||(!(a.cls>=0)&&!a.nm&&!a.pn);
+const chSlots=p=>{const A=S.ACC[p],l=A&&A.ch;return[p].concat(Array.isArray(l)?l.filter(c=>typeof c==='string'&&c!==p):[])};
+const chCur=p=>{const A=S.ACC[p],c=A&&A.cc,sl=chSlots(p),ok=x=>x&&sl.includes(x)&&!(ECO.acc[x]&&ECO.acc[x].sale);return ok(c)?c:ok(p)?p:(sl.find(x=>ok(x)&&!chBlank(ECO.acc[x]))||sl.find(ok)||p)};
+let saleInfo=null;const onSale=f=>{saleInfo=f};
+function chView(c,live){const a=ECO.acc[c],b=chBlank(a);return{u:c,nm:a?String(a.nm||a.pn||'').slice(0,24):'',cl:a&&a.cls>=0?a.cls:-1,lv:a?Math.max(1,a.lv|0):1,ts:a?(+a.ts||0):0,cur:c===live?1:0,blank:b?1:0,slot:chSlots(prim(c)).indexOf(c),sale:a&&a.sale?(saleInfo?saleInfo(a.sale):{id:String(a.sale)}):undefined}}
+/* personajes que se muestran: los que ya existen + el que se está jugando ahora (aunque aún no tenga nombre). Los lugares vacíos se reutilizan al crear otro. */
+function chList(u){const p=prim(u),L=[];for(const c of chSlots(p)){const v=chView(c,u);if(v.blank&&!v.cur)continue;L.push(v)}return{chars:L,max:CH_MAX,sel:chCur(p)}}
+function chNew(u){const p=prim(u),A=S.ACC[p];if(!A)return{e:'Los personajes adicionales necesitan una cuenta con usuario'};
+ const sl=chSlots(p);if(sl.filter(c=>!chBlank(ECO.acc[c])).length>=CH_MAX)return{e:'Ya tienes '+CH_MAX+' personajes: borra uno para poder crear otro'};
+ let t=sl.find(c=>c!==u&&chBlank(ECO.acc[c]))||(chBlank(ECO.acc[u])?u:null);
+ if(!t){if(sl.length>=CH_MAX)return{e:'Ya tienes '+CH_MAX+' personajes: borra uno para poder crear otro'};
+  do{t='u'+rid(10)}while(ECO.acc[t]||CHR[t]||S.ACC[t]);
+  A.ch=(Array.isArray(A.ch)?A.ch:[]).concat(t);CHR[t]=p}
+ acct(t);A.cc=t;S.dirty();return{u:t}}
+function chSel(u,t){const p=prim(u),A=S.ACC[p];t=String(t||'');if(!chSlots(p).includes(t))return{e:'Ese personaje no es de tu cuenta'};if(ECO.acc[t]&&ECO.acc[t].sale)return{e:'Ese personaje está en venta: cancela la venta para volver a jugarlo'};if(A){A.cc=t;S.dirty()}return{u:t}}
+/* v382: VENTA DE PERSONAJES. Un personaje adicional cambia de cuenta: se queda con todo lo suyo (partida, nombre, nivel, oro, objetos, mascotas) y pasa a leer la cartera de la cuenta nueva (gemas, VIP, apariencias, boletos). El 1.º personaje lleva el login y la cartera de su cuenta: no se vende. */
+function rebindW(a,p){if(!a)return;BOUND.add(a);for(const k of SHARED){try{delete a[k]}catch(e){}Object.defineProperty(a,k,{get(){return acct(p)[k]},set(v){acct(p)[k]=v},enumerable:false,configurable:true})}}
+/* ¿cabe otro personaje en esa cuenta? Los lugares vacíos ocultos se reutilizan; el que se está jugando y los conectados nunca. */
+function chRoom(toP){const B=S.ACC[toP];if(!B)return{e:'La cuenta que recibe no existe'};const sl=chSlots(toP),cur=chCur(toP),used=sl.filter(c=>!chBlank(ECO.acc[c])||c===cur).length;
+ if(used>=CH_MAX)return{e:'Esa cuenta ya tiene '+CH_MAX+' personajes: hay que borrar uno para recibir otro'};
+ const cap=CH_MAX+(chBlank(ECO.acc[toP])&&cur!==toP?1:0);/* v383: el lugar 1.º vacío (su personaje se vendió) es el de la cuenta y no cuenta como personaje */
+ let drop=null;if(sl.length>=cap){drop=sl.slice(1).find(c=>c!==cur&&chBlank(ECO.acc[c])&&!S.online(c));if(!drop)return{e:'Esa cuenta no tiene un lugar libre: hay que borrar un personaje'}}
+ return{ok:1,drop}}
+function chXfer(t,toP){t=String(t||'');const fromP=prim(t),A=S.ACC[fromP],B=S.ACC[toP];
+ if(!A||!B||!ECO.acc[t]||fromP===toP||t===fromP||t===toP||!chSlots(fromP).includes(t))return{e:'Traspaso no válido'};
+ if(S.online(t))return{e:'El personaje está conectado'};
+ const rm=chRoom(toP);if(rm.e)return rm;
+ if(rm.drop){B.ch=B.ch.filter(c=>c!==rm.drop);delete CHR[rm.drop];delete ECO.acc[rm.drop]}
+ A.ch=(A.ch||[]).filter(c=>c!==t);if(A.cc===t)A.cc=fromP;
+ B.ch=(Array.isArray(B.ch)?B.ch:[]).concat(t);CHR[t]=toP;rebindW(ECO.acc[t],toP);
+ S.dirty();return{ok:1,from:fromP,to:toP,drop:rm.drop||null}}
+/* v383: el 1.º personaje también se vende. Su uid es el de la CUENTA (login, cartera, sesiones): no se mueve. Lo que cambia de dueño es su contenido (partida, nombre, nivel, oro, objetos, mascotas…), que pasa a un uid nuevo (x);
+   el lugar 1.º queda como un personaje nuevo, vacío, y la cuenta sigue igual. El archivo de la partida lo copia quien llama ANTES (si no se puede copiar no se toca nada). Después x se entrega con chXfer como cualquier adicional. */
+function chSplit(t,x){t=String(t||'');const p=prim(t),A=ECO.acc[p],B=S.ACC[p];
+ if(t!==p||!A||!B)return{e:'Traspaso no válido'};
+ if(!x||ECO.acc[x]||S.ACC[x]||CHR[x])return{e:'Identificador no válido'};
+ if(S.online(t))return{e:'El personaje está conectado'};
+ const rec={},KEEP=['created','rfd'];/* de la CUENTA aunque estén en el registro del 1.º: la fecha de alta y «ya cobró su referido» */
+ for(const k of Object.keys(A))if(!SHARED.includes(k))rec[k]=A[k];
+ delete rec.sale;delete rec.wdt;delete rec.cdt;delete rec.rfd;rec.dl=[];
+ const tmp='~'+rid(5),F=acct(tmp);delete ECO.acc[tmp];/* plantilla de un personaje nuevo: la misma de siempre */
+ const keep={};for(const k of KEEP)if(A[k]!==undefined)keep[k]=A[k];
+ for(const k of Object.keys(A))if(!SHARED.includes(k))delete A[k];
+ for(const k of Object.keys(F))if(!SHARED.includes(k))A[k]=F[k];
+ Object.assign(A,keep);A.wdt=Date.now();/* wdt: ninguna copia vieja en otro aparato puede volver a crear al personaje vendido */
+ ECO.acc[x]=rec;
+ const nk=String(rec.nm||'').toLowerCase();if(nk&&ECO.names[nk]===t)ECO.names[nk]=x;
+ for(const id in ECO.reg){const r=ECO.reg[id];if(r&&r.o===t)r.o=x}
+ B.ch=(Array.isArray(B.ch)?B.ch:[]).concat(x);CHR[x]=p;rebindW(rec,p);
+ S.dirty();return{ok:1,x}}
 function flag(u,why,w){const a=acct(u);{const nk=x=>String(x).replace(/[0-9+]/g,'').slice(0,60),k=nk(why),t=Date.now();if((a.flags||[]).some(f=>f&&t-f[0]<6e5&&nk(f[1])===k))return}a.strikes+=w==null?1:w;a.flags.push([Date.now(),String(why).slice(0,120)]);if(a.flags.length>30)a.flags.shift();S.dirty();
  log('[antitrampas] '+u+' ('+(a.nm||'?')+'): '+why+' · strikes '+a.strikes);
  if(a.strikes>=3&&!a.notified){a.notified=Date.now();S.notify('⚠️ SILK ROAD · Posible trampa\nJugador: '+(a.nm||u)+'\nMotivo: '+why+'\nStrikes: '+a.strikes)}}
 /* ---------- gemas ---------- */
 const gTot=a=>a.gem.own+a.gem.tr;
 const glAdd=(a,d,why)=>{if(!Array.isArray(a.gl))a.gl=[];a.gl.push([Date.now(),d,String(why||'').slice(0,48),a.gem.own,a.gem.tr]);if(a.gl.length>40)a.gl.shift()};
-function spendGems(a,n,ownOnly,why){n=Math.floor(n);if(!(n>0))return 0;if(ownOnly){if(a.gem.own<n)return 0;a.gem.own-=n}else{if(gTot(a)<n)return 0;const t=Math.min(a.gem.tr,n);a.gem.tr-=t;a.gem.own-=n-t}glAdd(a,-n,why);S.dirty();return 1}
-function grantGems(u,q,ownTr,why){const a=acct(u);if(ownTr==='tr')a.gem.tr+=q;else a.gem.own+=q;glAdd(a,q,(ownTr==='tr'?'(transferidas) ':'')+(why||'recarga'));S.dirty();pushEnt(u);log('[gemas] +'+q+' a '+u+' '+(why||''))}
+/* v380: TODAS las gemas valen para TODO (apariencias, VIP, boletos, gremios, carteles…). El parámetro ownOnly se conserva por compatibilidad pero ya no restringe nada. */
+function spendGems(a,n,ownOnly,why){n=Math.floor(n);if(!(n>0))return 0;if(gTot(a)<n)return 0;const t=Math.min(a.gem.tr,n);a.gem.tr-=t;a.gem.own-=n-t;glAdd(a,-n,why);S.dirty();return 1}
+function grantGems(u,q,ownTr,why){const a=acct(u);a.gem.own+=q;glAdd(a,q,why||'recarga');S.dirty();pushEnt(u);log('[gemas] +'+q+' a '+u+' '+(why||''))}
 /* Bonus premium (⭐🪙🛡️❤️): lo COMPRADO lo decide el servidor; el cliente solo gasta el tiempo mientras juega */
 const BX={ms:4*36e5,max:20*36e5,cost:2};
 /* ---------- entregas (idempotentes) ---------- */
@@ -187,4 +253,4 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
 try{if(!ECO.fixDup){ECO.fixDup=1;let n=0;const nk=x=>String(x).replace(/[0-9+]/g,'').slice(0,60);for(const id in ECO.acc){const a=ECO.acc[id];if(!a||(a.strikes|0)<8)continue;const d=new Set((a.flags||[]).map(f=>nk(f&&f[1])));a.strikes=Math.min(a.strikes|0,Math.max(1,d.size));if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) con strikes repetidos corregidas')}}}catch(e){log('migración strikes: '+e.message)}
 /* migración única: quita los strikes falsos que el antitrampas daba por cocinar carne/pescado (ya no ocurre) */
 try{if(!ECO.fixCook){ECO.fixCook=1;let n=0;for(const id in ECO.acc){const a=ECO.acc[id];if(!a||!Array.isArray(a.flags)||!a.flags.length)continue;const bad=a.flags.filter(f=>/^provisi.n (cocida|coc\d|fc\d) /.test(String(f&&f[1])));if(!bad.length)continue;a.flags=a.flags.filter(f=>!bad.includes(f));a.strikes=Math.max(0,(a.strikes|0)-bad.length);if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) sin strikes falsos por cocinar')}}}catch(e){log('migración cocinar: '+e.message)}
-return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,audit,deliver,grantBag,BAGT,BAGN,ENCN,ENCM,ENCL,FGQ,encCost,forgeCost,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,glAdd,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM,BX}};
+return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,prim,CH_MAX,chIndex,chSlots,chCur,chList,chNew,chSel,chBlank,chView,chXfer,chSplit,chRoom,onSale,audit,deliver,grantBag,BAGT,BAGN,ENCN,ENCM,ENCL,FGQ,encCost,forgeCost,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,glAdd,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM,BX}};

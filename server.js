@@ -24,10 +24,11 @@ const LAUNCH_RAW=process.env.LAUNCH_AT===undefined?'2026-10-23T20:00:00-04:00':S
 /* Acceso anticipado discreto (moderadores/creadores): hasta 3 cuentas, ademas del master. Se definen con la variable EARLY (separadas por coma: correo, usuario o uid) o desde el juego (master: Opciones > Pruebas > Acceso anticipado). */
 const EARLY_ENV=(process.env.EARLY||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
 const earlyList=()=>[...new Set(EARLY_ENV.concat(((DB.cfg||{}).early||[]).map(x=>String(x).toLowerCase())))];
-const earlyIds=u=>{const o=[String(u).toLowerCase()],a=ACC[u];if(a&&a.e&&!a.pw)o.push(String(a.e).toLowerCase());try{const n=AC&&AC.unameOf&&AC.unameOf(u);if(n)o.push(String(n).toLowerCase())}catch(e){}return o};
+let PRIM=u=>u;   /* v381: uid de personaje -> uid de su cuenta (lo fija economy.js al arrancar) */
+const earlyIds=u=>{u=PRIM(u);const o=[String(u).toLowerCase()],a=ACC[u];if(a&&a.e&&!a.pw)o.push(String(a.e).toLowerCase());try{const n=AC&&AC.unameOf&&AC.unameOf(u);if(n)o.push(String(n).toLowerCase())}catch(e){}return o};
 const isEarly=u=>{const L=earlyList().slice(0,3);return earlyIds(u).some(x=>L.includes(x))};
 const launched=()=>!LAUNCH_AT||Date.now()>=LAUNCH_AT;
-const isMaster=u=>(MASTER&&u===MASTER)||(!!AC&&!!AC.masterUid&&u===AC.masterUid)||(!!MASTER_EMAIL&&!!ACC[u]&&!ACC[u].pw&&ACC[u].e===MASTER_EMAIL)||(!MASTER&&!MASTER_EMAIL&&!!(DB.cfg&&DB.cfg.master&&DB.cfg.master.u===u));
+const isMaster=u=>{u=PRIM(u);return (MASTER&&u===MASTER)||(!!AC&&!!AC.masterUid&&u===AC.masterUid)||(!!MASTER_EMAIL&&!!ACC[u]&&!ACC[u].pw&&ACC[u].e===MASTER_EMAIL)||(!MASTER&&!MASTER_EMAIL&&!!(DB.cfg&&DB.cfg.master&&DB.cfg.master.u===u))};
 const log=s=>console.log(s);
 const EPH=new Set(['pmem','wagons','pmsg','hits','pres','pinv','pkill']);              // efímeras: no se guardan en disco
 const save=sync=>{dirty=0;const db={};for(const c in DB)if(!EPH.has(c))db[c]=DB[c];const j=JSON.stringify({db,tok:TOK,ses:SES,acc:ACC,eco:ECO,usr:USR});if(sync){fs.writeFileSync(FILE+'.tmp',j);fs.renameSync(FILE+'.tmp',FILE)}else fs.writeFile(FILE+'.tmp',j,e=>{if(!e)fs.rename(FILE+'.tmp',FILE,()=>{})})};
@@ -62,14 +63,16 @@ if((DB.cfg.wipe||'')!==WIPE_ID){try{
  const bk=(process.env.DATA_DIR||'.')+'/backups/pre-'+WIPE_ID+'-'+Date.now();fs.mkdirSync(bk,{recursive:true});
  try{fs.copyFileSync(FILE,bk+'/data.json')}catch(e){}
  let n=0;try{for(const f of fs.readdirSync(SAVEDIR)){try{fs.copyFileSync(SAVEDIR+'/'+f,bk+'/'+f);fs.unlinkSync(SAVEDIR+'/'+f);n++}catch(e){}}}catch(e){}
- KEEP={};if(process.env.WIPE_KEEP!=='0'&&!LW)for(const u in (ECO.acc||{})){const a=ECO.acc[u];KEEP[u]={gem:a.gem,sk:a.sk,px:a.px,vip:a.vip,lic:a.lic}}   /* WIPE_KEEP=0: tampoco se conservan gemas/apariencias/premium (todos desde cero) */
+ KEEP={};if(process.env.WIPE_KEEP!=='0'&&!LW)for(const u in (ECO.acc||{})){const a=ECO.acc[u];if(!a||!a.gem)continue;KEEP[u]={gem:a.gem,sk:a.sk,px:a.px,vip:a.vip,lic:a.lic}}   /* WIPE_KEEP=0: tampoco se conservan gemas/apariencias/premium (todos desde cero) */
  for(const k of Object.keys(ECO))delete ECO[k];
  if(process.env.WIPE_ACCOUNTS==='1'&&!LW){for(const o of [USR,ACC,SES,TOK])for(const k of Object.keys(o))delete o[k];KEEP={};log('[REINICIO] cuentas, usuarios y sesiones borrados (copia en '+bk+')')}   /* WIPE_ACCOUNTS=1: tambien se borran usuarios/contrasenas/sesiones */
  const cfg=DB.cfg,pay=DB.gemreq,inf=DB.inf;for(const c of Object.keys(DB))delete DB[c];DB.cfg=cfg;if(pay)DB.gemreq=pay;if(inf)DB.inf=inf;
  DB.cfg.wipe=WIPE_ID;dirty=1;
  log('[REINICIO] '+WIPE_ID+': '+n+' personajes borrados (copia en '+bk+')');
 }catch(e){log('[REINICIO] error '+e.stack)}}
-const E=require('./economy')(S),MK=require('./market')(S,E),GD=require('./guild')(S,E),ST=require('./store')(S,E),SO=require('./social')(S,E);S.tagOf=u=>GD.tagOf(u);
+const E=require('./economy')(S),MK=require('./market')(S,E),GD=require('./guild')(S,E),ST=require('./store')(S,E),SO=require('./social')(S,E);S.tagOf=u=>GD.tagOf(u);PRIM=E.prim;
+/* v382: mercado de personajes (oro, gemas y USDT con aprobación del master) */
+const CM=require('./charmkt')(S,E,{savePath,PAY_ID,SO});
 if(KEEP){for(const u in KEEP){try{Object.assign(E.acct(u),KEEP[u])}catch(e){}}dirty=1;save(1)}
 /* RECORTE (TRIM_ID): conserva cuentas, nivel y habilidades; quita objetos, mascotas, monturas y materiales (y oro si TRIM_GOLD=0) y regala TRIM_GEMS gemas. Se aplica UNA vez por cada valor nuevo de TRIM_ID. */
 if(process.env.TRIM_ID&&DB.cfg.trim!==process.env.TRIM_ID){try{
@@ -80,14 +83,14 @@ if(process.env.TRIM_ID&&DB.cfg.trim!==process.env.TRIM_ID){try{
   Object.assign(v,{eq:{},bag:[],lb:[],dep:[],storage:[],pets:[],bu:[],i:[0,0,0,0,0],cb:[0,0,0,0,0],fd:{},tl:{},mat:{},rc:[],tch:{n:0},up:v.up&&typeof v.up==='object'?{}:v.up});
   if(process.env.TRIM_GOLD==='0'){v.g=0;v.bk=0}
   o.d=JSON.stringify(v);fs.writeFileSync(SAVEDIR+'/'+f,JSON.stringify(o));
-  if(GEM>0)E.grantGems(u,GEM,'own','compensación de reinicio');n++}catch(e){log('[RECORTE] '+f+': '+e.message)}}
+  if(GEM>0&&E.prim(u)===u)E.grantGems(u,GEM,'own','compensación de reinicio');n++}catch(e){log('[RECORTE] '+f+': '+e.message)}}
  DB.cfg.trim=TID;dirty=1;save(1);log('[RECORTE] '+TID+': '+n+' personajes recortados, '+GEM+' gemas c/u (copia en '+bk+')');
 }catch(e){log('[RECORTE] error '+e.stack)}}
 S.onDeliver=u=>{try{if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}};
-AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster,refOk:c=>!!((DB.inf||{})[c])});
+AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster,prim:u=>E.prim(u),refOk:c=>!!((DB.inf||{})[c])});
 const TR=require('./terr')(S,E);
 const SD=require('./seda')(S,E);
-const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops);
+const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops);
 /* Acceso anticipado: solo el master. */
 OPS['adm.lv']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const n=String(m.who||'').trim().toLowerCase().slice(0,40),lv=Math.floor(+m.lv);if(!n)return{e:'Escribe el nombre del jugador'};if(!(lv>=1&&lv<=E.CFG.lvMax))return{e:'Nivel entre 1 y '+E.CFG.lvMax};
  let id=E.uidByName(n);if(!id)for(const k in (ECO.acc||{})){const q=ECO.acc[k];if(q&&[q.nm,q.pn].some(x=>x&&String(x).toLowerCase()===n)){id=k;break}}
@@ -103,7 +106,7 @@ OPS['bug.level.report']=(u,m)=>{
  try{const f=savePath(u),o=JSON.parse(fs.readFileSync(f,'utf8')),v=JSON.parse(o.d||'{}');fileFound=1;
   for(const k of ['lv','xp','hp','mp','cls','gold','name','nm','chosen','ch','sx','eq','inv','i','sk','skin','ts'])if(v[k]!==undefined)snap[k]=v[k];
  }catch(e){}
- const report={id:crypto.randomBytes(6).toString('hex'),ts:Date.now(),uid:u,nm:String(a.nm||a.pn||'').slice(0,40),account:String((ACC[u]&&ACC[u].e)||'').slice(0,100),level:Number(a.lv)||Number(snap.lv)||0,xp:Number(a.xp)||Number(snap.xp)||0,cls:Number(a.cls??snap.cls)||0,note,serverEvidence:{fileFound,acctLevel:Number(a.lv)||0,acctXp:Number(a.xp)||0,saved:snap},status:'open'};
+ const report={id:crypto.randomBytes(6).toString('hex'),ts:Date.now(),uid:u,nm:String(a.nm||a.pn||'').slice(0,40),account:String((ACC[E.prim(u)]&&ACC[E.prim(u)].e)||'').slice(0,100),level:Number(a.lv)||Number(snap.lv)||0,xp:Number(a.xp)||Number(snap.xp)||0,cls:Number(a.cls??snap.cls)||0,note,serverEvidence:{fileFound,acctLevel:Number(a.lv)||0,acctXp:Number(a.xp)||0,saved:snap},status:'open'};
  DB.levelReports=Array.isArray(DB.levelReports)?DB.levelReports:[];DB.levelReports.unshift(report);DB.levelReports=DB.levelReports.slice(0,200);dirty=1;
  log('[REPORTE_NIVEL] '+report.id+' uid='+u+' name='+(report.nm||'?')+' level='+report.level+' evidence='+fileFound);
  notifyRL('⚠️ Silk Road · Reporte de nivel '+report.id+'\nPersonaje: '+(report.nm||'?')+' · nivel de cuenta: '+report.level+' · XP: '+report.xp+'\nUID: '+u+'\nMotivo: '+(note||'(sin detalle)')+'\nEvidencia del servidor guardada en Zona GM > Incidencias.');
@@ -111,14 +114,28 @@ OPS['bug.level.report']=(u,m)=>{
 };
 OPS['adm.level.reports']=(u)=>{if(!isMaster(u))return{e:'operación desconocida'};const l=Array.isArray(DB.levelReports)?DB.levelReports:[];return{l:l.slice(0,50).map(r=>({id:r.id,ts:r.ts,uid:r.uid,nm:r.nm,account:r.account,level:r.level,xp:r.xp,cls:r.cls,note:r.note,status:r.status,fileFound:!!(r.serverEvidence&&r.serverEvidence.fileFound),saved:r.serverEvidence&&r.serverEvidence.saved}))}};
 OPS['adm.level.resolve']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const id=String(m.id||'').slice(0,32),r=(DB.levelReports||[]).find(x=>x.id===id);if(!r)return{e:'Reporte no encontrado'};r.status='reviewed';r.reviewedAt=Date.now();r.reviewedBy=u;dirty=1;log('[GM] reporte de nivel revisado '+id+' por '+u);return{ok:1,id}};
-OPS['char.del']=(u,m)=>{const a=E.acct(u),n=Date.now();if(n-(a.cdt||0)<60000)return{e:'Espera un minuto antes de borrar otra vez'};if(isMaster(u))return{e:'El personaje del master no se borra desde aquí'};
- try{fs.unlinkSync(savePath(u))}catch(e){}
- if(a.nm&&ECO.names[a.nm.toLowerCase()]===u)delete ECO.names[a.nm.toLowerCase()];
- for(const id in ECO.reg)if(ECO.reg[id]&&ECO.reg[id].o===u)delete ECO.reg[id];
- const z=ECO.acc[u];Object.assign(z,{lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',first:1,ts:0,dl:[],mint:{},gb:{v:0,t:0},cdt:n,wdt:n});
+OPS['char.del']=(u,m)=>{const t=String((m&&m.u)||u),p=E.prim(u);if(E.prim(t)!==p||!E.chSlots(p).includes(t))return{e:'Ese personaje no es de tu cuenta'};
+ const a=E.acct(t),n=Date.now();if(a.sale)return{e:'Ese personaje está en venta: cancela la venta antes de borrarlo'};
+ /* v383: la cuenta siempre conserva un personaje jugable: no se borra el último mientras otro está en venta (para vender uno hay que tener otro) */
+ if(!E.chBlank(a)&&!E.chSlots(p).some(c=>c!==t&&!E.chBlank(ECO.acc[c])&&!(ECO.acc[c]&&ECO.acc[c].sale))&&E.chSlots(p).some(c=>c!==t&&ECO.acc[c]&&ECO.acc[c].sale))return{e:'Tienes personajes en venta: cancela la venta o espera a que se vendan antes de borrar tu último personaje'};
+ if(n-(a.cdt||0)<60000)return{e:'Espera un minuto antes de borrar otra vez'};if(isMaster(t)&&t===p)return{e:'El personaje del master no se borra desde aquí'};
+ /* v381: un personaje con gremio sale de él antes de borrarse; si es el líder y quedan miembros, primero debe pasar el mando o disolverlo */
+ if(a.gld&&GD.ops['g.leave']){let r=null;try{r=GD.ops['g.leave'](t)}catch(e){}if(r&&r.e)return{e:'Este personaje es líder de un gremio: pasa el mando o disuélvelo antes de borrarlo'}}
+ try{fs.unlinkSync(savePath(t))}catch(e){}
+ if(a.nm&&ECO.names[a.nm.toLowerCase()]===t)delete ECO.names[a.nm.toLowerCase()];
+ for(const id in ECO.reg)if(ECO.reg[id]&&ECO.reg[id].o===t)delete ECO.reg[id];
+ const z=ECO.acc[t];Object.assign(z,{lv:1,xp:0,sx:[1,1,1],cls:-1,nm:'',pn:'',first:1,ts:0,dl:[],mint:{},gb:{v:0,t:0},nch:0,cdt:n,wdt:n});
  z.res={gold:0,g:[0,0,0,0,0],fd:Object.assign({carne:0,cocida:0,pasto:0,hierba:0,lazo:0},Object.fromEntries((E.MNK||[]).map(k=>[k,0]))),ec:{hl:0,nv:0,lu:0,am:0,nz:0},pot:0,mpot:0};
- dirty=1;log('[personaje] '+u+' borró su personaje');try{E.acct(u);E.pushEnt(u)}catch(e){}return{ok:1}};
-OPS['wa.set']=(u,m)=>{const a=E.acct(u),d=String(m.wa||'').replace(/\D/g,'');if(!d){delete a.wa;dirty=1;return{ok:1,wa:''}}if(d.length<8||d.length>15)return{e:'Escribe tu número con código de país, solo números (ej. 18091234567)'};a.wa=d;dirty=1;return{ok:1,wa:d}};
+ dirty=1;log('[personaje] '+t+' borró su personaje');try{E.acct(t);if(t===u)E.pushEnt(u)}catch(e){}
+ /* si se borró el personaje que se estaba jugando, la cuenta pasa al primero que quede con nombre (el cliente recarga con él); si no queda ninguno, sigue en el vacío */
+ let nx=null;if(t===u){const o=E.chSlots(p).find(c=>c!==t&&!E.chBlank(ECO.acc[c]));if(o){E.chSel(u,o);nx=chPack(o)}}
+ return Object.assign({ok:1},E.chList(u),nx?{next:nx}:{})};
+/* v381: varios personajes por cuenta. char.sel / char.new dejan elegido el personaje con el que se entrará al recargar y devuelven su partida guardada (el cliente la pone en el aparato). */
+const chPack=t=>{let o=null;try{o=JSON.parse(fs.readFileSync(savePath(t),'utf8'))}catch(e){}const wd=+((E.acct(t)||{}).wdt)||0;return{ok:1,u:t,d:o?o.d:null,ts:o?o.ts:0,wp:WIPE_ID+(wd?'/'+wd:'')}};
+OPS['char.list']=u=>Object.assign({ok:1},E.chList(u));
+OPS['char.sel']=(u,m)=>{const r=E.chSel(u,m&&m.u);if(r.e)return r;log('[personaje] '+unm(u)+' elige a '+(E.acct(r.u).nm||'(sin nombre)')+' ('+r.u+')');return chPack(r.u)};
+OPS['char.new']=(u)=>{const r=E.chNew(u);if(r.e)return r;log('[personaje] '+unm(u)+' crea un personaje nuevo ('+r.u+')');const k=chPack(r.u);k.d=null;k.ts=0;return k};
+OPS['wa.set']=(u,m)=>{const a=E.acct(u),d=String(m.wa||'').replace(/\D/g,'');if(!d){a.wa='';dirty=1;return{ok:1,wa:''}}   /* v381: ''(no delete): la cartera compartida de la cuenta no admite delete */if(d.length<8||d.length>15)return{e:'Escribe tu número con código de país, solo números (ej. 18091234567)'};a.wa=d;dirty=1;return{ok:1,wa:d}};
 const BDG=['🇩🇴','🇲🇽','🇨🇴','🇻🇪','🇦🇷','🇨🇱','🇵🇪','🇪🇨','🇺🇾','🇵🇾','🇧🇴','🇨🇺','🇵🇷','🇵🇦','🇨🇷','🇬🇹','🇭🇳','🇸🇻','🇳🇮','🇪🇸','🇺🇸','🇧🇷','🇨🇦','🇫🇷','🇮🇹','🇩🇪','🇬🇧','🇵🇹','🇯🇵','🇰🇷','🇨🇳','🇮🇳','🇹🇷','🇷🇺','🇺🇦','🇵🇱','🇳🇬','🇪🇬','🇲🇦','🇿🇦','👑','🔥','⭐','💎','🐉','🦁','🦅','🐺','⚔️','🛡️','🏹','🔮','🌙','☀️','⚡','❄️','🍀','🌸','💀','🎯','🏆','🦊'];
 const bdgOf=u=>{try{const a=E.acct(u);return((a.vip>Date.now()||isMaster(u))&&a.bdg)||''}catch(e){return ''}};
 OPS['bdg.get']=u=>{const a=E.acct(u);return{ok:1,b:a.bdg||'',on:(a.vip>Date.now()||isMaster(u))?1:0,l:BDG}};
@@ -197,7 +214,7 @@ S.world=world;try{TR.init()}catch(e){log('terr init '+e.stack)}
 function bc(c,id,o,n){for(const ws of wss.clients){if(!ws.uid)continue;for(const s in ws.subs){const b=ws.subs[s];if(b.c!==c)continue;const mo=match(o,b.w),mn=match(n,b.w);if(mo||mn)ws.send(JSON.stringify({t:'ch',sid:+s,id,d:mn?n:null}))}}}
 /* Cupo de jugadores y fila de turnos: MAX_PLAYERS=N limita los conectados a la vez (0/ausente = sin limite). Master y acceso anticipado siempre entran. */
 const MAXP=parseInt(process.env.MAX_PLAYERS||'0',10)||0,QUE=new Map();
-function qGate(u){if(!MAXP||isMaster(u)||isEarly(u)||ONL.has(u))return 0;const now=Date.now();for(const [k,v] of QUE)if(now-v.t>45000)QUE.delete(k);
+function qGate(u){if(!MAXP||isMaster(u)||isEarly(u)||E.chSlots(PRIM(u)).some(c=>ONL.has(c)))return 0;const now=Date.now();for(const [k,v] of QUE)if(now-v.t>45000)QUE.delete(k);
  let q=QUE.get(u);if(!q){q={t:now};QUE.set(u,q)}q.t=now;const free=Math.max(0,MAXP-ONL.size);let pos=0;for(const k of QUE.keys()){pos++;if(k===u)break}
  if(pos<=free){QUE.delete(u);return 0}return pos}
 const IPN=new Map();
@@ -209,11 +226,12 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
  ws.subs={};ws.uid=null;ws.n=0;ws.t=Date.now();ws.isAlive=true;ws.on('pong',()=>ws.isAlive=true);ws.xn=0;ws.xt=Date.now();
  ws.on('message',raw=>{const now=Date.now();if(now-ws.t>1000){ws.t=now;ws.n=0}if(++ws.n>80)return;let m;try{m=JSON.parse(raw)}catch(e){return}if(!m||typeof m!=='object')return;
   const rep=(o)=>{if(ws.readyState===1)ws.send(JSON.stringify(o))},err=e=>m.rid&&rep({t:'r',rid:m.rid,ok:0,e});
-  if(m.t==='hi'){const done=(u,extra)=>{if(MT&&Date.now()<MT.until&&!isMaster(u)){try{rep({t:'kick',e:MT_KICK});ws.close()}catch(e){}return}const old=ONL.get(u);if(old&&old!==ws){try{old.send(JSON.stringify({t:'kick',e:'Tu cuenta se abrió en otro dispositivo'}));old.close(4001)}catch(e){}}
+  if(m.t==='hi'){const done=(u0,extra)=>{const u=E.chCur(u0);   /* v381: u = personaje que se juega ahora; u0 = la cuenta */
+     if(MT&&Date.now()<MT.until&&!isMaster(u0)){try{rep({t:'kick',e:MT_KICK});ws.close()}catch(e){}return}for(const c of E.chSlots(u0)){const old=ONL.get(c);if(old&&old!==ws){try{old.send(JSON.stringify({t:'kick',e:'Tu cuenta se abrió en otro dispositivo'}));old.close(4001)}catch(e){}}}
      if(!launched()&&!isMaster(u)&&!isEarly(u)){log('pre-apertura bloqueado: uid='+u+' ids='+earlyIds(u).join(' | '));rep({t:'bad',e:'El reino abre el '+new Date(LAUNCH_AT).toLocaleString('es',{timeZone:'America/Santo_Domingo',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+' (hora de República Dominicana). Vuelve entonces.',launch:LAUNCH_AT});try{ws.close()}catch(e){}return}
      {const q=qGate(u);if(q){rep({t:'bad',e:'El reino está lleno ('+ONL.size+'/'+MAXP+' jugadores). Eres el #'+q+' en la fila. Espera unos segundos y vuelve a entrar.',full:1,pos:q});try{ws.close()}catch(e){}return}}
-     ws.uid=u;if(extra&&extra.ses)ws.ses=extra.ses;ONL.set(u,ws);try{SO.presence(u,1)}catch(e){}const a=E.acct(u);rep(Object.assign({t:'ok',uid:u,ent:E.ent(u)},extra||{}));
-     if(isMaster(u)){const o=(DB.cfg||{}).master;if(!o||o.u!==u){DB.cfg=DB.cfg||{};DB.cfg.master={u,ts:Date.now()};dirty=1;bc('cfg','master',o||null,DB.cfg.master)}}
+     ws.uid=u;ws.acc=u0;if(extra&&extra.ses)ws.ses=extra.ses;ONL.set(u,ws);try{SO.presence(u,1)}catch(e){}const a=E.acct(u);rep(Object.assign({t:'ok',uid:u,ent:E.ent(u)},E.chList(u),extra||{}));
+     if(isMaster(u0)){const o=(DB.cfg||{}).master;if(!o||o.u!==u0){DB.cfg=DB.cfg||{};DB.cfg.master={u:u0,ts:Date.now()};dirty=1;bc('cfg','master',o||null,DB.cfg.master)}}
      setTimeout(()=>E.flushDl(u),400);setTimeout(()=>{try{rep(wsvMsg())}catch(e){}},1200)};
    if(AC&&!ws.uid&&AC.pre(m,ip,rep,done,{isMaster}))return;
    if(m.g){if(!GCID){rep({t:'bad',e:'Google no configurado'});ws.close();return}
@@ -260,7 +278,7 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
    if(c==='gemgrant'&&!old){E.grantGems(d.to,d.q,'own','concedidas por master '+u)}
    if(c==='pmsg'&&d.k==='bf'&&world)world.credit(u,'ut',12);
    (DB[c]=DB[c]||{})[id]=d;dirty=1;bc(c,id,old,d);rep({t:'r',rid:m.rid,ok:1});
-   if(c==='gemreq'&&!old&&d.st==='p')notifyRL('💎 SILK ROAD · Pago de gemas por revisar\nJugador: '+String(d.nm||'?').slice(0,30)+' ('+((ACC[d.u]||{}).e||d.u)+')\nMonto: '+d.usdt+' USDT → '+d.gems+' 💎\nOrden Binance Pay: '+String(d.ref||'').slice(0,60)+'\nTu Pay ID: '+PAY_ID+'\nAprueba en el juego (menú → Gemas).');
+   if(c==='gemreq'&&!old&&d.st==='p')notifyRL('💎 SILK ROAD · Pago de gemas por revisar\nJugador: '+String(d.nm||'?').slice(0,30)+' ('+((ACC[E.prim(d.u)]||{}).e||d.u)+')\nMonto: '+d.usdt+' USDT → '+d.gems+' 💎\nOrden Binance Pay: '+String(d.ref||'').slice(0,60)+'\nTu Pay ID: '+PAY_ID+'\nAprueba en el juego (menú → Gemas).');
    return}});
  ws.on('close',()=>{ws.subs={};if(ws.uid&&ONL.get(ws.uid)===ws){ONL.delete(ws.uid);try{SO.presence(ws.uid,0)}catch(e){}}if(world&&ws.uid)world.leave(ws.uid,ws)})});
 

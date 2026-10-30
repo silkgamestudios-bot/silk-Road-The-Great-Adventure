@@ -6,13 +6,13 @@ const price=(k,d)=>{const b=GEMP[k]||0;if(GMON.includes(k)){if(k==='es'||k==='pv
 const blGold=lv=>Math.round(2000*Math.pow(1.28,Math.min(29,Math.max(0,lv-1))));
 const NAME_GOLD=2000,TAXP=c=>Math.ceil(Math.round(c)*.03),err=e=>({e});/* impuesto 3% sobre todo lo que se paga con oro */const ops={};
 ops['me.get']=(u)=>({ok:1,ent:E.ent(u)});
-/* v338: cambio de clase por 1 gema propia; el servidor valida la clase y realiza el cobro. */
+/* v338: cambio de clase por 1 gema; el servidor valida la clase y realiza el cobro. */
 ops['class.change']=(u,m)=>{
  const a=E.acct(u),cl=Math.floor(+m.cl);
  if(!(cl>=0&&cl<=7))return err('Clase no válida');
  if(a.cls==null||a.cls<0||!a.nm&&!a.pn)return err('Primero crea tu personaje');
  if((a.cls|0)===cl)return err('Ya tienes esa clase');
- if(!E.spendGems(a,1,true,'Cambio de clase'))return err('Necesitas 1 gema propia para cambiar de clase');
+ if(!E.spendGems(a,1,false,'Cambio de clase'))return err('Necesitas 1 💎 para cambiar de clase');
  const old=a.cls|0;a.cls=cl;S.dirty();E.pushEnt(u);
  S.log('[clase] '+(a.nm||a.pn||u)+' cambió de clase '+old+' → '+cl+' por 1 gema');
  return{ok:1,ent:E.ent(u),cl,old,cost:1};
@@ -86,13 +86,13 @@ ops['evskin.gem']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k
  if(!E.spendGems(a,GEMSKIN,false,'Atuendo de evento '+k))return err('Te faltan '+(GEMSKIN-E.gTot(a))+' 💎');a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
 ops['evskin.coin']=(u,m)=>{const k=String(m.k||''),a=E.acct(u);if(!EVK.includes(k))return err('Evento desconocido');if(a.ev.includes(k))return err('Ya lo tienes');
  if(E.avail(a,'ec',k)<3000)return err('Te faltan monedas de evento (sincroniza e inténtalo de nuevo)');E.deliver(u,{ec:{k,q:-3000},note:'🎭 Atuendo de evento comprado'});a.ev.push(k);S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
-ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d=+m.d||null;if(!GEMP[k]||k==='vip')return err('Servicio desconocido');if(!['vpf','vph','vmf','vmh'].includes(k))return err('Ese servicio ya no se vende suelto: elige un plan');if(k==='bl')return err('La Bendición solo se compra en la ⛪ Iglesia, con oro');
+ops['buff.buy']=(u,m)=>{const a=E.acct(u),now=Date.now();let k=String(m.k||''),d=+m.d||null;if(!GEMP[k]||k==='vip')return err('Servicio desconocido');if(!['vpf','vph','vmf','vmh','vipm','vipj','lic','cmb','es','pv','bh','tr','lt','ap'].includes(k))return err('Servicio no disponible');if(k==='bl')return err('La Bendición solo se compra en la ⛪ Iglesia, con oro');
  if(d==null)d=GMON.includes(k)?30:10;if(![10,20,30].includes(d))d=GMON.includes(k)?30:10;if(k==='es'||k==='pv'||k==='bh'||k==='vpf'||k==='vmf')d=30;if(k==='vph'||k==='vmh')d=15;
  const vm=k==='vipm',vj=k==='vipj',vf=k==='vpf'||k==='vph'||k==='vmf'||k==='vmh',mf=k==='vmf'||k==='vmh',vip=vm||vj||vf,cmb=k==='cmb',lc=k==='lic',ks=vf?['lt','ap','tr','pv','bh'].concat(mf?['es']:[]):vm?['lt','ap','es','tr']:vj?['lt','ap','tr']:cmb?GCMB:lc?[]:[k],cost=price(k,d);
  if(!cost||!ks.every(z=>PRMK.includes(z)))return err('Servicio no válido');
  if((vm||lc||mf)&&(a.cls!==0||a.lv<LIC_LV))return err(a.cls!==0?'Solo disponible para la clase Mercader':'Necesitas nivel '+LIC_LV);
  if(ks.some(z=>Math.max(now,a.px[z]||0)-now+d*DAY>90*DAY)||((vm||lc)&&Math.max(now,a.lic||0)-now+d*DAY>90*DAY)||(vip&&Math.max(now,a.vip||0)-now+d*DAY>90*DAY))return err('Máximo 90 días acumulados');
- if(!E.spendGems(a,cost,true,'Servicio '+k+' '+d+' d'))return err('Te faltan '+(cost-a.gem.own)+' 💎 propias (las transferidas solo valen para apariencias)');
+ if(!E.spendGems(a,cost,false,'Servicio '+k+' '+d+' d'))return err('Te faltan '+(cost-E.gTot(a))+' 💎');
  ks.forEach(z=>{a.px[z]=Math.max(now,a.px[z]||0)+d*DAY});if(vm||lc||mf)a.lic=Math.max(now,a.lic||0)+d*DAY;if(vip)a.vip=Math.max(now,a.vip||0)+d*DAY;
  S.dirty();E.pushEnt(u);S.log('[tienda] '+(a.nm||u)+' compró '+k+' '+d+'d');return{ok:1,ent:E.ent(u),cost}};
 /* ---------- 🎟️ BOLETOS VIP (v154): el mismo servicio, pero como objeto que se puede enviar o intercambiar ---------- */
@@ -112,7 +112,7 @@ ops['hunt.craft']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=20)
  E.deliver(u,{gold:-fee,note:'🪢 Fabricaste '+q+' lazo'+(q>1?'s':'')+' (−'+tl+' telas, −'+cu+' pieles, −'+fee+' 🪙)'});E.deliver(u,{prov:{pk:'tel',q:-tl}});E.deliver(u,{prov:{pk:'cur',q:-cu}});E.deliver(u,{prov:{pk:'lazo',q}});S.dirty();return{ok:1}};
 ops['tk.buy']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),q=Math.floor(+m.q)||1;if(!TKN[k])return err('Boleto desconocido');if(!['vpf','vph','vmf','vmh'].includes(k))return err('Ese boleto ya no se vende: elige un plan');if(q<1||q>50)return err('Cantidad de 1 a 50');
  if(!(S.isMaster(u)||a.cls===0||tkRes(u)))return err('Los boletos los compran los Mercaderes y Revendedores');
- const cost=GEMP[k]*q;if(!E.spendGems(a,cost,true,'Boleto '+k+' ×'+q))return err('Te faltan '+(cost-a.gem.own)+' 💎 propias');
+ const cost=GEMP[k]*q;if(!E.spendGems(a,cost,false,'Boleto '+k+' ×'+q))return err('Te faltan '+(cost-E.gTot(a))+' 💎');
  const t=tkOf(a);t[k]=(t[k]|0)+q;S.dirty();E.pushEnt(u);S.log('[boletos] '+(a.nm||u)+' compró '+q+' '+k);return{ok:1,ent:E.ent(u),cost}};
 ops['tk.send']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),q=Math.floor(+m.q)||1;if(!TKN[k])return err('Boleto desconocido');if(q<1||q>50)return err('Cantidad de 1 a 50');let to=String(m.to||'').trim();
  const id=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?to:E.uidByName(to);if(!id||id===u)return err('Jugador no encontrado (usa su nombre exacto)');
@@ -161,24 +161,25 @@ ops['buff.gold']=(u,m)=>{const a=E.acct(u),now=Date.now(),c0=blGold(a.lv),c=c0+T
 ops['bl.lose']=(u)=>{const a=E.acct(u);if((a.px.bl||0)>Date.now()){a.px.bl=0;S.dirty();E.pushEnt(u)}return{ok:1,ent:E.ent(u)}};
 ops['gem.tx']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=1e6))return err('Cantidad inválida');let to=String(m.to||'').trim();
  const t=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?to:E.uidByName(to);if(!t||t===u)return err('Jugador no encontrado (usa su nombre exacto o su código)');
- if(E.gTot(a)<q)return err('Saldo insuficiente');E.spendGems(a,q,false,'Envío a '+((E.acct(t)||{}).nm||t));const b=E.acct(t);b.gem.tr+=q;E.glAdd(b,q,'(transferidas) de '+(a.nm||u));S.dirty();E.pushEnt(u);E.pushEnt(t);
- S.push(t,{t:'note',m:'💎 '+(a.nm||'Un jugador')+' te envió '+q+' gemas (solo para apariencias)'});S.log('[gemas] '+(a.nm||u)+' → '+(b.nm||t)+' '+q);return{ok:1,ent:E.ent(u)}};
+ if(E.prim(t)===E.prim(u))return err('Ese personaje es tuyo: tus gemas ya son de toda tu cuenta');
+ if(E.gTot(a)<q)return err('Saldo insuficiente');E.spendGems(a,q,false,'Envío a '+((E.acct(t)||{}).nm||t));const b=E.acct(t);b.gem.own+=q;E.glAdd(b,q,'de '+(a.nm||u));S.dirty();E.pushEnt(u);E.pushEnt(t);
+ S.push(t,{t:'note',m:'💎 '+(a.nm||'Un jugador')+' te envió '+q+' gemas (valen para todo)'});S.log('[gemas] '+(a.nm||u)+' → '+(b.nm||t)+' '+q);return{ok:1,ent:E.ent(u)}};
 /* ---------- 💎 MERCADO DE GEMAS (jugador a jugador, v145) ----------
    Se vende por ORO (por gema). El servidor retiene las gemas del vendedor (custodia) y las entrega al comprador al instante.
-   Regla: las gemas que se compran aquí llegan como TRANSFERIDAS (solo atuendos, nunca Premium/VIP). Comisión 3% (compra +3%, venta −3%). */
+   Regla (v380): las gemas que se compran aquí son gemas normales: valen para TODO (apariencias, VIP, boletos, Bonus…). Comisión 3% (compra +3%, venta −3%). */
 const GK=()=>{const d=S.DB.gmk=S.DB.gmk||{};return d},GKH=()=>{const e=S.ECO;e.gmkh=e.gmkh||[];return e.gmkh};
 ops['gmk.list']=(u)=>{const L=Object.entries(GK()).map(([id,o])=>({id,nm:o.nm,q:o.q|0,p:o.p|0,mine:o.u===u?1:0,ts:o.ts|0})).sort((a,b)=>a.p-b.p||a.ts-b.ts).slice(0,250);
  return{ok:1,l:L,h:GKH().slice(-8).reverse(),own:E.acct(u).gem.own|0,tr:E.acct(u).gem.tr|0}};
 ops['gmk.sell']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q),p=Math.floor(+m.p);if(!(q>=1&&q<=1e6))return err('Cantidad inválida (1 a 1.000.000)');if(!(p>=1&&p<=1e9))return err('Precio por gema inválido (1 a 1.000.000.000 🪙)');
  if(Object.values(GK()).filter(o=>o.u===u).length>=10)return err('Máximo 10 anuncios activos');if(E.gTot(a)<q)return err('No tienes tantas gemas');
- const tr=Math.min(a.gem.tr,q),ow=q-tr;if(!E.spendGems(a,q,false,'Puestas en el Mercado de Gemas'))return err('Saldo insuficiente');
+ const tr=0,ow=q;if(!E.spendGems(a,q,false,'Puestas en el Mercado de Gemas'))return err('Saldo insuficiente');
  const id='g'+E.rid(6);GK()[id]={u,nm:a.nm||'Jugador',q,ow,tr,p,ts:Date.now()};S.dirty();E.pushEnt(u);S.log('[mercado-gemas] '+(a.nm||u)+' ofrece '+q+' a '+p+' 🪙 c/u');return{ok:1,id,ent:E.ent(u)}};
-ops['gmk.cancel']=(u,m)=>{const id=String(m.id||''),o=GK()[id];if(!o||o.u!==u)return err('No es tu anuncio');const a=E.acct(u);delete GK()[id];a.gem.own+=o.ow|0;a.gem.tr+=o.tr|0;E.glAdd(a,o.q|0,'Anuncio del Mercado de Gemas retirado');S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
+ops['gmk.cancel']=(u,m)=>{const id=String(m.id||''),o=GK()[id];if(!o||o.u!==u)return err('No es tu anuncio');const a=E.acct(u);delete GK()[id];a.gem.own+=(o.ow|0)+(o.tr|0);E.glAdd(a,o.q|0,'Anuncio del Mercado de Gemas retirado');S.dirty();E.pushEnt(u);return{ok:1,ent:E.ent(u)}};
 ops['gmk.buy']=(u,m)=>{const id=String(m.id||''),o=GK()[id];if(!o)return err('El anuncio ya no existe');if(o.u===u)return err('Es tu propio anuncio');const n=Math.floor(+m.n);if(!(n>=1&&n<=o.q))return err('Cantidad no disponible (quedan '+o.q+')');
  const b=E.acct(u),cost=n*o.p,pay=Math.round(cost*1.03),get=Math.round(cost*.97);if(E.avail(b,'gold')<pay)return err('Te faltan '+(pay-E.avail(b,'gold'))+' 🪙');
  const t=Math.min(o.tr|0,n);o.tr=(o.tr|0)-t;o.ow=(o.ow|0)-(n-t);o.q-=n;if(o.q<=0)delete GK()[id];
  E.deliver(u,{gold:-pay,note:'💎 Compraste '+n+' gemas en el Mercado de Gemas (−'+pay+' 🪙, +3% impuesto)'});E.deliver(o.u,{gold:get,note:'💎 Vendiste '+n+' gemas a '+(b.nm||'un jugador')+' (+'+get+' 🪙)',tr:1});
- b.gem.tr+=n;E.glAdd(b,n,'(transferidas) Mercado de Gemas a '+o.p+' 🪙');const h=GKH();h.push([Date.now(),o.p,n]);if(h.length>30)h.shift();S.dirty();E.pushEnt(u);E.pushEnt(o.u);
+ b.gem.own+=n;E.glAdd(b,n,'Mercado de Gemas a '+o.p+' 🪙');const h=GKH();h.push([Date.now(),o.p,n]);if(h.length>30)h.shift();S.dirty();E.pushEnt(u);E.pushEnt(o.u);
  if(S.online(o.u))S.push(o.u,{t:'note',m:'💎 Vendiste '+n+' gemas a '+(b.nm||'un jugador')+': +'+get+' 🪙'});S.log('[mercado-gemas] '+(b.nm||u)+' compró '+n+' a '+(o.nm||o.u)+' por '+cost);return{ok:1,ent:E.ent(u)}};
 /* ---------- 🏷️ Revendedores con descuento (los elige el master a mano) ---------- */
 ops['adm.reseller']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const o=E.uidByName(m.name);if(!o)return err('No hay ningún jugador con ese nombre');const d=Math.floor(+m.d);if(!(d>=0&&d<=50))return err('El descuento va de 0 a 50 %');
@@ -213,5 +214,15 @@ ops['mine.take']=(u,m)=>{const f=Math.floor(+m.f),i=Math.floor(+m.i);if(!(f>=1&&
  if(n-(a.mnT||0)<MN_GAP)return err('Pica con calma: espera un instante');a.mnT=n;
  if(!a.mnh||a.mnh[0]!==h)a.mnh=[h,0];if(!a.mnd||a.mnd[0]!==dy)a.mnd=[dy,0];if(a.mnh[1]>=MN_HOUR)return err('Tus brazos están cansados: descansa un poco antes de seguir minando');if(a.mnd[1]>=MN_DAY)return err('Ya extrajiste muchísimo hoy: vuelve mañana');
  mnClean();const d=mnDB(),k=f+':'+i;if(d[k])return{ok:0,gone:1};d[k]=n;a.mnh[1]++;a.mnd[1]++;S.dirty();S.log('[mina] '+(a.nm||a.pn||u)+' extrajo la veta '+k);return{ok:1}};
+
+/* ===== v378: zonas de colmena de las cuevas. Reserva GLOBAL por zona: cuando se agota, vuelve a florecer a los 90 días para TODOS ===== */
+const HZ_Q=100,HZ_DAYS=90,HZ_GAP=600,HZ_HOUR=3000;
+const hzDB=()=>{S.DB.hz=S.DB.hz||{};return S.DB.hz};
+const hzClean=()=>{const d=hzDB(),n=Date.now();for(const k of Object.keys(d))if(d[k].n&&n>=d[k].n)delete d[k]};
+const hzOk=m=>/^[a-z]{2}$/.test(String(m.c))&&Math.floor(+m.f)>=1&&Math.floor(+m.f)<=12;
+ops['hz.get']=(u,m)=>{if(!hzOk(m))return err('Cueva inválida');hzClean();const d=hzDB(),p=m.c+':'+Math.floor(+m.f)+':',z={};for(const k of Object.keys(d))if(k.indexOf(p)===0)z[k.slice(p.length)]=d[k].l;return{ok:1,q:HZ_Q,z,days:HZ_DAYS}};
+ops['hz.kill']=(u,m)=>{if(!hzOk(m))return err('Cueva inválida');const zi=Math.floor(+m.z);if(!(zi>=0&&zi<64))return err('Zona inválida');const a=E.acct(u),n=Date.now(),h=Math.floor(n/36e5);
+ const q=Math.max(1,Math.min(40,Math.floor(+m.n)||1));if(n-(a.hzT||0)<HZ_GAP)return{ok:0,left:null};a.hzT=n;if(!a.hzh||a.hzh[0]!==h)a.hzh=[h,0];if(a.hzh[1]>=HZ_HOUR)return{ok:0,left:null};a.hzh[1]+=q;
+ hzClean();const d=hzDB(),k=m.c+':'+Math.floor(+m.f)+':'+zi;let o=d[k];if(!o)o=d[k]={l:HZ_Q,n:0};if(o.l<=0)return{ok:1,left:0};o.l=Math.max(0,o.l-q);if(o.l<=0){o.n=n+HZ_DAYS*864e5;S.log('[colmena] zona '+k+' agotada por '+(a.nm||a.pn||u))}S.dirty();return{ok:1,left:o.l}};
 
 return{ops,price,GEMP}};

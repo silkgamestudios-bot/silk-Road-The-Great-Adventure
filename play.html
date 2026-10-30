@@ -1674,7 +1674,7 @@ function cfOpen(c){if(P.bag.length>=BCAP()){toast('Mochila llena');return}const 
  if(MON()){mop('chest.open',{c,k:P.cls|0},r=>{if(r&&r.ok)toast('📦 ¡Cofre abierto!',3000)});return}
  P.fd[kk]--;P.fd[ff]--;const it=cfGen(c);P.bag.push(it);toast('📦 '+it.n+' ('+RN[it.r]+') · Nv '+it.rl,5000);vib([40,30,80]);chk();save();heroM()}
 const CX1='<div class="row2"><button data-h="x">Cerrar</button></div>';
-function eqHtml(){const o=eqT();let h=`<div class="eq-title-row"><h2>Equipo</h2></div><p>⚔️ +${o.dm}% daño · ❤️ +${o.hp} vida · 👟 +${o.sp}% vel. · 🪙 +${o.gd}% oro</p><div class="eqg">`;
+function eqHtml(){const o=eqT();let h=`<div class="eq-title-row"><h2>Equipo</h2><button type="button" class="sr-equipment-tree" data-sr-open-tree>✧ Árbol de habilidades</button></div><p>⚔️ +${o.dm}% daño · ❤️ +${o.hp} vida · 👟 +${o.sp}% vel. · 🪙 +${o.gd}% oro</p><div class="eqg">`;
  for(let s=0;s<NSL;s++){const it=P.eq[s];h+=`<button class="sl" data-h="un${s}">${it?`<img src="${ik(it)}" width="36" height="36" style="image-rendering:pixelated"><br><small style="color:${RC[it.r]}">${it.n}</small>`:`<span style="opacity:.55;font-size:12px">${SN[s]}<br>vacío</span>`}</button>`}
  h+=`</div><p style="margin:10px 0 2px"><b>Mochila (${P.bag.length}/${BCAP()})</b> · toca un espacio para desequipar</p>`;
  P.bag.forEach((it,i)=>{h+=`<div class="row" style="grid-template-columns:auto 1fr auto"><img src="${ik(it)}" width="32" height="32" style="image-rendering:pixelated"><span style="color:${RC[it.r]}"><b>${it.n}</b>${upTag(it)} · ${RN[it.r]}<br><small>${stTxt(it)}</small></span><button data-h="eq${i}">Equipar</button></div>`});
@@ -3875,7 +3875,7 @@ function sellG(i,n){const have=P.inv[i];let k=n=='max'?have:Math.min(+n,have);if
 function buyLic(){if(P.cls!=0)return;if(P.lv<LIC_LV){toast('Necesitas nivel '+LIC_LV);return}const now=Date.now(),cur=Math.max(now,P.lic||0);if(cur-now>=30*864e5){toast('Máximo 60 días acumulados');return}if(!gpay(LIC_COST))return;P.lic=cur+30*864e5;toast('📜 Licencia de Mercader: +30 días',4500);vib([40,30,40]);save();heroM()}
 function bizHtml(){const im=P.cls==0,nx=mxNeed(P.mr);let h='<h2>📊 Negocio</h2>';
  if(im){const L=lic()?shOffers(UID).length:0;h+=`<div class="prm"><span style="font-size:30px">📜</span><div><b>Licencia de Mercader</b><br><small>${P.lic>Date.now()?'✅ Activa · quedan '+rem(lic())+': carruaje con tienda ambulante, buscador de objetos, tu 🛒 visible en el mapa de todos y compra de objetos a jugadores.':'Suscripción mensual: nivel '+LIC_LV+' y '+LIC_COST.toLocaleString('es')+' 🪙 cada 30 días. Da carruaje con tienda ambulante, buscador de objetos, tu 🛒 visible en el mapa y compra de objetos a jugadores.'}</small></div><button data-h="lic">${P.lv<LIC_LV?'🔒 Nv '+LIC_LV:P.lic>Date.now()?'Renovar':'Comprar'}</button></div><div>🏅 Rango de Mercader ${P.mr} <small>(${P.mx}/${nx} XP de comercio; sube con cada venta que haces)</small></div><div class="bar"><div style="height:6px;border-radius:3px;background:var(--ac);width:${P.mr>=20?100:100*P.mx/nx}%"></div></div>`;
-  if(lic())h+=`<p style="margin:10px 0 2px"><b>🛒 Mi carruaje</b></p><div class="zg" style="grid-template-columns:repeat(3,1fr)"><div class="kpi">A la venta<br><b>${L}</b></div><div class="kpi">Tienda<br><b>${SHOP[UID]?'🟢 abierta':'⚪ cerrada'}</b></div><div class="kpi">Tratos<br><b>${P.mkt.tr|0}</b></div></div><div class="row2"><button class="best" data-h="tab81">📦 Enviar objetos al carruaje</button></div>`}
+  if(lic())h+=`<p style="margin:10px 0 2px"><b>🛒 Mi carruaje</b></p><div class="zg" style="grid-template-columns:repeat(3,1fr)"><div class="kpi">A la venta<br><b>${L}</b></div><div class="kpi">Tienda<br><b>${SHOP[UID]?'🟢 abierta':'⚪ cerrada'}</b></div><div class="kpi">Tratos<br><b>${P.mkt.tr|0}</b></div></div><div class="row2"><button data-h="tab81">🛒 Abrir mi carruaje</button></div>`}
  else h+='<p><small>Eres aventurero: pagas 3% de impuesto de mercado. Solo el Mercader puede abrir un carruaje con tienda.</small></p>';
  h+='<p style="margin:10px 0 2px"><b>📰 Noticias de la Ruta</b></p>'+(EVT.filter(e=>e.until>Date.now()).map(e=>'<div><small>'+e.txt+' · '+rem(e.until)+'</small></div>').join('')||'<small>Sin noticias por ahora.</small>');return h}
 const ULV=[1,5,10,20,35,50,75,100,150,200,300,500],mpf=()=>(CLS[P.cls|0].mp+4*(Math.max(1,P.lv)-1))/CLS[P.cls|0].mp/* el costo y la recarga de MP crecen igual que la reserva base: el MP siempre pesa */,spc=sp=>sp.mp?Math.max(1,Math.round(sp.mp*mpf())):0,mpr=()=>CLS[P.cls|0].mr*mpf()*(1+TJB().mr);
@@ -4867,7 +4867,7 @@ let BPG=0;function heroM(t){P.tc.mn=1;if(t==16&&!gmIsM())t=11;const h=$('hero'),
  else if(HT==1){const o=eqT(),nx=xpNeed(P.lv),PG=20,LST=LV?P.lb:P.bag,TOT=Math.max(LV?LCAP():BCAP(),LST.length),NP=Math.ceil(TOT/PG);if(LV&&SEL>=0&&SEL<1000)SEL=-1;if(!LV&&SEL>=1000)SEL=-1;BPG=Math.max(0,Math.min(BPG,NP-1));
   const elG=it=>{const r=resOf(it);return r?';border-color:'+ELCOL[r.e]+';box-shadow:0 0 12px '+ELCOL[r.e]+'99,inset 0 0 8px '+ELCOL[r.e]+'55':''},setSum=()=>{const rs={};for(let s=1;s<=5;s++){const it=P.eq[s],r=it&&resOf(it);if(r)rs[r.e]=(rs[r.e]||0)+r.p}const g=gearSk(),pt=Object.entries(rs).map(([e,p])=>'<span style="color:'+ELCOL[e]+'">'+ELI[e]+' −'+Math.min(45,p)+'% '+e+'</span>');if(g)pt.push('<span style="color:#c9b3ff">✨ +'+g+' pts '+hx(SKA[P.cls|0]||'habilidad')+'</span>');return pt.length?'<div class="eqset">'+pt.join('<br>')+'</div>':''},jwRow='<div class="jwr" title="Próximamente: joyería de Nv 10 a 1200">'+[['💍','Anillo'],['💍','Anillo'],['📿','Amuleto'],['✨','Pendientes']].map(a=>'<span class="jw"><i>'+a[0]+'</i><small>'+a[1]+'</small></span>').join('')+'<small class="jws">Joyería: próximamente</small></div>';
   const EM=['⚔️','🥋','⛑️','🧤','👖','🥾','🛡️'],sq=(i,it)=>it?`<button class="zs q${SEL==i?' sel':''}" style="--rc:${RC[it.r]}${elG(it)}" data-n="${hx(it.n).toLowerCase()}" data-sl="${it.sl}" data-h="sel${i}">${ZI(it)}${i>=NSL&&i<1000&&eqUp(it)?'<span class="upm">▲</span>':''}${i<NSL?`<span class="du${du(it)<30?' lo':''}"><b style="width:${du(it)}%"></b></span>`:''}</button>`:`<button class="zs${SEL==i?' sel':''}" data-h="sel${i}"><span class="ph">${i<NSL?EM[i]:''}</span></button>`,sl=x=>sq(x,P.eq[x]);
-  body=`<div class="eqw"><div class="pnl"><div class="dl"><div class="col">${[2,1,4,5].map(sl).join('')}</div><div class="chr"><img src="${(!P.skin&&P.bsk&&bsIcon(P.bsk))||hnUrl(P.cls)||CI[P.cls]}"><span class="ped"></span><b>${P.name||CL().n}</b><small>${CL().n} · Nv ${P.lv}</small><div class="xpm xpl"><i style="width:${P.lv>=LVMAX?100:100*P.xp/nx}%"></i><em>Nv ${P.lv} / ${LVMAX} · ${P.lv>=LVMAX?'MÁX':Math.floor(100*P.xp/nx)+'%'}</em></div>${setSum()}</div><div class="col">${[0,6,3].map(sl).join('')}</div></div>${jwr()}<div class="eqst"><span>⚔️ ${dmg()}</span><span>❤️ ${Math.round(P.hp)}/${P.mhp}</span><span>💧 ${Math.floor(P.mp)}/${P.mmp}</span><span>👟 ${Math.round(CL().sp*.5*(1+o.sp/100)*mspd())}</span><span>🪙 ${sgn(o.gd)}%</span><span>📦 ${load()}/${capX()}</span></div>${skBars()}</div><div class="pnl"><div class="eqh"><span class="lvt"><button data-h="ev0" class="${LV?'':'on'}">🎒 Mochila <small>${P.bag.length}/${BCAP()}</small></button><button data-h="ev1" class="${LV?'on':''}">🧺 Loot <small>${P.lb.length}/${LCAP()}</small></button></span><span class="pgr"><input id="bgf" class="bgf" type="search" placeholder="Filtrar objeto…" value="${hx(window.BGF||'')}" autocomplete="off"><button data-h="eqall" title="Equipa automáticamente lo mejor de tu mochila">⚡<span class="eqlb"> Lo mejor</span></button><button data-h="zb${BPG-1}"${BPG?'':' disabled'}>‹</button><small>${BPG+1}/${NP}</small><button data-h="zb${BPG+1}"${BPG<NP-1?'':' disabled'}>›</button></span></div><div class="bgcats">${[[-1,'📦','Todo'],[0,'⚔️','Arma'],[1,'🥋','Torso'],[2,'⛑️','Cabeza'],[3,'🧤','Guantes'],[4,'👖','Piernas'],[5,'🥾','Botas'],[6,'🛡️','Escudo']].map(c=>`<button data-h="bgc" data-c="${c[0]}" class="${(window.BGC==null?-1:window.BGC)==c[0]?'on':''}"><span>${c[1]}</span><small>${c[2]}</small></button>`).join('')}</div><div class="zg bag">${Array.from({length:PG},(_,j)=>{const i=BPG*PG+j;return i<TOT?sq((LV?1000:NSL)+i,LST[i]):''}).join('')}</div></div></div>`;
+  body=`<div class="sr-eq-tree-choice"><div class="sr-eq-tree-choice-icon">✧</div><div class="sr-eq-tree-choice-copy"><b>Árbol de habilidades</b><small>Explora las ramas de las clases y equipa hasta 3 habilidades secundarias.</small></div><button type="button" data-sr-open-tree>ABRIR ÁRBOL ›</button></div><div class="eqw"><div class="pnl"><div class="dl"><div class="col">${[2,1,4,5].map(sl).join('')}</div><div class="chr"><img src="${(!P.skin&&P.bsk&&bsIcon(P.bsk))||hnUrl(P.cls)||CI[P.cls]}"><span class="ped"></span><b>${P.name||CL().n}</b><small>${CL().n} · Nv ${P.lv}</small><div class="xpm xpl"><i style="width:${P.lv>=LVMAX?100:100*P.xp/nx}%"></i><em>Nv ${P.lv} / ${LVMAX} · ${P.lv>=LVMAX?'MÁX':Math.floor(100*P.xp/nx)+'%'}</em></div>${setSum()}</div><div class="col">${[0,6,3].map(sl).join('')}</div></div>${jwr()}<div class="eqst"><span>⚔️ ${dmg()}</span><span>❤️ ${Math.round(P.hp)}/${P.mhp}</span><span>💧 ${Math.floor(P.mp)}/${P.mmp}</span><span>👟 ${Math.round(CL().sp*.5*(1+o.sp/100)*mspd())}</span><span>🪙 ${sgn(o.gd)}%</span><span>📦 ${load()}/${capX()}</span></div>${skBars()}</div><div class="pnl"><div class="eqh"><span class="lvt"><button data-h="ev0" class="${LV?'':'on'}">🎒 Mochila <small>${P.bag.length}/${BCAP()}</small></button><button data-h="ev1" class="${LV?'on':''}">🧺 Loot <small>${P.lb.length}/${LCAP()}</small></button></span><span class="pgr"><input id="bgf" class="bgf" type="search" placeholder="Filtrar objeto…" value="${hx(window.BGF||'')}" autocomplete="off"><button data-h="eqall" title="Equipa automáticamente lo mejor de tu mochila">⚡<span class="eqlb"> Lo mejor</span></button><button data-h="zb${BPG-1}"${BPG?'':' disabled'}>‹</button><small>${BPG+1}/${NP}</small><button data-h="zb${BPG+1}"${BPG<NP-1?'':' disabled'}>›</button></span></div><div class="bgcats">${[[-1,'📦','Todo'],[0,'⚔️','Arma'],[1,'🥋','Torso'],[2,'⛑️','Cabeza'],[3,'🧤','Guantes'],[4,'👖','Piernas'],[5,'🥾','Botas'],[6,'🛡️','Escudo']].map(c=>`<button data-h="bgc" data-c="${c[0]}" class="${(window.BGC==null?-1:window.BGC)==c[0]?'on':''}"><span>${c[1]}</span><small>${c[2]}</small></button>`).join('')}</div><div class="zg bag">${Array.from({length:PG},(_,j)=>{const i=BPG*PG+j;return i<TOT?sq((LV?1000:NSL)+i,LST[i]):''}).join('')}</div></div></div>`;
   const cmpC=(it,q)=>['dm','hp','sp','gd','mp'].map(k=>{const df=Math.round((it[k]||0)*sgOf(it)-(q&&q[k]||0)*sgOf(q));return df?`<span class="${df>0?'up':'dn'}">${df>0?'▲':'▼'} ${Math.abs(df)} ${LB[k]}</span>`:''}).join(''),
   dtl=(it,chips,btns,dur)=>icard(it,chips,btns,dur);
   if(SEL<0)det='<small>Toca un objeto: equiparlo o tirarlo.</small>';
@@ -7779,7 +7779,6 @@ html body>#talk{font-size:calc(var(--k)*11px)!important;padding:calc(var(--k)*5p
 #ctxc{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--k,1)*52px);z-index:44;max-width:80vw;padding:2px 10px;border-radius:10px;background:rgba(20,14,30,.55);color:#fff;font:600 calc(var(--k,1)*11px) system-ui,sans-serif;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #ctxc.on{opacity:.92}
 html body>#talk{left:50%!important;right:auto!important;bottom:calc(var(--k)*150px)!important;transform:translateX(-50%)!important}
-/* v370: acceso de envío al carruaje restaurado desde Negocio; habilidades secundarias junto a acciones rápidas */
 </style>
 <script>
 /* v282: acción contextual discreta: cada botón de #ctx muestra solo su emoji; el nombre aparece 2,5 s en una línea fina cuando el botón aparece */
@@ -8017,166 +8016,11 @@ body.sr-title-screen #srTreeLaunch { display:none !important; }
 <style id="sr-v367-market-zoom-reduction">
 /* v367: reduce el zoom visual de los dos mercados un 40%, manteniendo el centro de la pantalla. */
 #smp .smbox, #gkp .gkb {
-  transform: scale(1) !important;
+  transform: scale(.6) !important;
   transform-origin: center center !important;
 }
 </style>
-
-<style id="sr-v368-market-wood-compact-tree">
-/* v368: Mercado con acabado madera/metal dorado, conservando el comportamiento existente. */
-#mk{
-  width:min(97vw,1120px)!important; max-height:94dvh!important;
-  background:linear-gradient(135deg,#24170f 0%,#382519 48%,#1d140f 100%)!important;
-  color:#f6e7c4!important;border:3px solid #b88a42!important;border-radius:12px!important;
-  box-shadow:0 0 0 2px #120b07,0 16px 48px #000c!important;
-  scrollbar-color:#9b7137 #21150e;
-}
-#mk .mkt{padding:10px!important}
-#mk .mkt-h{
-  background:linear-gradient(180deg,#654326,#382516 70%,#24170f)!important;
-  border-bottom:2px solid #b88a42!important;padding:10px 12px 8px!important;
-}
-#mk .mkt-h h2{color:#ffe4a0!important;text-shadow:0 2px #180d07;letter-spacing:.04em}
-#mk .mkt-x{background:linear-gradient(#a52d27,#681b18)!important;border:2px solid #e8b66b!important;border-radius:5px!important}
-#mk .mkt-chip{background:#120d09aa!important;border:1px solid #8c6738!important;border-radius:5px!important;color:#f6e7c4!important}
-#mk .mkt-chip.ok{background:#1c4425!important;border-color:#80b56a!important;color:#d5ffd0!important}
-#mk .mkt-chip.bad{background:#51241b!important;border-color:#bd684d!important;color:#ffe0c5!important}
-#mk .mkt-g{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
-#mk .mkt-c{background:linear-gradient(160deg,#4a3020,#2b1c13 72%)!important;border:2px solid #79572f!important;border-radius:5px!important;padding:8px!important;gap:7px!important;box-shadow:inset 0 1px #d3a65a22,0 3px #100a06!important}
-#mk .mkt-c.is-b{border-color:#6e9eb6!important}
-#mk .mkt-c.is-s{border-color:#d4a74f!important}
-#mk .mkt-ct img{border:1px solid #b18b4f!important;border-radius:3px!important;background:#140e0a!important;image-rendering:pixelated}
-#mk .mkt-nm b{color:#f8e8bc!important}
-#mk .mkt-pr>div{background:#160f0a!important;border:1px solid #634728!important;border-radius:4px!important}
-#mk .mkt-pr>div.on{border-color:#e1b65d!important;background:#21160d!important}
-#mk .mkt-pr b{color:#ffdf86!important}
-#mk .mkt-tg{background:#150e09!important;border:1px solid #634728!important;border-radius:4px!important}
-#mk .mkt-tg button{border-radius:3px!important}
-#mk .mkt-tg button.on{background:linear-gradient(#547e35,#315022)!important;color:#fff!important}
-#mk .is-s .mkt-tg button.on{background:linear-gradient(#9b6c25,#674317)!important}
-#mk .mkt-q button{background:linear-gradient(#68472d,#3b2618)!important;border:1px solid #b48a4c!important;border-radius:4px!important}
-#mk .mkt-in{background:#140d08!important;border:1px solid #a27a43!important;border-radius:3px!important}
-#mk button{touch-action:manipulation}
-@media(min-width:900px){
- #mk .mkt-g{grid-template-columns:repeat(3,minmax(0,1fr))!important}
-}
-@media(max-width:700px){
- #mk{width:calc(100vw - 8px)!important;max-height:calc(100dvh - 10px)!important;border-width:2px!important;border-radius:7px!important}
- #mk .mkt{padding:7px!important}
- #mk .mkt-g{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
- #mk .mkt-c{padding:6px!important;gap:5px!important}
- #mk .mkt-nm b{font-size:13px!important}
- #mk .mkt-pr b{font-size:15px!important}
-}
-/* Un solo acceso compacto al árbol: arriba, sin tapar joystick, chat ni mercado. */
-#srTreeLaunch{
- position:fixed!important;top:max(8px,env(safe-area-inset-top,0px))!important;
- right:10px!important;left:auto!important;bottom:auto!important;
- z-index:9000!important;width:auto!important;max-width:170px!important;
- min-height:32px!important;padding:6px 10px!important;
- border:1px solid #d6ad57!important;border-radius:5px!important;
- background:linear-gradient(#614427,#2d1b10)!important;color:#ffe7a0!important;
- box-shadow:0 2px 7px #0009!important;font:700 11px system-ui!important;
- white-space:nowrap!important;opacity:.94!important;
-}
-.sr-eq-tree-choice{display:none!important}
-.sr-equipment-tree{font-size:11px!important;padding:5px 8px!important;min-height:30px!important}
-@media(max-width:600px){
- #srTreeLaunch{top:max(5px,env(safe-area-inset-top,0px))!important;right:5px!important;max-width:132px!important;font-size:10px!important;padding:5px 7px!important}
-}
-body.sr-title-screen #srTreeLaunch{display:none!important}
-</style>
-
-<style id="sr-v372-vertical-secondary-controls">
-/* v372: tres controles secundarios en columna vertical, en el hueco derecho
-   bajo el minimapa y por encima del paquete principal de acciones. */
-html body #sk, html body #sk2, html body #sk3{
-  position:absolute!important;
-  left:auto!important;
-  right:calc(var(--k,1)*22px)!important;
-  width:calc(var(--k,1)*48px)!important;
-  height:calc(var(--k,1)*48px)!important;
-  min-width:0!important;min-height:0!important;
-  margin:0!important;transform:none!important;
-  border-radius:50%!important;
-  z-index:49!important;
-}
-html body #sk{top:24%!important;bottom:auto!important}
-html body #sk2{top:32%!important;bottom:auto!important}
-html body #sk3{top:40%!important;bottom:auto!important}
-@media(max-height:520px){
- html body #sk{top:22%!important}
- html body #sk2{top:32%!important}
- html body #sk3{top:42%!important}
-}
-</style>
-</body>
-<style id="sr-v371-secondary-controls-reposition">
-/* v371: controles secundarios en el espacio superior del paquete de acciones */
-html body #srLineageCombat{
-  position:fixed!important;
-  top:auto!important;
-  left:auto!important;
-  right:14px!important;
-  bottom:clamp(150px,27vh,190px)!important;
-  transform:none!important;
-  z-index:8998!important;
-  display:flex!important;
-  flex-direction:row!important;
-  flex-wrap:nowrap!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  gap:8px!important;
-  width:max-content!important;
-  max-width:calc(100vw - 24px)!important;
-  padding:4px!important;
-  border:1px solid #a77a3c99!important;
-  border-radius:14px!important;
-  background:rgba(20,13,9,.78)!important;
-  box-shadow:0 3px 12px #0009!important;
-  pointer-events:auto!important;
-  box-sizing:border-box!important;
-}
-html body #srLineageCombat button{
-  flex:0 0 44px!important;
-  width:44px!important;min-width:44px!important;max-width:44px!important;
-  height:44px!important;min-height:44px!important;
-  padding:0!important;margin:0!important;
-  display:flex!important;align-items:center!important;justify-content:center!important;
-  border-radius:50%!important;
-  border:2px solid #e4bd64!important;
-  background:radial-gradient(circle at 32% 25%,#3b5970,#142332 72%)!important;
-  color:#ffe9b0!important;font-size:21px!important;
-  box-shadow:0 2px 8px #000b,inset 0 0 0 2px #ffffff12!important;
-  touch-action:manipulation!important;
-}
-html body #srLineageCombat button:active{transform:scale(.94)!important;filter:brightness(1.2)!important}
-@media (orientation:landscape) and (max-height:600px){
-  html body #srLineageCombat{
-    right:12px!important;
-    bottom:clamp(235px,49vh,270px)!important;
-    gap:6px!important;
-    padding:3px!important;
-  }
-  html body #srLineageCombat button{
-    flex-basis:38px!important;width:38px!important;min-width:38px!important;max-width:38px!important;
-    height:38px!important;min-height:38px!important;font-size:18px!important;
-  }
-}
-@media(max-width:700px) and (orientation:portrait){
-  html body #srLineageCombat{
-    right:max(10px,env(safe-area-inset-right))!important;
-    bottom:clamp(158px,22vh,205px)!important;
-    gap:6px!important;
-  }
-  html body #srLineageCombat button{
-    flex-basis:42px!important;width:42px!important;min-width:42px!important;max-width:42px!important;
-    height:42px!important;min-height:42px!important;font-size:19px!important;
-  }
-}
-body.sr-title-screen #srLineageCombat{display:none!important}
-</style>
-</html>
+</body></html>
 
 
 
@@ -8218,40 +8062,4 @@ document.addEventListener('click',function(e){
 .sr-eq-tree-choice button:active{transform:scale(.98);filter:brightness(1.2)}
 @media(max-width:600px){.sr-eq-tree-choice{gap:9px;padding:10px}.sr-eq-tree-choice-icon{flex-basis:36px;width:36px;height:36px;font-size:23px}.sr-eq-tree-choice-copy b{font-size:14px}.sr-eq-tree-choice-copy small{font-size:11px}.sr-eq-tree-choice button{padding:8px;font-size:10px;min-height:38px}}
 @media(max-width:390px){.sr-eq-tree-choice{flex-wrap:wrap}.sr-eq-tree-choice-copy{flex-basis:calc(100% - 56px)}.sr-eq-tree-choice button{width:100%}}
-</style>
-
-
-<style id="sr-v369-market-landscape-and-top-skills">
-/* v369: quita el zoom reducido que hacía el mercado diminuto y aprovecha el paisaje. */
-#smp{padding:10px!important;box-sizing:border-box!important}
-#smp .smbox{width:min(96vw,1180px)!important;height:min(92dvh,820px)!important;max-height:92dvh!important;transform:scale(1)!important;transform-origin:center!important;border-radius:9px!important;border-width:3px!important;background:linear-gradient(135deg,#24170f,#3b281b 48%,#1b120d)!important}
-#smp .smh{background:linear-gradient(180deg,#694729,#382519 75%,#24170f);border-bottom:2px solid #b88a42;padding:10px 14px 8px!important}
-#smp .smh h3{font-family:Georgia,serif!important;font-size:clamp(18px,2vw,25px)!important;letter-spacing:.04em;text-shadow:0 2px #140b06}
-#smp .smst{background:#1a100b;padding:7px 12px!important;border-bottom:1px solid #a77a3c55}
-#smp .smst span{border-radius:4px!important;background:#100a06!important;border-color:#9b7137!important;color:#ffe6a0}
-#smp .smt{background:#2a1a10;padding:7px 12px 9px!important;border-bottom:2px solid #9b7137}
-#smp .smt button{border-radius:4px!important;min-height:42px!important;font-family:Georgia,serif!important;letter-spacing:.02em}
-#smp .smbody{padding:12px!important}
-#smp .smcards{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important}
-#smp .smcard{border-radius:5px!important;border:2px solid #79572f!important;background:linear-gradient(160deg,#4a3020,#2b1c13 72%)!important;box-shadow:inset 0 1px #d3a65a22,0 3px #100a06!important}
-#smp .smcard-art{height:clamp(62px,9vh,92px)!important;border-radius:4px!important;background:radial-gradient(ellipse,#60472c,#120c08)!important;border-color:#9b7137!important}
-#smp .smcard-art img{width:52px!important;height:52px!important}
-#smp .smcard-name{color:#ffe6a0!important}
-#smp .smcard strong{color:#ffdf86!important}
-#smp .smch{display:flex!important;flex-direction:row!important;gap:6px!important;overflow-x:auto!important;white-space:nowrap!important;padding:5px 0 8px!important}
-#smp .smch button{flex:none!important;border-radius:4px!important;background:linear-gradient(#4b3321,#291a10)!important;border-color:#8c6738!important}
-#smp .smch button.on{background:linear-gradient(#f2c866,#c68a2d)!important;color:#2a1608!important}
-#smp .smr{border-radius:5px!important;background:linear-gradient(160deg,#3c291b,#21160f)!important;border-color:#79572f!important}
-#smp .smgo{border-radius:4px!important;background:linear-gradient(#5e8b3b,#315321)!important;color:#fff!important;border:1px solid #a5ce70!important;border-bottom:3px solid #203a17!important}
-#smp .smgo.smred{background:linear-gradient(#b94839,#75221b)!important;border-color:#e38a6e!important;color:#fff!important}
-#smp .smpager button{border-radius:4px!important;background:linear-gradient(#68472d,#3b2618)!important;border-color:#b48a4c!important}
-/* Los accesos secundarios dejan de flotar encima del joystick/campo: quedan arriba, en una fila compacta. */
-/* v370: habilidades secundarias junto a la barra de acciones rápidas, lejos del minimapa */
-#srLineageCombat{position:fixed!important;top:auto!important;right:calc(var(--k,1)*112px)!important;left:auto!important;bottom:calc(var(--k,1)*58px)!important;transform:none!important;z-index:8998!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:4px!important;max-width:min(48vw,260px)!important;padding:3px!important;border:1px solid #a77a3c88!important;border-radius:7px!important;background:#170e0bd9!important;box-shadow:0 2px 8px #0009!important;pointer-events:auto!important}
-#srLineageCombat button{width:34px!important;min-width:34px!important;max-width:34px!important;height:34px!important;min-height:34px!important;border-radius:4px!important;border:1px solid #e4bd64!important;background:linear-gradient(#604427,#2d1b10)!important;color:#ffe9b0!important;font-size:17px!important;box-shadow:inset 0 0 0 1px #ffffff12!important}
-#srTreeLaunch{top:max(6px,env(safe-area-inset-top,0px))!important;right:10px!important;z-index:9000!important;max-width:155px!important;min-height:30px!important;padding:5px 8px!important;border-radius:4px!important;font-size:10px!important}
-@media (orientation:landscape) and (min-width:700px){#smp .smcards{grid-template-columns:repeat(4,minmax(0,1fr))!important}#smp .smbody{overflow:auto}}
-@media(max-width:700px){#smp{padding:0!important}#smp .smbox{width:100vw!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;border-width:1px!important}#smp .smcards{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}#smp .smcard{padding:6px!important}#smp .smcard-art{height:58px!important}#smp .smcard-art img{width:38px!important;height:38px!important}#srTreeLaunch{right:5px!important;max-width:130px!important;font-size:9px!important}#srLineageCombat{top:auto!important;right:calc(var(--k,1)*112px)!important;bottom:calc(var(--k,1)*54px)!important;max-width:48vw!important;gap:3px!important}#srLineageCombat button{width:29px!important;min-width:29px!important;max-width:29px!important;height:29px!important;min-height:29px!important;font-size:15px!important}}
-@media(max-width:380px){#smp .smcards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-body.sr-title-screen #srLineageCombat{display:none!important}
 </style>

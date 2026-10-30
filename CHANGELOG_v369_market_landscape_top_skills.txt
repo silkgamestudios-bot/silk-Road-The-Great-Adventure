@@ -1,0 +1,9 @@
+Silk Road v369 — Mercado paisaje y habilidades arriba
+
+- Se corrige el escalado de 60% que dejaba los mercados demasiado pequeños; ahora usan escala 1:1.
+- Se amplía el mercado de jugadores para pantallas horizontales y se mejora el estilo madera/metal dorado.
+- Se ajustan las tarjetas de catálogo, pestañas, filtros, paginación y botones para mantener contraste táctil.
+- Las habilidades secundarias equipadas pasan a una fila compacta en la parte superior derecha, evitando el joystick y el chat.
+- El botón del árbol queda arriba; no se cambian las reglas del servidor, las cuentas ni el guardado.
+
+Nota: esta versión mejora el mercado de jugadores existente. El panel de inspección fijo de tres columnas de la referencia requiere una fase adicional de cambios de estructura HTML/JS.

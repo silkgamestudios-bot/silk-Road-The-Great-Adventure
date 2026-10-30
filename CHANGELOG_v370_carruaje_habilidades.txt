@@ -1,0 +1,7 @@
+Silk Road v370 — Restaurar envío al carruaje y reubicar habilidades secundarias
+
+- En la sección Negocio del personaje, el acceso a Mi carruaje vuelve a mostrarse como “Enviar objetos al carruaje”. Abre la pantalla existente del carruaje, donde se selecciona un objeto de la mochila, se define el precio y se pulsa “Subir al carruaje”.
+- Los botones de habilidades secundarias ya no se colocan junto al minimapa.
+- Se reubican en una fila compacta encima y junto a la barra de acciones rápidas, en la esquina inferior derecha.
+- Se conserva el mecanismo existente de lanzamiento de habilidades, costes, recargas y efectividad secundaria.
+- No se modifican servidor, cuentas, licencias, economía ni guardado.

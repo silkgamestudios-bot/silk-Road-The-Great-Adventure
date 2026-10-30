@@ -8086,7 +8086,73 @@ body.sr-title-screen #srTreeLaunch { display:none !important; }
 }
 body.sr-title-screen #srTreeLaunch{display:none!important}
 </style>
-</body></html>
+</body>
+<style id="sr-v371-secondary-controls-reposition">
+/* v371: controles secundarios en el espacio superior del paquete de acciones */
+html body #srLineageCombat{
+  position:fixed!important;
+  top:auto!important;
+  left:auto!important;
+  right:14px!important;
+  bottom:clamp(150px,27vh,190px)!important;
+  transform:none!important;
+  z-index:8998!important;
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  width:max-content!important;
+  max-width:calc(100vw - 24px)!important;
+  padding:4px!important;
+  border:1px solid #a77a3c99!important;
+  border-radius:14px!important;
+  background:rgba(20,13,9,.78)!important;
+  box-shadow:0 3px 12px #0009!important;
+  pointer-events:auto!important;
+  box-sizing:border-box!important;
+}
+html body #srLineageCombat button{
+  flex:0 0 44px!important;
+  width:44px!important;min-width:44px!important;max-width:44px!important;
+  height:44px!important;min-height:44px!important;
+  padding:0!important;margin:0!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  border-radius:50%!important;
+  border:2px solid #e4bd64!important;
+  background:radial-gradient(circle at 32% 25%,#3b5970,#142332 72%)!important;
+  color:#ffe9b0!important;font-size:21px!important;
+  box-shadow:0 2px 8px #000b,inset 0 0 0 2px #ffffff12!important;
+  touch-action:manipulation!important;
+}
+html body #srLineageCombat button:active{transform:scale(.94)!important;filter:brightness(1.2)!important}
+@media (orientation:landscape) and (max-height:600px){
+  html body #srLineageCombat{
+    right:12px!important;
+    bottom:clamp(235px,49vh,270px)!important;
+    gap:6px!important;
+    padding:3px!important;
+  }
+  html body #srLineageCombat button{
+    flex-basis:38px!important;width:38px!important;min-width:38px!important;max-width:38px!important;
+    height:38px!important;min-height:38px!important;font-size:18px!important;
+  }
+}
+@media(max-width:700px) and (orientation:portrait){
+  html body #srLineageCombat{
+    right:max(10px,env(safe-area-inset-right))!important;
+    bottom:clamp(158px,22vh,205px)!important;
+    gap:6px!important;
+  }
+  html body #srLineageCombat button{
+    flex-basis:42px!important;width:42px!important;min-width:42px!important;max-width:42px!important;
+    height:42px!important;min-height:42px!important;font-size:19px!important;
+  }
+}
+body.sr-title-screen #srLineageCombat{display:none!important}
+</style>
+</html>
 
 
 

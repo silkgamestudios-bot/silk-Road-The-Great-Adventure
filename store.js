@@ -215,14 +215,36 @@ ops['mine.take']=(u,m)=>{const f=Math.floor(+m.f),i=Math.floor(+m.i);if(!(f>=1&&
  if(!a.mnh||a.mnh[0]!==h)a.mnh=[h,0];if(!a.mnd||a.mnd[0]!==dy)a.mnd=[dy,0];if(a.mnh[1]>=MN_HOUR)return err('Tus brazos están cansados: descansa un poco antes de seguir minando');if(a.mnd[1]>=MN_DAY)return err('Ya extrajiste muchísimo hoy: vuelve mañana');
  mnClean();const d=mnDB(),k=f+':'+i;if(d[k])return{ok:0,gone:1};d[k]=n;a.mnh[1]++;a.mnd[1]++;S.dirty();S.log('[mina] '+(a.nm||a.pn||u)+' extrajo la veta '+k);return{ok:1}};
 
-/* ===== v378: zonas de colmena de las cuevas. Reserva GLOBAL por zona: cuando se agota, vuelve a florecer a los 90 días para TODOS ===== */
-const HZ_Q=100,HZ_DAYS=90,HZ_GAP=600,HZ_HOUR=3000;
-const hzDB=()=>{S.DB.hz=S.DB.hz||{};return S.DB.hz};
-const hzClean=()=>{const d=hzDB(),n=Date.now();for(const k of Object.keys(d))if(d[k].n&&n>=d[k].n)delete d[k]};
-const hzOk=m=>/^[a-z]{2}$/.test(String(m.c))&&Math.floor(+m.f)>=1&&Math.floor(+m.f)<=12;
-ops['hz.get']=(u,m)=>{if(!hzOk(m))return err('Cueva inválida');hzClean();const d=hzDB(),p=m.c+':'+Math.floor(+m.f)+':',z={};for(const k of Object.keys(d))if(k.indexOf(p)===0)z[k.slice(p.length)]=d[k].l;return{ok:1,q:HZ_Q,z,days:HZ_DAYS}};
-ops['hz.kill']=(u,m)=>{if(!hzOk(m))return err('Cueva inválida');const zi=Math.floor(+m.z);if(!(zi>=0&&zi<64))return err('Zona inválida');const a=E.acct(u),n=Date.now(),h=Math.floor(n/36e5);
- const q=Math.max(1,Math.min(40,Math.floor(+m.n)||1));if(n-(a.hzT||0)<HZ_GAP)return{ok:0,left:null};a.hzT=n;if(!a.hzh||a.hzh[0]!==h)a.hzh=[h,0];if(a.hzh[1]>=HZ_HOUR)return{ok:0,left:null};a.hzh[1]+=q;
- hzClean();const d=hzDB(),k=m.c+':'+Math.floor(+m.f)+':'+zi;let o=d[k];if(!o)o=d[k]={l:HZ_Q,n:0};if(o.l<=0)return{ok:1,left:0};o.l=Math.max(0,o.l-q);if(o.l<=0){o.n=n+HZ_DAYS*864e5;S.log('[colmena] zona '+k+' agotada por '+(a.nm||a.pn||u))}S.dirty();return{ok:1,left:o.l}};
+/* ===== v385: TOPE DE MOBS POR CUEVA (colmenas).
+   Cada cueva-colmena tiene UN número de mobs para todo el servidor (por defecto HZ_MOBS = 20 000 000; se puede fijar otro para una cueva con HZ_MOBS_AR, HZ_MOBS_ES, HZ_MOBS_SE, HZ_MOBS_AB, HZ_MOBS_MI).
+   Cada mob que muere, lo mate quien lo mate (un solo jugador o un equipo entero), se descuenta de ese número: no hay cuotas por jugador. Mientras quede, cada mob caído
+   reaparece a los 3 min. Cuando llega a 0 la cueva queda sin mobs para todos hasta que se cumple su tiempo de reposición (HZ_DAYS = 90 días) y vuelve completa.
+   Si no se agota, se repone sola HZ_DAYS días después de su primera muerte. Dentro de la cueva los mobs salen en zonas de 40 (HZ_ZONE). ===== */
+const hzNum=(v,d)=>{const x=+v;return v===undefined||v===''||!isFinite(x)?d:x};
+const HZ_DAYS=Math.max(.00001,hzNum(process.env.HZ_DAYS,90)),HZ_MOBS=Math.max(100,Math.floor(hzNum(process.env.HZ_MOBS,20000000)));
+const HZ_ZONE=40,HZ_GAP=600,HZ_HOUR=3000,HZ_VER=385;
+const HZ_FL={ar:5,es:6,se:12,ab:20,mi:12};/* cuevas-colmena y su número de pisos (la Torre, el Submundo y el Coliseo no son colmenas) */
+const hzZones=f=>Math.min(12,4+f);/* zonas por piso: las mismas que genera el cliente */
+const hzTot=c=>Math.max(100,Math.floor(hzNum(process.env['HZ_MOBS_'+String(c).toUpperCase()],HZ_MOBS)));/* mobs de la cueva c */
+const hzCave=(c,f)=>/^[a-z]{2}$/.test(c)&&Object.prototype.hasOwnProperty.call(HZ_FL,c)&&f>=1&&f<=HZ_FL[c];
+/* una sola vez: v384 (reservas por zona) → se suman por cueva; v378 (100 por zona) → se descartan. Todo vuelve a abrirse con el tope nuevo */
+const hzDB=()=>{if(!S.DB.hz||S.DB.hzV!==HZ_VER){const od=S.DB.hz||{},ov=S.DB.hzV,nd={};let old=0;
+  for(const k of Object.keys(od)){old++;if(ov!==384)continue;const o=od[k],c=k.split(':')[0];if(!o||!Object.prototype.hasOwnProperty.call(HZ_FL,c))continue;const t=nd[c]=nd[c]||{u:0,s:o.s||Date.now(),n:0};t.u+=Math.max(0,+o.u||0);t.s=Math.min(t.s,o.s||t.s)}
+  S.DB.hz=nd;S.DB.hzV=HZ_VER;S.dirty();if(old)S.log('[colmena] v385: tope por cueva; '+old+' zonas anteriores '+(ov===384?'sumadas a su cueva':'descartadas (reabiertas)'))}
+ return S.DB.hz};
+/* o = {u: mobs muertos de la cueva en este ciclo, s: inicio del ciclo, n: cuándo se repone si está agotada} */
+const hzClean=()=>{const d=hzDB(),n=Date.now(),ms=HZ_DAYS*864e5;for(const k of Object.keys(d)){const o=d[k];if(o.n?n>=o.n:n>=(o.s||0)+ms)delete d[k]}};
+const hzSync=(o,T,n)=>{if((o.u||0)>=T){if(!o.n)o.n=n+HZ_DAYS*864e5}else if(o.n)o.n=0};/* si el tope se sube y la cueva ya no está agotada, se reabre; si se baja, se cierra */
+const hzLeft=(o,T)=>Math.max(0,T-(o.u||0));
+ops['hz.get']=(u,m)=>{const c=String(m.c),f=Math.floor(+m.f);if(!hzCave(c,f))return err('Cueva inválida');hzClean();const d=hzDB(),T=hzTot(c),o=d[c];let left=T,rn=0;
+ if(o){hzSync(o,T,Date.now());left=hzLeft(o,T);rn=left<=0?o.n:0}
+ return{ok:1,q:T,left,n:rn,days:HZ_DAYS,zone:HZ_ZONE,z:{}}};/* z vacío: compatible con clientes anteriores */
+ops['hz.kill']=(u,m)=>{const c=String(m.c),f=Math.floor(+m.f),zi=Math.floor(+m.z);if(!hzCave(c,f))return err('Cueva inválida');if(!(zi>=0&&zi<hzZones(f)))return err('Zona inválida');const a=E.acct(u),n=Date.now(),h=Math.floor(n/36e5);
+ const q=Math.max(1,Math.min(HZ_ZONE,Math.floor(+m.n)||1));if(n-(a.hzT||0)<HZ_GAP)return{ok:0,left:null};a.hzT=n;if(!a.hzh||a.hzh[0]!==h)a.hzh=[h,0];if(a.hzh[1]>=HZ_HOUR)return{ok:0,left:null};a.hzh[1]+=q;
+ hzClean();const d=hzDB(),T=hzTot(c);let o=d[c];if(!o)o=d[c]={u:0,s:n,n:0};hzSync(o,T,n);if((o.u||0)>=T)return{ok:1,left:0,n:o.n||0};
+ const u0=o.u||0;o.u=Math.min(T,u0+q);
+ if(Math.floor(o.u*10/T)>Math.floor(u0*10/T))S.log('[colmena] '+c+': '+Math.floor(o.u*100/T)+'% de los mobs de la cueva ya cayeron ('+o.u+' de '+T+')');
+ if(o.u>=T){o.n=n+HZ_DAYS*864e5;S.log('[colmena] cueva '+c+' AGOTADA (último golpe de '+(a.nm||a.pn||u)+'); se repone en '+HZ_DAYS+' días')}
+ S.dirty();const lf=hzLeft(o,T);return{ok:1,left:lf,n:lf<=0?o.n:0}};/* n: cuándo se repone, solo si quedó agotada */
 
 return{ops,price,GEMP}};

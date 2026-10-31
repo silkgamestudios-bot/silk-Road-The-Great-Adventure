@@ -1,0 +1,27 @@
+v387 — Bosque sagrado alrededor del Templo de las Ocho Sendas (vegetación en pixel art, hiedra en el templo, mariposas, luciérnagas y pétalos) (sobre v386)
+Pedido (Rick): «me gusta [el templo techado], pero me gustaría rodearlo de vegetación, que dices, más emotivo».
+
+Todo es PIXEL ART de verdad, igual que el templo: paleta DawnBringer (16 colores + tintes), ampliado en enteros SIN suavizado, sin degradados ni bordes borrosos (el borde del césped y el brillo de las luciérnagas usan tramado de puntos).
+
+1. BOSQUE SAGRADO ALREDEDOR DEL TEMPLO. Antes el templo quedaba rodeado de roca pelada; ahora lo rodea un jardín:
+   - Alfombra de césped y musgo sobre la roca, más espesa cerca del templo y más rala hacia afuera, con borde irregular (tramado), no un corte recto. La terraza, la escalinata y el camino de arena quedan despejados para que se lea bien por dónde caminar.
+   - Árboles: olivos, cipreses (los altos y oscuros típicos griegos), pinos, árboles redondos y 10 cerezos en flor rosados; arbustos, helechos, matas de pasto y parches de flores de varios colores.
+   - Restos antiguos: columnas rotas, columnas caídas, ánforas y peñascos con musgo repartidos entre la vegetación.
+   - PRIMAVERA ETERNA: el jardín no cambia de color con las estaciones (el tinte de estación se pinta antes que el jardín), así que en otoño o invierno el bosque del templo sigue verde y florecido. Queda como un lugar especial.
+2. EL TEMPLO TAMBIÉN TIENE HIEDRA Y MUSGO: musgo sobre las tejas, enredaderas colgando de las columnas y de la balaustrada, y hiedra con musgo en el dintel del portón. Está dentro de las mismas imágenes del templo (techo, columnas y portón), así que el techo sigue disolviéndose con tramado al entrar, igual que en v386.
+3. VIDA EN EL BOSQUE (solo se dibuja a menos de 40 casillas del templo y solo lo que cae en pantalla; no en el Inframundo ni en mazmorras):
+   - Pétalos rosados que caen de los 10 cerezos (siempre, también con lluvia).
+   - De día y con clima despejado o suave: mariposas de 5 colores revoloteando entre las flores, con su sombrita. Se esconden con lluvia, tormenta, nieve, niebla fuerte, etc.
+   - Al atardecer y de noche: luciérnagas que parpadean con brillo en cruz (puntitos).
+4. SOLO DECORADO: nada del bosque bloquea ni se puede talar. No se tocó world.json ni el servidor: caminas por el jardín igual que antes (los árboles del adorno no son árboles del juego; no se talan ni sirven para skills). No se cambió ninguna regla de zona segura ni de monstruos.
+5. RENDIMIENTO: el jardín es UNA sola imagen paletada (≈100 KB, 960×784 px dibujada al doble) que solo se dibuja si está en pantalla; pétalos, mariposas y luciérnagas son rectángulos de unos pocos píxeles. En las pruebas el juego se mantuvo en 55–61 FPS tanto en PC como en celular horizontal (navegador sin tarjeta gráfica).
+
+Archivos: play.html (jardín como imagen embebida + su dibujo, hiedra en el arte del templo, pétalos/mariposas/luciérnagas), sw.js (sr-v387). Nada más cambia: world.json, servidor y reload.json quedan igual que en v386.
+Manual Deploy en Render: NO (cambio solo de cliente). Sube el zip a GitHub y listo. El service worker se actualiza solo; si alguien ve el templo sin jardín, que recargue (Ctrl+F5 en PC). reload.json no cambia (no saca a nadie).
+
+Pruebas (todas en verde): el templo en navegador con el servidor de verdad (18 comprobaciones, ya con el jardín puesto: subir al altar sin rebotes, el techo se disuelve y vuelve, columnas y altar bloquean, puerta, estatuas, ofrenda, entrenamiento); entrenamiento (PC y celular horizontal); lluvia fuerte forzada; comparación del mapa del cliente contra world.json (sin cambios); y toda la regresión de v379–v385 (cuevas, mobs por cueva, personajes, mercado, torre). Capturas en PC y celular horizontal con el tiempo despejado, de día y de noche (mariposas, luciérnagas, pétalos). La prueba de cuevas t379f falló una vez por una carrera del propio test (comparaba dos listas de monstruos de distinto tamaño en el mismo instante) y pasó completa al repetirla. Rendimiento: 55–61 FPS.
+
+Supuestos y límites conocidos
+- El jardín es una imagen fija (no se mueve con el viento); lo único animado son pétalos, mariposas y luciérnagas.
+- Los personajes y monstruos se dibujan POR ENCIMA de la vegetación (no pasan «por detrás» de las copas): así nunca se pierde un jugador entre los árboles.
+- La primavera eterna es solo del jardín: el clima (lluvia, nieve) sí cae encima como en el resto del mundo, excepto bajo el techo del templo.

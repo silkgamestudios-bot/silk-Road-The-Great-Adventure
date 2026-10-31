@@ -1,3 +1,4 @@
+/* v390: JUGABILIDAD · botín igual al programado (ver reward). */
 /* Mundo online (cliente): posición, enemigos compartidos y botín vienen del servidor.
    Si el servidor no tiene mundo (falta world.json), el juego sigue en modo local sin cambios. */
 (function(){
@@ -10,7 +11,7 @@ const SKIP=e=>e.boss||e.guard||e.wild||e.tmp||e.alpha||e.vec;
    reconectar, el servidor no los conocía y quedaban eternamente al 1% de vida sin poder morir. */
 function dynClr(){for(let i=E.length-1;i>=0;i--)if(E[i].dyn)E.splice(i,1);NR=NR.filter(e=>!e.dyn)}
 function dynMk(d){if(SM[d[0]])return;const ty=d[3]|0,e={dyn:1,sync:1,sid:d[0],stun:1e9,lt:Date.now(),ty,hx:d[6],hy:d[7],x:d[9]!=null?d[9]:d[6],y:d[10]!=null?d[10]:d[7],t:0,dead:0};e.mx=e.hp=mobHP(ty);e.sp=(66+ty*2.5)*.75;try{applyVar(e,d[1])}catch(x){}
- e.mx=d[4];e.hp=d[8];if(d[2])e.nm=d[2];if(d[5])e.wsc=d[5];if(d[1]=='wwolf')e.ww=1;SM[d[0]]=e;E.push(e);NR.push(e)}
+ e.mx=d[4];e.hp=d[8];if(d[2])e.nm=d[2];if(d[5])e.wsc=d[5];if(d[1]=='wwolf')e.ww=1;e.srvk=d[11]|0;/* v390: JUGABILIDAD · clase del monstruo según el servidor: 1 horda del evento, 2 cazador, 3 jefe */SM[d[0]]=e;E.push(e);NR.push(e)}
 function dynRm(id){const e=SM[id];if(!e)return;const i=E.indexOf(e);if(i>=0)E.splice(i,1);NR=NR.filter(q=>q!==e);SM[id]=null}
 window.SRWON=()=>on;
 function freeze(n){const t=Date.now();dynClr();SM=[];E.forEach((e,i)=>{if(i>=n||SKIP(e))return;e.sid=i;e.sync=1;e.stun=1e9;e.lt=t;SM[i]=e})}   // la IA local se apaga: manda el servidor
@@ -62,13 +63,21 @@ function snap(m){const seen={};if(m.ud){try{window.SRUD&&SRUD(m.ud)}catch(e){}}
  if(m.hv)for(const h of m.hv){if(FT.length>=60)break;FT.push({x:h[3]+Math.random()*14-7,y:h[4]-14,t:.9,d:0,o:0,k:'dm',s:String(h[1]),c:'#8fd8ff'})}
  if(m.at){const n=Date.now();for(const a of m.at)OFX.push({u:a[0],k:a[1],a:a[2],x:a[3],y:a[4],t:n,ty:a[6]||'',r:a[7]|0});if(OFX.length>80)OFX.splice(0,OFX.length-80)}pvSync()}
 function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100)),auto=typeof pa==='function'&&pa('lt');
+ /* v390: BOTÍN COMO LO PROGRAMADO. El servidor decide qué cae; aquí se genera igual que sin conexión según el monstruo que murió:
+    el objeto sale de su nivel (antes: siempre un común nivel 1 que valía 324 🪙 sin importar el monstruo), más poción de MP, carne, calabazas/monedas de evento, materiales (pieles, telas), bolsos, tareas y encargo. */
+ const ty=Math.max(0,Math.min(8,m.ty|0)),en=SM[m.mid],pe={x:en?en.x:P.x,y:en?en.y:P.y,ty,rw:en&&en.rw!=null?en.rw:(m.rw||1),v:(en&&en.v)||m.v||null,evt:((en&&en.srvk===1)||m.k==='wave')?1:0},PMX=typeof POTMAX=='number'?POTMAX:800;
  /* El VIP Loot automático es el único que recoge sin pulsar 🎁 Tomar. Sin VIP, oro y equipo común quedan en el suelo. La recogida manual usa grab() y lootAdd(), que manda equipo común a P.lb. */
  let ground=null;
  if(g>0){if(auto&&LF&&LF.gd){P.gold+=g;t.push('+'+g+' 🪙')}else{ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:g,it:null,l:120};t.push('🪙 '+g+' en el suelo')}}
  if(m.x>0){gainXp(m.x);t.push('+'+m.x+' XP')}
- if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty)}catch(e){}}
- if(m.pot&&typeof P.pot=='number')P.pot=Math.min(800,P.pot+1);
- if(m.it){const it=cleanIt(m.it);it.junk=1;if(auto&&LF&&LF.it&&P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{if(!ground)ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:0,it:null,l:120};ground.it=it;t.push('🎁 '+it.n+' en el suelo')}}
+ if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty);if(pe.v){pqEvt('kv',pe.v);const vk=P.st.vk||(P.st.vk={});vk[pe.v]=(vk[pe.v]|0)+1}}catch(e){}
+  try{TD.forEach((d,i)=>{if(tv(i)==tg(i))toast('📜 ¡Tarea lista: '+d[0]+'!',3000)})}catch(e){}
+  try{if(qst&&qst.t=='k'&&qst.got<qst.n){qst.got++;if(qst.got>=qst.n)toast('Encargo listo: vuelve con el Gobernador',3000)}}catch(e){}}
+ if(m.pot&&typeof P.pot=='number'&&P.pot<PMX){P.pot++;try{SES.pt++;flAdd('pot',1)}catch(e){}if(FT.length<60)FT.push({x:pe.x,y:pe.y-26,t:1.8,d:.2,o:0,k:'xp',s:'+1 🧪 poción',c:'#ff9ad5'})}
+ if(m.mpt&&typeof P.mpot=='number'&&P.mpot<PMX){P.mpot++;try{SES.pt++}catch(e){}if(FT.length<60)FT.push({x:pe.x,y:pe.y-38,t:1.8,d:.2,o:0,k:'xp',s:'+1 💧 poción MP',c:'#7ac8ff'})}
+ if(m.meat){try{dropMeat(pe.x,pe.y,1)}catch(e){}}
+ if(m.own){for(const f of [evCoin,matDrop,bagDrop])try{f(pe)}catch(e){}}
+ if(m.it){let it;try{it=genJunk(Math.min(2,ty>>1),ty)}catch(e){it=cleanIt(m.it);it.junk=1}if(auto&&LF&&LF.it&&P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{if(!ground)ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:0,it:null,l:120};ground.it=it;t.push('🎁 '+it.n+' en el suelo')}}
  if(ground)LT.push(ground);
  if(t.length&&FT.length<60)FT.push({x:P.x,y:P.y-30,t:1.6,d:0,o:0,k:'dm',s:t.join(' '),c:'#ffd666'});
  try{chk();save()}catch(e){}}

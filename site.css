@@ -249,3 +249,7 @@ body.hv-open{overflow:hidden}
 .hv-lore{border-left:3px solid var(--cg);padding-left:14px;font-size:17px;opacity:.92;margin:12px 0 18px}
 @media(max-width:760px){.hv-body{grid-template-columns:1fr}.hv-stage{border-right:0;border-bottom:1px solid var(--line,#ffffff22);padding-top:46px}.hv-info{padding:22px 18px}.hv-info h2{font-size:28px}.hv-fig img{--k:11!important}}
 @media(prefers-reduced-motion:reduce){.hv-glow,.hv-card{animation:none}}
+
+/* v388: cinta de Black Friday */
+.bfr{display:block;text-align:center;padding:9px 14px;font:700 15px 'Cormorant Garamond',Georgia,serif;letter-spacing:.2px;color:#ffe9a8;text-decoration:none;background:linear-gradient(90deg,#3a0f0f,#8a2b00 50%,#3a0f0f);border-bottom:1px solid #ffb347}.bfr:hover{color:#fff}
+@media(max-width:600px){.bfr{font-size:13px;padding:8px 10px}}

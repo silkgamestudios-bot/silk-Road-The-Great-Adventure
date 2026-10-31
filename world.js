@@ -1,3 +1,4 @@
+/* v390: JUGABILIDAD de la noche (ver EVN) y botín igual al programado (ver HCIC). */
 /* Mundo compartido autoritativo: el servidor controla enemigos, daño, muertes y botín. Reglas copiadas del juego (world.json). */
 const fs=require('fs');
 module.exports=function(DB,log,X){X=X||{};
@@ -27,21 +28,27 @@ function step(dt,now){const act=new Set();for(const p of PL.values())for(const m
   let tg=m.tg&&PL.get(m.tg);if(tg&&(tg.city||tg.dg||tg.hp<=0||Math.hypot(tg.x-m.x,tg.y-m.y)>(m.vw||CFG.view)||Math.hypot(m.x-m.hx,m.y-m.hy)>(m.ls||CFG.leash)))tg=null;
   if(!tg)tg=nearP(m,m.ag||CFG.aggro);
   m.tg=tg?tg.uid:null;m.t-=dt;
-  if(tg){const dx=tg.x-m.x,dy=tg.y-m.y,d=Math.hypot(dx,dy)||1,vg=.55+.45*Math.max(0,m.hp/m.mx);if(d>(m.rg?m.rg*.6:20)){const s=m.sp*vg*dt;mvM(m,dx/d*s,dy/d*s)}
-   if(d<(m.rg||24)&&m.t<=0){m.t=.8;const dm=m.dm*(m.sf?sD(tg.lv,m):1)*(.6+.4*Math.max(0,m.hp/m.mx));tg.ct.tk+=dm;send(tg.ws,{t:'wd',d:Math.round(dm*10)/10,mid:m.id})}}
-  else{if(m.k==='hunt')continue;const hx=m.hx-m.x,hy=m.hy-m.y,hd=Math.hypot(hx,hy);if(hd>12){mvM(m,hx/hd*55*dt,hy/hd*55*dt);if(hd<60)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}else if(m.hp<m.mx)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}}
+  if(tg){m.idl=0;const dx=tg.x-m.x,dy=tg.y-m.y,d=Math.hypot(dx,dy)||1,vg=.55+.45*Math.max(0,m.hp/m.mx);if(d>(m.rg?m.rg*.6:20)){const s=m.sp*vg*dt;mvM(m,dx/d*s,dy/d*s)}
+   if(d<(m.rg||24)&&m.t<=0){m.t=.8;let dm=m.dm*(m.sf?sD(tg.lv,m):1)*(.6+.4*Math.max(0,m.hp/m.mx));
+    if(m.dyn){/* v390: nadie muere de un golpe: tope por golpe y por segundo (suma de todos los monstruos del evento) según la vida máxima */
+     const mh=Math.max(60,+tg.mhp||0),w=tg.bw||(tg.bw=[]);dm=Math.min(dm,mh*EVN.hitCap);while(w.length&&now-w[0][0]>1050)w.shift();let sq=0;for(let i=0;i<w.length;i++)sq+=w[i][1];dm=Math.min(dm,Math.max(0,mh*EVN.secCap-sq));if(dm>=.1)w.push([now,dm])}   /* ventana deslizante exacta (1,05 s) */
+    if(dm>=.1){tg.ct.tk+=dm;send(tg.ws,{t:'wd',d:Math.round(dm*10)/10,mid:m.id})}}}
+  else{if(m.dyn&&m.k!=='ww'){m.idl=(m.idl||0)+dt;if(m.idl>(m.k==='hunt'?EVN.idleH:EVN.idleW)){dyDel(m);continue}}   /* v390: sin objetivo (te refugiaste o te alejaste) se esfuman */
+   if(m.k==='hunt')continue;const hx=m.hx-m.x,hy=m.hy-m.y,hd=Math.hypot(hx,hy);if(hd>12){mvM(m,hx/hd*55*dt,hy/hd*55*dt);if(hd<60)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}else if(m.hp<m.mx)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}}
  for(const p of PL.values()){if(p.pvp&&!p.ar&&(p.city||p.dg)){p.pvp=0;p.lp=null;send(p.ws,{t:'wpv',on:0,e:'PvP apagado: zona segura'})}p.ct.dm*=.9985;p.ct.tk*=.9985;p.ct.ut*=.9985}}
+/* v390: BOTÍN IGUAL AL PROGRAMADO (tablas HC_* del juego, por nivel de monstruo): antes el servidor soltaba pociones al ~50% de lo programado (0% en los niveles 0-1), nunca poción de MP, y un objeto fijo */
+const HCIC=[.30,.31,.32,.32,.33,.34,.34,.35,.35],HCPC=[.05,.06,.07,.08,.08,.09,.09,.10,.11],HCMPC=[0,.03,.05,.06,.07,.07,.08,.09,.10],HCMC=[.6,.5,0,0,0,0,0,0,0];
 function kill(m){m.dead=1;m.hp=0;m.rt=Date.now()+(m.dyn?(m.rz||15000):CFG.rez);m.tg=null;let o=null,b=0;for(const u in m.dmg){const p=PL.get(u);if(p&&m.dmg[u]>b){b=m.dmg[u];o=p}}m.dmg={};if(!o)return;
  const ty=Math.min(8,Math.max(0,m.ty|0)),TY=J.types[ty],t=TY.loot[Math.floor(Math.random()*TY.loot.length)],gd=m.gx?Math.round(m.gx*(.7+Math.random()*.6)):Math.round(t[0]*m.rw),xp0=Math.max(1,Math.round(TY.xp*m.rw)),pd=pid(o.uid),E=[o];
  // Drop independiente de equipo común: 30% por monstruo. Se conserva el grupo de objetos propio de cada tipo; los dos tipos iniciales usan el primer grupo disponible.
- const itemPool=TY.loot.map(a=>a[1]).filter(it=>it&&it.r===0),fallbackPool=J.types[2].loot.map(a=>a[1]).filter(it=>it&&it.r===0),pool=itemPool.length?itemPool:fallbackPool,dropItem=Math.random()<.30&&pool.length?JSON.parse(JSON.stringify(pool[Math.floor(Math.random()*pool.length)])):null;
+ const itemPool=TY.loot.map(a=>a[1]).filter(it=>it&&it.r===0),fallbackPool=J.types[2].loot.map(a=>a[1]).filter(it=>it&&it.r===0),pool=itemPool.length?itemPool:fallbackPool,dropItem=Math.random()<Math.min(.6,HCIC[ty]*(m.rw>1?1.5:1))&&pool.length?JSON.parse(JSON.stringify(pool[Math.floor(Math.random()*pool.length)])):null;
  if(pd)for(const p of PL.values())if(p!==o&&pid(p.uid)===pd&&p.hp>0&&!p.city&&!p.dg&&sc(p)>0&&Math.hypot(p.x-m.x,p.y-m.y)<=CFG.rng)E.push(p);
  const R=new Map(E.map(p=>[p.uid,{t:'wk',g:0,x:0,it:null,pot:0,meat:0,mid:m.id,ty:m.ty,own:p===o?1:0}]));
  if(E.length<2){const r=R.get(o.uid);r.g=gd;r.x=xp0;r.it=dropItem}
  else{const n=E.length,sum=E.reduce((a,p)=>a+sc(p),0),w=E.map(p=>Math.min(2/n,Math.max(CFG.shareMin/n,.5/n+.5*(sum>0?sc(p)/sum:1/n)))),tw=w.reduce((a,b)=>a+b,0),k=new Set(E.map(p=>p.c)).size,pool=xp0*(1+.03*(k-1)),now=Date.now();let sg=0;
   E.forEach((p,i)=>{const r=R.get(p.uid);r.x=Math.max(1,Math.round(pool*w[i]/tw));if(p===o)return;p.rc=p.rc.filter(a=>now-a[0]<6e4);const left=Math.max(0,CFG.gcap+500*p.lv-p.rc.reduce((a,b)=>a+b[1],0)),g=Math.min(left,Math.floor(gd*w[i]/tw));if(g>0){p.rc.push([now,g]);r.g=g;sg+=g}});
   R.get(o.uid).g=gd-sg;if(dropItem){let r=Math.random()*tw,k2=0;for(;k2<n-1;k2++){if(r<w[k2])break;r-=w[k2]}R.get(E[k2].uid).it=dropItem}}
- const ro=R.get(o.uid);ro.pot=t[2];ro.meat=t[3];for(const p of E)send(p.ws,R.get(p.uid))}
+ const ro=R.get(o.uid);ro.pot=Math.random()<HCPC[ty]?1:0;ro.mpt=Math.random()<HCMPC[ty]?1:0;ro.meat=Math.random()<HCMC[ty]?1:0;ro.k=m.k||'';if(m.v)ro.v=m.v;ro.rw=m.rw;for(const p of E)send(p.ws,R.get(p.uid))}
 function hits(p,list){if(p.city||inCity(p.x,p.y))return;const now=Date.now();p.tok=Math.min(CFG.hitMax*2,(p.tok||0)+(now-p.tt)/1000*CFG.hitMax);p.tt=now;
  for(const h of Array.isArray(list)?list.slice(0,12):[]){if(p.tok<1)break;const m=BY.get(h[0]|0);if(!m||m.dead||Math.hypot(p.x-m.x,p.y-m.y)>620||inCity(m.x,m.y))continue;
   const dm=Math.min(CFG.dmg0*75*(1+.12*(p.lv-1)),Math.max(0,+h[1]||0));if(!(dm>0))continue;p.tok--;EV.push([m.id,Math.round(dm),p.uid,Math.round(m.x),Math.round(m.y)]);
@@ -184,37 +191,71 @@ const EVV={nv:[['snow',.4],['elf',.35],['reno',.25]],lu:[['lion',.6],['assassin'
 const LNY={2026:[2,17],2027:[2,6],2028:[1,26],2029:[2,13],2030:[2,3],2031:[1,23],2032:[2,11]};
 const pick=l=>{let r=Math.random();for(const[v,q]of l){if(r<q)return v;r-=q}return l[0][0]};
 const dr=()=>new Date(Date.now()-4*36e5),drH=()=>{const d=dr();return d.getUTCHours()+d.getUTCMinutes()/60};
-const nightF=h=>(h>=19.5||h<5.5)?1:h>=17.5?Math.pow((h-17.5)/2,1.3):h<7?Math.pow((7-h)/1.5,1.3):0;
+/* v390: LA NOCHE DURA 2 HORAS (antes seguía el reloj real: ~13 h de oscuridad con cazadores). Noche cerrada de 20:00 a 22:00 (hora de RD), anochece 19:30-20:00 y amanece 22:00-22:30.
+   Se cambia desde Render con NIGHT_START y NIGHT_END (horas de RD, p. ej. 21 y 23). */
+const NWe=(k,d)=>{const v=parseFloat(process.env[k]);return Number.isFinite(v)?((v%24)+24)%24:d};
+const NW={a:NWe('NIGHT_START',20),b:NWe('NIGHT_END',22),r:.5},nightLen=()=>((NW.b-NW.a+24)%24)||24,inNight=h=>((h-NW.a+24)%24)<nightLen();
+const nightF=h=>{const L=nightLen(),d=(h-NW.a+24)%24;if(d<L)return 1;if(d<L+NW.r)return Math.pow(1-(d-L)/NW.r,1.3);const e=(NW.a-h+24)%24;return e<NW.r?Math.pow(1-e/NW.r,1.3):0};
 function evNow(){const d=dr(),y=d.getUTCFullYear(),t=d.getTime(),M=(m,dd,h)=>Date.UTC(y,m-1,dd,h||0),inr=(a,b)=>a[0]>b[0]?(t>=M(a[0],a[1])||t<=M(b[0],b[1],23)):(t>=M(a[0],a[1])&&t<=M(b[0],b[1],23));
  if(process.env.DY_EV)return process.env.DY_EV==='off'?'':process.env.DY_EV;if(inr([10,16],[11,2]))return'hl';if(inr([12,15],[1,6]))return'nv';if(inr([2,10],[2,15]))return'am';if(inr([3,18],[3,25]))return'nz';const l=LNY[y];if(l){const c=M(l[0],l[1]);if(t>=c-2*864e5&&t<c+15*864e5)return'lu'}return''}
 const hlFull=()=>{const d=dr(),m=d.getUTCMonth()+1,dd=d.getUTCDate();return process.env.DY_NIGHT?1:((m===10&&dd>=30)||(m===11&&dd<=2))};
 const egCap=L=>L<=8?L+1:L<=24?L+1+Math.floor((L-8)*.75):1e9;
 const sD=(lv,m)=>{lv=lv|0||1;const nb=m.nv||REC(Math.min(8,m.ty|0)),c=egCap(lv);return(.45+.55*Math.max(0,Math.min(1,(lv-1)/19)))*(c>=nb?1:Math.pow(c/nb,.6))};
+/* v389: NOCHES DE HALLOWEEN MÁS JUGABLES. Los enemigos de la noche (cazadores, hordas nocturnas del evento y Hombres Lobo) pegan -45% y conservan su vida: siguen siendo resistentes.
+   Los «amo» (jefe de manada, Alfa de la noche, Hombre Lobo, Vampiro ancestral, Guardián carmesí y Calabaza gigante) además aguantan +30% de vida.
+   Se afina sin tocar el código con variables de Render: NIGHT_DM (0.55 = -45%; 1 = como antes), AMO_HP (1.3 = +30%; 1 = como antes) y AMO_DM (daño extra de los amo; 1 = igual que el resto). */
+const envN=(k,d,lo,hi)=>{const v=parseFloat(process.env[k]);return Number.isFinite(v)?Math.max(lo,Math.min(hi,v)):d};
+const NGT={dm:envN('NIGHT_DM',.55,.05,3),amoHp:envN('AMO_HP',1.3,.5,6),amoDm:envN('AMO_DM',1,.05,3)},AMOV=new Set(['vampL','cwardenR','jackG','wwolf']);
+/* v390: JUGABILIDAD DE LA NOCHE. (1) En las ciudades y cerca de ellas no salen cazadores ni hordas, y al salir hay una tregua para poder alejarse. (2) Los enemigos del evento son FINITOS:
+   cupo de manadas por noche y de hordas por ventana de 15 min, y se esfuman si te refugias en la ciudad o los dejas atrás. (3) Nadie muere de un golpe: tope de daño por golpe y por segundo según tu vida máxima.
+   Se afina con variables de Render: GRACE_HUNT / GRACE_WAVE (s de tregua), SAFE_HUNT / SAFE_WAVE (px sin enemigos junto a las ciudades), HUNT_MIN_LV, HUNT_PACKS (manadas por noche), HUNT_GAP (s entre manadas),
+   WAVE_QUOTA (hordas por 15 min), WAVE_DM / WAVE_HP (fuerza de las hordas del evento), HIT_CAP / SEC_CAP (fracción de tu vida máxima por golpe / por segundo). */
+const EVN={graceH:envN('GRACE_HUNT',150,0,1800),graceW:envN('GRACE_WAVE',60,0,900),safeH:envN('SAFE_HUNT',1400,0,6000),safeW:envN('SAFE_WAVE',700,0,6000),spawnGap:600,minLvH:envN('HUNT_MIN_LV',6,1,99),
+ packs:envN('HUNT_PACKS',6,0,60),packGap:envN('HUNT_GAP',200,20,1800),waveQ:envN('WAVE_QUOTA',14,0,200),waveWin:15*60*1000,waveDm:envN('WAVE_DM',.8,.05,3),waveHp:envN('WAVE_HP',.85,.1,3),
+ hitCap:envN('HIT_CAP',.18,.02,1),secCap:envN('SEC_CAP',.35,.05,2),idleH:18,idleW:40};
+const cityDist=(x,y)=>{let b=1e9;for(const c of J.cities){const e=c.ex||[0,0,0,0],dx=x/T-c.tx-.5,dy=y/T-c.ty-.5,ax=Math.max(-24.6-e[0]-dx,0,dx-(24.6+e[1])),ay=Math.max(-18.6-e[2]-dy,0,dy-(15.6+e[3])),d=Math.hypot(ax,ay)*T;if(d<b)b=d}return b};
+const cityTiles=(x,y)=>{let b=1e9;for(const c of J.cities){const d=Math.hypot(c.tx-x/T,c.ty-y/T);if(d<b)b=d}return b};   /* distancia en casillas al centro de la ciudad más cercana (igual que el modo sin conexión) */
+const nightKey=()=>Math.floor((Date.now()-4*36e5-NW.a*36e5)/864e5),VMINLV={vampH:12,devil:12,reapB:12,vampL:20,cwardenR:20,jackG:20};
 let dyN=0;const dyId=()=>{for(let k=0;k<6000;k++){dyN=(dyN+1)%6000;const id=J.mobs.length+dyN;if(!BY.has(id))return id}return-1};
 function dyDel(m){const i=DYL.indexOf(m);if(i>=0)DYL.splice(i,1);BY.delete(m.id)}
 function dyAdd(v,ty,x,y,o){o=o||{};if(DYL.length>=260)return null;const id=dyId();if(id<0)return null;const q=DYV[v]||[1,1,1,1,0,''];ty=Math.max(0,Math.min(8,ty|0));
- const m={id,x,y,ty,mx:o.hp||Math.max(1,Math.round(HPT[ty]*q[0])),sp:(66+ty*2.5)*.75*q[1]*(o.spm||1),hx:x,hy:y,rw:o.rw||q[3],dm:o.dm!=null?o.dm:(5+3*ty)*q[2],dead:0,rt:0,t:0,tg:null,dmg:{},dyn:1,v,nm:o.nm!=null?o.nm:q[5],sc:o.sc||0,nv:REC(ty)+q[4],k:o.k||'wave',sf:o.sf?1:0,ag:o.ag,vw:o.vw,ls:o.ls,rg:o.rg,rz:o.rz||0,gx:o.gx||0,exp:o.exp||0};m.hp=m.mx;DYL.push(m);BY.set(id,m);return m}
+ const m={id,x,y,ty,mx:o.hp||Math.max(1,Math.round(HPT[ty]*q[0])),sp:(66+ty*2.5)*.75*q[1]*(o.spm||1),hx:x,hy:y,rw:o.rw||q[3],dm:o.dm!=null?o.dm:(5+3*ty)*q[2],dead:0,rt:0,t:0,tg:null,dmg:{},dyn:1,v,nm:o.nm!=null?o.nm:q[5],sc:o.sc||0,nv:REC(ty)+q[4],k:o.k||'wave',sf:o.sf?1:0,ag:o.ag,vw:o.vw,ls:o.ls,rg:o.rg,rz:o.rz||0,gx:o.gx||0,exp:o.exp||0};if(o.hpx)m.mx=Math.max(1,Math.round(m.mx*o.hpx));if(o.dmx)m.dm*=o.dmx;if(o.nt){m.nt=1;m.dm*=NGT.dm;if(o.amo||AMOV.has(v)){m.amo=1;m.mx=Math.max(1,Math.round(m.mx*NGT.amoHp));m.dm*=NGT.amoDm}}m.hp=m.mx;DYL.push(m);BY.set(id,m);return m}
 const tierNear=(x,y)=>{let b=1e9,t=0;for(const m of near(x,y,500)){const d=Math.hypot(m.x-x,m.y-y);if(d<b){b=d;t=m.ty}}return t};
-function ringPos(p,r){for(let k=0;k<24;k++){const a=Math.random()*6.283,rr=r*(.7+Math.random()*.5),x=p.x+Math.cos(a)*rr,y=p.y+Math.sin(a)*rr;if(!solid(x,y)&&!inCity(x,y)&&!solid(x+14,y)&&!solid(x-14,y))return[x,y]}return null}
+function ringPos(p,r){for(let k=0;k<24;k++){const a=Math.random()*6.283,rr=r*(.7+Math.random()*.5),x=p.x+Math.cos(a)*rr,y=p.y+Math.sin(a)*rr;if(!solid(x,y)&&!inCity(x,y)&&!solid(x+14,y)&&!solid(x-14,y)&&cityDist(x,y)>=EVN.spawnGap)return[x,y]}return null}
 const wwPos=(()=>{let o=null;return()=>{if(o)return o;o=[];let s=(31101981+new Date().getFullYear()*7919)>>>0;const rn=()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
  for(let k=0;k<60000&&o.length<30;k++){const m=L[Math.floor(rn()*L.length)];if(!m||m.ty<2||inCity(m.hx,m.hy)||solid(m.hx,m.hy))continue;if(o.some(q=>Math.hypot(q.x-m.hx,q.y-m.hy)<(k<30000?34:18)*T))continue;o.push({x:m.hx,y:m.hy,ty:m.ty})}return o}})();
-const wwOn=()=>{if(process.env.WW_FORCE)return true;if(evNow()!=='hl')return false;const h=drH();return h>=20||h<2};
+const wwOn=()=>{if(process.env.WW_FORCE)return true;if(evNow()!=='hl')return false;const h=drH();return inNight(h)};
 function wwSync(){const on=wwOn(),cur=DYL.filter(m=>m.k==='ww');if(!on){for(const m of cur)dyDel(m);return}if(cur.length)return;
- for(const q of wwPos())dyAdd('wwolf',q.ty,q.x,q.y,{k:'ww',hp:20000,sc:10,rz:900000,gx:900+q.ty*350+350,ag:380,vw:900,ls:800,rg:70})}
-function hunters(p,now){if(p.dg||p.city||p.hp<=0||p.lv<1)return;const f=Math.max(0,Math.min(1,((p.lv|0)-5)/32));
- if(now<(p.nht||0))return;p.nht=now+((60-34*f)+Math.random()*(30-8*f))*1000;
- let al=0;for(const m of DYL)if(m.k==='hunt'&&!m.dead&&Math.hypot(m.x-p.x,m.y-p.y)<1800)al++;if(al>=(f<.25?4:14))return;
+ for(const q of wwPos())dyAdd('wwolf',q.ty,q.x,q.y,{k:'ww',hp:20000,sc:10,rz:900000,gx:900+q.ty*350+350,ag:380,vw:900,ls:800,rg:70,nt:1})}
+function hunters(p,now){if(p.dg||p.hp<=0||p.lv<1)return;
+ /* v390: JUGABILIDAD: en la ciudad y cerca de ella no hay cazadores; al salir hay una tregua para alejarse sin que te caigan encima */
+ if(p.city||p.lv<EVN.minLvH||cityDist(p.x,p.y)<EVN.safeH){p.nht=Math.max(p.nht||0,now+EVN.graceH*1000);return}
+ const nk=nightKey();if(p.hbk!==nk){p.hbk=nk;p.hbn=0;p.hbw=0}
+ if(p.hbn>=EVN.packs){if(!p.hbw){p.hbw=1;send(p.ws,{t:'note',m:'🌙 La noche se calma: los cazadores ya no te buscarán hasta la próxima noche'})}return}
+ /* v390: igual que el modo sin conexión, la fuerza de la manada también depende de la distancia a la ciudad (cerca: manadas débiles; lejos: fuertes). Antes en línea solo contaba tu nivel. */
+ const f=Math.min(Math.max(0,Math.min(1,(cityTiles(p.x,p.y)-35)/115)),Math.max(0,Math.min(1,((p.lv|0)-5)/32)));
+ if(now<(p.nht||0))return;p.nht=now+(EVN.packGap*(1-.3*f)+Math.random()*EVN.packGap*.5)*1000;
+ let al=0;for(const m of DYL)if(m.k==='hunt'&&!m.dead&&Math.hypot(m.x-p.x,m.y-p.y)<1800)al++;if(al>=(f<.25?3:8))return;
  const ti=Math.min(8,tierNear(p.x,p.y)+1,Math.max(1,Math.round(((p.lv|0)-1)/3.5)+1)),kind=ti>=4&&Math.random()<.5?'v':Math.random()<.3?'a':'w',HM=2.4+ti*.25,HD=1.5+ti*.08;
  let list=kind==='w'?['wolfA','wolfA','wolfN','wolfN','wolfN','wolfN']:kind==='v'?['vampH','vampH','vampH','batN','batN','batN']:['assN','assN','assN','ghostR','ghostR','batN'];list=list.slice(0,f<.25?3:f<.6?4:6);
  const pos=ringPos(p,1020);if(!pos)return;let n=0;
  list.forEach((v,i)=>{const q=DYV[v],ty=Math.min(8,ti),bh=HPT[ty]*q[0],fh=Math.round(bh*HM*(i===0?1.8:1)),wh=Math.round(HPT[0]*(i===0?2.2:1.3)),hp=Math.round(wh+(fh-wh)*f),fdm=q[2]*HD*(i===0?1.3:1),wd=.25*(i===0?1.2:1),dm=(5+3*ty)*(wd+(fdm-wd)*f);
-  const m=dyAdd(v,ty,pos[0]+(i%2)*60-30,pos[1]+((i>>1)*60)-30,{k:'hunt',hp,dm,spm:1.04+.08*f,ag:1100,vw:1500,ls:3000,exp:now+25*60*1000});if(m)n++});
- if(f>=.35&&Math.random()<.2){const v=kind==='v'?'vampH':'wolfA',q=DYV[v],ty=Math.min(8,ti);dyAdd(v,ty,pos[0],pos[1]-30,{k:'hunt',hp:Math.round(HPT[ty]*q[0]*HM*3.2),dm:(5+3*ty)*q[2]*HD*.9,spm:1.3,nm:'Alfa de la noche',ag:1100,vw:1500,ls:3000,exp:now+25*60*1000})}
- if(n)send(p.ws,{t:'note',m:'🐺 Se oye un aullido cerca...'})}
-function waves(p,ev,now){if(p.dg||p.city||p.hp<=0)return;const hl=ev==='hl',gap=(hl?30:70)*1000;if(now<(p.nwv||0))return;p.nwv=now+gap;
- const cap=hl?4:5,night=hl&&nightF(drH())*(hlFull()?1:.35)>.3;let al=0;for(const m of DYL)if(m.k==='wave'&&!m.dead&&Math.hypot(m.x-p.x,m.y-p.y)<1600)al++;if(al>=cap)return;
- const tier=tierNear(p.x,p.y),n=hl?Math.max(1,Math.min(2+(night&&Math.random()<.4?1:0),cap-al)):Math.min(3,cap-al);if(n<1)return;let c=0;
- for(let i=0;i<n;i++){const pos=ringPos(p,460);if(!pos)continue;const ty=Math.min(8,tier+(Math.random()<.25?1:0)),v=hl?pick(night?HWN:HWD):pick(EVV[ev]||[['bandit',1]]);if(dyAdd(v,ty,pos[0],pos[1],{k:'wave',sf:1,ag:520,vw:900,ls:1400,exp:now+12*60*1000}))c++}}
+  const m=dyAdd(v,ty,pos[0]+(i%2)*60-30,pos[1]+((i>>1)*60)-30,{k:'hunt',hp,dm,spm:1.04+.08*f,ag:1100,vw:1500,ls:3000,exp:now+10*60*1000,nt:1,amo:i===0?1:0});if(m)n++});
+ if(f>=.35&&Math.random()<.2){const v=kind==='v'?'vampH':'wolfA',q=DYV[v],ty=Math.min(8,ti);dyAdd(v,ty,pos[0],pos[1]-30,{k:'hunt',hp:Math.round(HPT[ty]*q[0]*HM*3.2),dm:(5+3*ty)*q[2]*HD*.9,spm:1.3,nm:'Alfa de la noche',ag:1100,vw:1500,ls:3000,exp:now+10*60*1000,nt:1,amo:1})}
+ if(n){p.hbn=(p.hbn|0)+1;send(p.ws,{t:'note',m:'🐺 Se oye un aullido cerca...'})}}
+function waves(p,ev,now){if(p.dg||p.hp<=0)return;const hl=ev==='hl';
+ /* v390: JUGABILIDAD: ni en la ciudad ni pegado a ella; al salir hay una tregua */
+ if(p.city||cityDist(p.x,p.y)<EVN.safeW){p.nwv=Math.max(p.nwv||0,now+EVN.graceW*1000);return}
+ if(now<(p.nwv||0))return;p.nwv=now+(hl?45:70)*1000;
+ /* v390: las hordas son FINITAS: cupo por ventana de 15 min; al agotarse hay una pausa */
+ let q=p.wq;if(!q||now-q.t0>EVN.waveWin)q=p.wq={t0:now,n:0,w:0};
+ const quota=Math.round(EVN.waveQ*(hl?1:1.4));if(q.n>=quota){if(!q.w){q.w=1;send(p.ws,{t:'note',m:hl?'🎃 Los espíritus se calman un rato... vuelven en unos minutos':'✨ Los visitantes del evento se retiran un rato'})}return}
+ const cap=hl?3:4,night=hl&&nightF(drH())*(hlFull()?1:.35)>.3;let al=0;for(const m of DYL)if(m.k==='wave'&&!m.dead&&Math.hypot(m.x-p.x,m.y-p.y)<1600)al++;if(al>=cap)return;
+ const tier=tierNear(p.x,p.y),n=hl?Math.max(1,Math.min(1+(night&&Math.random()<.3?1:0),cap-al,quota-q.n)):Math.min(2,cap-al,quota-q.n);if(n<1)return;let c=0;
+ for(let i=0;i<n;i++){const pos=ringPos(p,460);if(!pos)continue;const ty=Math.min(8,tier+(Math.random()<.25?1:0));let v=hl?pick(night?HWN:HWD):pick(EVV[ev]||[['bandit',1]]);
+  if(VMINLV[v]&&(p.lv|0)<VMINLV[v])v=pick(HWD);   /* v390: las variantes más fuertes solo salen a nivel alto */
+  if(dyAdd(v,ty,pos[0],pos[1],{k:'wave',sf:1,ag:520,vw:900,ls:1400,exp:now+8*60*1000,nt:night?1:0,hpx:hl?EVN.waveHp:0,dmx:hl?EVN.waveDm:0}))c++}
+ q.n+=c}
 let dyT=0;
 function dyTick(){const now=Date.now();if(now<dyT)return;dyT=now+1000;if(!PL.size){for(const m of DYL.filter(m=>m.k!=='ww'))dyDel(m);wwSync();return}
  const ev=evNow(),night=!!process.env.DY_NIGHT||nightF(drH())>=.5;
@@ -243,7 +284,7 @@ const UBUD=now=>[UBS.mask,Math.round(UBS.hold*10),UBS.open?1:0,Math.round(UBS.hp
 setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);try{ubStep(now,CFG.tick/1000)}catch(e){log('ub error '+e.message)}
  for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||(q.asp&&!q.ar))continue;const aa=(p.ar&&q.ar)||(p.asp&&q.ar);if(!aa&&Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;if(!aa&&(!!q.dg!==!!p.dg||(q.dg&&!(p.uw&&q.uw)&&!(pid(q.uid)&&pid(q.uid)===pid(p.uid)))))continue;pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||'',q.pvp?1:0,q.wn?1:0,q.bd||'',CO.champ&&CO.champ.uid===q.uid?1:0,q.mo||''])}
   const mb=[];let dd=null,dx=null;if(!p.dg){for(const m of near(p.x,p.y,CFG.sview+CFG.leash))if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview)mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);
-   for(const m of DYL)if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview){mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);if(!p.dk.has(m.id)){p.dk.add(m.id);(dd=dd||[]).push([m.id,m.v,m.nm||'',m.ty,m.mx,m.sc||0,Math.round(m.hx),Math.round(m.hy),Math.round(m.hp),Math.round(m.x),Math.round(m.y)])}}
+   for(const m of DYL)if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview){mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);if(!p.dk.has(m.id)){p.dk.add(m.id);(dd=dd||[]).push([m.id,m.v,m.nm||'',m.ty,m.mx,m.sc||0,Math.round(m.hx),Math.round(m.hy),Math.round(m.hp),Math.round(m.x),Math.round(m.y),m.k==='wave'?1:m.k==='hunt'?2:3])}}
    for(const id of p.dk){const m=BY.get(id);if(!m||!m.dyn||Math.hypot(m.x-p.x,m.y-p.y)>CFG.sview*1.15){p.dk.delete(id);(dx=dx||[]).push(id)}}}
   else if(p.dk.size){dx=[...p.dk];p.dk.clear()}
   const hv=EV.filter(e=>e[2]!==p.uid&&Math.hypot(e[3]-p.x,e[4]-p.y)<=CFG.sview).slice(0,30),at=AT.filter(a=>a[0]!==p.uid&&(a[5]?((p.dg&&pid(a[0])&&pid(a[0])===pid(p.uid))||((p.ar||p.asp)&&a[8])):!p.dg)&&Math.hypot(a[3]-p.x,a[4]-p.y)<=((p.ar||p.asp)&&a[8]?4000:CFG.pview)).slice(0,40);

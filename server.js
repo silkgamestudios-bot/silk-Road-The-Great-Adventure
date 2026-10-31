@@ -174,12 +174,13 @@ function dragonRule(u,id,d,o){if(!d||typeof d!=='object'||!small(d,2000))return 
 const RULES={
  pmem:(u,id,d)=>id===u&&small(d,2500), wagons:(u,id,d)=>id===u&&small(d,800), pmsg:(u,id,d)=>d.from===u&&small(d,1200), hits:(u,id,d)=>d.a===u&&Number.isFinite(+d.d)&&+d.d>=0&&+d.d<=600,
  cfg:(u,id,d,o)=>(MASTER||MASTER_EMAIL)?isMaster(u):(!o||o.u===u),
- gemgrant:(u,id,d,o)=>!o&&isMaster(u)&&d.by===u&&Number.isInteger(d.q)&&d.q>0&&d.q<=1e6&&typeof d.to==='string',
+ gemgrant:(u,id,d,o)=>!o&&isMaster(u)&&d.by===u&&Number.isInteger(d.q)&&d.q>0&&d.q<=1e6&&typeof d.to==='string'&&(d.bn==null||(Number.isInteger(d.bn)&&d.bn>=0&&d.bn<=d.q)),
  gemreq:(u,id,d,o)=>o?(isMaster(u)&&d.u===o.u&&o.st==='p'&&d.st!=='p'):(d.u===u&&d.st==='p'&&Number.isFinite(+d.usdt)&&+d.usdt>=.5&&+d.usdt<=5000&&small(d,260000)),
  pres:(u,id,d)=>id===u&&small(d,1200), pinv:(u,id,d,o)=>(o?(o.to===u||o.from===u):d.from===u)&&small(d,800), pkill:(u,id,d,o)=>(o?o.from===u:d.from===u)&&small(d,800),
  offers:()=>false,shops:()=>false,orders:()=>false,wallets:()=>false,loot:()=>false,gemtx:()=>false,dragon:dragonRule};
 const INBOX={pinv:['to'],pmsg:['to'],hits:['w']};   // solo puedes escuchar tu propio buzón
-const canDel=(c,u,id,o)=>{if(SRV_ONLY.has(c))return false;return !o||id===u||[o.u,o.to,o.w,o.from,o.a].includes(u)};
+const canDel=(c,u,id,o)=>{if(SRV_ONLY.has(c))return false;if(c==='gemreq')return isMaster(u);   /* v388: las solicitudes de pago no se borran (de ahí sale el tope de la promo) */
+ return !o||id===u||[o.u,o.to,o.w,o.from,o.a].includes(u)};
 const match=(d,w)=>!!d&&w.every(x=>x[1]==='=='&&d[x[0]]===x[2]);
 /* ===== El servidor también entrega el juego (carpeta public/): sirve de respaldo si Netlify no está disponible ===== */
 const path=require('path'),zlib=require('zlib'),PUB=path.join(__dirname,'public'),FC={};
@@ -268,17 +269,21 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
   if(!hasOwn(RULES,c)&&!SRV_ONLY.has(c)){err('colección no permitida');return}
   if(m.t==='sub'||m.t==='q'){const need=INBOX[c];if(need&&!w.some(x=>x[1]==='=='&&need.includes(x[0])&&x[2]===u)){err('buzón privado');return}
    if(c==='wallets'||c==='orders'||c==='loot'||c==='gemtx'){if(m.t==='sub')ws.subs[m.sid]={c,w};rep(m.t==='sub'?{t:'snap',sid:m.sid,docs:{}}:{t:'r',rid:m.rid,ok:1,docs:{}});return}
+   if(c==='gemreq'&&!isMaster(u)&&!w.some(x=>x[0]==='u'&&x[1]==='=='&&x[2]===u)){err('pagos privados');return}   /* v388 */
    const docs={};for(const k in DB[c]||{})if(match(DB[c][k],w))docs[k]=DB[c][k];
    if(m.t==='sub'){if(Object.keys(ws.subs).length>20){err('demasiadas suscripciones');return}ws.subs[m.sid]={c,w};rep({t:'snap',sid:m.sid,docs})}else rep({t:'r',rid:m.rid,ok:1,docs});return}
-  if(m.t==='get'){rep({t:'r',rid:m.rid,ok:1,d:(DB[c]||{})[id]||null});return}
+  if(m.t==='get'){let dd=(DB[c]||{})[id]||null;if(c==='gemreq'&&dd&&dd.u!==u&&!isMaster(u))dd=null;rep({t:'r',rid:m.rid,ok:1,d:dd});return}   /* v388 */
   if(!id||id.length>80){err('id inválido');return}const old=(DB[c]||{})[id]||null;
   if(m.t==='del'){if(!canDel(c,u,id,old)){err('prohibido');return}if(old){delete DB[c][id];dirty=1;bc(c,id,old,null)}rep({t:'r',rid:m.rid,ok:1});return}
   if(m.t==='set'||m.t==='upd'){if(!hasOwn(RULES,c)||typeof RULES[c]!=='function'){err('prohibido por las reglas');return}let d=m.d;if(!d||typeof d!=='object'||JSON.stringify(d).length>260000){err('doc inválido');return}
    if(m.t==='upd'&&old)d=Object.assign({},old,d);if(!RULES[c](u,id,d,old)){err('prohibido por las reglas');return}
-   if(c==='gemgrant'&&!old){E.grantGems(d.to,d.q,'own','concedidas por master '+u)}
+   /* v388: el bono de la promo se registra aparte en el libro de gemas y el jugador recibe un aviso */
+   if(c==='gemgrant'&&!old){const bn=Math.max(0,Math.min(d.q,Math.floor(+d.bn)||0));E.grantGems(d.to,d.q-bn,'own','concedidas por master '+u);if(bn>0){E.grantGems(d.to,bn,'own','🔥 bono promo Black Friday');try{S.push(d.to,{t:'note',m:'🔥 ¡Tu compra incluyó +'+bn+' 💎 de bono de Black Friday!'})}catch(e){}}}
+   /* v388: la fecha de la solicitud la pone el servidor (así nadie la adelanta ni la atrasa para cobrar un bono) */
+   if(c==='gemreq'&&!old){d.ts=Date.now();d.pa=E.prim(d.u);/* v388: cuenta principal sellada por el servidor (el tope de la promo es por cuenta, no por personaje) */if(d.pm&&typeof d.pm==='object')d.pm={i:String(d.pm.i||'').slice(0,16),u:Math.max(0,Math.min(5000,Math.floor(+d.pm.u)||0)),b:Math.max(0,Math.min(5000,Math.floor(+d.pm.b)||0))};else delete d.pm}
    if(c==='pmsg'&&d.k==='bf'&&world)world.credit(u,'ut',12);
    (DB[c]=DB[c]||{})[id]=d;dirty=1;bc(c,id,old,d);rep({t:'r',rid:m.rid,ok:1});
-   if(c==='gemreq'&&!old&&d.st==='p')notifyRL('💎 SILK ROAD · Pago de gemas por revisar\nJugador: '+String(d.nm||'?').slice(0,30)+' ('+((ACC[E.prim(d.u)]||{}).e||d.u)+')\nMonto: '+d.usdt+' USDT → '+d.gems+' 💎\nOrden Binance Pay: '+String(d.ref||'').slice(0,60)+'\nTu Pay ID: '+PAY_ID+'\nAprueba en el juego (menú → Gemas).');
+   if(c==='gemreq'&&!old&&d.st==='p')notifyRL('💎 SILK ROAD · Pago de gemas por revisar\nJugador: '+String(d.nm||'?').slice(0,30)+' ('+((ACC[E.prim(d.u)]||{}).e||d.u)+')\nMonto: '+d.usdt+' USDT → '+d.gems+' 💎'+(d.pm&&d.pm.b>0?' (incluye +'+d.pm.b+' de bono promo)':'')+'\nOrden Binance Pay: '+String(d.ref||'').slice(0,60)+'\nTu Pay ID: '+PAY_ID+'\nAprueba en el juego (menú → Gemas).');
    return}});
  ws.on('close',()=>{ws.subs={};if(ws.uid&&ONL.get(ws.uid)===ws){ONL.delete(ws.uid);try{SO.presence(ws.uid,0)}catch(e){}}if(world&&ws.uid)world.leave(ws.uid,ws)})});
 

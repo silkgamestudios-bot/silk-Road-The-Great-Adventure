@@ -8,5 +8,7 @@ window.SR_CONFIG={
   SERVER_URL:'',
   /* Dónde está el juego (el botón JUGAR lleva aquí). */
   PLAY_URL:'play.html',
-  TZ_LABEL:'hora de República Dominicana'
+  TZ_LABEL:'hora de República Dominicana',
+  /* Cinta de Black Friday en la portada (hora RD). Debe coincidir con la promo del juego (Zona GM › Gemas › 🔥 Promo). Pon PROMO:null para ocultarla. */
+  PROMO:{from:'2026-11-12T00:00:00-04:00',mid:'2026-11-26T00:00:00-04:00',to:'2026-12-01T00:00:00-04:00',p1:25,p2:100}
 };

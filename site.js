@@ -77,10 +77,22 @@ document.addEventListener('click',e=>{
 document.addEventListener('DOMContentLoaded',()=>{
   const mn=$('.menu-btn'),sd=$('.side');if(mn&&sd)mn.addEventListener('click',()=>sd.classList.toggle('open'));
 });
+/* v388: cinta de Black Friday (portada y wiki). Aparece 21 días antes y se quita al terminar. Se arma con el reloj local y se rehace con la hora del servidor. */
+function promoBar(){
+  const old=document.getElementById('bfr');if(old)old.remove();
+  const p=C.PROMO;if(!p)return;const a=Date.parse(p.from),m=Date.parse(p.mid),z=Date.parse(p.to);if(!(a&&z))return;
+  const n=now();if(n>=z||a-n>21*864e5)return;
+  const MS=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'],dd=t=>{const d=new Date(t-4*36e5);return d.getUTCDate()+' '+MS[d.getUTCMonth()]};
+  const pc=q=>q==100?'¡el DOBLE de gemas!':'+'+q+'% de gemas';
+  const t=n<a?'🔥 BLACK FRIDAY en Silk Road · del '+dd(a)+' al '+dd(z-1)+': bono de gemas en cada compra'+(p.p2?' (¡hasta el doble!)':''):
+    (m&&n>=m)?'🔥 BLACK FRIDAY · '+pc(p.p2)+' hasta el '+dd(z-1):
+    '🔥 BLACK FRIDAY · '+pc(p.p1)+' hasta el '+dd((m||z)-1)+(m&&p.p2?' · del '+dd(m)+': '+pc(p.p2):'');
+  const e=document.createElement('a');e.id='bfr';e.className='bfr';e.href=C.PLAY_URL||'play.html';e.textContent=t;document.body.insertBefore(e,document.body.firstChild);
+}
 window.__t0=launch-864e5;
 (async function init(){
-  stars();whenText();lock(true);
-  await sync();window.__t0=launch-864e5;whenText();
+  stars();whenText();lock(true);promoBar();
+  await sync();window.__t0=launch-864e5;whenText();promoBar();
   setInterval(tick,250);tick();
   if(sim)console.log('[sim] la apertura es en',sim,'segundos');
 })();

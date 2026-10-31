@@ -185,6 +185,27 @@ ops['gmk.buy']=(u,m)=>{const id=String(m.id||''),o=GK()[id];if(!o)return err('El
 ops['adm.reseller']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const o=E.uidByName(m.name);if(!o)return err('No hay ningún jugador con ese nombre');const d=Math.floor(+m.d);if(!(d>=0&&d<=50))return err('El descuento va de 0 a 50 %');
  const cfg=S.DB.cfg=S.DB.cfg||{},old=cfg.res||{},nw=Object.assign({},old);if(d>0)nw[o]=d;else delete nw[o];cfg.res=nw;S.dirty();S.bc('cfg','res',old,nw);S.log('[master] revendedor '+(d||'quitado')+'% → '+m.name);gmLogAdd(nmOf(u),'reseller',nmOf(o),d,d?('descuento '+d+'%'):'sin descuento');return{ok:1,nm:nmOf(o),d}};
 ops['adm.reslist']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const r=((S.DB.cfg||{}).res)||{};return{ok:1,l:Object.keys(r).map(id=>({nm:nmOf(id),d:r[id]|0,on:S.online(id)?1:0}))}};
+/* v388: 🔥 Promo Black Friday de gemas. La configuración vive en cfg.promo (todos la leen por la suscripción a cfg); el bono se calcula con la fecha de la solicitud (sellada por el servidor), el tope por cuenta sale de las compras ya aprobadas. */
+ops['adm.promo']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const cfg=S.DB.cfg=S.DB.cfg||{},old=cfg.promo||null;
+ if(m.reset){delete cfg.promo;S.dirty();S.bc('cfg','promo',old,null);S.log('[master] promo restablecida a los valores de Black Friday 2026');gmLogAdd(nmOf(u),'promo','',0,'restablecida');return{ok:1,promo:null}}
+ const n=(v,lo,hi)=>{v=Math.round(+v);return Number.isFinite(v)&&v>=lo&&v<=hi?v:null};
+ const d={id:String(m.id||'bf26').replace(/[^\w-]/g,'').slice(0,16)||'bf26',on:m.on?1:0,t0:n(m.t0,0,4e12),t1:n(m.t1,0,4e12),t2:n(m.t2,0,4e12),p1:n(m.p1,0,300),p2:n(m.p2,0,300),cap:n(m.cap,0,5000)};
+ if([d.t0,d.t1,d.t2,d.p1,d.p2,d.cap].some(x=>x==null))return err('Revisa las fechas, los porcentajes (0 a 300) y el tope (0 a 5000)');
+ if(d.t1<d.t0||d.t2<d.t1)return err('Las fechas deben ir en orden: inicio, cambio de fase y fin');
+ d.ts=Date.now();cfg.promo=d;S.dirty();S.bc('cfg','promo',old,d);
+ S.log('[master] promo '+(d.on?'activa':'apagada')+' · '+d.p1+'%/'+d.p2+'% · tope '+d.cap+' · '+new Date(d.t0-4*H).toISOString().slice(0,10)+' → '+new Date(d.t2-4*H).toISOString().slice(0,10));
+ gmLogAdd(nmOf(u),'promo','',d.p2,(d.on?'activa ':'apagada ')+d.p1+'%/'+d.p2+'% tope '+d.cap);return{ok:1,promo:d}};
+ops['adm.promoused']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const uid=String(m.u||''),id=String(m.id||''),pi=String(m.pi||''),R=S.DB.gemreq||{},cur=R[id];let used=0;
+ /* v388: el tope es por CUENTA: se suma lo de todos sus personajes (pa = cuenta principal sellada al enviar; si falta, la de hoy) */
+ const acc=r=>String(r.pa||E.prim(String(r.u||''))),P=String((cur&&cur.pa)||E.prim(uid));
+ for(const k in R){const r=R[k];if(k===id||!r||typeof r.u!=='string'||acc(r)!==P||r.st!=='a'||!r.pm||r.pm.i!==pi)continue;used+=Math.max(0,+r.pm.u||0)}
+ return{ok:1,used}};
+ops['adm.promostat']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const pi=String(m.pi||((S.DB.cfg||{}).promo||{}).id||'bf26'),t0=+m.t0||0,now=Date.now(),span=Math.max(864e5,now-t0);
+ let n=0,b=0,pu=0,cur=0,cn=0,prev=0,pn=0;
+ for(const k in (S.DB.gemreq||{})){const r=S.DB.gemreq[k];if(!r||r.st!=='a')continue;const x=+r.usdt||0,ts=+r.ts||0;
+  if(r.pm&&r.pm.i===pi){n++;b+=Math.max(0,+r.pm.b||0);pu+=Math.max(0,+r.pm.u||0)}
+  if(t0>0&&now>=t0){if(ts>=t0&&ts<=now){cur+=x;cn++}else if(ts>=t0-span&&ts<t0){prev+=x;pn++}}}
+ return{ok:1,n,b,pu,cur:Math.round(cur*100)/100,cn,prev:Math.round(prev*100)/100,pn}};
 /* ===== v319: Influencers. Código de referido -> boletos de VIP/Exp de 7 días por jugadores válidos (nivel 20) ===== */
 const INF_LV=15,INF_AGE=6*36e5,INF_IPMAX=3,INF_DAY=30,INF_VIP_N=10,INF_EXP_N=5;/* cada 10: 1 VIP 7 d + Bonus Vida 2 h + Bonus Defensa 2 h; cada 5: Bonus Exp 2 h */
 const infDB=()=>{S.DB.inf=S.DB.inf||{};return S.DB.inf};

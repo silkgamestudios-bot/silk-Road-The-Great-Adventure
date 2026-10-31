@@ -1,0 +1,44 @@
+v392 — Dos arreglos que pidieron los jugadores: el equipo del botín vuelve a venderse a ≈324 🪙 (no 30) y las habilidades del Árbol ya se pueden colocar en los botones de hechizo y cambiar con el switch 🔀 (sobre v391)
+
+Pedido (Rick, sábado 31 oct, reenviando el reporte de Ariel/Artoria): «1) ahorita que entré vi que los precios de venta de los equipos bajaron: antes estaban en 300 y ahora en 30 cada uno · 2) las 3 habilidades del árbol aún no hay dónde ponerlas; deberían aparecer donde uno pone las otras habilidades, para poder hacer switch y ponerlas».
+Es un cambio SOLO DE CLIENTE: no cambia ningún archivo del servidor. Manual Deploy en Render: NO.
+
+══════════════ 1) PRECIO DE VENTA DEL EQUIPO DEL BOTÍN (300 → 30) ══════════════
+POR QUÉ PASÓ (fue un efecto de la v390, no un fallo nuevo)
+   • Antes de la v390, en línea el objeto que soltaba cualquier monstruo era siempre un común sin valor propio y se vendía al NPC por 324 🪙. En la v390 hice que el objeto saliera «según su nivel» (lo que Rick pidió: un nivel 10 no debe soltar lo mismo que un nivel 1) y, de paso, le puse un valor de venta propio de 30 🪙 (monstruo nivel 0) a 118 🪙 (nivel 8). Eso fue lo que bajó los ingresos de todos los que farmean: el pedido era sobre QUÉ cae, no sobre cuánto vale.
+QUÉ CAMBIA
+   • El objeto vuelve a valer lo de siempre: 324 🪙 al venderlo a la Armería/Herrería (576 🪙 con la licencia de Mercader), en los 9 niveles de monstruo, en línea y sin conexión.
+   • Lo que SÍ se queda de la v390: el objeto sale según el nivel del monstruo (calidad básica en niveles 0-1 y mejor desde el 2, con sus estadísticas) y las probabilidades de caída por nivel.
+   • Los objetos que YA tienes en la bolsa de loot (los soltados desde la v390, que dicen 30-118 🪙) también vuelven a 324 🪙 en cuanto cargas esta versión: el valor se calcula al momento (iv()), no hay que tirarlos ni repetir nada. Lo de «pasar a la mochila pierde el 95%» sigue igual (ahí vale ≈16 🪙).
+   • Los objetos que no son basura de monstruos (equipo de cofres, jefes, tienda, etc.) no se tocan.
+
+══════════════ 2) LAS HABILIDADES DEL ÁRBOL YA TIENEN DÓNDE PONERSE ══════════════
+POR QUÉ PASABA
+   • El Árbol guardaba tus 3 habilidades secundarias, pero los botones de hechizo (los de al lado del ataque, con los planos A/B y el switch 🔀) solo mostraban los hechizos de tu clase. Las del Árbol iban a los botones ＋ extra (v375) y solo las de OTRA profesión: las de tu propia profesión no se colocaban en ninguna parte.
+QUÉ CAMBIA (dónde se ponen)
+   • Menú › ✨ Hechizos: debajo de tus hechizos hay una sección nueva «✧ Habilidades del Árbol» con tus 3 casillas. Tócala para ver el detalle (coste, recarga, si es de tu profesión o de otra) y asígnala a A1, A2, A3, B1, B2 o B3, igual que un hechizo; «Quitar» la saca. Cada casilla muestra en qué botón está (A1, B1…).
+   • Selector de pulsación larga: al mantener pulsado un botón de hechizo, debajo de los hechizos de la clase salen las 3 habilidades del Árbol para elegirlas ahí mismo.
+   • Botones del HUD: la habilidad del Árbol se ve con su icono y «✧ coste MP» (o los segundos de recarga) y se lanza igual que un hechizo (también con las teclas 1, 2 y 3). Con el switch 🔀 pasas del plano A al B y al revés. La ranura sigue siendo un «puntero»: si cambias la habilidad en el Árbol, el botón pasa a lanzar la nueva; si la quitas, el botón queda vacío (＋) y al tocarlo abre el selector.
+   • Dentro del Árbol hay un botón nuevo «✨ Colocar en mis botones (Hechizos)» que cierra el Árbol y te lleva a la pestaña Hechizos, y una nota que explica dónde se colocan. Si cambias algo en el Árbol con el menú Hechizos abierto, se actualiza solo.
+   • Las habilidades que ya estaban en tus botones ＋ no se tocan; las que pongas en A/B ya no se vuelven a añadir solas a los ＋.
+   • Las de tu propia profesión rinden al 100%; las de otra profesión siguen rindiendo al 30% (regla de linaje de siempre, con su aviso).
+   • Cada ranura del Árbol lleva SU PROPIA recarga: antes, lanzar una habilidad del Árbol ponía en recarga el hechizo de tu clase que tuviera el mismo número.
+ARREGLOS DE PASO (hacían que el Árbol fallara)
+   • Las habilidades «avanzadas» del Árbol (id «x:…») se contaban dos veces (la lista de cada rama salía con 21 en vez de 12) y la copia lanzaba OTRA habilidad (usaba el número dentro de SPX en vez de SP: p. ej. «Moneda certera» lanzaba «Soborno»). Ahora cada rama lista 12 habilidades sin duplicados y las ranuras viejas «x:…» se convierten solas a su habilidad real; si es de tu profesión y todavía no llegas a su nivel, se quita.
+   • Se guarda y carga bien lo asignado: los botones A/B aceptan las ranuras del Árbol al cargar (antes cualquier valor distinto de un hechizo se recortaba) y la lista de botones ＋ también reconoce las pociones y comer (hpot, mpot, eat) y las ranuras del Árbol al cargar desde la cuenta.
+
+══════════════ ARCHIVOS Y DESPLIEGUE ══════════════
+Archivos que cambian respecto a v391: play.html, world-client.js y sw.js (sr-v392). Ningún archivo del servidor cambia (world.js, economy.js, market.js, server.js, store.js idénticos a v391); world.json y reload.json tampoco. El generador del mundo del cliente NO cambió.
+Manual Deploy en Render: NO (cambio solo de cliente). Sube el zip a GitHub y listo; quien tenga el juego abierto debe recargar (Ctrl+F5 en PC) para recibir el arreglo del precio y los botones nuevos.
+
+══════════════ QUÉ SE PROBÓ ══════════════
+   • Navegador real contra el servidor de pruebas (t392_client.py, 1 jugador Caballero): botín en línea de los 9 niveles de monstruo (valor 720 = 324 🪙; con licencia 576; objetos viejos con jv 67-262 → 324; los que no son basura conservan su jv; pasar a mochila −95%), calidad por nivel, 12 habilidades por rama sin duplicados, equipar 3 en el Árbol (propia + Mago + Monje), pestaña Hechizos (casillas, detalle, «Asignar a», etiquetas A1/A2/B1), botones del HUD, lanzar con el toque y con la tecla 1, recarga propia por ranura (las de la clase no se alteran), aviso del 30% solo en las de otra profesión, switch 🔀 A/B, selector de pulsación larga, quitar una ranura (botones vacíos que abren el selector), botón «Colocar en mis botones», guardado tras recargar la página, ids viejos «x:» convertidos y lanzar antes de tiempo con el nombre correcto.
+   • Botín con el cliente de la v391 en línea (t392_cli_old): 9 niveles de monstruo con el valor de siempre (720 = 324 🪙; 576 🪙 con licencia de Mercader), pociones, carne, monedas de evento, telas, cuero, bolsos, encargo del Gobernador, caminantes y vigilante de atascos: sin fallos (una comprobación aleatoria de «los caminantes no hacen multitud» falla de vez en cuando y pasa al repetir; es de la v390 y no tiene que ver con este cambio).
+   • Regresión de todas las versiones anteriores (v379–v391): 21 pruebas, ningún fallo del juego. Dos advertencias de las propias pruebas, no del juego: (1) la prueba de la antorcha de estaca de la v391 mide combustible en ventanas de 2 s y el servidor re-sincroniza las antorchas cada 4 s, así que a veces cae en medio; la dejé robusta (congela la re-sincronización mientras mide) y pasa 50/50 en v391 y v392; (2) un script viejo de la v379 (t379f) se rompe al final por un error propio del script, después de pasar sus comprobaciones.
+   • Rendimiento: perfil de CPU y fps en la ciudad iguales a los de la v391 (ninguna función del Árbol aparece en el perfil).
+   • El servidor es idéntico al de la v391, por eso no se repiten sus pruebas propias.
+
+══════════════ SUPUESTOS Y LÍMITES ══════════════
+   - «Los precios de los equipos» lo entendí como el equipo suelto que sueltan los monstruos (el que se vende al NPC): era de 324 y pasó a 30-118. Si Ariel hablaba de otro objeto concreto, dime cuál y lo reviso.
+   - Dejé el valor fijo en 324 para todos los niveles (como estaba en línea antes de la v390). Si prefieres que suba con el nivel del monstruo (más valor en los niveles altos), es un ajuste de una línea.
+   - «Donde uno pone las otras habilidades para poder hacer switch» lo entendí como los botones de hechizo con planos A/B (🔀) y la pestaña Hechizos. Los botones ＋ extra siguen funcionando como antes.

@@ -166,6 +166,7 @@ function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
   if(wasDg&&!psolid(x,y,u)){p.x=x;p.y=y;p.mt=now;return}
   const fly=!!(m.fl&&X.gm&&X.gm(u));if(!fly&&((d>CFG.speed*dt+48&&!tp)||psolid(x,y,u))){send(ws,{t:'wp',x:p.x,y:p.y});return}if(tp)p.tpT=now;
   p.x=x;p.y=y;p.mt=now;p.mhp=num(m.mhp,1,1e7,p.mhp);p.hp=num(m.hp,0,p.mhp,p.hp);p.lv=X.lv&&X.lv(u)?X.lv(u):num(m.lv,1,9999,p.lv)|0;p.city=inCity(x,y);p.pw=num(m.pw,1,1e13,p.pw||1);if(p.hp<=0&&p.lp)pvDie(p);return}
+ if(m.t==='wnp')return tkPlant(p,m,now);   /* v391: ANTORCHA: clavar */
  if(m.t==='wsx'){const k=String(m.k||'').slice(0,40);if(!k||k!==p.sk||!Array.isArray(m.h))return;p.xTk=Math.min(10,(p.xTk==null?10:p.xTk)+(now-(p.xT||now))/70);p.xT=now;if(p.xTk<1)return;p.xTk-=1;const pd=k==='w'?pid(u):'*';if(!pd)return;const h=m.h.slice(0,12).map(a=>[typeof a[0]==='number'?(a[0]|0):String(a[0]).replace(/[^bg0-9]/g,'').slice(0,8),num(a[1],1,1e9,1)|0,a[2]?1:0]);
   if(k!=='w'){const key=pd+'|'+k;let S2=XS.get(key);if(!S2)XS.set(key,S2={m:new Map(),e:0});for(const a of h){let o=S2.m.get(a[0]);if(!o){if(S2.m.size>6000)continue;S2.m.set(a[0],o={d:0,k:0,t:now})}o.d+=a[1];o.t=now;if(a[2])o.k=now}}
   for(const q of PL.values()){if(q===p||q.sk!==k||(pd!=='*'&&pid(q.uid)!==pd))continue;if(k==='w'&&(q.dg||Math.hypot(q.x-p.x,q.y-p.y)>2400))continue;send(q.ws,{t:'wsx',k,h})}return}
@@ -191,11 +192,9 @@ const EVV={nv:[['snow',.4],['elf',.35],['reno',.25]],lu:[['lion',.6],['assassin'
 const LNY={2026:[2,17],2027:[2,6],2028:[1,26],2029:[2,13],2030:[2,3],2031:[1,23],2032:[2,11]};
 const pick=l=>{let r=Math.random();for(const[v,q]of l){if(r<q)return v;r-=q}return l[0][0]};
 const dr=()=>new Date(Date.now()-4*36e5),drH=()=>{const d=dr();return d.getUTCHours()+d.getUTCMinutes()/60};
-/* v390: LA NOCHE DURA 2 HORAS (antes seguía el reloj real: ~13 h de oscuridad con cazadores). Noche cerrada de 20:00 a 22:00 (hora de RD), anochece 19:30-20:00 y amanece 22:00-22:30.
-   Se cambia desde Render con NIGHT_START y NIGHT_END (horas de RD, p. ej. 21 y 23). */
-const NWe=(k,d)=>{const v=parseFloat(process.env[k]);return Number.isFinite(v)?((v%24)+24)%24:d};
-const NW={a:NWe('NIGHT_START',20),b:NWe('NIGHT_END',22),r:.5},nightLen=()=>((NW.b-NW.a+24)%24)||24,inNight=h=>((h-NW.a+24)%24)<nightLen();
-const nightF=h=>{const L=nightLen(),d=(h-NW.a+24)%24;if(d<L)return 1;if(d<L+NW.r)return Math.pow(1-(d-L)/NW.r,1.3);const e=(NW.a-h+24)%24;return e<NW.r?Math.pow(1-e/NW.r,1.3):0};
+/* v391: LA NOCHE VUELVE A SU CICLO LARGO de siempre (Rick: «no puedes disminuir su ciclo»): oscurece desde las 17:30, noche cerrada de 19:30 a 05:30 y clara a las 07:00 (hora de RD).
+   Lo demás de la v390 se queda (ciudad segura, tregua, cupos, tope de daño, botín). La oscuridad se combate con la antorcha de estaca (ver más abajo). */
+const nightF=h=>(h>=19.5||h<5.5)?1:h>=17.5?Math.pow((h-17.5)/2,1.3):h<7?Math.pow((7-h)/1.5,1.3):0;
 function evNow(){const d=dr(),y=d.getUTCFullYear(),t=d.getTime(),M=(m,dd,h)=>Date.UTC(y,m-1,dd,h||0),inr=(a,b)=>a[0]>b[0]?(t>=M(a[0],a[1])||t<=M(b[0],b[1],23)):(t>=M(a[0],a[1])&&t<=M(b[0],b[1],23));
  if(process.env.DY_EV)return process.env.DY_EV==='off'?'':process.env.DY_EV;if(inr([10,16],[11,2]))return'hl';if(inr([12,15],[1,6]))return'nv';if(inr([2,10],[2,15]))return'am';if(inr([3,18],[3,25]))return'nz';const l=LNY[y];if(l){const c=M(l[0],l[1]);if(t>=c-2*864e5&&t<c+15*864e5)return'lu'}return''}
 const hlFull=()=>{const d=dr(),m=d.getUTCMonth()+1,dd=d.getUTCDate();return process.env.DY_NIGHT?1:((m===10&&dd>=30)||(m===11&&dd<=2))};
@@ -207,15 +206,15 @@ const sD=(lv,m)=>{lv=lv|0||1;const nb=m.nv||REC(Math.min(8,m.ty|0)),c=egCap(lv);
 const envN=(k,d,lo,hi)=>{const v=parseFloat(process.env[k]);return Number.isFinite(v)?Math.max(lo,Math.min(hi,v)):d};
 const NGT={dm:envN('NIGHT_DM',.55,.05,3),amoHp:envN('AMO_HP',1.3,.5,6),amoDm:envN('AMO_DM',1,.05,3)},AMOV=new Set(['vampL','cwardenR','jackG','wwolf']);
 /* v390: JUGABILIDAD DE LA NOCHE. (1) En las ciudades y cerca de ellas no salen cazadores ni hordas, y al salir hay una tregua para poder alejarse. (2) Los enemigos del evento son FINITOS:
-   cupo de manadas por noche y de hordas por ventana de 15 min, y se esfuman si te refugias en la ciudad o los dejas atrás. (3) Nadie muere de un golpe: tope de daño por golpe y por segundo según tu vida máxima.
-   Se afina con variables de Render: GRACE_HUNT / GRACE_WAVE (s de tregua), SAFE_HUNT / SAFE_WAVE (px sin enemigos junto a las ciudades), HUNT_MIN_LV, HUNT_PACKS (manadas por noche), HUNT_GAP (s entre manadas),
+   cupo de manadas por ventana de 2 h y de hordas por ventana de 15 min, y se esfuman si te refugias en la ciudad o los dejas atrás. (3) Nadie muere de un golpe: tope de daño por golpe y por segundo según tu vida máxima.
+   Se afina con variables de Render: GRACE_HUNT / GRACE_WAVE (s de tregua), SAFE_HUNT / SAFE_WAVE (px sin enemigos junto a las ciudades), HUNT_MIN_LV, HUNT_PACKS (manadas por ventana) / HUNT_WINDOW (horas de cada ventana; 2 por defecto), HUNT_GAP (s entre manadas),
    WAVE_QUOTA (hordas por 15 min), WAVE_DM / WAVE_HP (fuerza de las hordas del evento), HIT_CAP / SEC_CAP (fracción de tu vida máxima por golpe / por segundo). */
 const EVN={graceH:envN('GRACE_HUNT',150,0,1800),graceW:envN('GRACE_WAVE',60,0,900),safeH:envN('SAFE_HUNT',1400,0,6000),safeW:envN('SAFE_WAVE',700,0,6000),spawnGap:600,minLvH:envN('HUNT_MIN_LV',6,1,99),
- packs:envN('HUNT_PACKS',6,0,60),packGap:envN('HUNT_GAP',200,20,1800),waveQ:envN('WAVE_QUOTA',14,0,200),waveWin:15*60*1000,waveDm:envN('WAVE_DM',.8,.05,3),waveHp:envN('WAVE_HP',.85,.1,3),
+ packs:envN('HUNT_PACKS',6,0,60),huntWin:envN('HUNT_WINDOW',2,.25,24),packGap:envN('HUNT_GAP',200,20,1800),waveQ:envN('WAVE_QUOTA',14,0,200),waveWin:15*60*1000,waveDm:envN('WAVE_DM',.8,.05,3),waveHp:envN('WAVE_HP',.85,.1,3),
  hitCap:envN('HIT_CAP',.18,.02,1),secCap:envN('SEC_CAP',.35,.05,2),idleH:18,idleW:40};
 const cityDist=(x,y)=>{let b=1e9;for(const c of J.cities){const e=c.ex||[0,0,0,0],dx=x/T-c.tx-.5,dy=y/T-c.ty-.5,ax=Math.max(-24.6-e[0]-dx,0,dx-(24.6+e[1])),ay=Math.max(-18.6-e[2]-dy,0,dy-(15.6+e[3])),d=Math.hypot(ax,ay)*T;if(d<b)b=d}return b};
 const cityTiles=(x,y)=>{let b=1e9;for(const c of J.cities){const d=Math.hypot(c.tx-x/T,c.ty-y/T);if(d<b)b=d}return b};   /* distancia en casillas al centro de la ciudad más cercana (igual que el modo sin conexión) */
-const nightKey=()=>Math.floor((Date.now()-4*36e5-NW.a*36e5)/864e5),VMINLV={vampH:12,devil:12,reapB:12,vampL:20,cwardenR:20,jackG:20};
+const nightKey=()=>Math.floor((Date.now()-4*36e5)/(EVN.huntWin*36e5)),VMINLV={vampH:12,devil:12,reapB:12,vampL:20,cwardenR:20,jackG:20};
 let dyN=0;const dyId=()=>{for(let k=0;k<6000;k++){dyN=(dyN+1)%6000;const id=J.mobs.length+dyN;if(!BY.has(id))return id}return-1};
 function dyDel(m){const i=DYL.indexOf(m);if(i>=0)DYL.splice(i,1);BY.delete(m.id)}
 function dyAdd(v,ty,x,y,o){o=o||{};if(DYL.length>=260)return null;const id=dyId();if(id<0)return null;const q=DYV[v]||[1,1,1,1,0,''];ty=Math.max(0,Math.min(8,ty|0));
@@ -224,14 +223,14 @@ const tierNear=(x,y)=>{let b=1e9,t=0;for(const m of near(x,y,500)){const d=Math.
 function ringPos(p,r){for(let k=0;k<24;k++){const a=Math.random()*6.283,rr=r*(.7+Math.random()*.5),x=p.x+Math.cos(a)*rr,y=p.y+Math.sin(a)*rr;if(!solid(x,y)&&!inCity(x,y)&&!solid(x+14,y)&&!solid(x-14,y)&&cityDist(x,y)>=EVN.spawnGap)return[x,y]}return null}
 const wwPos=(()=>{let o=null;return()=>{if(o)return o;o=[];let s=(31101981+new Date().getFullYear()*7919)>>>0;const rn=()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
  for(let k=0;k<60000&&o.length<30;k++){const m=L[Math.floor(rn()*L.length)];if(!m||m.ty<2||inCity(m.hx,m.hy)||solid(m.hx,m.hy))continue;if(o.some(q=>Math.hypot(q.x-m.hx,q.y-m.hy)<(k<30000?34:18)*T))continue;o.push({x:m.hx,y:m.hy,ty:m.ty})}return o}})();
-const wwOn=()=>{if(process.env.WW_FORCE)return true;if(evNow()!=='hl')return false;const h=drH();return inNight(h)};
+const wwOn=()=>{if(process.env.WW_FORCE)return true;if(evNow()!=='hl')return false;const h=drH();return h>=20||h<2};
 function wwSync(){const on=wwOn(),cur=DYL.filter(m=>m.k==='ww');if(!on){for(const m of cur)dyDel(m);return}if(cur.length)return;
  for(const q of wwPos())dyAdd('wwolf',q.ty,q.x,q.y,{k:'ww',hp:20000,sc:10,rz:900000,gx:900+q.ty*350+350,ag:380,vw:900,ls:800,rg:70,nt:1})}
 function hunters(p,now){if(p.dg||p.hp<=0||p.lv<1)return;
  /* v390: JUGABILIDAD: en la ciudad y cerca de ella no hay cazadores; al salir hay una tregua para alejarse sin que te caigan encima */
  if(p.city||p.lv<EVN.minLvH||cityDist(p.x,p.y)<EVN.safeH){p.nht=Math.max(p.nht||0,now+EVN.graceH*1000);return}
  const nk=nightKey();if(p.hbk!==nk){p.hbk=nk;p.hbn=0;p.hbw=0}
- if(p.hbn>=EVN.packs){if(!p.hbw){p.hbw=1;send(p.ws,{t:'note',m:'🌙 La noche se calma: los cazadores ya no te buscarán hasta la próxima noche'})}return}
+ if(p.hbn>=EVN.packs){if(!p.hbw){p.hbw=1;send(p.ws,{t:'note',m:'🌙 La noche se calma un rato: los cazadores te dejan en paz por ahora'})}return}
  /* v390: igual que el modo sin conexión, la fuerza de la manada también depende de la distancia a la ciudad (cerca: manadas débiles; lejos: fuertes). Antes en línea solo contaba tu nivel. */
  const f=Math.min(Math.max(0,Math.min(1,(cityTiles(p.x,p.y)-35)/115)),Math.max(0,Math.min(1,((p.lv|0)-5)/32)));
  if(now<(p.nht||0))return;p.nht=now+(EVN.packGap*(1-.3*f)+Math.random()*EVN.packGap*.5)*1000;
@@ -289,7 +288,45 @@ setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);try{ubStep(now,CFG
   else if(p.dk.size){dx=[...p.dk];p.dk.clear()}
   const hv=EV.filter(e=>e[2]!==p.uid&&Math.hypot(e[3]-p.x,e[4]-p.y)<=CFG.sview).slice(0,30),at=AT.filter(a=>a[0]!==p.uid&&(a[5]?((p.dg&&pid(a[0])&&pid(a[0])===pid(p.uid))||((p.ar||p.asp)&&a[8])):!p.dg)&&Math.hypot(a[3]-p.x,a[4]-p.y)<=((p.ar||p.asp)&&a[8]?4000:CFG.pview)).slice(0,40);
   const o={t:'ws',pl,mb};if(p.uw)o.ud=UBUD(now);if(dd)o.dd=dd;if(dx)o.dx=dx;if(hv.length)o.hv=hv;if(at.length)o.at=at;send(p.ws,o)}EV=[];AT=[]},CFG.tick);
+
+/* v391: ANTORCHA DE ESTACA. Se fabrica (Herrería), se clava en el mundo abierto o en una cueva oscura y alumbra a TODOS los jugadores cercanos: con varias se arma un camino iluminado.
+   Arde 4 h SOLO mientras hay oscuridad en su zona (de noche en el mundo abierto; siempre dentro de una cueva oscura); luego se apaga y hay que clavar otra.
+   El estado es del servidor (todos ven las mismas antorchas) y se guarda en disco. La antorcha se descuenta de la cuenta de quien la clava (gancho X.tch).
+   Variables de Render: TORCH_HOURS (horas de fuego, 4), TORCH_PER_PLAYER (máx. clavadas por jugador, 10), TORCH_MAX (máx. en el mundo, 600),
+   TORCH_GAP (px mínimos entre antorchas, 70), TORCH_WAIT_H (horas máximas esperando la noche, 30). */
+const TKC={hours:envN('TORCH_HOURS',4,.01,48),per:envN('TORCH_PER_PLAYER',10,1,100),max:envN('TORCH_MAX',600,10,5000),gap:envN('TORCH_GAP',70,20,400),wait:envN('TORCH_WAIT_H',30,.1,240),view:3000,reach:150,every:4000};
+const TKF=(process.env.DATA_DIR||'.')+'/antorchas.json';let TK=[],tkSeq=1,tkDirty=0,tkLast=Date.now(),tkSavedAt=0;
+try{const j=JSON.parse(fs.readFileSync(TKF,'utf8'));if(j&&Array.isArray(j.l)){TK=j.l.filter(t=>t&&typeof t.sc==='string'&&t.f>0&&Number.isFinite(t.x)&&Number.isFinite(t.y)).slice(0,TKC.max);tkSeq=Math.max(1,j.n|0)}}catch(e){}
+function tkSave(){tkDirty=0;tkSavedAt=Date.now();try{fs.writeFile(TKF,JSON.stringify({n:tkSeq,l:TK}),e=>{if(e)log('antorchas guardar: '+e.message)})}catch(e){}}
+const tkRow=(t,u)=>[t.i,t.x,t.y,Math.max(0,Math.round(t.f/1000)),t.cv?1:0,t.o===u?1:0,t.nm||''];
+const tkTo=(t,msg)=>{for(const q of PL.values()){if(q.sk!==t.sc||Math.hypot(q.x-t.x,q.y-t.y)>TKC.view)continue;send(q.ws,typeof msg==='function'?msg(q):msg)}};
+function tkList(p){const o=[];if(!p.sk)return o;for(const t of TK){if(t.sc!==p.sk||Math.hypot(t.x-p.x,t.y-p.y)>TKC.view)continue;o.push(tkRow(t,p.uid));if(o.length>=150)break}return o}
+function tkSync(p,now,force){if(!force&&now-(p.tkT||0)<TKC.every)return;p.tkT=now;const a=tkList(p);if(!a.length&&!p.tkN&&p.tkK===p.sk)return;p.tkN=a.length;p.tkK=p.sk;send(p.ws,{t:'wnc',k:p.sk||'',f:1,a})}
+function tkTick(){const now=Date.now(),dt=Math.min(5000,Math.max(0,now-tkLast));tkLast=now;
+ if(TK.length){const nw=nightF(drH())>=.5;let gone=null;
+  for(let i=TK.length-1;i>=0;i--){const t=TK[i];if(t.cv||nw)t.f-=dt;if(t.f<=0||now-t.b>TKC.wait*36e5){TK.splice(i,1);(gone=gone||[]).push(t)}}
+  if(gone){tkDirty=1;for(const t of gone)tkTo(t,{t:'wnc',k:t.sc,r:[t.i],x:t.f<=0?1:0})}
+  if(now-tkSavedAt>60000)tkDirty=1}
+ if(tkDirty&&now-tkSavedAt>5000)tkSave();
+ for(const p of PL.values())tkSync(p,now,p.tkK!==p.sk)}
+setInterval(()=>{try{tkTick()}catch(e){log('antorchas: '+e.message)}},1000);
+function tkPlant(p,m,now){const ans=(ok,e)=>send(p.ws,{t:'wnq',ok:ok?1:0,e:e||''});
+ if(p.ar||p.asp||p.hp<=0)return ans(0,'No puedes clavar antorchas ahora');
+ if(now-(p.tkP||0)<1200)return ans(0,'Más despacio: espera un instante');p.tkP=now;
+ const sc=String(m.k||'').replace(/[^\w:.-]/g,'').slice(0,40);
+ if(!sc||sc!==p.sk)return ans(0,'Zona no válida: inténtalo de nuevo');
+ const x=Math.round(+m.x),y=Math.round(+m.y);if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||y<0||x>W*T||y>H*T)return ans(0,'Posición no válida');
+ if(Math.hypot(x-p.x,y-p.y)>TKC.reach)return ans(0,'Queda muy lejos de ti');
+ if(sc==='w'){if(p.dg)return ans(0,'Zona no válida');if(p.city||inCity(x,y))return ans(0,'En el pueblo ya hay luz: clava la antorcha fuera');if(solid(x,y))return ans(0,'Ahí no se puede clavar')}
+ else if(!p.dg)return ans(0,'Zona no válida');
+ let own=0,near=0;for(const t of TK){if(t.o===p.uid)own++;if(t.sc===sc&&Math.hypot(t.x-x,t.y-y)<TKC.gap)near++}
+ if(own>=TKC.per)return ans(0,'Ya tienes '+own+' antorchas clavadas: espera a que se apaguen');
+ if(TK.length>=TKC.max)return ans(0,'Hay demasiadas antorchas en el mundo ahora mismo');
+ if(near)return ans(0,'Ya hay una antorcha muy cerca: sepáralas un poco');
+ if(X.tch&&!X.tch(p.uid))return ans(0,'sync');
+ const t={i:tkSeq++,sc,x,y,o:p.uid,nm:p.nm,f:Math.round(TKC.hours*36e5),b:now,cv:(sc!=='w'||m.cv)?1:0};TK.push(t);
+ ans(1,'');tkTo(t,q=>({t:'wnc',k:t.sc,a:[tkRow(t,q.uid)]}));tkSave()}
 log('mundo cargado: '+L.length+' enemigos, '+W+'x'+H+' casillas');
 setInterval(()=>{for(const p of PL.values()){try{p.wn=X.wanted&&X.wanted(p.uid)?1:0;}catch(e){}}},5000);
 return{strSet:(i,k,g,pass)=>{STRS.set(i,{k,g,pass})},strDel:i=>{STRS.delete(i)},strClear:()=>STRS.clear(),bcast:m=>{for(const p of PL.values())send(p.ws,m)},tsolid:(x,y)=>solid0(x*T+1,y*T+1),
- mobsOff:rects=>{for(const m of L)if(rects.some(r=>m.hx/T>=r[0]&&m.hx/T<r[2]&&m.hy/T>=r[1]&&m.hy/T<r[3])){m.dead=1;m.hp=0;m.rt=Infinity;m.tg=null;m.dmg={}}},dyn:()=>DYL,where:u=>{const p=PL.get(u);return p?{x:Math.round(p.x),y:Math.round(p.y),city:p.city?1:0,dg:p.dg?1:0,pvp:p.pvp?1:0}:null},handle,leave:(u,ws)=>{const p=PL.get(u);if(p&&p.ws===ws){try{if(AR.specs.has(u)){AR.specs.delete(u)}if(AR.ids.has(u)){if(AR.st==='fight'&&!p.aout){arOut(p,null,'desconectó');AR.ids.delete(u);arCheck()}else if(AR.st==='lobby'||AR.st==='idle'){arLeave(u)}else AR.ids.delete(u)}}catch(e){}PL.delete(u)}},credit:(u,k,v)=>{const p=PL.get(u);if(p)p.ct[k]+=v},stats:()=>({players:PL.size,mobs:L.length})}};
+ mobsOff:rects=>{for(const m of L)if(rects.some(r=>m.hx/T>=r[0]&&m.hx/T<r[2]&&m.hy/T>=r[1]&&m.hy/T<r[3])){m.dead=1;m.hp=0;m.rt=Infinity;m.tg=null;m.dmg={}}},dyn:()=>DYL,where:u=>{const p=PL.get(u);return p?{x:Math.round(p.x),y:Math.round(p.y),city:p.city?1:0,dg:p.dg?1:0,pvp:p.pvp?1:0}:null},handle,leave:(u,ws)=>{const p=PL.get(u);if(p&&p.ws===ws){try{if(AR.specs.has(u)){AR.specs.delete(u)}if(AR.ids.has(u)){if(AR.st==='fight'&&!p.aout){arOut(p,null,'desconectó');AR.ids.delete(u);arCheck()}else if(AR.st==='lobby'||AR.st==='idle'){arLeave(u)}else AR.ids.delete(u)}}catch(e){}PL.delete(u)}},credit:(u,k,v)=>{const p=PL.get(u);if(p)p.ct[k]+=v},tk:()=>TK,stats:()=>({players:PL.size,mobs:L.length,torches:TK.length})}};

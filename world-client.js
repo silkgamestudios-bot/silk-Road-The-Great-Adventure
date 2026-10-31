@@ -17,6 +17,8 @@ window.SRWON=()=>on;
 function freeze(n){const t=Date.now();dynClr();SM=[];E.forEach((e,i)=>{if(i>=n||SKIP(e))return;e.sid=i;e.sync=1;e.stun=1e9;e.lt=t;SM[i]=e})}   // la IA local se apaga: manda el servidor
 N.onopen=()=>{uwJ=0;on=0;WBAD=0;PV.on=0;PV.t=null};
 N.onmsg=m=>{
+ if(m.t=='wnc'){try{window.SREST&&SREST.msg(m)}catch(e){}return}   /* v391: ANTORCHA: lista de antorchas clavadas de mi zona */
+ if(m.t=='wnq'){try{window.SREST&&SREST.ans(m)}catch(e){}return}   /* v391: ANTORCHA: respuesta a «clavar» */
  if(m.t=='wsx'){try{xRecv(m)}catch(e){}return}
  if(m.t=='wss'){try{xState(m)}catch(e){}return}
  if(m.t=='wsp'){try{xPos(m)}catch(e){}return}
@@ -77,7 +79,7 @@ function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100)),auto=ty
  if(m.mpt&&typeof P.mpot=='number'&&P.mpot<PMX){P.mpot++;try{SES.pt++}catch(e){}if(FT.length<60)FT.push({x:pe.x,y:pe.y-38,t:1.8,d:.2,o:0,k:'xp',s:'+1 💧 poción MP',c:'#7ac8ff'})}
  if(m.meat){try{dropMeat(pe.x,pe.y,1)}catch(e){}}
  if(m.own){for(const f of [evCoin,matDrop,bagDrop])try{f(pe)}catch(e){}}
- if(m.it){let it;try{it=genJunk(Math.min(2,ty>>1),ty)}catch(e){it=cleanIt(m.it);it.junk=1}if(auto&&LF&&LF.it&&P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{if(!ground)ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:0,it:null,l:120};ground.it=it;t.push('🎁 '+it.n+' en el suelo')}}
+ if(m.it){let it;try{it=genJunk(Math.min(2,ty>>1))/* v392: PRECIO DEL BOTÍN: el objeto vale 324 🪙 como antes de la v390; el nivel del monstruo decide su calidad y estadísticas */}catch(e){it=cleanIt(m.it);it.junk=1}if(auto&&LF&&LF.it&&P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{if(!ground)ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:0,it:null,l:120};ground.it=it;t.push('🎁 '+it.n+' en el suelo')}}
  if(ground)LT.push(ground);
  if(t.length&&FT.length<60)FT.push({x:P.x,y:P.y-30,t:1.6,d:0,o:0,k:'dm',s:t.join(' '),c:'#ffd666'});
  try{chk();save()}catch(e){}}
@@ -92,6 +94,7 @@ function xBuild(){const d=typeof DG!=='undefined'&&DG.f&&DG.id!='co'&&DG.id!='uw
  XM=[];let s=0;for(const e of E){if(e.dg!==DG.f||e.tmp)continue;e.xid=XM.length;XM.push(e);s=(Math.imul(s,31)+Math.round(e.hx!=null?e.hx:e.x)*7+Math.round(e.hy!=null?e.hy:e.y)*13)|0}
  XK=XM.length?k+':'+XM.length+':'+(s>>>0).toString(36):''}
 function xScope(){try{xBuild()}catch(e){XK='';XM=[]}if(typeof DG!=='undefined'&&DG.f)return XK;return 'w'}
+window.SRXSC=xScope;   /* v391: ANTORCHA: zona actual ('w' = mundo abierto, o la cueva) para clavar antorchas */
 const xId=e=>e.dg?(e.xid!=null&&XM[e.xid]===e?e.xid:null):e.boss&&e.bi!=null?'b'+e.bi:(e.guard&&!e.horde&&e.li!=null)?'g'+e.li:null;
 function xFind(id){if(typeof id=='number')return XM[id]||null;const t=String(id),n=+t.slice(1);for(const e of E){if(t[0]=='b'&&e.boss&&e.bi===n)return e;if(t[0]=='g'&&e.guard&&!e.horde&&e.li===n)return e}return null}
 /* ===== v379: cuevas — todos ven los mismos enemigos =====

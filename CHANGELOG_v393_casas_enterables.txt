@@ -1,0 +1,67 @@
+v393 — Las casas de los pueblos ya se pueden ENTRAR: 16 locales con interior de pixel art (5 estilos de arquitectura según la ciudad), con tendero, clientes y animales que caminan, y cada servicio funciona desde su mostrador (sobre v392)
+
+Pedido (Rick, sábado 31 oct, con 3 PDFs de planos: «Atlas de 12 planos de ciudades de la Ruta de la Seda» y «Planos MMO/RPG de dos ciudades en 3 niveles»): aplicar a TODO el juego la estética delicada y bella de El Altar (mundo abierto, Submundo, cuevas, torres), usando los planos como guía de arquitectura; que los túneles se conecten entre sí; y que las casas que ya tienen los pueblos se puedan entrar y recorrer, viendo a los NPC, todo funcional.
+Es un trabajo muy grande, así que lo entrego por fases, cada una jugable y probada:
+   • v393 (esta)  → las casas de los pueblos se pueden entrar (interiores).
+   • v394         → red de túneles subterráneos de cada ciudad, conectados entre sí.
+   • v395         → pasada de estética del mundo abierto y de las ciudades.
+   • v396         → pasada de estética de cuevas, torres y Submundo.
+Es un cambio SOLO DE CLIENTE: no cambia ningún archivo del servidor ni la generación del mundo. Manual Deploy en Render: NO.
+
+══════════════ 1) QUÉ HAY DE NUEVO (para el jugador) ══════════════
+ENTRAR
+   • En las 12 ciudades, los 16 edificios tienen puerta. Al llegar a la puerta aparece el botón «🚪 Entrar · <local>» (en PC también vale la tecla E). La pantalla hace un fundido y estás dentro del local.
+   • Los botones de servicio de fuera ya no se llaman «🚪 Entrar: Armería» (eso confundía): ahora se llaman por lo que son: «🛡️ Armería», «🧪 Botica», «🧵 Materiales», «⚒️ Herrería», «🔨 Gremio de Forja», «🛏️ Posada», «📜 Información», «🐾 Establo», «🎫 Canje» y «🏹 Cazadores». Siguen funcionando igual al llegar a la puerta; el botón nuevo «🚪 Entrar» es el que te mete al local.
+DENTRO
+   • Cada local es un cuarto de pixel art dibujado a mano (suelo, paredes, alfombra, mostrador, estanterías, mesas, barriles, plantas, ventanas con rayos de luz, antorchas y velas con llama que parpadea, polvo flotando y viñeta). El nombre del local sale en un cartel unos segundos al entrar.
+   • Hay gente viva: el tendero detrás del mostrador (se queda en su sitio), clientes y animales que pasean por el suelo libre (nunca atraviesan muebles ni paredes). Con 💬 Hablar (o la tecla E) cualquiera te contesta con frases propias del tipo de local (el armero habla de espadas, el boticario de pociones, el sacerdote de la paz del templo…).
+   • Los servicios funcionan desde el mostrador: solo cuando estás junto a él aparece el botón de ESE local (Armería, Botica, Materiales, Herrería, Gremio de Forja, Mercado de Gemas, Mercado de la Seda, Posada, Información, Canje, Establo, Iglesia, Carpa del Cocinero, Carpa del Almacén…) y abre exactamente el mismo servicio que antes (compra, venta, mejora, descanso, etc.). Lejos del mostrador no aparece ningún botón de servicio y la tecla E no abre el mercado del pueblo.
+   • Camina con el joystick o las teclas: paredes, muebles y mostrador son sólidos.
+   • Salir: botón «🚪 Salir» cuando estás cerca de la puerta, o simplemente camina por la alfombra de la entrada (tecla E también). Apareces en la puerta del edificio, en el pueblo.
+   • Zoom automático por números enteros (×1, ×2 o ×3 del píxel art) para que se vea nítido en PC y en móvil, con cámara que sigue al personaje en los locales grandes.
+   • El minimapa y el mapa grande muestran el plano del local en el que estás.
+   • Mascotas y monturas: al entrar te bajas de la montura (dentro no se puede montar) y tu mascota o montura aparece a tu lado y te sigue sin salirse del local; al salir puedes volver a montar.
+   • Si cierras o recargas el juego estando dentro, al volver apareces en la puerta del pueblo (el guardado usa la puerta, nunca el interior).
+LOS 16 LOCALES
+   • Tiendas con mostrador (6): Armería, Botica, Materiales, Herrería, Mercado de Gemas y Mercado de la Seda: cada una con sus estanterías, expositores y objetos propios (armas y armaduras, frascos y hierbas, telas y materiales, yunque y forja, gemas, sedas).
+   • Posada (sala común con chimenea, mesas, camas y barra).
+   • Salones de gremio (5): Información, Canje, Cazadores, Gremio de Forja y Gremio de la Seda: salas de mesas, tablones, mapas y banderas.
+   • Iglesia (nave larga con bancos, vitrales y altar), Establo (caballerizas con pesebres y animales) y las dos carpas (Cocinero con fogón y marmitas, Almacén con cajas y barriles).
+5 ESTILOS DE ARQUITECTURA (según la ciudad, para que Chang'an no se parezca a Samarcanda)
+   • China (madera, tejas y laca roja): Chang'an y Lanzhou.
+   • Adobe del desierto (barro, baldosa y telas): Dunhuang, Turfán y Kashgar.
+   • Persa (azulejo, mosaico y arcos): Bukhara, Samarcanda y Bagdad.
+   • Greco-romana (mármol y columnas): Constantinopla, Persépolis y Antioquía.
+   • Tibetana (madera pintada y banderines): Lhasa.
+   Son 16 locales × 5 estilos = 80 interiores distintos, todos con la misma paleta de pixel art del juego.
+
+══════════════ 2) REGLAS Y SEGURIDAD ══════════════
+   • Dentro de un local estás en zona segura (cuenta como ciudad): no hay PvP, ni cazadores, ni monstruos, y no se puede activar el PvP.
+   • Los interiores son privados de cada jugador: no ves a otros jugadores dentro del local ni te ven; mientras estás dentro, quien esté en el pueblo no te ve (como cualquier mazmorra). Los NPC del local son solo decoración de tu pantalla (no consumen recursos del servidor y no se pueden atacar).
+   • La economía no cambia: los servicios son los mismos, con los mismos precios, licencias, impuestos y límites. Entrar al local es opcional: el comercio sigue disponible en la puerta y no se bloquea a nadie.
+   • Registro de cuentas (5 por hora por IP), PvP y fiesta gratis desde el nivel 1, tareas con poco oro, nada de oro ni experiencia gratis: nada de eso cambia.
+
+══════════════ 3) CÓMO ESTÁ HECHO (para el equipo) ══════════════
+   • Cada local es un arte precompuesto (PNG con paleta, 1 píxel de arte = 2 píxeles lógicos) de fondo + una capa frontal para los objetos libres que pueden tapar al jugador (se dibuja por orden de profundidad), generado por un pipeline propio en Python a partir de tiles y props de la paleta del juego; el cliente los carga SOLO al acercarte a una puerta (los PNG van en base64 dentro de play.html: +≈0,9 MB; no hay archivos nuevos que subir).
+   • El interior reutiliza el marco de las mazmorras (DG.id='in') sobre un rectángulo de 20×20 de la región reservada de la Cripta (se guarda y se restaura al salir), así que reutiliza colisiones, cámara, HUD, guardado y sincronización en línea que ya estaban probados. El servidor trata al jugador como en cualquier mazmorra (dg:1; conserva «ciudad», sin PvP ni cazadores) y no se tocó.
+   • Luz: mapa de luces (ambiente por tipo de local + resplandor de velas, antorchas y ventanas) con rayos de ventana y polvo; en los estilos de piedra clara (persa y greco) los rayos son más suaves para que no lave el color.
+   • El generador del mundo del cliente NO cambió (la firma /*WORLD_END*/ cliente↔servidor sigue igual). Las puertas son las que ya tenían los edificios.
+
+══════════════ ARCHIVOS Y DESPLIEGUE ══════════════
+Archivos que cambian respecto a v392: play.html, world-client.js y sw.js (sr-v393). Ningún archivo del servidor cambia (world.js, economy.js, market.js, server.js, store.js idénticos a v392, verificado byte a byte); world.json y reload.json tampoco.
+Manual Deploy en Render: NO. Sube el zip a GitHub y listo; quien tenga el juego abierto debe recargar (Ctrl+F5 en PC) para recibir los interiores.
+El zip trae todo el proyecto en la raíz (no dentro de m/), con solo este changelog.
+
+══════════════ QUÉ SE PROBÓ ══════════════
+   • Navegador real contra el servidor de pruebas, en PC (1280×720) y en móvil horizontal (780×390 con pantalla táctil), 39 comprobaciones cada uno: botón «Entrar» en la puerta; entrar con el clic; contar como ciudad; NPC presentes; aparecer sobre suelo libre; el mostrador, las paredes y los muebles frenan al caminar con el teclado; solo el botón del local aparece junto al mostrador y abre su servicio; E lejos del mostrador no abre nada; hablar con un cliente; «Salir» cerca de la puerta; salir andando; E en la puerta entra; guardado dentro = posición de la puerta; los clientes caminan solo por suelo libre; el servidor no rebota al jugador al salir; recargar la página dentro reaparece en la puerta; y LOS 16 TIPOS: entran, tienen botón en el mostrador y abren su servicio. Sin errores de página.
+   • Recorrido visual de los 16 locales en los 5 estilos (188 capturas revisadas una por una) en PC y móvil.
+   • Mascota y montura: te desmontas al entrar, la mascota y la montura quedan a tu lado y no se salen del local, no se puede montar dentro y sí al salir. Rendimiento: dentro del local los fotogramas por segundo no bajan respecto a los de fuera (en la prueba, 61 dentro vs 46 fuera en el navegador sin GPU).
+   • Regresión completa de todo lo anterior (24 baterías: cuentas y registro, noche y cazadores, ataques, multijugador y mercado P2P, ascensos, templo, entrenamiento, lluvia, cuevas, torre y colmenas, cliente de versiones viejas…): todo en verde. Dos comprobaciones sueltas (la de la pantalla de entrenamiento y la de «no hacen multitud» del cliente viejo) fallaron una vez por lentitud de la máquina de pruebas y pasaron al repetirlas solas; la prueba t379f termina con el mismo error propio del script que ya tenía en la v392.
+   • El servidor es idéntico al de la v392, por eso no se repiten sus pruebas propias.
+
+══════════════ SUPUESTOS Y LÍMITES ══════════════
+   - Los planos (módulos A tienda/mercado, B casa/posada, C gremio/taller, D casa de misión) los tomé como guía de composición: tienda con mostrador, sala común, salón de gremio y local de servicio; no son copias exactas de los dibujos del PDF.
+   - En el juego tocar el mapa con el dedo no mueve al personaje (desde la v181 solo el joystick y los botones), así que la entrada es por el botón «🚪 Entrar» (o la tecla E).
+   - Cada tipo de local tiene un solo plano (no hay dos farmacias distintas); lo que cambia entre ciudades es el estilo (materiales, colores, ventanas). Las 6 tiendas comparten la estructura de mostrador y se distinguen por estanterías, expositores y objetos.
+   - Los NPC de dentro son decorativos y locales a tu pantalla (no son los NPC del servidor ni otros jugadores).
+   - Los locales son un mundo aparte: no se llega a ellos por los túneles (los túneles son la v394).

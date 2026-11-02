@@ -175,7 +175,7 @@ if(x<-40||x>VW+40||y<-60||y>VHn+40)continue;
   if(o.pvp){g.font='11px serif';g.fillText('⚔️',x+22,y-24)}if(o.wn){g.font='bold 11px Georgia,serif';g.fillStyle='#000';g.fillText('🎯 SE BUSCA',x+1,y-37);g.fillStyle='#ff6a4a';g.fillText('🎯 SE BUSCA',x,y-38)}
   if(PV.t===u&&PV.on){g.strokeStyle='#ff4a3a';g.lineWidth=2;g.beginPath();g.ellipse(x,y+10,18+2*Math.sin(now/120),7,0,0,7);g.stroke()}}}
 setInterval(()=>{if(!ready()||!N.up())return;
- const inUW=typeof UW!=='undefined'&&UW.on,inAR=AR.on,inDG=typeof DG!=='undefined'&&!!DG.f&&DG.id!='co'&&!inUW&&!inAR;   /* v264: el Submundo (portón de 8 placas y Balor) funciona aunque el mundo compartido esté en modo local */
+ const inUW=typeof UW!=='undefined'&&UW.on,inAR=AR.on,inDG=typeof DG!=='undefined'&&!!DG.f&&DG.id!='co'&&DG.id!='in'&&!inUW&&!inAR;   /* v264: el Submundo (portón de 8 placas y Balor) funciona aunque el mundo compartido esté en modo local */
  if(!on&&(inUW||inAR||inDG||uwJ)){if(inUW||inAR||inDG){if(!uwJ){uwJ=1;N.send({t:'wj',nm:P.name,c:P.cls|0,lv:P.lv,x:Math.round(P.x),y:Math.round(P.y)})}
    /* v330: aunque el mundo de superficie esté en modo local (versión distinta), las cuevas/mazmorras/mina siguen sincronizadas entre jugadores */
    N.send({t:'wm',x:Math.round(P.x),y:Math.round(P.y),hp:Math.round(P.hp),mhp:Math.round(P.mhp),lv:P.lv,tp:0,dg:1,uw:inUW?1:0,pw:0,fl:0,sk:inDG?xScope():'',mo:typeof myMo=='function'?myMo():''});

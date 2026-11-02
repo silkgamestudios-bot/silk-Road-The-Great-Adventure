@@ -11,7 +11,7 @@ const SKIP=e=>e.boss||e.guard||e.wild||e.tmp||e.alpha||e.vec;
    reconectar, el servidor no los conocía y quedaban eternamente al 1% de vida sin poder morir. */
 function dynClr(){for(let i=E.length-1;i>=0;i--)if(E[i].dyn)E.splice(i,1);NR=NR.filter(e=>!e.dyn)}
 function dynMk(d){if(SM[d[0]])return;const ty=d[3]|0,e={dyn:1,sync:1,sid:d[0],stun:1e9,lt:Date.now(),ty,hx:d[6],hy:d[7],x:d[9]!=null?d[9]:d[6],y:d[10]!=null?d[10]:d[7],t:0,dead:0};e.mx=e.hp=mobHP(ty);e.sp=(66+ty*2.5)*.75;try{applyVar(e,d[1])}catch(x){}
- e.mx=d[4];e.hp=d[8];if(d[2])e.nm=d[2];if(d[5])e.wsc=d[5];if(d[1]=='wwolf')e.ww=1;e.srvk=d[11]|0;/* v390: JUGABILIDAD · clase del monstruo según el servidor: 1 horda del evento, 2 cazador, 3 jefe */SM[d[0]]=e;E.push(e);NR.push(e)}
+ e.mx=d[4];e.hp=d[8];if(d[2])e.nm=d[2];if(d[5])e.wsc=d[5];if(d[1]=='wwolf'){e.ww=1;e.nv=10}e.srvk=d[11]|0;/* v390: JUGABILIDAD · clase del monstruo según el servidor: 1 horda del evento, 2 cazador, 3 jefe */SM[d[0]]=e;E.push(e);NR.push(e)}
 function dynRm(id){const e=SM[id];if(!e)return;const i=E.indexOf(e);if(i>=0)E.splice(i,1);NR=NR.filter(q=>q!==e);SM[id]=null}
 window.SRWON=()=>on;
 function freeze(n){const t=Date.now();dynClr();SM=[];E.forEach((e,i)=>{if(i>=n||SKIP(e))return;e.sid=i;e.sync=1;e.stun=1e9;e.lt=t;SM[i]=e})}   // la IA local se apaga: manda el servidor

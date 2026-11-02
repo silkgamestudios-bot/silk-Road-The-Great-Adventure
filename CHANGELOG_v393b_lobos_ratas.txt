@@ -1,0 +1,32 @@
+v393b — CUEVA DE LOS HOMBRES LOBO (Nv 45–450), MADRIGUERA DE LAS RATAS GIGANTES (Nv 65–600) y el Hombre Lobo de la noche pasa a ser el lobo arenoso, nivel 10 (sobre v393)
+
+Pedido (Maic, lunes 2 nov, con 2 hojas de sprites): clasificar los 8 hombres lobo por color de menos a más poder; que el más débil salga de noche, nivel 10, reemplazando al Hombre Lobo del mundo abierto; una cueva solo de hombres lobo con 2 pisos por color y fuerza (nivel 45 a 450); otra cueva igual con las ratas (nivel 65 a 600).
+
+══════════════ 1) HOMBRES LOBO: de menos a más poder (2 pisos cada uno) ══════════════
+   1. Arenoso (beige)        pisos 1-2    Nv 45–72
+   2. Pardo (marrón oscuro)  pisos 3-4    Nv 99–126
+   3. Dorado (ámbar)         pisos 5-6    Nv 153–180
+   4. Plateado (gris claro)  pisos 7-8    Nv 207–234
+   5. Sombrío (negro)        pisos 9-10   Nv 261–288
+   6. Carmesí (rojo fuego)   pisos 11-12  Nv 315–342
+   7. Glacial (blanco hielo) pisos 13-14  Nv 369–396
+   8. Lunar (blanco puro)    pisos 15-16  Nv 423–450  (piso 16: Rey Lobo Lunar, el guardián)
+   Cada piso sube 27 niveles. En los pisos pares hay un Alfa del color (campeón) y en el 16 el guardián.
+
+══════════════ 2) RATAS GIGANTES: de menos a más poder (2 pisos cada una) ══════════════
+   1. Dorada  2. Panza Blanca  3. Parda  4. Gris  5. Caoba  6. Sombra  7. Abismo  8. Albina
+   16 pisos, de Nv 65 (piso 1) a Nv 600 (piso 16, Rey Rata Albino). Cada piso sube unos 36 niveles. Jefe del color en los pisos pares.
+
+══════════════ 3) DÓNDE ESTÁN ══════════════
+   • Cueva de los Hombres Lobo: entrada cerca de Lhasa (mapa: 🕳️ Cuevas).
+   • Madriguera de las Ratas Gigantes: entrada cerca de Bukhara.
+   Funcionan igual que la Mina de la Gran Montaña (pisos, escaleras, mapa que se revela, antorcha). Oro de cueva ×0.5 como la mina.
+
+══════════════ 4) EL HOMBRE LOBO DEL MUNDO ABIERTO ══════════════
+   • Ahora es el lobo arenoso (el más débil), con el sprite nuevo de 4 direcciones y nivel 10 (antes tenía otro dibujo y nivel según la zona).
+   • Mantiene su horario de siempre: noches de Halloween (20:00 a 02:00, hora RD), 20.000 de vida, tamaño x10.
+   • NUEVO (opcional, servidor): variable de Render WW_NIGHT=1 → salen TODAS las noches de 20:00 a 02:00, no solo en el evento. Si no la pones, todo queda como antes.
+
+══════════════ 5) ARCHIVOS ══════════════
+   play.html (sprites, cuevas, nivel 10), world-client.js (nivel 10 en línea), world.js (nivel 10 + WW_NIGHT), sw.js (v393b).
+   Manual Deploy en Render: SÍ (cambia world.js). Si no haces Manual Deploy, el juego igual funciona: el nivel 10 se ve bien y solo faltaría WW_NIGHT.

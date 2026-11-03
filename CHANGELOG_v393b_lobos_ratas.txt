@@ -30,3 +30,17 @@ Pedido (Maic, lunes 2 nov, con 2 hojas de sprites): clasificar los 8 hombres lob
 ══════════════ 5) ARCHIVOS ══════════════
    play.html (sprites, cuevas, nivel 10), world-client.js (nivel 10 en línea), world.js (nivel 10 + WW_NIGHT), sw.js (v393b).
    Manual Deploy en Render: SÍ (cambia world.js). Si no haces Manual Deploy, el juego igual funciona: el nivel 10 se ve bien y solo faltaría WW_NIGHT.
+
+══════════════ 6) ARREGLO: BOLSOS QUE SE PERDÍAN ══════════════
+   • Al cambiar el bolso puesto en la Mochila o en la Bolsa de loot por otro más grande, el anterior desaparecía. Ahora vuelve a tu lista de bolsos (🎒 Objetos) y puedes ponerlo en la otra bolsa. Solo cliente (play.html). Los bolsos ya perdidos no se pueden recuperar solos.
+
+══════════════ 7) ARREGLO: ANTORCHAS DE ESTACA EN EL SUBMUNDO ══════════════
+   • En el Submundo no se podía clavar ninguna antorcha («Aquí no se pueden clavar antorchas»): el juego no le daba zona al Submundo. Ahora tiene su propia zona ('uw'): se clavan, alumbran a todos los que estén ahí y arden siempre (es oscuro). Cambia world-client.js, world.js y play.html → Manual Deploy.
+
+══════════════ 8) ARREGLO: XP EN 0 Y EQUIPO QUE SE ROMPÍA EN SEGUNDOS (reporte de Ariel/Artoria) ══════════════
+   • XP: la fórmula de XP por kill NO cambió (es la misma de la v202: (12+10·tier)·0,1·recompensa·×0,35 en cuevas, luego ×0,4). El problema: los mobs de tier bajo y TODOS los de cuevas daban fracciones (0,4 / 0,14) que se redondeaban a 0. Ahora las fracciones se acumulan: 10 kills de 1 XP dan 4 XP en vez de 0, y el cartelito muestra «+0,4 XP» en vez de «+0 XP».
+   • Dureza: cada golpe recibido restaba 1 de durabilidad (y 50% a una 2.ª pieza); con varios mobs pegando, 100 de dureza duraban segundos. Ahora cada pieza pierde como máximo 1 punto cada 0,6 s.
+   • Si el XP les parece menor que antes: xpM() suma +25% de evento (el de Halloween terminó el 2 nov), x2 en eventos dobles (el próximo oro es el 15 nov), +50% con poción de XP y x1,25 descansando en la posada. Ajustes: HC_XP (0,1) y el 0,4 de gainXp en play.html.
+
+══════════════ 9) ARREGLO: MASCOTAS (perro, halcón…) QUE DESAPARECÍAN Y TARDABAN EN VOLVER ══════════════
+   • La mascota acompañante caminaba hacia ti a máx. 140 px/s y no tenía «correa»: al entrar o salir de una cueva (tu posición salta cientos de casillas), al correr o al viajar quedaba lejísimos y tardaba minutos en llegar, así que parecía que desaparecía. Ahora, si está a más de 520 px de ti, aparece a tu lado al instante, y su velocidad de alcance sube a 230. Solo cliente (play.html).

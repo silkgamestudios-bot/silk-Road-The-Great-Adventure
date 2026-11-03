@@ -94,7 +94,7 @@ function xBuild(){const d=typeof DG!=='undefined'&&DG.f&&DG.id!='co'&&DG.id!='uw
  XM=[];let s=0;for(const e of E){if(e.dg!==DG.f||e.tmp)continue;e.xid=XM.length;XM.push(e);s=(Math.imul(s,31)+Math.round(e.hx!=null?e.hx:e.x)*7+Math.round(e.hy!=null?e.hy:e.y)*13)|0}
  XK=XM.length?k+':'+XM.length+':'+(s>>>0).toString(36):''}
 function xScope(){try{xBuild()}catch(e){XK='';XM=[]}if(typeof DG!=='undefined'&&DG.f)return XK;return 'w'}
-window.SRXSC=xScope;   /* v391: ANTORCHA: zona actual ('w' = mundo abierto, o la cueva) para clavar antorchas */
+window.SRXSC=()=>{const k=xScope();return k||((typeof UW!=='undefined'&&UW.on)?'uw':'')};/* v393b: el Submundo no tiene zona de mobs ('') pero sí admite antorchas: zona 'uw' */   /* v391: ANTORCHA: zona actual ('w' = mundo abierto, o la cueva) para clavar antorchas */
 const xId=e=>e.dg?(e.xid!=null&&XM[e.xid]===e?e.xid:null):e.boss&&e.bi!=null?'b'+e.bi:(e.guard&&!e.horde&&e.li!=null)?'g'+e.li:null;
 function xFind(id){if(typeof id=='number')return XM[id]||null;const t=String(id),n=+t.slice(1);for(const e of E){if(t[0]=='b'&&e.boss&&e.bi===n)return e;if(t[0]=='g'&&e.guard&&!e.horde&&e.li===n)return e}return null}
 /* ===== v379: cuevas — todos ven los mismos enemigos =====

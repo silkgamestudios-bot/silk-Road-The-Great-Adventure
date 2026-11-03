@@ -299,22 +299,23 @@ const TKF=(process.env.DATA_DIR||'.')+'/antorchas.json';let TK=[],tkSeq=1,tkDirt
 try{const j=JSON.parse(fs.readFileSync(TKF,'utf8'));if(j&&Array.isArray(j.l)){TK=j.l.filter(t=>t&&typeof t.sc==='string'&&t.f>0&&Number.isFinite(t.x)&&Number.isFinite(t.y)).slice(0,TKC.max);tkSeq=Math.max(1,j.n|0)}}catch(e){}
 function tkSave(){tkDirty=0;tkSavedAt=Date.now();try{fs.writeFile(TKF,JSON.stringify({n:tkSeq,l:TK}),e=>{if(e)log('antorchas guardar: '+e.message)})}catch(e){}}
 const tkRow=(t,u)=>[t.i,t.x,t.y,Math.max(0,Math.round(t.f/1000)),t.cv?1:0,t.o===u?1:0,t.nm||''];
-const tkTo=(t,msg)=>{for(const q of PL.values()){if(q.sk!==t.sc||Math.hypot(q.x-t.x,q.y-t.y)>TKC.view)continue;send(q.ws,typeof msg==='function'?msg(q):msg)}};
-function tkList(p){const o=[];if(!p.sk)return o;for(const t of TK){if(t.sc!==p.sk||Math.hypot(t.x-p.x,t.y-p.y)>TKC.view)continue;o.push(tkRow(t,p.uid));if(o.length>=150)break}return o}
-function tkSync(p,now,force){if(!force&&now-(p.tkT||0)<TKC.every)return;p.tkT=now;const a=tkList(p);if(!a.length&&!p.tkN&&p.tkK===p.sk)return;p.tkN=a.length;p.tkK=p.sk;send(p.ws,{t:'wnc',k:p.sk||'',f:1,a})}
+const tsk=q=>q.sk||(q.uw?'uw':'');   /* v393b: zona de antorchas (el Submundo = 'uw') */
+const tkTo=(t,msg)=>{for(const q of PL.values()){if(tsk(q)!==t.sc||Math.hypot(q.x-t.x,q.y-t.y)>TKC.view)continue;send(q.ws,typeof msg==='function'?msg(q):msg)}};
+function tkList(p){const o=[];if(!tsk(p))return o;for(const t of TK){if(t.sc!==tsk(p)||Math.hypot(t.x-p.x,t.y-p.y)>TKC.view)continue;o.push(tkRow(t,p.uid));if(o.length>=150)break}return o}
+function tkSync(p,now,force){if(!force&&now-(p.tkT||0)<TKC.every)return;p.tkT=now;const a=tkList(p);if(!a.length&&!p.tkN&&p.tkK===tsk(p))return;p.tkN=a.length;p.tkK=tsk(p);send(p.ws,{t:'wnc',k:tsk(p),f:1,a})}
 function tkTick(){const now=Date.now(),dt=Math.min(5000,Math.max(0,now-tkLast));tkLast=now;
  if(TK.length){const nw=nightF(drH())>=.5;let gone=null;
   for(let i=TK.length-1;i>=0;i--){const t=TK[i];if(t.cv||nw)t.f-=dt;if(t.f<=0||now-t.b>TKC.wait*36e5){TK.splice(i,1);(gone=gone||[]).push(t)}}
   if(gone){tkDirty=1;for(const t of gone)tkTo(t,{t:'wnc',k:t.sc,r:[t.i],x:t.f<=0?1:0})}
   if(now-tkSavedAt>60000)tkDirty=1}
  if(tkDirty&&now-tkSavedAt>5000)tkSave();
- for(const p of PL.values())tkSync(p,now,p.tkK!==p.sk)}
+ for(const p of PL.values())tkSync(p,now,p.tkK!==tsk(p))}
 setInterval(()=>{try{tkTick()}catch(e){log('antorchas: '+e.message)}},1000);
 function tkPlant(p,m,now){const ans=(ok,e)=>send(p.ws,{t:'wnq',ok:ok?1:0,e:e||''});
  if(p.ar||p.asp||p.hp<=0)return ans(0,'No puedes clavar antorchas ahora');
  if(now-(p.tkP||0)<1200)return ans(0,'Más despacio: espera un instante');p.tkP=now;
  const sc=String(m.k||'').replace(/[^\w:.-]/g,'').slice(0,40);
- if(!sc||sc!==p.sk)return ans(0,'Zona no válida: inténtalo de nuevo');
+ if(!sc||sc!==tsk(p))return ans(0,'Zona no válida: inténtalo de nuevo');
  const x=Math.round(+m.x),y=Math.round(+m.y);if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||y<0||x>W*T||y>H*T)return ans(0,'Posición no válida');
  if(Math.hypot(x-p.x,y-p.y)>TKC.reach)return ans(0,'Queda muy lejos de ti');
  if(sc==='w'){if(p.dg)return ans(0,'Zona no válida');if(p.city||inCity(x,y))return ans(0,'En el pueblo ya hay luz: clava la antorcha fuera');if(solid(x,y))return ans(0,'Ahí no se puede clavar')}

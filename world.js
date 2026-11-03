@@ -45,9 +45,9 @@ function kill(m){m.dead=1;m.hp=0;m.rt=Date.now()+(m.dyn?(m.rz||15000):CFG.rez);m
  if(pd)for(const p of PL.values())if(p!==o&&pid(p.uid)===pd&&p.hp>0&&!p.city&&!p.dg&&sc(p)>0&&Math.hypot(p.x-m.x,p.y-m.y)<=CFG.rng)E.push(p);
  const R=new Map(E.map(p=>[p.uid,{t:'wk',g:0,x:0,it:null,pot:0,meat:0,mid:m.id,ty:m.ty,own:p===o?1:0}]));
  if(E.length<2){const r=R.get(o.uid);r.g=gd;r.x=xp0;r.it=dropItem}
- else{const n=E.length,sum=E.reduce((a,p)=>a+sc(p),0),w=E.map(p=>Math.min(2/n,Math.max(CFG.shareMin/n,.5/n+.5*(sum>0?sc(p)/sum:1/n)))),tw=w.reduce((a,b)=>a+b,0),k=new Set(E.map(p=>p.c)).size,pool=xp0*(1+.03*(k-1)),gdP=Math.round(gd*(1+.03*(k-1))),now=Date.now();let sg=0;   /* bonus de party: +3% de XP y de oro por cada clase distinta */
-  E.forEach((p,i)=>{const r=R.get(p.uid);r.x=Math.max(1,Math.round(pool*w[i]/tw));if(p===o)return;p.rc=p.rc.filter(a=>now-a[0]<6e4);const left=Math.max(0,CFG.gcap+500*p.lv-p.rc.reduce((a,b)=>a+b[1],0)),g=Math.min(left,Math.floor(gdP*w[i]/tw));if(g>0){p.rc.push([now,g]);r.g=g;sg+=g}});
-  R.get(o.uid).g=gdP-sg;if(dropItem){let r=Math.random()*tw,k2=0;for(;k2<n-1;k2++){if(r<w[k2])break;r-=w[k2]}R.get(E[k2].uid).it=dropItem}}
+ else{const n=E.length,sum=E.reduce((a,p)=>a+sc(p),0),w=E.map(p=>Math.min(2/n,Math.max(CFG.shareMin/n,.5/n+.5*(sum>0?sc(p)/sum:1/n)))),tw=w.reduce((a,b)=>a+b,0),k=new Set(E.map(p=>p.c)).size,pool=xp0*(1+.03*(k-1)),now=Date.now();let sg=0;
+  E.forEach((p,i)=>{const r=R.get(p.uid);r.x=Math.max(1,Math.round(pool*w[i]/tw));if(p===o)return;p.rc=p.rc.filter(a=>now-a[0]<6e4);const left=Math.max(0,CFG.gcap+500*p.lv-p.rc.reduce((a,b)=>a+b[1],0)),g=Math.min(left,Math.floor(gd*w[i]/tw));if(g>0){p.rc.push([now,g]);r.g=g;sg+=g}});
+  R.get(o.uid).g=gd-sg;if(dropItem){let r=Math.random()*tw,k2=0;for(;k2<n-1;k2++){if(r<w[k2])break;r-=w[k2]}R.get(E[k2].uid).it=dropItem}}
  const ro=R.get(o.uid);ro.pot=Math.random()<HCPC[ty]?1:0;ro.mpt=Math.random()<HCMPC[ty]?1:0;ro.meat=Math.random()<HCMC[ty]?1:0;ro.k=m.k||'';if(m.v)ro.v=m.v;ro.rw=m.rw;for(const p of E)send(p.ws,R.get(p.uid))}
 function hits(p,list){if(p.city||inCity(p.x,p.y))return;const now=Date.now();p.tok=Math.min(CFG.hitMax*2,(p.tok||0)+(now-p.tt)/1000*CFG.hitMax);p.tt=now;
  for(const h of Array.isArray(list)?list.slice(0,12):[]){if(p.tok<1)break;const m=BY.get(h[0]|0);if(!m||m.dead||Math.hypot(p.x-m.x,p.y-m.y)>620||inCity(m.x,m.y))continue;

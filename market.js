@@ -2,7 +2,7 @@
    el servidor comprueba oro/mercancía/objeto, mueve la propiedad y entrega a cada parte (idempotente). El cliente no decide nada. */
 module.exports=function(S,E){
 const {DB}=S;const RM=E.RM;
-const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','cbl','obs','cua','tur','mgm','jad','ama','amb','top','esa','cri','opf','lte','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','ec_hl','ec_nv','ec_lu','ec_am','ec_nz','mpocion','ant'];/* v391: ANTORCHA DE ESTACA */
+const PVL=['carne','cocida','pasto','hierba','pocion','lazo','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','cbl','obs','cua','tur','mgm','jad','ama','amb','top','esa','cri','opf','lte','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','ec_hl','ec_nv','ec_lu','ec_am','ec_nz','mpocion','ant','sg1','sg2','sg3','sg4'];/* v391: ANTORCHA DE ESTACA */
 const TKA=['vpf','vph','vmf','vmh','cmb','es','lic','vipm','vipj','pv','bh'],tkAdd=(u,k,q)=>{const a=E.acct(u);a.tk=(a.tk&&typeof a.tk==='object')?a.tk:{};a.tk[k]=(a.tk[k]|0)+q;S.dirty();E.pushEnt(u)};
 const int=(v,a,b,d)=>{v=Math.floor(+v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d};
 const iv=it=>Math.round(720*RM[it.r]*(1+it.t*.6)*(it.dv?.05:1));
@@ -268,6 +268,15 @@ function pvKill(ku,vu,fresh,kn){const ka=E.acct(ku),va=E.acct(vu),t=now();ka.pvk
   if(b.it){holdReg(b.it.id,ku,0);E.deliver(ku,{item:b.it,note:'🎯 Recompensa: '+b.it.n});r.its.push(b.it.n)}
   r.n++;delDoc('bty',id);if(S.online(b.u))S.push(b.u,{t:'note',m:'🎯 '+(ka.nm||'Un cazador')+' cobró tu recompensa por '+b.tn+'.'})}
  if(r.n)E.pushEnt(ku);return r}
+
+
+/* ===== v393b: CÁMARA DE LOS CUATRO SELLOS · 4 sellos distintos (enterrados, comerciables). Cada miembro del equipo deposita el suyo en la puerta; con los 4 se abre para quienes depositaron ===== */
+const SGW=20*60*1000,SGO=15*60*1000,SGCD=20*36e5;
+const sgDoor=()=>{const D=col('sealdoor'),n=Date.now();let d=D.cs;if(d&&!d.open&&n-d.t>SGW)d=null;if(d&&d.open&&n-d.open>SGO)d=null;if(!d)d=D.cs={t:n,dep:{},mem:{},open:0};return d};
+ops['seal.dig']=(u,m)=>{const a=E.acct(u),i=int(m.i,0,3,-1);if(i<0)return{e:'Sello inválido'};a.sgd=(a.sgd&&typeof a.sgd==='object')?a.sgd:{};const t=Date.now();if(t-(a.sgd[i]|0)<SGCD)return{e:'Ya cavaste aquí hace poco. Vuelve más tarde.'};a.sgd[i]=t;S.dirty();E.deliver(u,{prov:{pk:'sg'+(i+1),q:1},note:'🔱 ¡Encontraste un sello enterrado!'});return{ok:1}};
+ops['seal.state']=(u)=>{const d=sgDoor(),n=Date.now();return{ok:1,dep:[0,1,2,3].map(i=>d.dep[i]?1:0),mine:d.mem[u]?1:0,open:d.open?1:0,left:d.open?Math.max(0,Math.round((SGO-(n-d.open))/1000)):Math.max(0,Math.round((SGW-(n-d.t))/1000)),inn:d.open&&d.mem[u]?1:0}};
+ops['seal.put']=(u,m)=>{const a=E.acct(u),i=int(m.i,0,3,-1);if(i<0)return{e:'Sello inválido'};const d=sgDoor();if(d.open)return{e:'La puerta ya está abierta'};if(d.mem[u])return{e:'Ya pusiste tu sello'};if(d.dep[i])return{e:'Ese sello ya está puesto'};if(E.avail(a,'prov','sg'+(i+1))<1)return{e:'No tienes ese sello'};E.deliver(u,{prov:{pk:'sg'+(i+1),q:-1}});d.dep[i]=u;d.mem[u]=1;if(Object.keys(d.dep).length>=4)d.open=Date.now();S.dirty();return{ok:1,open:d.open?1:0}};
+ops['seal.enter']=(u)=>{const d=sgDoor();if(d.open&&d.mem[u])return{ok:1};return{e:d.open?'Tú no pusiste un sello: la puerta no te reconoce':'La puerta sigue sellada'}};
 
 function shopTr(sid){const s=col('shops')[sid];if(s){s.tr=(s.tr|0)+1;S.dirty()}}
 const prizeOk=k=>TKA.includes(k)||(PVL.includes(k)&&!KEYK_BLOCK.has(k));

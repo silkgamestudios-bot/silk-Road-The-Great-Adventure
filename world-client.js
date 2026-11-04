@@ -72,7 +72,7 @@ function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100)),auto=ty
  let ground=null;
  if(g>0){if(auto&&LF&&LF.gd){P.gold+=g;t.push('+'+g+' 🪙')}else{ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:g,it:null,l:120};t.push('🪙 '+g+' en el suelo')}}
  if(m.x>0){gainXp(m.x);t.push('+'+m.x+' XP')}
- if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty);if(pe.v){pqEvt('kv',pe.v);const vk=P.st.vk||(P.st.vk={});vk[pe.v]=(vk[pe.v]|0)+1}}catch(e){}
+ if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty);if(pe.v){pqEvt('kv',pe.v);const vk=P.st.vk||(P.st.vk={});vk[pe.v]=(vk[pe.v]|0)+1}try{slEvt({v:pe.v,ty:m.ty})}catch(e){}}catch(e){}
   try{TD.forEach((d,i)=>{if(tv(i)==tg(i))toast('📜 ¡Tarea lista: '+d[0]+'!',3000)})}catch(e){}
   try{if(qst&&qst.t=='k'&&qst.got<qst.n){qst.got++;if(qst.got>=qst.n)toast('Encargo listo: vuelve con el Gobernador',3000)}}catch(e){}}
  if(m.pot&&typeof P.pot=='number'&&P.pot<PMX){P.pot++;try{SES.pt++;flAdd('pot',1)}catch(e){}if(FT.length<60)FT.push({x:pe.x,y:pe.y-26,t:1.8,d:.2,o:0,k:'xp',s:'+1 🧪 poción',c:'#ff9ad5'})}
@@ -118,6 +118,8 @@ function xRecv(m){const sc=xScope();if(!sc||sc!==m.k)return;for(const a of (m.h|
   e.xhT=xN();if(a[2]&&e.dead<=0&&e.hp>0)xKill(e,d<900);
   if((e.hp<=0||e.dead>0)&&XQ.length<24)XQ.push([a[0],1,1])}}
 {const _hx=hitE;hitE=function(e,dm){let id=null;try{if(!window.__xrx&&(on||uwJ)&&dm>0&&!e.pvg&&!e.tmp&&(e.dg||(typeof PP!='undefined'&&PP.pid)))id=xId(e)}catch(x){}const r=_hx.apply(this,arguments);try{if(e&&e.dg)e.xhT=xN();if(id!=null&&XQ.length<24)XQ.push([id,Math.round(dm),e.hp<=0?1:0])}catch(x){}return r}}
+/* v393b: escudo del Segador: lo que pega CADA jugador se reduce mientras sus ecos vivan, ANTES de avisar a los demás */
+{const _h2=hitE;hitE=function(e,dm){try{if(e&&e.csb&&!window.__xrx&&typeof csShield=='function')dm=csShield(dm)}catch(x){}return _h2.apply(this,[e,dm].concat([].slice.call(arguments,2)))}}
 /* quien entra después a un piso recibe el estado actual: mobs ya muertos y daño acumulado (se repite cada 15 s por si algún aviso se perdió) */
 let XL='',XA=new Set(),XAk='';
 function xState(m){const sc=xScope();if(!sc||sc!==m.k)return;if(XAk!==sc){XAk=sc;XA=new Set()}

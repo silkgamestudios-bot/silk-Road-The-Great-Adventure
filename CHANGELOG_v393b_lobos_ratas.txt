@@ -44,3 +44,22 @@ Pedido (Maic, lunes 2 nov, con 2 hojas de sprites): clasificar los 8 hombres lob
 
 ══════════════ 9) ARREGLO: MASCOTAS (perro, halcón…) QUE DESAPARECÍAN Y TARDABAN EN VOLVER ══════════════
    • La mascota acompañante caminaba hacia ti a máx. 140 px/s y no tenía «correa»: al entrar o salir de una cueva (tu posición salta cientos de casillas), al correr o al viajar quedaba lejísimos y tardaba minutos en llegar, así que parecía que desaparecía. Ahora, si está a más de 520 px de ti, aparece a tu lado al instante, y su velocidad de alcance sube a 230. Solo cliente (play.html).
+
+10) CACERÍA (Misiones → pestaña 🎯): tarea de caza estilo Slayer/Tibia Tasks. Pide una tarea según tu nivel (30–60 bichos, incluye lobos y ratas de las cuevas), da XP+oro (bono por racha), puntos (5 cada 5 seguidas), cambiar tarea por 2 pts, canje 10 pts. Incluye bestiario de colores de cuevas. Solo cliente (play.html + world-client.js), se guarda en P.st.sl.
+
+11) CÁMARA DE LOS CUATRO SELLOS (jefe de equipo, fase 1)
+- 4 ítems comerciables: Sello del Alba / Cuervo / Ocaso / Luna (sg1..sg4). Se desentierran en 4 puntos del mapa (te acercas y sale ⛏️ Cavar; 1 vez cada 20 h por sello). Se pueden vender/tradear como las llaves.
+- Puerta = entrada de la nueva cueva "Cámara de los Cuatro Sellos" (1 sala, jefe "Guardián de las Cuatro Puertas", Nv 150). 4 jugadores, cada uno pone un sello distinto (ventana de 20 min); con los 4 puestos se abre 15 min para quienes pusieron uno. Los sellos se consumen.
+- Servidor: market.js (ops seal.dig/state/put/enter) + economy.js (sg1..sg4). REQUIERE Manual Deploy.
+- Jefe provisorio usa el sprite del Rey Lobo Lunar: para tu sprite, cambiar CSX.b en play.html (var CSX) por el nombre del sprite nuevo.
+- Pendiente fase 2: escudos por clase (que haya que pegar con 4 clases distintas).
+
+12) SEGADOR DE LAS CUATRO PUERTAS (jefe de la Cámara, fase 1b)
+- Sprite: el Segador que mandaste (frente, perfil izq/der y espalda, 3 cuadros). Embebido en play.html (GCI). Nombre: "Segador de las Cuatro Puertas".
+- Jefe Nv 35, 400 000 PV compartidos entre todos los de la cámara (usa el sistema de cuevas compartidas). Solo él en la sala.
+- Sala en llamas: daño pasivo por quemadura (1%/1,4%/1,9% de la vida máx por seg. según la fase) + llamas visuales.
+- Ataques mágicos sincronizados por reloj (todos ven el mismo ritmo): Lluvia de meteoros (apunta adelantándose a tu movimiento), Nova infernal, Rayo (3 rayos en fase 2), Lluvia de almas. Se ven en el suelo antes de pegar. Daño en % de la vida del héroe.
+- Inteligente: 3 fases (70% / 35%), se teletransporta junto a ti si lo alejas, y al 75/50/25% invoca ECOS (clones) que te cazan; mientras TUS ecos vivan tu daño al jefe se reduce al 15%.
+- Botín: 1–3 objetos especiales "del Segador" (Nv 30, rareza épica o mejor) + oro; XP ≈ medio nivel, repartida por la party.
+- Héroes: revisados los 8 sheets. Enana Guerrera (hn_ena.png): NO tenía perfil (izq/der eran de frente y 'derecha' mostraba la espalda) → derecha ahora de frente; hace falta arte de perfil si quieres que gire de verdad. Monje (hn_mon.png): cuadros 2 y 3 casi iguales (animación de 2 cuadros). Los otros 6 OK.
+- Server: ya incluido en market.js/economy.js (sellos). Cliente: play.html, world-client.js, hn_ena.png.

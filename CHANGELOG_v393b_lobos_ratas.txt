@@ -63,3 +63,19 @@ Pedido (Maic, lunes 2 nov, con 2 hojas de sprites): clasificar los 8 hombres lob
 - Botín: 1–3 objetos especiales "del Segador" (Nv 30, rareza épica o mejor) + oro; XP ≈ medio nivel, repartida por la party.
 - Héroes: revisados los 8 sheets. Enana Guerrera (hn_ena.png): NO tenía perfil (izq/der eran de frente y 'derecha' mostraba la espalda) → derecha ahora de frente; hace falta arte de perfil si quieres que gire de verdad. Monje (hn_mon.png): cuadros 2 y 3 casi iguales (animación de 2 cuadros). Los otros 6 OK.
 - Server: ya incluido en market.js/economy.js (sellos). Cliente: play.html, world-client.js, hn_ena.png.
+
+13) REPORTES DE TESTERS (3-4 nov)
+- ERROR MÍO CORREGIDO: los sellos (sg1..sg4) no se sumaban al inventario porque faltaban en P.fd del cliente. Ya están.
+- Mascotas nuevas: el servidor solo dejaba entrar 8 mascotas nuevas y recargaba 1 cada 5 min; una doma + minibosses seguidos podían perderse en silencio. Ahora 15 y recarga 1/min (economy.js MINT.p).
+- Pieles de lobo (382) que no llegaron: no se pudo reproducir. Agregado log '[trade] de -> a {provisiones}' en la consola de Render (market.js) para rastrear el próximo caso, y la cola de entregas pendientes sube de 200 a 600 (economy.js).
+- XP DIFÍCIL (nuevo killXp en play.html): XP por kill según el NIVEL del bicho, pero subir sigue siendo MUY duro. Kills por nivel aprox.: Nv 1 ~330, Nv 5 ~380, Nv 10 ~890, Nv 20 ~2 100, Nv 30 ~4 000, Nv 50 ~9 000, Nv 100 ~30 000, Nv 200 ~108 000 (antes: 665 / 1 700 / 2 950 / 4 600 / 6 800 / 20 000 / 109 000 / 693 000, con XP casi 0 en bichos de nivel bajo). Si el héroe ya es mucho más fuerte que el bicho, baja (rata a Nv 50 = 1 XP). Cuevas y mundo abierto pagan igual. Perillas: KXP en play.html. El servidor no cambia (xpRate 12).
+- Monstruos pegados a la pared que desaparecen: sin reproducir; falta saber en qué zona/cueva y si había otro jugador cerca.
+
+14) COMPENSACIONES: archivo compensaciones.json (raíz). Ejemplo: [{"id":"comp-001","nombre":"Ariel","k":"cur","q":382,"nota":"Devolución de pieles de lobo"}]. k = provisión (cur, tel, mad, pie, ant, kl1...), "oro" o boleto VIP. Cada id se entrega una sola vez; el nombre es el del héroe en el juego. Se revisa al arrancar y cada 10 min; el log sale en la consola de Render ('[comp] ...'). Requiere deploy.
+
+15) PRECIO DEL EQUIPO DE BOTÍN (queja de Ariel: todo valía 324 🪙 en cualquier ciudad)
+- El equipo suelto que cae de los monstruos ahora vale según el nivel del monstruo: ×1 (Nv 1) hasta ×6 (Nv 126+). Ej.: Nv 26 ×2, Nv 51 ×3. Campo nuevo 'jm' en el objeto (play.html iv/genJunk/cleanIt0 y economy.js lo conserva). El equipo ya recogido sigue valiendo lo de antes.
+- Tope ×6 a propósito: una mochila de 40 queda lejos del límite de oro del anti-trampa.
+
+16) MONSTRUOS KAMIKAZE / BUG DE LA PARED (reporte de ing/Ariel)
+- Antes 1 de cada 3 monstruos huía con <22% de vida, se curaba corriendo y se pegaba contra las paredes (parecía que desaparecían). Ahora: solo 1 de cada 10 huye, nunca dentro de cuevas, y si choca con una pared se rinde y pelea. El resto pelea hasta morir. Solo cliente (play.html; función SLOT).

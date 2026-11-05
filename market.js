@@ -183,6 +183,7 @@ ops['trade.ok']=(u,m)=>{const t=trGet(u,m);if(!t||t.st!=='open')return{e:'El tra
   for(const pt of (sd2.pets||[])){holdReg(pt.id,to,0,'p');E.deliver(to,{pet:pt,note:'🤝 Trato con '+nmOf(from)+': recibiste una mascota'})}}
  for(const [from,to,sd2] of [[t.a,t.b,t.sa],[t.b,t.a,t.sb]]){const rc={f:nmOf(from),it:sd2.items.map(x=>x.n),pets:(sd2.pets||[]).map(x=>x.nm||'Mascota'),g:Math.round(sd2.gold*(1-TFEE)),pv:sd2.prov,tk:sd2.tk||{}};
   if((rc.it.length||rc.pets.length||rc.g||Object.keys(rc.pv).length||Object.keys(rc.tk).length)&&S.online(to))S.push(to,{t:'note',m:'📬 Recibiste de '+rc.f,rc})}
+ try{for(const [f2,t2,s2] of [[t.a,t.b,t.sa],[t.b,t.a,t.sb]])if(Object.keys(s2.prov||{}).length)console.log('[trade]',f2,'->',t2,JSON.stringify(s2.prov))}catch(x){}
  trPush(t,'done');return{ok:1,done:1}};
 
 /* ---------- ZODÍACO: recompensa por participar en la derrota de un centinela (verifica calendario y daños compartidos) ---------- */
@@ -281,4 +282,16 @@ ops['seal.enter']=(u)=>{const d=sgDoor();if(d.open&&d.mem[u])return{ok:1};return
 function shopTr(sid){const s=col('shops')[sid];if(s){s.tr=(s.tr|0)+1;S.dirty()}}
 const prizeOk=k=>TKA.includes(k)||(PVL.includes(k)&&!KEYK_BLOCK.has(k));
 const grant=(u,k,q,note)=>{q=Math.max(1,Math.min(1000,q|0));if(!prizeOk(k))return false;if(TKA.includes(k)){tkAdd(u,k,q);if(S.online(u))S.push(u,{t:'note',m:note||'🎁 Premio recibido'})}else E.deliver(u,Object.assign({note:note||'🎁 Premio recibido'},provDl(k,q)));return true};
+
+/* ===== v393b: COMPENSACIONES · devolver cosas perdidas a jugadores. Se edita compensaciones.json (en la raíz del repo) y se hace deploy:
+   [{"id":"comp-001","nombre":"Ariel","k":"cur","q":382,"nota":"Devolución de pieles de lobo"}]
+   k = clave de provisión (cur, tel, mad, pie, ant, kl1, sg1...), "oro" (q = monedas) o un boleto VIP (vpf, vph, vmf, vmh, cmb, es, lic, vipm, vipj, pv, bh).
+   Cada "id" se entrega UNA sola vez (queda anotado en la base). Si el jugador está desconectado, le llega al entrar. ===== */
+const compRun=()=>{try{const fs=require('fs'),path=require('path');const f=path.join(__dirname,'compensaciones.json');if(!fs.existsSync(f))return;const L=JSON.parse(fs.readFileSync(f,'utf8'));if(!Array.isArray(L))return;const done=col('compdone');
+ for(const c of L){if(!c||!c.id||done[c.id])continue;const nm=String(c.nombre||'').trim().toLowerCase(),u=S.ECO.names&&S.ECO.names[nm];if(!u){console.log('[comp] '+c.id+': no encuentro al jugador "'+c.nombre+'" (nombre exacto del héroe)');continue}
+  let q=Math.max(1,Math.floor(+c.q)||0),k=String(c.k||''),note='🎁 '+(c.nota||'Devolución del equipo del juego');let ok=false;
+  if(k==='oro'){E.deliver(u,{gold:q,note});ok=true}else{while(q>0){const n=Math.min(1000,q);ok=grant(u,k,n,note);if(!ok)break;q-=n}}
+  if(ok){done[c.id]={u,k,q:Math.floor(+c.q),t:Date.now()};S.dirty();console.log('[comp] entregado',c.id,'a',c.nombre,k,c.q)}else console.log('[comp] '+c.id+': ítem "'+k+'" no válido')}}catch(e){console.log('[comp] error',e.message)}};
+setTimeout(compRun,8000);setInterval(compRun,10*60*1000);
+
 return{ops,shopView,iv,PVL,pvKill,btyHas,prizeOk,grant}};

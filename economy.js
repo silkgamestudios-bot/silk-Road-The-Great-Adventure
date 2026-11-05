@@ -115,7 +115,7 @@ function forgeCost(e,q){const c=FGQ[q],m=ENCM[e],o={};const add=(k,n)=>{if(n>0)o
 /* v306: mochilas 25..500. Loot: solo 40 y 65. Las demás las entrega el servidor (misiones, jefes, GM) con grantBag */
 const BAGT=[25,40,65,90,120,160,210,270,340,420,500],BAGN={40:'Bolso de Caminante',65:'Bolso de Fuego',90:'Morral del Explorador',120:'Mochila del Cazador',160:'Alforja del Mercader',210:'Mochila de Escolta',270:'Mochila del Capitán',340:'Mochila Real',420:'Mochila del Gran Maestro',500:'Mochila Sin Fondo'};
 function grantBag(u,sz,why){sz=+sz;if(!BAGT.includes(sz)||sz<40)return false;const a=acct(u);a.bgr=Math.max(a.bgr|0,sz);deliver(u,{bag:sz,note:'🎒 ¡'+(why?why+': ':'')+BAGN[sz]+' de '+sz+' espacios! Úsala desde 🎒 Objetos'});return true}
-function deliver(u,d){const a=acct(u);d.id=d.id||'d'+rid(6);d.ts=Date.now();d.sent=0;a.dl.push(d);if(a.dl.length>200)a.dl.shift();S.dirty();if(S.onDeliver)S.onDeliver(u);flushDl(u);return d}
+function deliver(u,d){const a=acct(u);d.id=d.id||'d'+rid(6);d.ts=Date.now();d.sent=0;a.dl.push(d);if(a.dl.length>600)a.dl.shift();S.dirty();if(S.onDeliver)S.onDeliver(u);flushDl(u);return d}
 function flushDl(u){const a=acct(u);if(!a.dl.length||!S.online(u))return;const now=Date.now();a.dl.forEach(d=>{if(!d.sent)d.sent=now});S.push(u,{t:'dl',list:a.dl.slice(0,40)})}
 /* Modelo: R (a.res) = estado YA aplicado por el cliente. Una entrega con delta negativo reserva el recurso (no se puede gastar dos veces);
    si el cliente no la confirma en dlTtl tras recibirla, el servidor la aplica a la fuerza (así nadie se queda con el objeto y el oro). */
@@ -130,7 +130,7 @@ const BASE={0:{dm:5},1:{hp:8},2:{hp:4,dm:1},3:{dm:2,hp:2},4:{hp:5},5:{sp:2},7:{d
 function itemMax(it,k){const m=RM[it.r]*(1+it.t*.6)*2.6;let b;if(it.sl<6||it.sl>=7)b=BASE[it.sl];else b=(it.k===2||it.k===4||it.k===6)?{mp:8}:{hp:3,gd:4};return Math.ceil((b[k]||0)*m)+1}
 function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0,9,-1),t=int(x.t,0,4,-1),r=int(x.r,0,3,-1);if(sl<0||t<0||r<0)return null;
  const o={sl,t,r,li:int(x.li,0,9,0),du:int(x.du,0,100,100)};if(x.k!=null){const k=int(x.k,0,7,-1);if(k<0)return null;o.k=k}
- o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.jv!=null){const jv=int(x.jv,0,300,0);if(jv)o.jv=jv}if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
+ o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.jv!=null){const jv=int(x.jv,0,300,0);if(jv)o.jv=jv}if(x.jm!=null){const jm=int(x.jm,10,60,10);if(jm>10)o.jm=jm}if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
  if(x.up!=null){const up=int(x.up,0,12,0);if(up)o.up=up}
  if(x.ar!=null){const ar=int(x.ar,0,5,0);if(ar)o.ar=ar}
@@ -140,7 +140,7 @@ function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0
 function cleanPetS(x){if(!x||typeof x!=='object')return null;const t=String(x.t||'');if(!/^[a-z]{2,12}$/.test(t))return null;
  const o={t,nm:String(x.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t,lv:int(x.lv,1,30,1),xp:int(x.xp,0,1e8,0),q:int(x.q,0,3,0),fd:int(x.fd,0,100,80),ill:0,hp:num(x.hp,1,4e8,1),en:num(x.en,0,2e5,0)};
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}return o}
-const MINT={i:[[60,5e3],[25,40e3],[8,300e3],[3,1800e3]],p:[[8,300e3]]};
+const MINT={i:[[60,5e3],[25,40e3],[8,300e3],[3,1800e3]],p:[[15,60e3]]};
 function mintOk(a,kind,idx,now){const cfg=(MINT[kind]||MINT.i)[idx],b=a.mint[kind+idx]||(a.mint[kind+idx]={v:cfg[0],t:now});b.v=Math.min(cfg[0],b.v+(now-b.t)/cfg[1]);b.t=now;if(b.v>=1){b.v-=1;return 1}return 0}
 /* ---------- nombres ---------- */
 function claimName(u,raw,force){const n=String(raw||'').trim().replace(/\s+/g,' ');if(!/^[\p{L}\p{N} _-]{3,14}$/u.test(n))return{e:'Usa de 3 a 14 letras, números, espacios, - o _'};

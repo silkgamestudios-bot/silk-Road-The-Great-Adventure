@@ -138,7 +138,7 @@ const trChanged=t=>{t.v++;t.sa.ok=0;t.sb.ok=0;t.ts=now();t.exp=now()+10*60e3;S.d
 const trGet=(u,m)=>{const t=TR()[String(m.id||'')];if(!t||(t.a!==u&&t.b!==u))return null;return t};
 setInterval(()=>{const T=TR(),n=now();for(const id in T)if(T[id].exp<n)trEnd(T[id],'expiró')},15e3).unref();
 ops['trade.me']=(u)=>{const t=trOf(u);return{ok:1,v:t?trView(t,u):null}};
-ops['trade.req']=(u,m)=>{const to=String(m.to||''),a=E.acct(u),b=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?S.ECO.acc[to]:null;if(!b||to===u)return{e:'Jugador no válido'};const lo=(a.lv|0)<TLV||(b.lv|0)<TLV,fa=isFree(u),fb=isFree(to);/* v391: lo = trato «solo antorchas» entre jugadores de Nv bajo */if(fa&&usedFree(u))return{e:VIPMSG};if(fb&&usedFree(to))return{e:'Ese jugador ya usó su trato gratis de hoy (sin servicio 🤝 solo tiene 1 al día).'};
+ops['trade.req']=(u,m)=>{const to=String(m.to||''),a=E.acct(u),b=Object.prototype.hasOwnProperty.call(S.ECO.acc,to)?S.ECO.acc[to]:null;if(!b||to===u)return{e:'Jugador no válido'};const lo=!(S.isMaster&&(S.isMaster(u)||S.isMaster(to)))&&((a.lv|0)<TLV||(b.lv|0)<TLV),/* v393b: con la cuenta GM el trato es completo (para probar) */fa=isFree(u),fb=isFree(to);/* v391: lo = trato «solo antorchas» entre jugadores de Nv bajo */if(fa&&usedFree(u))return{e:VIPMSG};if(fb&&usedFree(to))return{e:'Ese jugador ya usó su trato gratis de hoy (sin servicio 🤝 solo tiene 1 al día).'};
  if(!lo&&fa&&E.avail(a,'gold')<FFEE)return{e:'El trato gratis cuesta '+FFEE+' 🪙 de comisión: te falta oro'};if(!lo&&fb&&E.avail(b,'gold')<FFEE)return{e:'Ese jugador no tiene los '+FFEE+' 🪙 de comisión para un trato gratis'};
  var FR={a:fa,b:fb};
  if(!S.online(to))return{e:'Ese jugador no está conectado'};

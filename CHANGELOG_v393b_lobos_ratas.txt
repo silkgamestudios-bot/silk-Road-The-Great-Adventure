@@ -79,3 +79,5 @@ Pedido (Maic, lunes 2 nov, con 2 hojas de sprites): clasificar los 8 hombres lob
 
 16) MONSTRUOS KAMIKAZE / BUG DE LA PARED (reporte de ing/Ariel)
 - Antes 1 de cada 3 monstruos huía con <22% de vida, se curaba corriendo y se pegaba contra las paredes (parecía que desaparecían). Ahora: solo 1 de cada 10 huye, nunca dentro de cuevas, y si choca con una pared se rinde y pelea. El resto pelea hasta morir. Solo cliente (play.html; función SLOT).
+
+17) TRADE «SOLO ANTORCHAS»: es una regla anti-abuso: si alguno de los dos tiene menos de Nv 5 (TLV, variable de Render TRADE_MIN_LV) el trato solo admite antorchas. Ahora, si uno de los dos es la cuenta GM/master, el trato es completo (para poder probar). Para cambiar el mínimo para todos: en Render → Environment → TRADE_MIN_LV (ej. 1). Requiere deploy (market.js).

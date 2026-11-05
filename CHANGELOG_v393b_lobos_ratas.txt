@@ -87,3 +87,6 @@ Pedido (Maic, lunes 2 nov, con 2 hojas de sprites): clasificar los 8 hombres lob
 19. PANEL GM · 🎁 Devolver ítems (Dinero → Devolver ítems): el master elige jugador, provisión/material + cantidad, o mascota (tipo, calidad, nombre). Llega por entrega normal, queda en el registro del GM. Ops nuevas en store.js: adm.give, adm.pet (solo master).
 
 20. MENÚ SUPERIOR: en pantalla horizontal las pestañas del menú ya no van en la barra lateral izquierda; ahora van arriba en 2 filas horizontales (grupos + subpestañas), pestaña activa en dorado, contenido a todo el ancho. Solo CSS (bloque v394-menu-top).
+
+21. PANEL GM: devolver también EQUIPO (slot, set, tier, línea, rareza, nivel requerido, potenciación) → op adm.item. Los ítems devueltos van a la mochila de loot; el jugador ve «🎁 Tu ítem … fue devuelto…». Si su mochila de loot está llena, ve «libera espacio en tu mochila de loot para recibirlo» y el ítem queda pendiente y entra solo al liberar espacio (reintento cada 5 s). Mascotas y provisiones también avisan.
+22. AVISOS TRANSPARENTES: el toast (incluye «Mochila llena») ya no tiene caja ni borde ni botón ✕: solo letras con contorno, no bloquea toques.

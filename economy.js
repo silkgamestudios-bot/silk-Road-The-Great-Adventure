@@ -130,7 +130,7 @@ const BASE={0:{dm:5},1:{hp:8},2:{hp:4,dm:1},3:{dm:2,hp:2},4:{hp:5},5:{sp:2},7:{d
 function itemMax(it,k){const m=RM[it.r]*(1+it.t*.6)*2.6;let b;if(it.sl<6||it.sl>=7)b=BASE[it.sl];else b=(it.k===2||it.k===4||it.k===6)?{mp:8}:{hp:3,gd:4};return Math.ceil((b[k]||0)*m)+1}
 function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0,9,-1),t=int(x.t,0,4,-1),r=int(x.r,0,3,-1);if(sl<0||t<0||r<0)return null;
  const o={sl,t,r,li:int(x.li,0,9,0),du:int(x.du,0,100,100)};if(x.k!=null){const k=int(x.k,0,7,-1);if(k<0)return null;o.k=k}
- o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.jv!=null){const jv=int(x.jv,0,300,0);if(jv)o.jv=jv}if(x.jm!=null){const jm=int(x.jm,10,60,10);if(jm>10)o.jm=jm}if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
+ o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.jv!=null){const jv=int(x.jv,0,300,0);if(jv)o.jv=jv}if(x.jm!=null){const jm=int(x.jm,10,150,10);if(jm>10)o.jm=jm}if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
  if(x.up!=null){const up=int(x.up,0,12,0);if(up)o.up=up}
  if(x.ar!=null){const ar=int(x.ar,0,5,0);if(ar)o.ar=ar}

@@ -90,3 +90,7 @@ Pedido (Maic, lunes 2 nov, con 2 hojas de sprites): clasificar los 8 hombres lob
 
 21. PANEL GM: devolver también EQUIPO (slot, set, tier, línea, rareza, nivel requerido, potenciación) → op adm.item. Los ítems devueltos van a la mochila de loot; el jugador ve «🎁 Tu ítem … fue devuelto…». Si su mochila de loot está llena, ve «libera espacio en tu mochila de loot para recibirlo» y el ítem queda pendiente y entra solo al liberar espacio (reintento cada 5 s). Mascotas y provisiones también avisan.
 22. AVISOS TRANSPARENTES: el toast (incluye «Mochila llena») ya no tiene caja ni borde ni botón ✕: solo letras con contorno, no bloquea toques.
+
+23. XP Y BOTÍN POR NIVEL DE MOB (v394): la XP necesaria por nivel NO cambia (no se toca a los jugadores actuales). Cambia la XP por muerte: ahora es xpNeed(nivel del mob)/KXK(nivel); kills por nivel contra mobs de tu nivel: ~80-140 hasta Nv 4, ~490 Nv 10, ~1.550 Nv 20 (antes 2.230), ~3.200 Nv 30, ~7.500 Nv 50. Mob más alto que tú: +4% por nivel de diferencia, hasta +40%. Oro suelto: +hasta 200% según nivel del mob. Botín: línea de equipo mezclada (nivel del mob/12 menos 0-3 líneas, a veces +1); mejor línea = más stat y más precio al NPC (jm hasta ×15; economy.js acepta jm hasta 150).
+
+24. BOTÍN BÁSICO PARA TODOS: todos los mobs sueltan equipo; el nivel del equipo ≈ 0,7×(nivel mob)^0,85 (Nv 10 → ~5, Nv 150 → ~49, Nv 200 → ~63); 75% de los drops son líneas básicas, 25% la línea que corresponde (a veces +1). Precio al NPC sube con la línea.

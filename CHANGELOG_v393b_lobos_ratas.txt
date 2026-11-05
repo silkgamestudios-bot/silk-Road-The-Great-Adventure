@@ -81,3 +81,9 @@ Pedido (Maic, lunes 2 nov, con 2 hojas de sprites): clasificar los 8 hombres lob
 - Antes 1 de cada 3 monstruos huía con <22% de vida, se curaba corriendo y se pegaba contra las paredes (parecía que desaparecían). Ahora: solo 1 de cada 10 huye, nunca dentro de cuevas, y si choca con una pared se rinde y pelea. El resto pelea hasta morir. Solo cliente (play.html; función SLOT).
 
 17) TRADE «SOLO ANTORCHAS»: es una regla anti-abuso: si alguno de los dos tiene menos de Nv 5 (TLV, variable de Render TRADE_MIN_LV) el trato solo admite antorchas. Ahora, si uno de los dos es la cuenta GM/master, el trato es completo (para poder probar). Para cambiar el mínimo para todos: en Render → Environment → TRADE_MIN_LV (ej. 1). Requiere deploy (market.js).
+
+18) PRECIO POR NIVEL DEL EQUIPO: además del botín (ítem 15), el equipo con nivel requerido (cuevas, Torre, minas, cofres) vale más cuanto mayor sea ese nivel: ×(1+nivel/60), tope ×6 (Nv 30 ×1,5; Nv 300 ×6). Solo cliente.
+
+19. PANEL GM · 🎁 Devolver ítems (Dinero → Devolver ítems): el master elige jugador, provisión/material + cantidad, o mascota (tipo, calidad, nombre). Llega por entrega normal, queda en el registro del GM. Ops nuevas en store.js: adm.give, adm.pet (solo master).
+
+20. MENÚ SUPERIOR: en pantalla horizontal las pestañas del menú ya no van en la barra lateral izquierda; ahora van arriba en 2 filas horizontales (grupos + subpestañas), pestaña activa en dorado, contenido a todo el ancho. Solo CSS (bloque v394-menu-top).

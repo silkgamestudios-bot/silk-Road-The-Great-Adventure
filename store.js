@@ -58,6 +58,15 @@ ops['adm.bag']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const sz=M
 ops['adm.gold']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const q=Math.floor(+m.q);if(!(q>=1&&q<=GM_MAXO))return err('Cantidad inválida (1 a 1.000.000.000)');
  const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u),a=E.acct(o);
  gmGiveGold(o,q);gmLogAdd(by,'gold',a.nm||o,q,'');S.log('[master] '+by+' envió '+q+' de oro a '+(a.nm||o));return{ok:1,nm:a.nm||o,q}};
+/* v393b: DEVOLVER ítems perdidos: provisiones/materiales y mascotas (solo master). Queda en el registro del GM */
+const GM_PROV=new Set(E.MNK||[]);
+const GM_PETS=['dog','wolf','hawk','owl','horse','camel','nhorse','scorp'];
+ops['adm.give']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const k=String(m.k||''),q=Math.floor(+m.q);if(!GM_PROV.has(k))return err('Ese ítem no se puede entregar por aquí');if(!(q>=1&&q<=1e6))return err('Cantidad inválida (1 a 1.000.000)');
+ const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u),a=E.acct(o);
+ E.deliver(o,{prov:{pk:k,q},note:'🎁 Devolución del equipo de Silk Road: '+q+' de '+k});gmLogAdd(by,'item',a.nm||o,q,k);S.log('[master] '+by+' entregó '+q+' de '+k+' a '+(a.nm||o));return{ok:1,nm:a.nm||o,q,k}};
+ops['adm.pet']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const t=String(m.t||''),q=Math.max(0,Math.min(3,Math.floor(+m.q)||0));if(!GM_PETS.includes(t))return err('Tipo de mascota no válido');
+ const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u),a=E.acct(o),id='gm'+E.rid(8),nm=String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t;
+ S.ECO.reg[id]={o,k:'p',t:Date.now()};E.deliver(o,{pet:{id,t,nm,lv:1,xp:0,q,fd:80,hp:100,en:100,ill:0},note:'🎁 Devolución del equipo de Silk Road: mascota '+nm});gmLogAdd(by,'pet',a.nm||o,1,t+' q'+q);S.log('[master] '+by+' entregó mascota '+t+' a '+(a.nm||o));return{ok:1,nm:a.nm||o,t}};
 /* lista de staff: quien tiene insignia o pago automático */
 ops['adm.staff']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const bd=((S.DB.cfg||{}).badges)||{},pay=GMX().pay,ids=new Set([...Object.keys(bd),...Object.keys(pay)]),L=[];
  for(const id of ids){const a=S.ECO.acc[id];if(!a||!a.nm)continue;const p=pay[id];L.push({nm:a.nm,b:bd[id]||'',on:S.online(id)?1:0,lv:a.lv|0,p:p?{g:p.g||0,o:p.o||0,h:p.h||0,nx:+p.nx||0,a:p.a?1:0,tg:+p.tg||0,to:+p.to||0,ls:+p.ls||0}:null})}

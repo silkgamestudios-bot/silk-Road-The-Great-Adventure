@@ -102,3 +102,7 @@ Pedido (Maic, lunes 2 nov, con 2 hojas de sprites): clasificar los 8 hombres lob
 27. AVISOS DEL GM / PAGOS VISIBLES: el filtro de avisos del juego escondía los mensajes de las herramientas nuevas (éxito y error) — por eso al devolver una mascota no se veía nada si algo fallaba. Ahora 🎁🐴🛡️💎⚡, «no válido», «ningún jugador», «solo el master», «orden», «demasiados» etc. siempre se muestran. El tipo de mascota ya no se limita a una lista fija en el servidor (solo letras minúsculas, como valida economy.js).
 
 28. MOCHILA LLENA SIN ESTORBAR: al recoger botín con la mochila/bolsa llena ya no sale el aviso largo con la lista de objetos ni las etiquetas «✖ objeto»; solo un texto corto flotando encima del personaje («🎒 Mochila llena» / «🧺 Bolsa de loot llena»), máx. uno cada 3,5 s, sin vibración.
+
+29. PAGO AUTOMÁTICO: diagnóstico. Si el servidor no ve las llaves de Binance, la tienda dice «no disponible»; ahora el master ve el motivo exacto en pantalla (Falta BINANCE_API_KEY / BINANCE_SECRET / BINANCE_PAY_ID) y el log de Render lista los nombres de variables «BINANCE…» que sí llegan. pay.js acepta nombres alternativos (BINANCE_SECRET_KEY, BINANCE_API_SECRET, BINANCE_KEY…) y quita comillas/espacios.
+
+30. PAGO AUTOMÁTICO: las variables de Render se leen SIN distinguir mayúsculas (en Render estaban como «Binance_Api_key» y «Binance_Secret»; Linux distingue mayúsculas y el servidor buscaba BINANCE_API_KEY). Ahora funciona con cualquier combinación.

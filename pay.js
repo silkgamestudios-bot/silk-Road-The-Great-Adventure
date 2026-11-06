@@ -18,7 +18,8 @@ const crypto=require('crypto');
 module.exports=function(S,E,X){
 X=X||{};
 const log=S.log,DB=S.DB;
-const KEY=String(process.env.BINANCE_API_KEY||'').trim(),SEC=String(process.env.BINANCE_SECRET||'').trim(),PAY_ID=String(X.PAY_ID||process.env.BINANCE_PAY_ID||'').trim();
+const envv=(...ns)=>{/* sin distinguir mayúsculas: Binance_Api_key = BINANCE_API_KEY */const ks=Object.keys(process.env);for(const n of ns){const k=ks.find(x=>x.toUpperCase()===n.toUpperCase());if(k){const v=process.env[k];if(v&&String(v).trim())return String(v).trim().replace(/^["']+|["']+$/g,'')}}return ''};
+const KEY=envv('BINANCE_API_KEY','BINANCE_APIKEY','BINANCE_KEY','BINANCE_API'),SEC=envv('BINANCE_SECRET','BINANCE_SECRET_KEY','BINANCE_API_SECRET','BINANCE_SECRETKEY','BINANCE_APISECRET'),PAY_ID=String(envv('BINANCE_PAY_ID','BINANCE_PAYID','BINANCE_PAY')||X.PAY_ID||'').trim();
 const ON=!!(KEY&&SEC);
 const TTL=Math.max(5,Math.min(60,+process.env.PAY_TTL_MIN||15))*60000;
 const POLL=Math.max(4000,+process.env.PAY_POLL_MS||8000),IDLE=60000;
@@ -68,7 +69,7 @@ ops['pay.new']=(u,m)=>{
  log('[pay] orden '+id+' de '+(a.nm||u)+': '+fmt(c)+' USDT → '+g+' gemas (paquete '+base+')');return Object.assign({ok:1},view(o))};
 ops['pay.status']=(u,m)=>{const o=G().o[String(m.id||'')];if(!o||o.u!==u)return err('Orden no encontrada');const v=view(o);v.chk=lastOk?Math.round((now()-lastOk)/1000):-1;return Object.assign({ok:1},v)};
 ops['pay.mine']=(u)=>{const o=pending(u);return o?Object.assign({ok:1},view(o)):{ok:1,none:1}};
-ops['pay.packs']=(u)=>{const t=now();return{ok:1,on:ON,pid:PAY_ID,packs:Object.keys(PACKS).map(b=>{const c=calc(u,+b,t);return{b:+b,g:c.g,pb:c.pb}}).sort((x,y)=>x.b-y.b)}};
+ops['pay.packs']=(u)=>{const t=now();return{ok:1,on:ON,pid:PAY_ID,why:S.isMaster(u)?why():'',packs:Object.keys(PACKS).map(b=>{const c=calc(u,+b,t);return{b:+b,g:c.g,pb:c.pb}}).sort((x,y)=>x.b-y.b)}};
 
 /* ---------- lista de revisión manual (solo master) ---------- */
 ops['adm.pay.rv']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const d=G();return{ok:1,l:d.rv.filter(x=>!x.done).slice(-100).reverse(),on:ON,last:lastOk||0,errn:lastErr||''}};
@@ -120,5 +121,6 @@ async function check(){
 
 function loop(){let any=false;const d=G(),t=now();for(const id in d.o){const o=d.o[id];if(o.st==='p'&&t<o.x+FREE_LAG){any=true;break}}
  const wait=any?POLL:IDLE;timer=setTimeout(async()=>{await check();loop()},wait)}
-function start(){if(!ON){log('[pay] pagos automáticos APAGADOS (faltan BINANCE_API_KEY / BINANCE_SECRET)');return}if(!PAY_ID)log('[pay] ⚠️ falta BINANCE_PAY_ID');syncTime().then(()=>{log('[pay] pagos automáticos ACTIVOS · paquetes '+JSON.stringify(PACKS)+' · orden de '+TTL/60000+' min');check().then(loop)})}
+function why(){return !KEY&&!SEC?'No llegan BINANCE_API_KEY ni BINANCE_SECRET al servidor':!KEY?'Falta BINANCE_API_KEY':!SEC?'Falta BINANCE_SECRET':!PAY_ID?'Falta BINANCE_PAY_ID':''}
+function start(){if(!ON){log('[pay] pagos automáticos APAGADOS: '+why()+' · variables con "BINANCE" que ve el servidor: '+(Object.keys(process.env).filter(k=>/binance/i.test(k)).join(', ')||'ninguna'));return}if(!PAY_ID)log('[pay] ⚠️ falta BINANCE_PAY_ID');syncTime().then(()=>{log('[pay] pagos automáticos ACTIVOS · paquetes '+JSON.stringify(PACKS)+' · orden de '+TTL/60000+' min');check().then(loop)})}
 return{ops,start,check,_PACKS:()=>PACKS}};

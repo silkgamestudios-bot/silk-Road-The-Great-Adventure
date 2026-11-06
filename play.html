@@ -8918,11 +8918,11 @@ var PYS={o:null,end:0,tm:0,pl:0,lastSt:'',stop:0,packs:[{b:1,g:1},{b:3,g:3},{b:5
 function payEsc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function payBox(){try{if(PYS.on===null&&!PYS.ld){PYS.ld=1;setTimeout(payInit,50)}
  var act=PYS.o&&PYS.o.st=='p'&&PYS.end>Date.now()?'<button class="best" data-h="gm_pyv" style="width:100%;margin:6px 0">⏳ Tienes una orden activa: ver el pago ('+payEsc(PYS.o.amt)+' USDT)</button>':'';
- if(PYS.on===false)return '<div class="gbox gwarn"><h3>⚡ Pago automático</h3><small>El pago automático no está disponible en este momento. Intenta de nuevo en unos minutos.</small></div>';
+ if(PYS.on===false)return '<div class="gbox gwarn"><h3>⚡ Pago automático</h3><small>El pago automático no está disponible en este momento. Intenta de nuevo en unos minutos.</small>'+(PYS.why?'<br><small>🔧 <b>Solo tú ves esto:</b> '+payEsc(PYS.why)+'. Revisa Render → Environment y haz Manual Deploy.</small>':'')+'</div>';
  var b=PYS.packs.map(function(k){return '<button class="gpc" data-h="gm_pyb:'+k.b+'">'+gemSvg(k.g)+'<b>'+k.g+' 💎</b><small>'+k.b+' USDT</small>'+(k.pb>0?'<small class="bfb">🔥 +'+k.pb+' de bono</small>':'')+'</button>'}).join('');
  var pr='';try{var c=bfCfg(),n=Date.now(),ph=bfPh(n);if(ph>0)pr='<div class="gbox gwarn" style="margin:6px 0"><small>🔥 <b>Black Friday activo</b>: +'+(ph==1?c.p1:c.p2)+'% de gemas en tus primeros '+c.cap+' USDT.</small></div>';else if(c.on&&n<c.t0)pr='<div class="gbox gwarn" style="margin:6px 0"><small>🔥 <b>Black Friday</b> empieza en '+bfLeft(c.t0-n)+' (+'+c.p1+'% de gemas, luego +'+c.p2+'%).</small></div>'}catch(e){}
  return '<div class="gbox gok"><h3>⚡ Comprar gemas · pago automático</h3><small>Elige un paquete, paga por Binance Pay y tus gemas llegan solas.</small>'+pr+act+'<div class="gpk2">'+b+'</div></div>'}catch(e){return ''}}
-async function payInit(){try{if(!(typeof ONL=='function'&&ONL()))return;var r=await SRNET.rpc({t:'x',op:'pay.packs'});PYS.on=!!r.on;PYS.pid=r.pid||'';if(r.packs&&r.packs.length)PYS.packs=r.packs;
+async function payInit(){try{if(!(typeof ONL=='function'&&ONL()))return;var r=await SRNET.rpc({t:'x',op:'pay.packs'});PYS.on=!!r.on;PYS.why=r.why||'';PYS.pid=r.pid||'';if(r.packs&&r.packs.length)PYS.packs=r.packs;
  var m=await SRNET.rpc({t:'x',op:'pay.mine'});if(m&&m.id&&m.st=='p'&&!PYS.o){PYS.o=m;PYS.end=Date.now()+m.left}}catch(e){PYS.on=null;PYS.ld=0;return}try{if(typeof heroM=='function'&&!document.getElementById('hero').hidden)heroM()}catch(e){}}
 
 function payCopy(txt,btn){var ok=function(){if(btn){btn.textContent='¡Copiado!';btn.classList.add('ok');setTimeout(function(){btn.textContent='Copiar';btn.classList.remove('ok')},1800)}};

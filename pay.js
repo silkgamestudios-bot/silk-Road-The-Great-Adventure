@@ -87,10 +87,11 @@ function toReview(why,tx,ts,c,o){const d=G();if(d.tx[tx])return;d.tx[tx]={t:now(
 
 /* ---------- consulta a Binance ---------- */
 let off=0,lastOk=0,lastErr='',lastErrT=0,busyQ=false,timer=null;
+const RELAY=String(envv('BINANCE_RELAY_URL')||'').trim().replace(/\/+$/,''),RTK=String(envv('RELAY_TOKEN')||'').trim(),BASE=RELAY||'https://api.binance.com',RH=RELAY?{'X-Relay-Token':RTK}:{};
 const sign=q=>crypto.createHmac('sha256',SEC).update(q).digest('hex');
-async function bget(path,params){const q=new URLSearchParams(Object.assign({},params,{timestamp:String(now()+off),recvWindow:'10000'})).toString(),url='https://api.binance.com'+path+'?'+q+'&signature='+sign(q);
- const r=await fetch(url,{headers:{'X-MBX-APIKEY':KEY}}),j=await r.json().catch(()=>({}));if(!r.ok||j.success===false||(j.code&&j.code!=='000000'&&j.code!==0&&String(j.code)!=='000000')){const e=new Error('Binance '+r.status+' '+(j.code||'')+' '+String(j.msg||j.message||'').slice(0,120));e.code=j.code;throw e}return j}
-async function syncTime(){try{const r=await fetch('https://api.binance.com/api/v3/time'),j=await r.json();if(j&&j.serverTime)off=j.serverTime-now()}catch(e){}}
+async function bget(path,params){const q=new URLSearchParams(Object.assign({},params,{timestamp:String(now()+off),recvWindow:'10000'})).toString(),url=BASE+path+'?'+q+'&signature='+sign(q);
+ const r=await fetch(url,{headers:Object.assign({'X-MBX-APIKEY':KEY},RH)}),j=await r.json().catch(()=>({}));if(!r.ok||j.success===false||(j.code&&j.code!=='000000'&&j.code!==0&&String(j.code)!=='000000')){const e=new Error('Binance '+r.status+' '+(j.code||'')+' '+String(j.msg||j.message||'').slice(0,120));e.code=j.code;throw e}return j}
+async function syncTime(){try{const r=await fetch(BASE+'/api/v3/time',{headers:RH}),j=await r.json();if(j&&j.serverTime)off=j.serverTime-now()}catch(e){}}
 
 async function check(){
  if(!ON||busyQ)return;busyQ=true;const t=now();

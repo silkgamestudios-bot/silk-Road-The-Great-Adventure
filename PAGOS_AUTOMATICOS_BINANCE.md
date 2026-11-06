@@ -31,3 +31,8 @@ Al arrancar, el log de Render dice `[pay] pagos automáticos ACTIVOS`.
 - El jugador paga entre base−descuento máximo y base−0,01. Con base 10 recibes mínimo 9,51; con base 1, mínimo 0,95. Ajusta `PAY_PACKS` o los precios base si quieres otro mínimo.
 - Haz primero un pago real pequeño (paquete de 1 USDT: llega entre 0,95 y 0,99) y confirma que en tu cuenta entra exactamente ese monto. Binance Pay entre usuarios normalmente no cobra comisión al que recibe.
 - El bono de la promo y el descuento de revendedor NO se aplican en el pago automático (1 USDT = 1 gema); el pago manual de siempre sigue funcionando.
+
+## Error 451 (Binance bloquea la región de Render) → relay en Frankfurt
+1. Render → New → Web Service → mismo repo de GitHub, Region **Frankfurt**, Start Command `node relay.js`. Env: `RELAY_TOKEN` = una clave larga inventada.
+2. En el servicio principal agregá: `BINANCE_RELAY_URL` = URL del relay (https://xxxx.onrender.com) y `RELAY_TOKEN` = la misma clave.
+3. Manual Deploy del principal. Si el relay está en plan gratis se duerme: usá Starter para que responda siempre.

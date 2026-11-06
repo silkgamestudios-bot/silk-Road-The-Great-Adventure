@@ -40,23 +40,35 @@ function busy(c,t){/* ¿algún pedido con esa cantidad sigue "vivo"? (pendiente,
 function dmax(base){return Math.max(5,Math.min(49,Math.floor(base*DISC)))}   /* descuento máximo en centavos: DISC % del precio base (5% → 1 USDT: 5 c · 3: 15 c · 5: 25 c · 10 o más: 49 c) */
 function pickCents(base,t){const b=base*100,free=[],M=dmax(base);for(let d=1;d<=M;d++)if(!busy(b-d,t))free.push(b-d);if(!free.length)return 0;return free[crypto.randomInt(free.length)]}
 function pending(u){const d=G(),t=now();for(const id in d.o){const o=d.o[id];if(o.u===u&&o.st==='p'&&t<o.x)return o}return null}
-function view(o){const t=now(),live=o.st==='p'&&t<o.x;return{id:o.id,st:o.st==='paid'?'paid':(live?'p':'exp'),amt:fmt(o.c),usdt:o.c/100,base:o.b,g:o.g,left:live?Math.max(0,o.x-t):0,pid:PAY_ID,ttl:TTL}}
+function view(o){const t=now(),live=o.st==='p'&&t<o.x;return{id:o.id,st:o.st==='paid'?'paid':(live?'p':'exp'),amt:fmt(o.c),usdt:o.c/100,base:o.b,g:o.g,pb:o.pm?o.pm.b:0,left:live?Math.max(0,o.x-t):0,pid:PAY_ID,ttl:TTL}}
 function clean(){const d=G(),t=now();for(const id in d.o){const o=d.o[id];if(o.st!=='paid'&&t>o.x+KEEP){delete d.o[id];S.dirty()}}
  const k=Object.keys(d.tx);if(k.length>20000){k.sort((a,b)=>d.tx[a].t-d.tx[b].t).slice(0,k.length-15000).forEach(x=>delete d.tx[x]);S.dirty()}}
+
+/* ---------- promo (Black Friday): misma regla que el juego — DB.cfg.promo manda; si falta, valores de fábrica ---------- */
+const PD={id:'bf26',on:1,t0:Date.UTC(2026,10,12,4),t1:Date.UTC(2026,10,26,4),t2:Date.UTC(2026,11,1,4),p1:25,p2:100,cap:20};
+function promo(){const o=(DB.cfg&&DB.cfg.promo)||{},n=(k,d,lo,hi)=>{const v=(o[k]==null||o[k]==='')?NaN:+o[k];return Number.isFinite(v)?Math.min(hi,Math.max(lo,v)):d};
+ const c={id:String(o.id||PD.id).replace(/[^\w-]/g,'').slice(0,16)||PD.id,on:(o.on===0||o.on===false||o.on==='0')?0:1,t0:n('t0',PD.t0,0,4e12),t1:n('t1',PD.t1,0,4e12),t2:n('t2',PD.t2,0,4e12),p1:Math.round(n('p1',PD.p1,0,300)),p2:Math.round(n('p2',PD.p2,0,300)),cap:Math.round(n('cap',PD.cap,0,5000))};
+ if(c.t1<c.t0)c.t1=c.t0;if(c.t2<c.t1)c.t2=c.t1;return c}
+function usedPromo(u,c,skip){/* USDT de promo ya usados por la CUENTA: órdenes automáticas pagadas o vivas + solicitudes manuales viejas */
+ const P=E.prim(u),d=G(),t=now();let s=0;
+ for(const id in d.o){const o=d.o[id];if(id===skip||!o.pm||o.pm.i!==c.id||E.prim(o.u)!==P)continue;if(o.st==='paid'||(o.st==='p'&&t<o.x))s+=o.pm.u}
+ const R=DB.gemreq||{};for(const k in R){const r=R[k];if(!r||!r.pm||r.pm.i!==c.id||(r.st!=='a'&&r.st!=='p'))continue;if(String(r.pa||E.prim(String(r.u||'')))===P)s+=Math.max(0,+r.pm.u||0)}return s}
+function calc(u,base,t,skip){const c=promo(),g0=PACKS[base];let ph=0;if(c.on&&t>=c.t0&&t<c.t2)ph=t<c.t1?1:2;
+ const pc=ph===1?c.p1:ph===2?c.p2:0,pu=pc>0?Math.max(0,Math.min(base,c.cap-usedPromo(u,c,skip))):0,pb=pc>0?Math.round(pu*pc/100):0;return{g:g0+pb,pb,pu,i:c.id,pc}}
 
 const ops={};
 ops['pay.new']=(u,m)=>{
  if(!ON)return err('El pago automático aún no está activado');
  if(!PAY_ID)return err('Falta configurar la cuenta de cobro');
- const base=Math.floor(+m.pk),g=PACKS[base];if(!g)return err('Paquete no válido');
+ const base=Math.floor(+m.pk);if(!PACKS[base])return err('Paquete no válido');
  const a=E.acct(u),t=now();a.pyN=(a.pyN||[]).filter(x=>t-x<600000);if(a.pyN.length>=6)return err('Demasiadas órdenes seguidas: espera unos minutos');
  const ex=pending(u);if(ex){if(ex.b===base&&ex.x-t>60000)return Object.assign({ok:1},view(ex));ex.st='exp';ex.x=Math.min(ex.x,t)}/* otro paquete: la anterior se cierra (su monto queda reservado un rato por si ya pagaron) */
  const c=pickCents(base,t);if(!c)return err('Hay muchos pedidos ahora mismo: intenta de nuevo en un minuto');
- a.pyN.push(t);const id='p'+E.rid(8),o=G().o[id]={id,u,b:base,g,c,t,x:t+TTL,st:'p'};S.dirty();
+ const cx=calc(u,base,t),g=cx.g;a.pyN.push(t);const id='p'+E.rid(8),o=G().o[id]={id,u,b:base,g,c,t,x:t+TTL,st:'p'};if(cx.pb>0)o.pm={i:cx.i,u:cx.pu,b:cx.pb};S.dirty();
  log('[pay] orden '+id+' de '+(a.nm||u)+': '+fmt(c)+' USDT → '+g+' gemas (paquete '+base+')');return Object.assign({ok:1},view(o))};
 ops['pay.status']=(u,m)=>{const o=G().o[String(m.id||'')];if(!o||o.u!==u)return err('Orden no encontrada');const v=view(o);v.chk=lastOk?Math.round((now()-lastOk)/1000):-1;return Object.assign({ok:1},v)};
 ops['pay.mine']=(u)=>{const o=pending(u);return o?Object.assign({ok:1},view(o)):{ok:1,none:1}};
-ops['pay.packs']=()=>({ok:1,on:ON,pid:PAY_ID,packs:Object.keys(PACKS).map(b=>({b:+b,g:PACKS[b]})).sort((x,y)=>x.b-y.b)});
+ops['pay.packs']=(u)=>{const t=now();return{ok:1,on:ON,pid:PAY_ID,packs:Object.keys(PACKS).map(b=>{const c=calc(u,+b,t);return{b:+b,g:c.g,pb:c.pb}}).sort((x,y)=>x.b-y.b)}};
 
 /* ---------- lista de revisión manual (solo master) ---------- */
 ops['adm.pay.rv']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const d=G();return{ok:1,l:d.rv.filter(x=>!x.done).slice(-100).reverse(),on:ON,last:lastOk||0,errn:lastErr||''}};

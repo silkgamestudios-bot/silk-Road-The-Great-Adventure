@@ -60,11 +60,11 @@ ops['adm.gold']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const q=M
  gmGiveGold(o,q);gmLogAdd(by,'gold',a.nm||o,q,'');S.log('[master] '+by+' envió '+q+' de oro a '+(a.nm||o));return{ok:1,nm:a.nm||o,q}};
 /* v393b: DEVOLVER ítems perdidos: provisiones/materiales y mascotas (solo master). Queda en el registro del GM */
 const GM_PROV=new Set(E.MNK||[]);
-const GM_PETS=['dog','wolf','hawk','owl','horse','camel','nhorse','scorp'];
+
 ops['adm.give']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const k=String(m.k||''),q=Math.floor(+m.q);if(!GM_PROV.has(k))return err('Ese ítem no se puede entregar por aquí');if(!(q>=1&&q<=1e6))return err('Cantidad inválida (1 a 1.000.000)');
  const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u),a=E.acct(o);
  E.deliver(o,{prov:{pk:k,q},note:'🎁 Devuelto por el equipo: '+q+' × '+k+' ya está en tu mochila'});gmLogAdd(by,'item',a.nm||o,q,k);S.log('[master] '+by+' entregó '+q+' de '+k+' a '+(a.nm||o));return{ok:1,nm:a.nm||o,q,k}};
-ops['adm.pet']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const t=String(m.t||''),q=Math.max(0,Math.min(3,Math.floor(+m.q)||0));if(!GM_PETS.includes(t))return err('Tipo de mascota no válido');
+ops['adm.pet']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const t=String(m.t||''),q=Math.max(0,Math.min(3,Math.floor(+m.q)||0));if(!/^[a-z]{2,12}$/.test(t))return err('Tipo de mascota no válido');
  const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u),a=E.acct(o),id='gm'+E.rid(8),nm=String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t;
  S.ECO.reg[id]={o,k:'p',t:Date.now()};E.deliver(o,{pet:{id,t,nm,lv:1,xp:0,q,fd:80,hp:100,en:100,ill:0},note:'🎁 Devuelto por el equipo: tu mascota «'+nm+'» ya está en tu establo'});gmLogAdd(by,'pet',a.nm||o,1,t+' q'+q);S.log('[master] '+by+' entregó mascota '+t+' a '+(a.nm||o));return{ok:1,nm:a.nm||o,t}};
 ops['adm.item']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const c=E.cleanItem(m.item);if(!c)return err('Ítem no válido (revisa nivel, rareza o potenciación)');c.junk=m.item&&m.item.junk?1:undefined;if(!c.junk)delete c.junk;

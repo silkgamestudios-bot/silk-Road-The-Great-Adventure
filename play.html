@@ -1204,7 +1204,7 @@ if(sv&&Array.isArray(sv.i)){P.gold=sv.g|0;P.inv=sv.i;P.hp=sv.hp||100;P.pot=sv.p=
 // v183: respaldo independiente de accesos rápidos por personaje; recupera asignaciones si el guardado principal queda desfasado.
 try{const qb=JSON.parse(localStorage.getItem(SK+'_quickbar')||'null');if(qb&&typeof qb==='object'){if(Array.isArray(qb.qs)&&qb.qs.length===4)P.qs=qsFix(qb.qs);if(Array.isArray(qb.ss)&&qb.ss.length===2&&qb.ss.every(a=>Array.isArray(a)&&a.length===3))P.ss=qb.ss.map(a=>a.map(v=>((v|0)>=100&&(v|0)<=102)?(v|0):Math.max(-1,Math.min(11,v|0))));if(qb.sw!=null)P.sw=qb.sw?1:0;if(qb.ssk!=null)P.ssk=qb.ssk|0;if(qb.sno!=null)P.sno=qb.sno|0;if(Array.isArray(qb.ub))P.ub=qb.ub.slice(0,3);if(Array.isArray(qb.uh))P.uh=qb.uh.slice(0,3);}}catch(e){}
 var TOASTN=0,NTF=[],SES={t0:Date.now(),k0:0,g0:null,l0:null,x0:null,dm:0,gd:0,it:0,ml:0,pt:0,v:0};function showHeaderMessage(name,message){const el=$('msghead');if(!el)return;el.textContent='✉️ '+String(name||'Jugador')+': '+String(message||'').slice(0,180);el.hidden=false;el.classList.add('show');clearTimeout(window._srMsgHeadTimer);window._srMsgHeadTimer=setTimeout(()=>{el.classList.remove('show');el.hidden=true},6500)}
-function toast(m,ms=2200){const msg=String(m==null?'':m);const noisy=/(conectando con el servidor|mundo online conectado|reconectando|servidor conectado|intentando conectar|conexi[oó]n establecida|conexi[oó]n recuperada)/i.test(msg);if(noisy)return;TOASTN++;try{if(msg.length>2){NTF.unshift({t:Date.now(),m:msg.slice(0,160)});if(NTF.length>60)NTF.length=60}}catch(e){}const keep=/(devuelt|libera espacio|subiste|nivel|level up|\bXP\b|experiencia|\boro\b|monedas|🪙|💰|recompensa|no puedes|no tienes|no se pudo|error|fall[oó]|inv[aá]lido|inventario lleno|insuficiente|no disponible|versi[oó]n vieja|desconectado|compra|venta|almac[eé]n|poci[oó]n|no existe|necesitas|faltan|te falta|pide |ya tiene|ya est[aá]|adelant|sin conexi[oó]n con el servidor: las vetas)/i.test(msg);if(!keep)return;const t=$('toast');t.textContent=m;const x=document.createElement('b');x.textContent='✕';x.style.cssText='margin-left:10px;padding:0 4px;cursor:pointer;opacity:.75;pointer-events:auto';x.onclick=e=>{e.stopPropagation();clearTimeout(tt);t.style.opacity=0;t.style.pointerEvents='none'};t.appendChild(x);t.style.pointerEvents='auto';t.style.opacity=1;clearTimeout(tt);tt=setTimeout(()=>{t.style.opacity=0;t.style.pointerEvents='none'},ms)}
+function toast(m,ms=2200){const msg=String(m==null?'':m);const noisy=/(conectando con el servidor|mundo online conectado|reconectando|servidor conectado|intentando conectar|conexi[oó]n establecida|conexi[oó]n recuperada)/i.test(msg);if(noisy)return;TOASTN++;try{if(msg.length>2){NTF.unshift({t:Date.now(),m:msg.slice(0,160)});if(NTF.length>60)NTF.length=60}}catch(e){}const keep=/(🎁|🐴|🛡️|💎|⚡|entregad|ning[uú]n jugador|no v[aá]lid|demasiad|muchos pedidos|no est[aá] activad|solo el master|orden|devuelt|libera espacio|subiste|nivel|level up|\bXP\b|experiencia|\boro\b|monedas|🪙|💰|recompensa|no puedes|no tienes|no se pudo|error|fall[oó]|inv[aá]lido|inventario lleno|insuficiente|no disponible|versi[oó]n vieja|desconectado|compra|venta|almac[eé]n|poci[oó]n|no existe|necesitas|faltan|te falta|pide |ya tiene|ya est[aá]|adelant|sin conexi[oó]n con el servidor: las vetas)/i.test(msg);if(!keep)return;const t=$('toast');t.textContent=m;const x=document.createElement('b');x.textContent='✕';x.style.cssText='margin-left:10px;padding:0 4px;cursor:pointer;opacity:.75;pointer-events:auto';x.onclick=e=>{e.stopPropagation();clearTimeout(tt);t.style.opacity=0;t.style.pointerEvents='none'};t.appendChild(x);t.style.pointerEvents='auto';t.style.opacity=1;clearTimeout(tt);tt=setTimeout(()=>{t.style.opacity=0;t.style.pointerEvents='none'},ms)}
 const K={};
 addEventListener('keydown',e=>{if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName))return;const k=e.key.toLowerCase();K[k]=1;if(k==' '&&!(e.repeat&&P.cls<2))atk();if(modal)return;if(k=='e'){if(intKey())return;const n=npcAt(P,70);if(n)talk(n);else if(nearCanje())canjeM();else openM()}if(k=='q')usePot();if(k=='f'||k=='1')qsKey(0);if(k=='v')qsSwitch();if(k=='m')mountToggle();if(k=='r')RUN=RUN?0:1;if(k=='2')qsKey(1);if(k=='3')qsKey(2);if(SKK[k]!=null)skill(SKK[k]);if(k=='g')grab(90)});
 addEventListener('keyup',e=>K[e.key.toLowerCase()]=0);
@@ -1506,7 +1506,7 @@ function dropLbl(loot,i,it){return DRPT&&DRPT.k==dropKey(loot,i,it)&&Date.now()-
 function itDrop(i,loot){const L=loot?P.lb:P.bag,it=L[i];if(!it)return;const k=dropKey(loot,i,it);
  if(!DRPT||DRPT.k!==k||Date.now()-DRPT.t>4000){DRPT={k,t:Date.now()};toast('🗑️ Pulsa otra vez para tirar «'+it.n+'» para siempre',2800);heroM();return}
  DRPT=null;L.splice(i,1);toast('🗑️ Tiraste '+it.n,2500);vib(30);save();heroM()}
-function dropItem(t){if(P.bag.length>=BCAP()){toast('Mochila llena: botín perdido');return}const it=Math.random()<.05?mkJwDrop(t):genItem(t);P.bag.push(it);toast('🎁 '+it.n+' ('+RN[it.r]+')',3200)}
+function dropItem(t){if(P.bag.length>=BCAP()){if(Date.now()-(window.__fullT||0)>3500){window.__fullT=Date.now();FT.push({x:P.x,y:P.y-30,t:1.7,d:0,o:0,k:'xp',s:'🎒 Mochila llena',c:'#ff9a8a'})}return}const it=Math.random()<.05?mkJwDrop(t):genItem(t);P.bag.push(it);toast('🎁 '+it.n+' ('+RN[it.r]+')',3200)}
 function reEq(){P.mhp=mhpOf();P.hp=Math.min(P.hp,P.mhp);save();heroM()}
 function equip(i){if(P.bag[i]&&P.bag[i].rl&&P.lv<P.bag[i].rl){toast('🔒 Requiere nivel '+P.bag[i].rl);return}const it=P.bag.splice(i,1)[0];if(!it)return;let tk=it.sl;if(tk==7&&P.eq[7]&&!P.eq[10])tk=10;const o=P.eq[tk];P.eq[tk]=it;if(o)P.bag.push(o);reEq()}
 function eqScore(x){if(!x)return 0;const s=sgOf(x);return((x.dm||0)*4+(x.hp||0)*.1+(x.sp||0)+(x.gd||0)+(x.mp||0)*.1)*s}
@@ -4114,7 +4114,7 @@ function popKill(e,xp,l){const a=[['xp','+'+xp+' XP','#8fd3ff']],au=pa('lt');if(
 function grab(rad,q){let n=0,g=0,ml=0;const nf=[],its=[],AF=(q===0&&rad>=9999)?LF:null;const zz=LZ();if(rad>=9999)rad=1400;for(let i=LT.length-1;i>=0;i--){const l=LT[i];if((l.z||'')!==zz)continue;if(Math.hypot(l.x-P.x,l.y-P.y)>=rad)continue;n++;if(!AF||AF.gd){g+=l.gd;P.gold+=l.gd;l.gd=0}if(l.ml&&(!AF||AF.ml)){P.fd[HRK[(l.mg||1)-1]]+=l.ml;P.st.meat=(P.st.meat|0)+l.ml;ml+=l.ml;l.ml=0}
   if(l.it&&(!AF||AF.it)){if(lootAdd(l.it)){its.push(l.it);l.it=null}else nf.push(l.it)}
   if(!l.it&&!l.gd&&!l.ml)LT.splice(i,1)}
- if(nf.length&&Date.now()-(window.__fullT||0)>3500){window.__fullT=Date.now();const jk=nf.some(x=>x.junk),bg=nf.some(x=>!x.junk);toast((bg&&jk?'🎒🧺 Mochila y bolsa de loot llenas':jk?'🧺 Bolsa de loot llena':'🎒 Mochila llena')+' — no se pudo recoger: '+nf.slice(0,4).map(x=>hx(x.n)).join(', ')+(nf.length>4?' y '+(nf.length-4)+' más':'')+'. Siguen en el suelo unos minutos: libera espacio o véndelos.',5500);vib([40,40]);nf.slice(0,3).forEach((it,i)=>FT.push({x:P.x,y:P.y-22,t:1.8,d:i*.15,o:i*15,k:'it',s:'✖ '+it.n,c:'#ff6a5a',it}))}
+ if(nf.length&&Date.now()-(window.__fullT||0)>3500){window.__fullT=Date.now();const jk=nf.some(x=>x.junk),bg=nf.some(x=>!x.junk);/* v394: solo un aviso corto encima del personaje, sin lista de objetos ni ventana */FT.push({x:P.x,y:P.y-30,t:1.7,d:0,o:0,k:'xp',s:(bg&&jk?'🎒🧺 Mochila y bolsa llenas':jk?'🧺 Bolsa de loot llena':'🎒 Mochila llena'),c:'#ff9a8a'})}
  SES.gd+=g;SES.it+=its.length;SES.ml+=ml;
  if(n&&(g||its.length||ml)){P.tc.lt++;if(q!==0){const a=[];if(ml)a.push(['xp','+'+ml+' 🥩 carne','#ffb3a0']);if(g)a.push(['gd','+'+g+' 🪙','#ffd666']);its.forEach(it=>a.push(['it','+ '+it.n,RC[it.r],it]));a.forEach((z,i)=>FT.push({x:P.x,y:P.y-22,t:1.6,d:i*.14,o:i*15,k:z[0],s:z[1],c:z[2],it:z[3]}))}vib(15);chk()}return n}
 /* ===== GEMAS: pago de Premium/VIP, atuendos, transferencias y usuario master ===== */
@@ -4531,6 +4531,7 @@ function gmAct(a,b){const i=a.indexOf(':'),k=i<0?a:a.slice(0,i),v=i<0?'':a.slice
  else if(k=='so')gmSendGold()
  else if(k=='sb')gmGiveBag()
  else if(k=='pyb')payOpen(+v)
+ else if(k=='pyv'){if(PYS.o)payShow()}
  else if(k=='pyr')payRvLoad()
  else if(k=='pyc')payRvOk(v,1)
  else if(k=='pyd')payRvOk(v,0)
@@ -4701,11 +4702,9 @@ function gmPayHtml(){const pid=GPAY.id||BNID,ok=pid&&!String(pid).startsWith('PO
  <div class="bps"><i>3</i><div><b>Envía el comprobante</b><button class="bpb" data-h="gm_send">📨 Enviar comprobante</button>${PAYWA?'<button class="bpb wa" data-h="gm_wa">💬 Enviar por WhatsApp</button>':''}<div class="gbox" style="margin:8px 0"><b>⏱️ Verificación manual</b><br><small>Al enviar el comprobante se abre tu WhatsApp con el mensaje listo: solo dale enviar y adjunta tu captura. Cada pago se verifica a mano: confirmarlo y acreditar tus gemas puede tardar unos minutos. No envíes el comprobante dos veces; verás el estado abajo en cuanto se apruebe.</small></div>${DB||PAYWA?'':'<br><small>⚠️ Sin conexión al servidor: aún no se pueden enviar comprobantes desde este navegador.</small>'}</div></div></div>`}
 async function gmSlLoad(){if(!ONL()||GM.slb)return;GM.slb=1;try{const r=await SRNET.rpc({t:'x',op:'gem.log'});GM.sl=r.l||[]}catch(e){}GM.slb=0;GM.slt=Date.now();if(!$('hero').hidden&&HT==5)heroM()}
 function gmTabHtml(){if(ONL()&&(!GM.slt||Date.now()-GM.slt>30000))gmSlLoad();const pid=GPAY.id||BNID,mine=Object.entries(GREQ).sort((a,b)=>b[1].ts-a[1].ts).slice(0,6),stl={p:'⏳ pendiente',a:'✅ aprobada',r:'❌ rechazada'};
- const S={};S.reg=`<div class="gbox gwarn"><h3>📜 Reglas de las gemas</h3><small>• <b>1 💎 = 1 USDT</b> por Binance Pay. Se acreditan cuando el master confirma tu comprobante.<br>• Todas las gemas valen para <b>todo</b>: Premium, VIP, Licencia, Combo, Escolta, boletos, gremios, apariencias, trajes y Bonus (XP, oro, defensa, vida).<br>• Puedes <b>transferir</b> gemas a otro jugador: las que recibe valen exactamente igual que las tuyas.<br>• 💎 También puedes comprar y vender gemas con otros jugadores (por oro) en la <b>Carpa del Mercado de Gemas</b>: son gemas normales, sirven para todo.${rsD()?'<br>• 🏷️ <b>Eres revendedor: pagas '+rsD()+'% menos</b> al comprar gemas.':''}${bfRule()}</small></div>`
+ const S={};S.reg=`<div class="gbox gwarn"><h3>📜 Reglas de las gemas</h3><small>• <b>1 💎 = 1 USDT</b> por Binance Pay. Pago <b>automático</b>: se acreditan solas en segundos cuando Binance recibe tu pago exacto.<br>• Todas las gemas valen para <b>todo</b>: Premium, VIP, Licencia, Combo, Escolta, boletos, gremios, apariencias, trajes y Bonus (XP, oro, defensa, vida).<br>• Puedes <b>transferir</b> gemas a otro jugador: las que recibe valen exactamente igual que las tuyas.<br>• 💎 También puedes comprar y vender gemas con otros jugadores (por oro) en la <b>Carpa del Mercado de Gemas</b>: son gemas normales, sirven para todo.${rsD()?'<br>• 🏷️ <b>Eres revendedor: pagas '+rsD()+'% menos</b> al comprar gemas.':''}${bfRule()}</small></div>`
  ;S.sal=`<div class="gbox"><h3>💎 Tu saldo</h3><b>Gemas: ${gmTot()}</b> <small>(valen para todo: Premium, VIP, boletos, atuendos…)</small><br><small>Tu código de jugador:</small><br><b style="word-break:break-all">${UID?hx(UID):'sin sesión'}</b>${UID?' <button data-h="gm_cpu">Copiar</button>':''}</div>`
- ;S.com=`${payBox()}<div class="gbox"><h3>💎 Comprar gemas</h3><div class="gpk2">${GPK.map((k,i)=>{const q=gmCalc(k.g);return `<button class="gpc${String(GM.u)===String(k.g)?' sel':''}" data-h="gm_pk:${i}">${gemSvg(k.g)}<b>${q.t} 💎</b><small>${k.g} USDT</small>${q.pb>0?`<small class="bfb">🔥 +${q.pb} de bono</small>`:''}</button>`}).join('')}</div><details><summary><small>Otra cantidad</small></summary><small>Pagas (USDT)</small><input class="gin" id="gu" type="number" min="${GMIN}" max="${GMAX}" inputmode="numeric" placeholder="Ej: 20" value="${hx(GM.u)}"><small>o gemas que quieres recibir</small><input class="gin" id="gg" type="number" min="1" inputmode="numeric" placeholder="Ej: 20" value="${hx(GM.g)}"></details><div class="gres" id="gres">${gmRes()}</div>`
- +gmPayHtml()
- +(mine.length?`<br><b>📋 Mis solicitudes</b><div class="bsts">${mine.map(([,r])=>`<span>${gmDate(r.ts)} · ${usd(+r.usdt||0)} USDT → ${gmReqG(r)} 💎${r.pm&&r.pm.b>0?' 🔥':''} · ${stl[r.st]||''}</span>`).join('')}</div>`:'')+`</div>`
+ ;S.com=`${payBox()}<div class="gbox"><small>💎 <b>1 gema = 1 USDT</b>. Pagas por <b>Binance Pay</b> el monto exacto que te muestra el juego y tus gemas llegan solas en segundos, sin enviar comprobantes ni esperar a nadie.${rsD()?'<br>🏷️ Eres revendedor: pide al master tu descuento manual.':''}</small></div>`
  ;S.vip=`<div class="gbox"><h3>👑 VIP y planes</h3><small>Combo Cazador, Escolta, Licencia de Mercader y VIP: se pagan con tus 💎. La Bendición ahora se compra con oro en la ⛪ Iglesia.</small><div class="row2"><button class="best" data-h="gm_vip">👑 Ver VIP y planes</button><button data-h="t13">🛍️ Boutique</button></div></div>`
  ;S.tra=`<div class="gbox"><h3>🔁 Transferir gemas</h3><small>Las gemas que envíes valen para todo, igual que las tuyas. No se pueden devolver.</small><input class="gin" id="gtc" placeholder="Código del jugador" value="${hx(GM.tc)}"><input class="gin" id="gtq" type="number" min="1" inputmode="numeric" placeholder="Cantidad" value="${hx(GM.tq)}"><button data-h="gm_tx" style="width:100%">Transferir</button></div>`
  ;S.tk=tkBox()
@@ -4714,7 +4713,7 @@ function gmTabHtml(){if(ONL()&&(!GM.slt||Date.now()-GM.slt>30000))gmSlLoad();con
 function gmSeg(S){const mk=`<div class="gbox"><h3>💱 Mercado de Gemas</h3><small>Compra y vende gemas con otros jugadores pagando con oro 🪙. Las gemas que compras valen para <b>todo</b> (apariencias, VIP, Bonus, boletos…). Comisión 3%.</small><div class="row2"><button class="best" data-h="gm_gk">💱 Abrir el mercado</button></div><small>También puedes ir a la carpa del Mercado de Gemas en la ciudad.</small></div>`;
  const SEC=[['sal','💎','Saldo',S.sal+S.vip+(S.tk||'')],['com','🛒','Comprar',S.com],['tra','🔁','Transferir',S.tra],['mkt','💱','Mercado',mk],['mov','🧾','Historial',S.mov||'<div class="gbox"><small>Aún no hay movimientos.</small></div>'],['reg','📜','Reglas',S.reg]];if(S.mst)SEC.push(['mst','👑','Master',S.mst]);
  const cur=SEC.find(x=>x[0]==GM.sec)||SEC[0];
- return `<div class="gmhd"><span class="pl">${gemSvg(1,18)} Gemas <b>${gmTot()}</b></span><span class="pl">🪙 ${fmt(P.gold)}</span></div><div class="gmseg">${SEC.map(x=>`<button data-h="gm_sec:${x[0]}" class="${x===cur?'on':''}"><i>${x[1]}</i><span>${x[2]}</span></button>`).join('')}</div><div class="gmbody">${(cur[0]=='sal'||cur[0]=='com')?bfBanner():''}${cur[3]}</div>`}
+ return `<div class="gmhd"><span class="pl">${gemSvg(1,18)} Gemas <b>${gmTot()}</b></span><span class="pl">🪙 ${fmt(P.gold)}</span></div><div class="gmseg">${SEC.map(x=>`<button data-h="gm_sec:${x[0]}" class="${x===cur?'on':''}"><i>${x[1]}</i><span>${x[2]}</span></button>`).join('')}</div><div class="gmbody">${(cur[0]=='sal')?bfBanner():''}${cur[3]}</div>`}
 $('hero').addEventListener('input',e=>{const t=e.target,M={gu:'u',gg:'g',gref:'ref',gtc:'tc',gtq:'tq',gpw:'pw',gcc:'cc',gcn:'cn',gcq:'cq',gog:'og',gbg:'bgs',gik:'ik',gxs:'xs',gxk:'xk',gxt:'xt',gxl:'xl',gxr:'xr',gxrl:'xrl',gxu:'xu',gig:'ig',gpt:'pt',gpq:'pq',gpn2:'pnm',gpg:'pg',gpo:'po',gph:'ph',gph2:'ph2',gpid:'pid',grn1:'rn1',grn2:'rn2',gbn:'bn',grd:'rd',gbs:'bs',gfq:'fq',gea:'eaw',gmkn:'mkn',gmkp:'mkp',glvn:'lvn',glvv:'lvv',gpm1:'pm1',gpm2:'pm2',gpmc:'pmc',gpd0:'pd0',gpd1:'pd1',gpd2:'pd2'}[t.id];if(!M)return;GM[M]=t.value;
  if(t.id=='gu'){const c=gmCalc(t.value),g=$('gg');GM.g=c.t?String(c.t):'';if(g)g.value=GM.g;const r=$('gres');if(r)r.innerHTML=gmRes()}
  else if(t.id=='gg'){const u=gmUsdt(t.value),el=$('gu');GM.u=u?String(u):'';if(el)el.value=GM.u;const r=$('gres');if(r)r.innerHTML=gmRes()}});
@@ -8915,13 +8914,17 @@ html #toast b{display:none!important}
 
 <script id="v394-pay">
 /* v394: COBRO AUTOMÁTICO EN USDT — el servidor genera la orden, calcula las gemas y las acredita; aquí solo se muestra la ventana y se consulta el estado */
-var PYS={o:null,end:0,tm:0,pl:0,lastSt:'',stop:0,packs:[1,3,5,10],pid:'',on:null};
+var PYS={o:null,end:0,tm:0,pl:0,lastSt:'',stop:0,packs:[{b:1,g:1},{b:3,g:3},{b:5,g:5},{b:10,g:10},{b:20,g:20},{b:50,g:50}],pid:'',on:null,ld:0};
 function payEsc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-function payBox(){try{if(PYS.on===false)return '';var b=PYS.packs.map(function(k){return '<button class="gpc" data-h="gm_pyb:'+k+'"><b>'+k+' 💎</b><small>'+k+' USDT</small></button>'}).join('');
- return '<div class="gbox gok"><h3>⚡ Pago automático (USDT)</h3><small>Paga por Binance y tus gemas llegan solas en segundos. Sin esperar a nadie.</small><div class="gpk2">'+b+'</div></div>'}catch(e){return ''}}
-async function payInit(){try{if(!(typeof ONL=='function'&&ONL()))return;var r=await SRNET.rpc({t:'x',op:'pay.packs'});PYS.on=!!r.on;PYS.pid=r.pid||'';if(r.packs&&r.packs.length)PYS.packs=r.packs.map(function(x){return x.b});
- var m=await SRNET.rpc({t:'x',op:'pay.mine'});if(m&&m.id&&m.st=='p'&&!PYS.o){PYS.o=m;PYS.end=Date.now()+m.left;payShow(1)}}catch(e){}}
-setTimeout(function(){payInit()},6000);
+function payBox(){try{if(PYS.on===null&&!PYS.ld){PYS.ld=1;setTimeout(payInit,50)}
+ var act=PYS.o&&PYS.o.st=='p'&&PYS.end>Date.now()?'<button class="best" data-h="gm_pyv" style="width:100%;margin:6px 0">⏳ Tienes una orden activa: ver el pago ('+payEsc(PYS.o.amt)+' USDT)</button>':'';
+ if(PYS.on===false)return '<div class="gbox gwarn"><h3>⚡ Pago automático</h3><small>El pago automático no está disponible en este momento. Intenta de nuevo en unos minutos.</small></div>';
+ var b=PYS.packs.map(function(k){return '<button class="gpc" data-h="gm_pyb:'+k.b+'">'+gemSvg(k.g)+'<b>'+k.g+' 💎</b><small>'+k.b+' USDT</small>'+(k.pb>0?'<small class="bfb">🔥 +'+k.pb+' de bono</small>':'')+'</button>'}).join('');
+ var pr='';try{var c=bfCfg(),n=Date.now(),ph=bfPh(n);if(ph>0)pr='<div class="gbox gwarn" style="margin:6px 0"><small>🔥 <b>Black Friday activo</b>: +'+(ph==1?c.p1:c.p2)+'% de gemas en tus primeros '+c.cap+' USDT.</small></div>';else if(c.on&&n<c.t0)pr='<div class="gbox gwarn" style="margin:6px 0"><small>🔥 <b>Black Friday</b> empieza en '+bfLeft(c.t0-n)+' (+'+c.p1+'% de gemas, luego +'+c.p2+'%).</small></div>'}catch(e){}
+ return '<div class="gbox gok"><h3>⚡ Comprar gemas · pago automático</h3><small>Elige un paquete, paga por Binance Pay y tus gemas llegan solas.</small>'+pr+act+'<div class="gpk2">'+b+'</div></div>'}catch(e){return ''}}
+async function payInit(){try{if(!(typeof ONL=='function'&&ONL()))return;var r=await SRNET.rpc({t:'x',op:'pay.packs'});PYS.on=!!r.on;PYS.pid=r.pid||'';if(r.packs&&r.packs.length)PYS.packs=r.packs;
+ var m=await SRNET.rpc({t:'x',op:'pay.mine'});if(m&&m.id&&m.st=='p'&&!PYS.o){PYS.o=m;PYS.end=Date.now()+m.left}}catch(e){PYS.on=null;PYS.ld=0;return}try{if(typeof heroM=='function'&&!document.getElementById('hero').hidden)heroM()}catch(e){}}
+
 function payCopy(txt,btn){var ok=function(){if(btn){btn.textContent='¡Copiado!';btn.classList.add('ok');setTimeout(function(){btn.textContent='Copiar';btn.classList.remove('ok')},1800)}};
  var fb=function(){try{var t=document.createElement('textarea');t.value=txt;t.setAttribute('readonly','');t.style.cssText='position:fixed;left:-9999px;top:0;opacity:0;font-size:16px';document.body.appendChild(t);t.focus();t.select();t.setSelectionRange(0,99999);var r=document.execCommand('copy');document.body.removeChild(t);if(r)ok();else if(btn)btn.textContent='Copia a mano'}catch(e){if(btn)btn.textContent='Copia a mano'}};
  try{if(navigator.clipboard&&navigator.clipboard.writeText&&window.isSecureContext){navigator.clipboard.writeText(txt).then(ok,fb)}else fb()}catch(e){fb()}}
@@ -8929,13 +8932,13 @@ function payCss(){if(document.getElementById('pycss'))return;var st=document.cre
 function payShow(first){payCss();var m=document.getElementById('payM');if(!m){m=document.createElement('div');m.id='payM';document.body.appendChild(m)}m.style.display='flex';payRender();clearInterval(PYS.tm);PYS.tm=setInterval(payTick,1000);clearInterval(PYS.pl);PYS.pl=setInterval(payPoll,4000);payPoll()}
 function payClose(){var m=document.getElementById('payM');if(m)m.style.display='none';clearInterval(PYS.tm);clearInterval(PYS.pl)}
 function payRender(){var m=document.getElementById('payM'),o=PYS.o;if(!m||!o)return;var paid=o.st=='paid';
- m.innerHTML='<div class="pp"><h2>⚡ Pago en USDT · '+payEsc(o.g)+' 💎</h2>'
+ m.innerHTML='<div class="pp"><h2>⚡ Pago en USDT · '+payEsc(o.g)+' 💎'+(o.pb>0?' <small style="color:#ffb86b">(incluye +'+payEsc(o.pb)+' de bono 🔥)</small>':'')+'</h2>'
  +'<div class="am"><b id="pyAmt">'+payEsc(o.amt)+'</b><small>USDT</small><button id="pyCp">Copiar</button></div>'
  +'<div class="cd" id="pyCd">--:--</div>'
  +'<div class="wr">⚠️ Paga exactamente este monto, ni más ni menos.</div>'
  +'<ol><li><b>Copia el monto exacto</b> (botón de arriba).</li><li><b>Abre Binance</b> y paga esa cantidad en USDT con <b>Binance Pay</b> a esta cuenta: <span class="pid">'+payEsc(o.pid||PYS.pid)+' <button id="pyCi">Copiar</button></span></li><li><b>Espera aquí</b>, tus gemas llegan solas en unos segundos.</li></ol>'
  +'<div class="stt" id="pySt"></div>'
- +'<div style="display:flex;gap:8px;justify-content:center;margin-top:10px"><button id="pyNew" style="display:none">🔄 Crear otra orden</button><button id="pyX">'+(paid?'Listo':'Cerrar (la orden sigue activa)')+'</button></div></div>';
+ +'<div class="pbt" style="display:flex;gap:8px;justify-content:center;margin-top:10px"><button id="pyNew" style="display:none">🔄 Crear otra orden</button><button id="pyX">'+(paid?'Listo':'Cerrar (la orden sigue activa)')+'</button></div></div>';
  document.getElementById('pyCp').onclick=function(){payCopy(String(o.amt),this)};
  document.getElementById('pyCi').onclick=function(){payCopy(String(o.pid||PYS.pid),this)};
  document.getElementById('pyX').onclick=payClose;document.getElementById('pyNew').onclick=function(){payOpen(o.base||o.b)};payTick()}
@@ -8959,6 +8962,47 @@ function payRvHtml(){var r=PYR,h='<h3>💳 Pagos por revisar</h3><small>Pagos de
  if(!(r.l||[]).length)return h+'<small>✅ No hay pagos por revisar.</small>';
  return h+r.l.map(function(x){var d=new Date(x.ts).toLocaleString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});return '<div class="gbox gwarn"><b>'+(x.c/100).toFixed(2)+' USDT</b> · '+d+'<br><small>'+payEsc(x.why)+(x.nm?' · '+payEsc(x.nm):'')+'</small><br><small>Tx: '+payEsc(x.tx)+'</small><div class="row2">'+(x.oid?'<button data-h="gm_pyc:'+payEsc(x.tx)+'">💎 Acreditar</button>':'')+'<button data-h="gm_pyd:'+payEsc(x.tx)+'">✔ Resuelto</button></div></div>'}).join('')}
 </script>
+
+<style id="v394-compact">
+/* v394: PANTALLAS BAJITAS (celular horizontal): cabecera y menú compactos, sin panel lateral vacío, menos «zoom» */
+@media (orientation:landscape) and (max-height:520px){
+ html #hero{display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto minmax(0,1fr) auto!important}
+ html #hero #zt,html #hero #ztabs,html #hero #zc,html #hero #zd{grid-column:1!important}
+ html #hero #zt{grid-row:1!important;display:flex!important;align-items:center!important;gap:8px!important;min-height:0!important;height:36px!important;padding:2px 10px!important}
+ html #hero #zt .zl{display:flex!important;align-items:center!important;gap:6px!important;flex:1!important;min-width:0!important}
+ html #hero #zt .zbars{display:flex!important;flex-direction:row!important;gap:4px!important;width:auto!important}
+ html #hero #zt .zbars .b{width:84px!important;height:15px!important;min-height:0!important;margin:0!important;border-radius:8px!important}
+ html #hero #zt .zbars .b em{font-size:9.5px!important;line-height:15px!important}
+ html #hero #zt .pl,html #hero #zt .who{padding:1px 8px!important;font-size:12px!important}
+ html #hero #zt .zttl{display:none!important}
+ html #hero #zt .zr{margin-left:auto!important}
+ html #hero #zt button{width:26px!important;height:26px!important;font-size:12px!important}
+ html #hero #ztabs{grid-row:2!important;gap:3px!important;padding:3px 8px 4px!important}
+ html #hero #ztabs .tg button{min-height:28px!important;min-width:0!important;padding:2px 10px!important;font-size:12px!important;gap:5px!important;border-radius:10px!important}
+ html #hero #ztabs .ts button{min-height:24px!important;padding:1px 10px!important;font-size:11px!important}
+ html #hero #ztabs button i{font-size:14px!important}
+ html #hero #zc{grid-row:3!important;padding:6px 12px!important;zoom:.9}
+ html #hero #zd{grid-row:4!important;border-left:0!important;border-top:1px solid #d9a44166!important;padding:3px 10px!important;font-size:11px!important}
+ html #hero:not(:has(#zd button,#zd img,#zd canvas,#zd input,#zd select)) #zd{display:none!important}
+ html #hero .gmhd{display:none!important}
+ html #hero .gmhd{margin:0 0 4px!important}html #hero .gmhd .pl{padding:2px 10px!important;font-size:12px!important}
+ html #hero .gmseg{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;gap:5px!important;margin-bottom:6px!important;scrollbar-width:none}
+ html #hero .gmseg button{flex:0 0 auto!important;flex-direction:row!important;gap:5px!important;padding:3px 10px!important;border-radius:999px!important;border-bottom-width:1px!important}
+ html #hero .gmseg button i{font-size:14px!important}html #hero .gmseg button span{font-size:11px!important}
+ html #hero .gbox{padding:8px 10px!important;margin:6px 0!important}html #hero .gbox h3{font-size:14px!important}
+ html #hero .gpk2{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(104px,1fr))!important;gap:6px!important}
+ html #hero .gpc{padding:6px 4px!important}
+ /* ventana de pago en 2 columnas */
+ #payM .pp{width:min(780px,100%)!important;display:grid!important;grid-template-columns:1fr 1fr;gap:4px 16px;padding:10px 14px!important;align-items:start}
+ #payM h2{grid-column:1/3;margin:0!important;font-size:15px!important}
+ #payM .am{grid-column:1;grid-row:2;margin:0!important}#payM .am b{font-size:32px!important}
+ #payM .cd{grid-column:1;grid-row:3;font-size:34px!important}
+ #payM .stt{grid-column:1;grid-row:4;font-size:14px!important;padding:5px!important}
+ #payM .pbt{grid-column:1;grid-row:5;margin-top:4px!important}
+ #payM .wr{grid-column:2;grid-row:2;margin:0!important;font-size:13px!important;padding:5px 8px!important}
+ #payM ol{grid-column:2;grid-row:3/6;margin:0!important;font-size:12.5px!important;line-height:1.4!important}
+}
+</style>
 </body>
 
 </html>

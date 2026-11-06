@@ -90,7 +90,8 @@ S.onDeliver=u=>{try{if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}};
 AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster,prim:u=>E.prim(u),refOk:c=>!!((DB.inf||{})[c])});
 const TR=require('./terr')(S,E);
 const SD=require('./seda')(S,E);
-const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops);
+const PY=require('./pay')(S,E,{PAY_ID});
+const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops,PY.ops);
 /* Acceso anticipado: solo el master. */
 OPS['adm.lv']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const n=String(m.who||'').trim().toLowerCase().slice(0,40),lv=Math.floor(+m.lv);if(!n)return{e:'Escribe el nombre del jugador'};if(!(lv>=1&&lv<=E.CFG.lvMax))return{e:'Nivel entre 1 y '+E.CFG.lvMax};
  let id=E.uidByName(n);if(!id)for(const k in (ECO.acc||{})){const q=ECO.acc[k];if(q&&[q.nm,q.pn].some(x=>x&&String(x).toLowerCase()===n)){id=k;break}}
@@ -329,3 +330,4 @@ function maintTick(){if(!MT)return;const now=Date.now();if(now>MT.until){MT=null
 setInterval(maintTick,1000);
 
 srv.listen(PORT,()=>console.log('Silk Road server en puerto',PORT));
+try{PY.start()}catch(e){log('[pay] no arrancó: '+e)}

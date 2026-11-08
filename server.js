@@ -90,8 +90,9 @@ S.onDeliver=u=>{try{if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}};
 AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster,prim:u=>E.prim(u),refOk:c=>!!((DB.inf||{})[c])});
 const TR=require('./terr')(S,E);
 const SD=require('./seda')(S,E);
+const TB=require('./tablon')(S,E,{SO});   /* v398: Tablón de la Ruta (misiones globales «gana el primero») */
 const PY=require('./pay')(S,E,{PAY_ID});
-const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops,PY.ops);
+const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops,TB.ops,PY.ops);
 /* Acceso anticipado: solo el master. */
 OPS['adm.lv']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const n=String(m.who||'').trim().toLowerCase().slice(0,40),lv=Math.floor(+m.lv);if(!n)return{e:'Escribe el nombre del jugador'};if(!(lv>=1&&lv<=E.CFG.lvMax))return{e:'Nivel entre 1 y '+E.CFG.lvMax};
  let id=E.uidByName(n);if(!id)for(const k in (ECO.acc||{})){const q=ECO.acc[k];if(q&&[q.nm,q.pn].some(x=>x&&String(x).toLowerCase()===n)){id=k;break}}
@@ -209,7 +210,7 @@ function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').spli
 const srv=http.createServer((q,r)=>{if(String(q.url||'').split('?')[0]==='/maint'){maintHttp(q,r);return}if(String(q.url||'').split('?')[0]==='/launch'){r.writeHead(200,{'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'*'});r.end(JSON.stringify({at:LAUNCH_AT,now:Date.now()}));return}if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain; charset=utf-8','cache-control':'no-store'});r.end(statusText())});
 const wss=new WebSocketServer({server:srv,maxPayload:450000});
 const world=require('./world')(DB,log,{
- lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),bdg:u=>bdgOf(u),pv:u=>true,fee:(u,n)=>{const a=E.acct(u);if(!(E.avail(a,'gold')>=n))return false;E.deliver(u,{gold:-n,note:'🏛️ Entrada al Coliseo (−'+n+' 🪙)'});return true},pay:(u,n,note)=>{E.deliver(u,{gold:n,note})},kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),przok:k=>MK.prizeOk(k),prz:(u,k,q,n)=>MK.grant(u,k,q,n),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',
+ lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),bdg:u=>bdgOf(u),pv:u=>true,fee:(u,n)=>{const a=E.acct(u);if(!(E.avail(a,'gold')>=n))return false;E.deliver(u,{gold:-n,note:'🏛️ Entrada al Coliseo (−'+n+' 🪙)'});return true},pay:(u,n,note)=>{E.deliver(u,{gold:n,note})},mk:(u,ty,kd,dy)=>TB.onKill(u,ty,kd,dy),kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),przok:k=>MK.prizeOk(k),prz:(u,k,q,n)=>MK.grant(u,k,q,n),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',
  /* v391: ANTORCHA DE ESTACA: el mundo cobra la antorcha de la cuenta al clavarla (el servidor descuenta; el cliente solo recibe la entrega) */
  tch:u=>{const a=E.acct(u);if(!(E.avail(a,'prov','ant')>=1))return false;E.deliver(u,{prov:{pk:'ant',q:-1},note:'🔥 Clavaste una antorcha de estaca'});return true},tjoin:u=>{try{TR.join(u)}catch(e){log('terr join '+e.message)}},
  look:u=>{const a=E.acct(u);return{lv:a.lv,gt:GD.tagOf(u),sk:a.sk}},

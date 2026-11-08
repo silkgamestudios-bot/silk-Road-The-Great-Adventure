@@ -12,7 +12,7 @@
 | `PAY_POLL_MS` (opcional) | 8000 (consulta a Binance solo si hay órdenes pendientes; si no, 1 vez por minuto) |
 
 En Binance, la API key necesita solo **Enable Reading** (la consulta es `GET /sapi/v1/pay/transactions`, historial de Binance Pay).
-Al arrancar, el log de Render dice `[pay] pagos automáticos ACTIVOS`.
+Al arrancar, el log de Render dice `[pay] pagos automáticos ACTIVOS`. (v401: apenas se crea una orden el servidor consulta a Binance en seguida; el jugador ve sus gemas a los pocos segundos de pagar, ya no hay que esperar el minuto de reposo.)
 
 ## Cómo funciona
 1. Jugador → Comprar gemas → ⚡ Pago automático → elige paquete (ej. 10 USDT).
@@ -30,7 +30,9 @@ Al arrancar, el log de Render dice `[pay] pagos automáticos ACTIVOS`.
 ## Margen y comisión
 - El jugador paga entre base−descuento máximo y base−0,01. Con base 10 recibes mínimo 9,51; con base 1, mínimo 0,95. Ajusta `PAY_PACKS` o los precios base si quieres otro mínimo.
 - Haz primero un pago real pequeño (paquete de 1 USDT: llega entre 0,95 y 0,99) y confirma que en tu cuenta entra exactamente ese monto. Binance Pay entre usuarios normalmente no cobra comisión al que recibe.
-- El bono de la promo y el descuento de revendedor NO se aplican en el pago automático (1 USDT = 1 gema); el pago manual de siempre sigue funcionando.
+- La promo de Black Friday SÍ se aplica en el pago automático, con la misma regla que el resto del juego: manda `DB.cfg.promo` (el panel 🔥 Promo del master); si no hay nada guardado, valen los de fábrica (+25 % del 12 al 26 de nov y +100 % del 26 de nov al 1 de dic, hora RD, sobre los primeros 20 USDT por cuenta). El bono se ve en cada paquete de la tienda y la orden queda guardada con el bono que se prometió. El descuento de revendedor NO se aplica en el pago automático.
+- El pago manual (ID de orden, captura, WhatsApp, «Mis solicitudes») se quitó de la tienda del jugador: Comprar gemas es solo el pago automático. Las solicitudes manuales viejas siguen contando para el tope de la promo.
+- Si el servidor no ve las llaves de Binance, la tienda dice «no disponible» y el master ve el motivo exacto en pantalla (Falta BINANCE_API_KEY / BINANCE_SECRET / BINANCE_PAY_ID). Los nombres de las variables se leen sin distinguir mayúsculas (sirve «Binance_Api_key»).
 
 ## Error 451 (Binance bloquea la región de Render) → relay en Frankfurt
 1. Render → New → Web Service → mismo repo de GitHub, Region **Frankfurt**, Start Command `node relay.js`. Env: `RELAY_TOKEN` = una clave larga inventada.

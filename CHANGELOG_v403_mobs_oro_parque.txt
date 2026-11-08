@@ -1,0 +1,115 @@
+v403 — MOBS QUE TE RODEAN Y NO RETROCEDEN, ORO DE NIVEL BAJO MÁS CHICO, CIUDADES SIN PARQUE Y BOTONES QUE FUNCIONAN CON EL JOYSTICK SOSTENIDO. Cambia el servidor: Manual Deploy en Render: SÍ.
+
+Pedido (Rick, sábado 7 nov, 3 capturas + los mensajes de «ing» y de Ariel/Artoria):
+   1) «El Mercado de Gemas está muy pegado, no tiene espacio y el parque no te deja acceder con libertad ni interactuar: removamos el parque».
+   2) «El drop a nivel bajo que sea menor: en nivel 7 uno tiene 56 mil de oro, eso es demasiado y desvaloriza el oro» (Ariel: «un nivel 7 no puede ir a ciudades fuertes, solo debes bajarle el valor a las primeras 2 ciudades»).
+   3) «Los mobs, cuando un héroe los golpea, retroceden; deberían ser agresivos y querer matarte siempre. En la última foto se ve el comportamiento de los mobs en los MMORPG modernos: rodean al héroe en todas las casillas y no le permiten
+      moverse hasta que se abre paso por sí mismo» («ing»: «los pasivos son más fáciles de matar; si te caen a traición te mueres»).
+   4) «El botón de switch: para que funcione hay que soltar el joystick y quedarse parado, y con mobs fuertes te pueden matar. Resolvamos esto».
+Lo que hice con cada uno está abajo. Cambian 5 archivos: play.html, sw.js, world-client.js, world.js y economy.js. No cambia ningún monstruo (vida, daño, XP), ninguna tabla de botín (qué suelta cada uno), ninguna misión ni ninguna puerta.
+
+══════════════ 1) QUÉ HAY DE NUEVO (para el jugador) ══════════════
+CIUDADES SIN PARQUE (las 12)
+   • Se quitó el jardín de 6×4 casillas que estaba al suroeste del centro de cada ciudad (césped, senderos, setos, flores, dos bancas, cuatro árboles y el monumento central: «Jardín del Loto», «Oasis de la Ruta», «Jardín Persa»…):
+     ya no se dibuja ni estorba al caminar. El Mercado de Gemas queda con la plaza abierta delante y se llega a su puerta sin rodeos; el aviso «🚪 Entrar · Mercado de Gemas» sale al llegar.
+     Las demás casas, puestos, NPC y adornos quedan donde estaban.
+ORO DE NIVEL BAJO (el «56 mil en nivel 7»)
+   • De dónde sale ese oro: el 30 % de las bajas suelta una «pieza de basura» que el NPC compra a 324 🪙 (la moneda suelta de verdad es pequeña: 1 a 15 🪙 por baja). Esas piezas valían igual en la primera ciudad que en la última.
+     Ahora la pieza de los monstruos de los tipos 0 a 4 vale según el tipo (los tipos 5 a 8 NO cambian):
+          Tipo de monstruo   oro por baja (antes → ahora)     pieza de basura en el NPC (promedio medido, antes → ahora)
+          0  (1.ª ciudad)    103 →  11  (−90 %)             326 →  32
+          1  (2.ª ciudad)    101 →  21  (−79 %)             326 →  65
+          2                  111 →  49  (−56 %)             326 → 131
+          3                  115 →  70  (−39 %)             326 → 195
+          4                  112 →  91  (−18 %)             326 → 261
+          5 a 8             118 a 129 → 119 a 132 (igual; la diferencia es el azar de las 5.000 bajas)    326 (igual)
+     Medido con las funciones reales del juego (hcLoot y genJunk) sobre 5.000 bajas por tipo. Con las bajas de la primera ciudad, esos 56.000 🪙 serían ≈ 5.800 🪙.
+   • Lo que ya tienes en la mochila, el banco o a la venta NO se toca: las piezas viejas siguen valiendo 324 🪙. Solo las que caigan a partir de ahora (y sin conexión también) llevan el valor nuevo.
+     Se guarda bien en el servidor y al recargar (antes el servidor subía cualquier pieza barata a 10 y se habría perdido).
+MOBS COMO EN LOS MMORPG MODERNOS
+   • Al golpearlos NO retroceden (antes salían empujados ≈ 6 px por golpe) y NO huyen con poca vida: pelean hasta morir.
+   • Te ven en 360° (antes solo en un cono de frente: bastaba rodear al mob para pasar) y desde un poco más lejos (el alcance de visión sube un 25 %; en línea el aggro pasa de 60 a 150 px).
+   • Si golpeas a uno, los que estén cerca (menos de 150 px; 140 en línea) también te atacan: ya no se puede sacar de uno en uno a los «pasivos» de un grupo.
+   • CERCO: los que te persiguen ocupan las 8 casillas pegadas a ti (rejilla de 32 px: 4 en cruz y 4 en diagonal), una por mob. Los demás esperan fuera, a 65-95 px, repartidos y sin amontonarse; cuando muere uno, otro entra a su casilla.
+     Solo pegan los que están en casilla (como mucho 8 a la vez), cada uno a su ritmo de siempre (un golpe cada 0,8 s). Antes se encimaban unos sobre otros y sobre ti.
+   • EL HÉROE YA NO ATRAVIESA A LOS MOBS: se detiene a 22 px de su centro (18 en cuevas). Con el cerco cerrado no puedes moverte hasta abrir paso matando (o te vas por donde no haya mob); el mob que ya está pegado aguanta su sitio aunque empujes.
+     Alejarse de ellos siempre se puede, y si un mob nace encima de ti puedes caminar para salir.
+   • Lo que NO cambia: en zona segura (ciudades, Coliseo, zonas sin monstruos) nada te bloquea ni te rodea; los enemigos de evento (hordas y cazadores de la noche), jefes, dragones, guardias y bestias celestiales se comportan como antes.
+   • Si no te gusta: Menú → ⚙️ Opciones → ⚔️ Combate → «🐺 Mobs agresivos». Apagado, los mobs vuelven a retroceder, a huir y a poder atravesarse (se guarda en el dispositivo, sr_sw, y viene ENCENDIDO).
+     En línea el cerco lo hace el servidor; el interruptor del juego apaga lo que pasa en tu pantalla (el bloqueo del héroe y, sin conexión o en cuevas, todo lo nuevo). Para apagar TAMBIÉN el cerco del servidor: variable SWARM_AI=0 en Render.
+BOTONES QUE FUNCIONAN CON EL JOYSTICK SOSTENIDO
+   • 🔀 (plano de hechizos), 🧪 (poción), 🏃 (correr), 🤫 (sigilo), 🐴 (montura) y 🐾 (mascota) ahora actúan EN CUANTO LOS TOCAS, aunque tengas el joystick (o ⚔️) sostenido con el otro dedo. Ya no hay que soltar y quedarse parado.
+     La causa: Chrome en Android no genera el «clic» de un segundo dedo mientras otro sigue apretado, así que esos botones (que solo escuchaban «clic») no hacían nada. Los de combate (⚔️, hechizos) y el dock ❤️/💧 del HUD ordenado ya reaccionaban al tocar.
+   • Con un solo dedo o con el ratón (PC) cada toque hace UNA acción (no se duplica) y con una ventana abierta no actúan por debajo.
+
+══════════════ 2) CÓMO ESTÁ HECHO (por si lo tocas) ══════════════
+   • tools403/patch_v403.py (parte siempre de los archivos de v402; cada ancla se exige UNA sola vez) escribe play.html, sw.js, world-client.js, world.js y economy.js.
+   • play.html: (a) tobGet ya no agrega parkObs(ci) y el dibujo ya no llama parkDraw; (b) tabla JUNKJ=[1,2,4,6,8] (una sola línea, para ajustar) que multiplica el valor de la pieza por tipo de monstruo (tipo 5+ = el de siempre, 10); genJunk recibe el tipo;
+     cleanIt ya no sube jm a 10; (c) bloque «v403 · MOBS»: variables SWARM, HSAFE, bodyNear/bodyBlk (el héroe), swAssist (vecinos), swSep (separación), rejilla SWO de 8 casillas; mv() del héroe consulta bodyBlk; hitE no empuja ni
+     huye; SLOT/AIx/SLT usan la rejilla y la vista de 360°; el mob pegado no retrocede; (d) fila «Mobs agresivos» en Opciones; (e) botones: un oyente de pointerdown (touch/pen) que ejecuta el clic y un oyente en captura que descarta el clic nativo
+     posterior (ventana de 800 ms). El ratón y el teclado no cambian.
+   • world.js: aggro SW_AGGRO (150 por defecto, entre 60 y 400); assist 140 px; swStep(): los 8 más cercanos de cada jugador ocupan las 8 casillas (con las paredes descartadas), los demás esperan en 3 carriles (64, 80 y 96 px) con separación;
+     el golpe del mob pasó a la función mAtk (el mismo código de siempre); swAssist() al recibir un golpe. Los enemigos de evento (dyn) y los de alcance (rg) siguen por el camino de siempre. SWARM_AI=0 lo apaga todo.
+   • economy.js: la basura acepta jm de 1 a 150 (el 10 de siempre no se guarda). world-client.js: el botín en línea pasa el tipo de monstruo a genJunk. sw.js: sr-v403.
+
+══════════════ 3) PRUEBAS Y RESULTADOS ══════════════
+NUEVO EN ESTA VERSIÓN (pruebas escritas; quedan en el proyecto y cada una corre también contra v402 SIN TOCAR para ver que reproduce lo que contó Rick)
+   • t403_city (5): en las 12 ciudades los obstáculos del parque ya no existen, el parque ya no se dibuja y el paso de la plaza sur a la puerta del Mercado de Gemas está libre (aparece «Entrar · Mercado de Gemas»).
+        Contra v402: FALLAN 3 comprobaciones (7 obstáculos del parque en cada una de las 12 ciudades, el parque se dibuja, el paso a la puerta está tapado).
+   • t403_gold (13): oro por baja y precio de la pieza por tipo de monstruo con las funciones reales del juego (hcLoot y genJunk, 5.000 bajas por tipo): oro por baja (v402 → v403) tipo 0: 103 → 11 · tipo 1: 101 → 21 · tipo 2: 111 → 49 · tipo 3: 115 → 70 · tipo 4: 112 → 91; tipos 5 a 8 sin cambios;
+        las piezas viejas (jm=10 o sin jm) siguen valiendo 324 🪙, jm=1 vale 32 y jm=5 vale 162; cleanIt conserva jm=1; guardar en el servidor, recargar la página y que sigan los valores 1 y 7 (en v402 se perdían: volvían a 10).
+   • t403_mobs (24): la IA del cliente con las funciones reales (upd, hitE, SLOT, AIx, mv) avanzando fotograma a fotograma, con los ~10.900 mobs del mundo cargados:
+        – cerco: 12 ratas → 8 pegadas al héroe, una en cada una de las 8 casillas (±8 px) y 4 esperando a 80 px; distancia mínima entre mobs 29.8 px (v402: 22.0 px, encimados).
+        – al golpear: desplazamiento 0,0 px (v402: 6.0 px por golpe); golpeado 10 veces en 2 s, el mob nunca se aleja más de 55 px; con 10 % de vida no huyen (v402: huyen, 900 fotogramas de huida en 3 mobs).
+        – el héroe empujando 2 s contra el cerco cerrado avanza 13 px y nunca queda a menos de 22.2 px de un mob (v402: avanza 133 px y llega a 5.1 px, es decir, los atraviesa); el mob de enfrente no retrocede;
+          al matar a los 3 de enfrente avanza 66 px en 1 s; con UN mob pegado se puede caminar hacia el otro lado; un mob delante lo detiene a 22 px (v402: lo atraviesa); un mob ya encima del héroe, uno de evento o uno muerto NO bloquean.
+        – 360°: un mob mirando hacia el lado contrario te detecta a 110 px (v402: no); al golpear a uno el vecino a 70 px se une (v402: no); en el pueblo nada bloquea; con «Mobs agresivos» apagado todo vuelve a v402.
+        – rendimiento: refrescar los mobs cercanos con los ~10.900 del mundo cargados tarda 0,2 ms.
+   • t403_server.js (21) con world.js real y un jugador por cabina: el cerco en el servidor: llegando a un grupo de 25 mobs, quedan 8 pegados (una por casilla) y 17 esperando, nadie a menos de 20 px (0 apilados; v402: 2 apilados y 5.0 px
+        de distancia mínima entre mobs), como mucho 8 mobs distintos pegan en cualquier ventana de 0,8 s y ninguno más de 1 vez cada 0,8 s; si el jugador aparece ENCIMA del grupo nadie queda dentro de su cuerpo; el mob de enfrente aguanta a 22 px cuando el jugador empuja;
+        aggro: a 130 px el mob te ve y viene, a 190 px no; al golpear a uno el vecino viene; 5 jugadores peleando contra grupos densos usan 1.6 % de un núcleo (v402: 1.2 %).
+        Con SWARM_AI=0 (9 comprobaciones) y con el world.js de v402 el servidor se comporta igual que antes: mobs apilados, aggro 60, sin vecinos.
+   • t403_btn (13): en celular (dos dedos de verdad, con el protocolo táctil de Chrome): 🔀, ❤️ del dock y 🏃 con el joystick sostenido y con ⚔️ sostenido actúan UNA vez; con un dedo o con el ratón, una acción por toque; con una ventana abierta no duplican.
+        Contra v402: FALLAN 3 (🔀 con el joystick, 🏃 con el joystick y 🔀 con ⚔️ sostenido: justo lo que contó Rick).
+   • t403_perf (medición, no pasa/falla): lo que tarda un fotograma del juego (upd) con mobs rodeando al héroe, parado o empujando el joystick contra ellos (2 corridas alternadas por versión, mundo completo cargado; el celular es más lento que esta máquina):
+        0 mobs: 0,05 ms (v402: 0,06) · 12 mobs: 0,07 ms (0,07) · 40 mobs: 0,11 ms (0,09) · 80 mobs: 0,19 ms (0,14). A 60 fps un fotograma tiene 16,7 ms: el cerco cuesta ≈ +0,02 ms con 40 mobs y +0,05 ms con 80.
+   • Comprobación de sintaxis de los 16 scripts de play.html y de world.js, economy.js y world-client.js: 0 con error.
+
+REGRESIÓN COMPLETA (72 baterías en serie: las 66 de v402 + las 6 nuevas de v403)
+   • 65 de las 72 salieron limpias a la primera (las otras 7 se explican abajo; 4 de ellas repetidas con la prueba corregida salieron limpias). En total 2.127 comprobaciones OK, entre ellas las de pagos de Binance, Cacería, cuevas de lobos y ratas, Sellos, Karez, Tablón, Red Subterránea, HUD ordenado y menús (v396–v402).
+   • Las otras 7 tuvieron incidencias y NINGUNA es un defecto de v403: 3 pruebas viejas fijaban el precio VIEJO de la pieza (que v403 cambia a propósito) y 4 dependen del azar de tiempos o de la hora del día.
+     Todas las diagnostiqué lado a lado con el cliente de v402 SIN TOCAR y las corregí o las repetí:
+        – t401_xp (2 comprobaciones): eran del precio VIEJO de la pieza de basura («jm entre 10 y 150» y «el precio sube ya del nivel 1 al 10»). v403 lo cambia A PROPÓSITO (piezas de los tipos 0 a 4 con jm de 1 a 9; como jm es entero, el tipo 0 vale igual
+          en el nivel 1 y en el 10 y sigue subiendo del 10 en adelante). Actualicé esas 2 comprobaciones al contrato nuevo («jm de 1 a 150»; «el precio no baja con el nivel y crece de 10 en adelante») y la batería repetida da 25 OK, 0 fallos.
+        – t401_seals (4 comprobaciones en cadena) y t401_uwtorch (6 en cadena): la prueba teletransporta al héroe con P.x=… y espera que el juego dispare el aviso (tierra removida / escalera del Submundo) en el SIGUIENTE fotograma; si justo entre medio sale el
+          aviso de posición del cliente, el servidor (anti-teletransporte) devuelve al héroe a la ciudad y el aviso no sale. Es de la PRUEBA, no del juego. Medido con t403_dbg_tp.py (20 teletransportes a la tierra removida y 10 a la escalera, un solo jugador):
+          v402 sin tocar falla 4 de 20 y 3 de 10; v403 falla 3 de 20 y 2 de 10. Corridas solas de v403 dieron 42/42 y 13/13. Les puse un reintento (hasta 6 veces) a esos dos teletransportes y repetidas dan 42 y 13 OK, 0 fallos.
+        – t392_client («cli», 2 comprobaciones) y t392_cli_old (2): fijaban el precio VIEJO de la pieza en todos los tipos de monstruo (720 → 324 🪙 al NPC). v403 lo baja A PROPÓSITO en los tipos 0 a 4 (72·JUNKJ → 32, 65, 130, 194 y 259 🪙 al NPC).
+          Actualicé esas comprobaciones al precio nuevo (los tipos 5 a 8 siguen en 720 / 864 / 324 🪙): «cli» repetida da 36 OK, 0 fallos; «cli_old» repetida pasa las 2 de precio (el resto, abajo).
+        – t392_cli_old «no hacen multitud» (NPC caminantes de Chang'an): depende del azar del paseo (la regresión de v402 también la falló y ahí medí 6 de 20 corridas fuera del criterio con v402 y 7 de 20 con v401). Falló en la regresión de v403 y falló en su repetición;
+          4 corridas ALTERNADAS a la misma hora: v403 la falla 0 de 4 y v402 SIN TOCAR 1 de 4. Los NPC caminantes de la ciudad no pasan por nada de lo que cambia v403 (mobs, oro, botones, parque).
+        – t391_client (antorchas de estaca): su resultado de NOCHE no es el de DÍA. Mezcla 3 comprobaciones de luz que dependen de la fecha y la luna (ya fallaban con v402 en su regresión) con comprobaciones de combustible que dependen de la HORA REAL del servidor
+          («de día no gasta» falla cuando el servidor ya está de noche) y de márgenes de tiempo (esperas de 2,2 s con tope de 3,2 s). La regresión de v402 corrió a las 15:04 (de día): 3 fallos; la de v403 a las 20:23 (de noche): 6 fallos.
+          Lado a lado, a la misma hora (de noche), 4 corridas ALTERNADAS por versión: v403 falla 5, 4, 5, 4 comprobaciones por corrida y v402 SIN TOCAR 5, 4, 5, 5. Por comprobación, corridas fallidas de 4 (v403 / v402): luz de noche 4 / 4 · «de día no gasta» 2 / 4 · «de noche gasta» 3 / 3 · «la de cueva gasta de día» 1 / 0;
+          la de cueva es solo un margen de tiempo (la prueba exige que el combustible baje entre 1,5 y 3,2 s en una espera de 2,2 s): bajó 2,22 · 2,53 · 3,25 · 2,27 · 3,24 s con v403 y 2,22 · 2,23 · 2,25 · 3,12 · 2,26 s con v402 SIN TOCAR (a esa misma hora); en las dos hay esperas más largas de lo previsto. Mismo conjunto de comprobaciones fallidas en las dos versiones.
+        – t385c (reaparición de la colmena a los 3 min): falló la MISMA comprobación que falló en la regresión de v402 (es de tiempos). Repetida 2 veces seguidas con v403: 1 salió limpia (24 OK, 0 fallos). Además, 3 corridas ALTERNADAS a la misma hora: v403 la falla 0 de 3 y v402 SIN TOCAR 0 de 3.
+
+VERIFICACIÓN DEL ZIP
+   • tools403/verify_zip.py: TODO OK (se corre sobre el zip final; revisa archivos, que cambien solo los 5 esperados, que el servidor restante sea idéntico, que el parche sea reproducible desde el zip v402 y que no falte ninguna función de v402).
+   • Prueba del ZIP FINAL tal cual (t403_zipcheck.py): lo extraje en una carpeta nueva, arranqué el servidor desde ahí y pasaron: t403_mobs PC 24/24 · t403_btn celular 13/13 · t403_city PC 5/5 · t403_gold PC 13/13 · t403_opt (fila «Mobs agresivos» en Opciones, 2 tamaños) celular 8/8 · t401_smoke celular 8/8 · t401_pay PC 20/20 (todo OK, 0 fallos; el servidor cargó el mundo en línea). Solo quité reload.json, como en todas mis pruebas, para que el servidor de pruebas no fuerce recargas.
+
+══════════════ 4) DECISIONES QUE TOMÉ (por si quieres cambiarlas) ══════════════
+   • ORO: bajé el valor de la PIEZA DE BASURA (de donde sale casi todo el oro), no la moneda suelta, ni la XP, ni lo que suelta cada monstruo. Lo hice por tipo de monstruo y gradual (el oro por baja queda en 10 %, 21 %, 44 %, 61 % y 82 % de lo de antes en los tipos 0 a 4, y el 100 % de siempre del tipo 5 en adelante) en vez de solo las 2 primeras
+     ciudades, para que no haya un escalón brusco al pasar a la tercera. Si quieres más o menos: es UNA línea, JUNKJ=[1,2,4,6,8] en play.html (la pieza vale 32,4 🪙 por cada punto; 10 = el de antes).
+   • Las piezas que ya existen conservan su precio (cambiarlas implicaría tocar las partidas guardadas de los jugadores).
+   • MOBS: en el cliente lo hice ENCENDIDO por defecto y con interruptor en Opciones, y en el servidor con interruptor SWARM_AI. Así, si en la práctica se siente demasiado duro, se apaga sin tocar código ni volver a subir nada (en Render: SWARM_AI=0 y Manual Deploy).
+   • El héroe se bloquea con los mobs ya sean activos o quietos (como en Tibia). Los enemigos de evento NO bloquean, porque suelen venir en montones y encerrarían al héroe sin que pueda huir.
+   • El alcance de aggro en línea sube de 60 a 150 px (SW_AGGRO): caminar cerca de una zona de mobs los despierta más. Si lo quieres más corto, baja SW_AGGRO en Render (mínimo 60 = como antes).
+   • Dejé el máximo de 8 atacantes a la vez por jugador (las 8 casillas): con más, los mobs de «refuerzo» esperan fuera, como en los MMORPG.
+
+══════════════ 5) DESPLIEGUE ══════════════
+Archivos que cambian respecto a v402: play.html, sw.js (sr-v403), world-client.js, world.js y economy.js. Todo lo demás es idéntico a v402.
+Manual Deploy en Render: SÍ (cambian world.js y economy.js). Sube el zip a GitHub y haz el Manual Deploy justo después: con el servidor viejo las piezas baratas de basura se guardarían como de 324 🪙 (lo corrige el servidor nuevo).
+Quien tenga el juego abierto debe recargar (Ctrl+F5 en PC) para que el service worker traiga sr-v403.
+Variables opcionales en Render (no hace falta crear ninguna): SWARM_AI=0 (apaga el cerco, el aggro ampliado y los vecinos del servidor: vuelve a v402) y SW_AGGRO=<60 a 400> (alcance de aggro en px, 150 por defecto). Las de v401 (BINANCE_*) siguen igual.
+El zip trae todo el proyecto en la raíz (no dentro de m/), con solo este changelog.

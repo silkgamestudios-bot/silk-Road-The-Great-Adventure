@@ -130,7 +130,7 @@ const BASE={0:{dm:5},1:{hp:8},2:{hp:4,dm:1},3:{dm:2,hp:2},4:{hp:5},5:{sp:2},7:{d
 function itemMax(it,k){const m=RM[it.r]*(1+it.t*.6)*2.6;let b;if(it.sl<6||it.sl>=7)b=BASE[it.sl];else b=(it.k===2||it.k===4||it.k===6)?{mp:8}:{hp:3,gd:4};return Math.ceil((b[k]||0)*m)+1}
 function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0,9,-1),t=int(x.t,0,4,-1),r=int(x.r,0,3,-1);if(sl<0||t<0||r<0)return null;
  const o={sl,t,r,li:int(x.li,0,9,0),du:int(x.du,0,100,100)};if(x.k!=null){const k=int(x.k,0,7,-1);if(k<0)return null;o.k=k}
- o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.dv)o.dv=1;if(x.jv!=null){const jv=int(x.jv,0,300,0);if(jv)o.jv=jv}if(x.jm!=null){const jm=int(x.jm,10,150,10);if(jm>10)o.jm=jm}if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
+ o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.nt)o.nt=1;if(x.dv)o.dv=1;if(x.jv!=null){const jv=int(x.jv,0,300,0);if(jv)o.jv=jv}if(x.jm!=null){const jm=int(x.jm,1,150,10);if(jm!==10)o.jm=jm}if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
  if(x.up!=null){const up=int(x.up,0,12,0);if(up)o.up=up}
  if(x.ar!=null){const ar=int(x.ar,0,5,0);if(ar)o.ar=ar}
@@ -219,6 +219,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
   if(c.id){if(seen.has(c.id)){dropped++;flag(u,'objeto duplicado en la misma cuenta');return null}seen.add(c.id);const r=ECO.reg[c.id];
    if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'objeto de otro jugador/duplicado '+c.id,2);return null}
    if(!r){if(!first&&!master&&!mintOk(a,'i',c.r,now)){dropped++;flag(u,'demasiados objetos nuevos de rareza '+c.r);return null}ECO.reg[c.id]={o:u,k:'i',t:now};S.dirty()}else if(r.o!==u&&master){ECO.reg[c.id]={o:u,k:'i',t:now}}}
+  if(c.id&&ECO.reg[c.id]&&ECO.reg[c.id].nt)c.nt=1;else delete c.nt;   /* v398: intransferible = lo dice el registro del servidor */
   if(c.up){const rr=c.id&&ECO.reg[c.id],mx=(rr&&rr.up)|0;if(c.up>mx&&!master){flag(u,'potenciación falsa +'+c.up+' (permitido +'+mx+')');c.up=mx}if(!c.up)delete c.up}
   if(c.ar){const rr=c.id&&ECO.reg[c.id],mx=(rr&&rr.ar)|0;if(c.ar>mx&&!master){flag(u,'refuerzo arácnido falso '+c.ar+' (permitido '+mx+')');c.ar=mx}if(!c.ar)delete c.ar}
   if(c.en){const rr=c.id&&ECO.reg[c.id];if(!master&&!(rr&&rr.en===c.en&&(rr.el|0)>=1)){flag(u,'encantamiento falso '+c.en+' nv'+c.el);delete c.en;delete c.el}else if(!master&&c.el>(rr.el|0))c.el=rr.el|0}

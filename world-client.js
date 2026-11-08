@@ -72,14 +72,15 @@ function reward(m){const t=[],g=Math.round(m.g*goldM()*(1+eqT().gd/100)),auto=ty
  let ground=null;
  if(g>0){if(auto&&LF&&LF.gd){P.gold+=g;t.push('+'+g+' 🪙')}else{ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:g,it:null,l:120};t.push('🪙 '+g+' en el suelo')}}
  if(m.x>0){gainXp(m.x);t.push('+'+m.x+' XP')}
- if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty);if(pe.v){pqEvt('kv',pe.v);const vk=P.st.vk||(P.st.vk={});vk[pe.v]=(vk[pe.v]|0)+1}try{slEvt({v:pe.v,ty:m.ty})}catch(e){}}catch(e){}
+ if(m.own){try{P.st.all++;P.st.k[m.ty]=(P.st.k[m.ty]||0)+1;pqEvt('kill',m.ty);hzEvt(m.ty);if(pe.v){pqEvt('kv',pe.v);const vk=P.st.vk||(P.st.vk={});vk[pe.v]=(vk[pe.v]|0)+1}try{cazEvt({v:pe.v,ty:m.ty})}catch(e){}}catch(e){}
+  try{slKill(pe)}catch(e){}/* v396: colmillo de chacal para Mei también jugando en línea */
   try{TD.forEach((d,i)=>{if(tv(i)==tg(i))toast('📜 ¡Tarea lista: '+d[0]+'!',3000)})}catch(e){}
   try{if(qst&&qst.t=='k'&&qst.got<qst.n){qst.got++;if(qst.got>=qst.n)toast('Encargo listo: vuelve con el Gobernador',3000)}}catch(e){}}
  if(m.pot&&typeof P.pot=='number'&&P.pot<PMX){P.pot++;try{SES.pt++;flAdd('pot',1)}catch(e){}if(FT.length<60)FT.push({x:pe.x,y:pe.y-26,t:1.8,d:.2,o:0,k:'xp',s:'+1 🧪 poción',c:'#ff9ad5'})}
  if(m.mpt&&typeof P.mpot=='number'&&P.mpot<PMX){P.mpot++;try{SES.pt++}catch(e){}if(FT.length<60)FT.push({x:pe.x,y:pe.y-38,t:1.8,d:.2,o:0,k:'xp',s:'+1 💧 poción MP',c:'#7ac8ff'})}
  if(m.meat){try{dropMeat(pe.x,pe.y,1)}catch(e){}}
  if(m.own){for(const f of [evCoin,matDrop,bagDrop])try{f(pe)}catch(e){}}
- if(m.it){let it;try{it=genJunk(Math.min(2,ty>>1))/* v392: PRECIO DEL BOTÍN: el objeto vale 324 🪙 como antes de la v390; el nivel del monstruo decide su calidad y estadísticas */}catch(e){it=cleanIt(m.it);it.junk=1}if(auto&&LF&&LF.it&&P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{if(!ground)ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:0,it:null,l:120};ground.it=it;t.push('🎁 '+it.n+' en el suelo')}}
+ if(m.it){let it;try{it=genJunk(Math.min(2,ty>>1),ty)/* v392: PRECIO DEL BOTÍN: el objeto vale 324 🪙 como antes de la v390; el nivel del monstruo decide su calidad y estadísticas */}catch(e){it=cleanIt(m.it);it.junk=1}if(auto&&LF&&LF.it&&P.lb.length<LCAP()){P.lb.push(it);t.push('🧺 '+it.n)}else{if(!ground)ground={x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:0,it:null,l:120};ground.it=it;t.push('🎁 '+it.n+' en el suelo')}}
  if(ground)LT.push(ground);
  if(t.length&&FT.length<60)FT.push({x:P.x,y:P.y-30,t:1.6,d:0,o:0,k:'dm',s:t.join(' '),c:'#ffd666'});
  try{chk();save()}catch(e){}}

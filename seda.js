@@ -14,8 +14,8 @@ const mkF=c=>Math.max(1,Math.ceil(c*.03)),tkF=c=>Math.max(1,Math.round(c*.03));
 const canPub=u=>{if(S.isMaster(u))return true;const a=E.acct(u),t=now();return (+a.px.lt||0)>t&&(+a.px.ap||0)>t};
 const nmOf=u=>(E.acct(u)||{}).nm||'Jugador';
 const ck=it=>it.sl+'|'+it.n;
-function holdReg(id,o,esc){S.ECO.reg[id]={o,k:'i',t:now(),esc:esc?1:0};S.dirty()}
-function claimItem(u,raw){const it=E.cleanItem(raw);if(!it||!it.id)return{e:'Objeto no válido'};const r=S.ECO.reg[it.id];if(!r||r.o!==u)return{e:'Ese objeto no es tuyo (o aún no está sincronizado: espera unos segundos)'};return{it}}
+function holdReg(id,o,esc){const nt=S.ECO.reg[id]&&S.ECO.reg[id].nt;S.ECO.reg[id]={o,k:'i',t:now(),esc:esc?1:0};if(nt)S.ECO.reg[id].nt=1;S.dirty()}
+function claimItem(u,raw){const it=E.cleanItem(raw);if(!it||!it.id)return{e:'Objeto no válido'};const r=S.ECO.reg[it.id];if(!r||r.o!==u)return{e:'Ese objeto no es tuyo (o aún no está sincronizado: espera unos segundos)'};if(r.nt)return{e:'🔒 Ese objeto es intransferible (premio del Tablón): no se puede vender, cambiar ni regalar.'};return{it}}
 const sl=(ms)=>ms?Math.max(0,Math.ceil((ms-now())/36e5)):0;
 function hist(o){const h=SH();h.push(o);while(h.length>300)h.shift()}
 const note=(u,m)=>{E.deliver(u,{note:m})};

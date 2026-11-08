@@ -66,7 +66,7 @@ ops['pay.new']=(u,m)=>{
  const ex=pending(u);if(ex){if(ex.b===base&&ex.x-t>60000)return Object.assign({ok:1},view(ex));ex.st='exp';ex.x=Math.min(ex.x,t)}/* otro paquete: la anterior se cierra (su monto queda reservado un rato por si ya pagaron) */
  const c=pickCents(base,t);if(!c)return err('Hay muchos pedidos ahora mismo: intenta de nuevo en un minuto');
  const cx=calc(u,base,t),g=cx.g;a.pyN.push(t);const id='p'+E.rid(8),o=G().o[id]={id,u,b:base,g,c,t,x:t+TTL,st:'p'};if(cx.pb>0)o.pm={i:cx.i,u:cx.pu,b:cx.pb};S.dirty();
- log('[pay] orden '+id+' de '+(a.nm||u)+': '+fmt(c)+' USDT → '+g+' gemas (paquete '+base+')');return Object.assign({ok:1},view(o))};
+ log('[pay] orden '+id+' de '+(a.nm||u)+': '+fmt(c)+' USDT → '+g+' gemas (paquete '+base+')');wake();return Object.assign({ok:1},view(o))};
 ops['pay.status']=(u,m)=>{const o=G().o[String(m.id||'')];if(!o||o.u!==u)return err('Orden no encontrada');const v=view(o);v.chk=lastOk?Math.round((now()-lastOk)/1000):-1;return Object.assign({ok:1},v)};
 ops['pay.mine']=(u)=>{const o=pending(u);return o?Object.assign({ok:1},view(o)):{ok:1,none:1}};
 ops['pay.packs']=(u)=>{const t=now();return{ok:1,on:ON,pid:PAY_ID,why:S.isMaster(u)?why():'',packs:Object.keys(PACKS).map(b=>{const c=calc(u,+b,t);return{b:+b,g:c.g,pb:c.pb}}).sort((x,y)=>x.b-y.b)}};
@@ -120,8 +120,12 @@ async function check(){
  catch(e){const m=String(e&&e.message||e);if(/-1021|timestamp/i.test(m))await syncTime();lastErr=m;if(now()-lastErrT>300000){lastErrT=now();log('[pay] error consultando Binance: '+m)}}
  finally{busyQ=false}}
 
+let nextAt=0,started=false;
+function sched(wait){clearTimeout(timer);nextAt=now()+wait;timer=setTimeout(async()=>{await check();loop()},wait)}
 function loop(){let any=false;const d=G(),t=now();for(const id in d.o){const o=d.o[id];if(o.st==='p'&&t<o.x+FREE_LAG){any=true;break}}
- const wait=any?POLL:IDLE;timer=setTimeout(async()=>{await check();loop()},wait)}
+ sched(any?POLL:IDLE)}
+/* v401: al crearse una orden se adelanta la próxima consulta (antes, con el servidor sin órdenes, la siguiente podía tardar hasta 60 s y el jugador esperaba de más) */
+function wake(){if(!ON||!started)return;if(nextAt-now()>POLL)sched(POLL)}
 function why(){return !KEY&&!SEC?'No llegan BINANCE_API_KEY ni BINANCE_SECRET al servidor':!KEY?'Falta BINANCE_API_KEY':!SEC?'Falta BINANCE_SECRET':!PAY_ID?'Falta BINANCE_PAY_ID':''}
-function start(){if(!ON){log('[pay] pagos automáticos APAGADOS: '+why()+' · variables con "BINANCE" que ve el servidor: '+(Object.keys(process.env).filter(k=>/binance/i.test(k)).join(', ')||'ninguna'));return}if(!PAY_ID)log('[pay] ⚠️ falta BINANCE_PAY_ID');syncTime().then(()=>{log('[pay] pagos automáticos ACTIVOS · paquetes '+JSON.stringify(PACKS)+' · orden de '+TTL/60000+' min');check().then(loop)})}
+function start(){if(!ON){log('[pay] pagos automáticos APAGADOS: '+why()+' · variables con "BINANCE" que ve el servidor: '+(Object.keys(process.env).filter(k=>/binance/i.test(k)).join(', ')||'ninguna'));return}if(!PAY_ID)log('[pay] ⚠️ falta BINANCE_PAY_ID');started=true;syncTime().then(()=>{log('[pay] pagos automáticos ACTIVOS · paquetes '+JSON.stringify(PACKS)+' · orden de '+TTL/60000+' min');check().then(loop)})}
 return{ops,start,check,_PACKS:()=>PACKS}};

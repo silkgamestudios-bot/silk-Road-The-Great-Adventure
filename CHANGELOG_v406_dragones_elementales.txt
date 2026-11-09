@@ -1,0 +1,37 @@
+v406 — DRAGONES ELEMENTALES (Nv 550) EN EL SANTUARIO DE LOS DRAGONES. Cambia solo el cliente (se suma a v404 y v405): Manual Deploy en Render: NO.
+
+Pedido (Mni): usar la hoja del dragón verde en una zona alejada, nivel 550, pintado de varios colores: el ROJO los más difíciles y el COLOR = el ELEMENTO de sus ataques (agua, fuego, tierra, etc.).
+
+══════════════ DÓNDE ESTÁ ══════════════
+   Santuario de los Dragones: extremo NOROESTE del mapa, centro ≈ casilla (180, 95). Es la zona más lejana de todas las ciudades (≈ 400 casillas de la más cercana). 8 nidos separados ≥ 22 casillas; el más fácil queda hacia el resto del mundo y el más difícil (rojo) en lo más profundo del rincón.
+   Al entrar (≤ 52 casillas del centro) sale el aviso «Entras al Santuario de los Dragones · Nv 550».
+
+══════════════ LOS 8 DRAGONES (de más fácil a más difícil) ══════════════
+   #  Dragón               Color        Elemento  Vida      Daño  Efecto de sus golpes (enfriamiento 2,2 s)
+   8  Dragón Esmeralda     Verde        Tierra    140.000   140   Aturde 0,9 s
+   9  Dragón Celeste       Celeste      Viento    165.000   152   Te empuja ~5 casillas + lentitud 1,5 s
+   10 Dragón Zafiro        Azul         Agua      190.000   164   Lentitud 3,5 s y te quita 35 de aliento
+   11 Dragón de Escarcha   Blanco/hielo Hielo     220.000   178   Lentitud 4 s + congelado 0,6 s
+   12 Dragón Relámpago     Amarillo     Rayo      255.000   194   Paraliza 1,1 s + 3 % de tu vida
+   13 Dragón Amatista      Morado       Veneno    295.000   212   Veneno (se acumula; con 5 cargas te paraliza, igual que el escorpión)
+   14 Dragón de Ébano      Negro        Sombra    340.000   232   Te drena 10 % del MP y cura al dragón 1 % de su vida
+   15 Dragón Carmesí       ROJO         Fuego     400.000   260   Quemadura 5 s: 1,2 % de tu vida cada 0,5 s (se apaga en ciudades)
+   (Para comparar: Rey Faraón, el jefe anterior más duro = Nv 445, 100.000 de vida, daño 122.)
+   Todos: Nv 550 (duermen y avisan 🔒 hasta que llegues a ese nivel), vuelan (no los frena el terreno), tienen 3 fases, llaman refuerzos de zona 7 al cambiar de fase y sus ataques de área salen teñidos del color de su elemento.
+
+══════════════ RECOMPENSAS ══════════════
+   Son jefes 8 a 15 del juego: mismo oro y XP que la fórmula de los jefes (30.000 y 600 por número de jefe +1), mismas reglas de reaparición (10 min) y «recuerda tus derrotas». Botín propio por dragón: objeto épico o mejor (40 %), objeto legendario (14 %), único «de dragón» (4 %: Escama de Esmeralda, Pluma del Dragón Celeste, Perla de Zafiro, Colmillo de Escarcha, Cuerno del Relámpago, Aguijón de Amatista, Garra de Ébano, Corazón del Dragón Carmesí), pociones y bolsa de oro. Cuanto más difícil el dragón, mejor la calidad.
+   Aparecen en el panel «👑 Jefes de área» y en la guía con distancia y dirección.
+
+══════════════ CÓMO ESTÁ HECHO ══════════════
+   • Hoja DZI (63 KB, 12 cuadros de 120x120: abajo/izquierda/derecha/arriba x 3) con fondo transparente. El recoloreado se hace POR CÓDIGO (matiz/saturación/luz) una sola vez por color, sin filtros del navegador.
+   • Se crean DESPUÉS de toda la generación del mundo y sin usar números aleatorios: el mapa, las cuevas, guaridas y world.json NO cambian (por eso no hace falta exportar world.json ni Manual Deploy).
+   • Reutiliza el sistema de jefes (IA, telégrafos, reaparición, botín). Cambios en play.html: bossAI (vuelo, elemento activo), bossHurt (efecto del elemento), bossSummon (refuerzos de zona 7), drawBoss (rama del dragón), colores de los telégrafos y los dos listados de jefes. Los 8 jefes anteriores se comportan igual.
+   • sw.js: sr-v406.
+   • Para calibrar: la tabla DZT en play.html (hp, dm, spd, h/s/lm/l = color) y DZN (nidos).
+
+══════════════ PRUEBAS ══════════════
+   ✅ node --check de los 16 scripts de play.html y de sw.js: sin errores.
+   ✅ Arnés de Node (t406_test.js): 16 jefes en total, 8 dragones con su vida/daño/Nv 550/botín; un nido que cae sobre un árbol se mueve a una casilla libre; los 8 colores salen con el matiz esperado (verde 136°, celeste 184°, azul 218°, blanco, amarillo 50°, morado 273°, negro, rojo 357°); los 8 efectos se activan, incluida la quemadura.
+   ✅ Recorte de la hoja y vista previa de los 8 colores revisados a mano.
+   ⚠️ SIN probar en navegador/celular: tamaño en pantalla (250 px), que los nidos queden en terreno abierto del mapa real, el equilibrio de dificultad y los efectos en combate. Los números de vida y daño son una extrapolación de la escala de los jefes anteriores.

@@ -1,0 +1,36 @@
+v404 — MOBS DEL MUNDO ABIERTO CON LA HOJA DE SPRITES NUEVA. Cambia solo el cliente: Manual Deploy en Render: NO (sube los 3 archivos a GitHub / Blogger).
+
+Pedido (Mni): cambiar los mobs del mundo abierto por los 8 monstruos de la hoja nueva (576x576, 4 columnas x 2 filas; cada monstruo = 3 cuadros x 4 direcciones de 48x72) y asignarles lo necesario.
+
+══════════════ QUÉ MOB SE CAMBIÓ POR CUÁL (mismos 9 tipos del mundo; la zona y el nivel no cambian) ══════════════
+   Tipo  Antes (sprite)        Ahora                                   Zona / nivel
+   0     Rata                  Slime ocular (azul, 1 ojo)              Llanuras de Chang'an · 1-5
+   1     Serpiente             Murciélago abismal (morado/celeste)     Bosque de Jade y Valle Amarillo · 5-8
+   2     Bandido               Goblin (verde)                          Estepa de Gansu · 8-12
+   3     Goblin                Esqueleto (corona de flores)            Qilian y Taklamakán · 12-15
+   4     Momia                 Gárgola (gris, ojos rojos)              Oasis de Kashgar y Bukhara · 15-19
+   5     Orco                  Espectro (encapuchado)                  Pamir Helado y Desierto Rojo · 19-22
+   6     Orco berserker        Demonio cornudo (morado)                Samarkand y Cañones Malditos · 22-26
+   7     Vampiro               Súcubo (roja)                           Bagdad y Reino de Cenizas · 26-29
+   8     Faraón maldito        Archidemonio (el demonio morado recoloreado por código; sobran 8 sprites para 9 tipos)   Constantinopla y Yermo del Faraón · 30
+
+══════════════ LO QUE SE ASIGNÓ ══════════════
+   • Dibujo en el mundo (4 direcciones, caminar de 4 pasos), hordas de evento y panel de caza/bestiario: usan la hoja nueva.
+   • Nombres nuevos en: Bestiario (con descripción), tablas de cazador (TBPL), charla del guía por zona y Wiki (nombre + icono por tipo).
+   • El fondo negro de la imagen se quitó (transparente) y se guardó en 128 colores: +≈110 KB en play.html.
+   • NO cambia: vida, daño, XP, botín, oro, misiones, aggro/cerco de v403, ni el servidor (world.js/economy.js intactos).
+
+══════════════ CÓMO ESTÁ HECHO ══════════════
+   • play.html: tabla ET (sprite por tipo) → claves mb0..mb8; hoja MOBI embebida + lector mbGet (mismo patrón que las arañas sx); rama «mb» en sp() (escala k*.32, pies alineados) y en icon() (cuadro 72x72 para no deformar); drawHorde acepta las claves mb; BN/BS/TBPL/guideTalk con nombres nuevos.
+   • sw.js: sr-v404. wiki-data.js: nombre e icono de los 9 tipos.
+   • Para ajustar el tamaño en pantalla: el 0.32 de la rama «mb» en sp() (más alto = más grande). mb8 usa hue-rotate(115deg).
+
+══════════════ PRUEBAS ══════════════
+   ✅ node --check en los 16 scripts de play.html, en wiki-data.js y en sw.js: sin errores.
+   ✅ Recorte de los 9 tipos x 4 direcciones con la misma fórmula del código: cada fila sale en su dirección y cada tipo con su monstruo.
+   ⚠️ SIN probar en navegador/celular: tamaño en pantalla, ritmo de animación, y que el Archidemonio salga recoloreado (si el navegador no soporta ctx.filter, se ve igual que el Demonio cornudo).
+
+══════════════ OJO (lo que NO se cambió) ══════════════
+   • Las variantes de zona siguen con sus sprites viejos: chacal, perro salvaje, lobo, araña, escorpión, bandido/ladrón/asesino/asaltante. Solo el murciélago (variante) ya coincide con la hoja nueva.
+   • Las cuevas y mazmorras que usan los mismos tipos (ej. «Madriguera» de ratas) mostrarán ahora los monstruos nuevos, pero conservan sus textos viejos.
+   • Textos sueltos con nombres viejos (misiones, nombres de jefes de horda «Goblin/Momia/Orco») no se tocaron.

@@ -1,0 +1,28 @@
+v405 — SEGUNDA HOJA DE MOBS EN EL MUNDO ABIERTO (goblins, ghoul, orco cornudo y momias). Cambia solo el cliente (se suma a v404): Manual Deploy en Render: NO.
+
+Pedido (Mni): llevar a las zonas del mundo abierto los 8 monstruos de la segunda hoja (384x256: 12 columnas x 8 filas de 32x32; cada monstruo = 3 cuadros x 4 direcciones).
+
+══════════════ DÓNDE SALE CADA UNO ══════════════
+   Sprite                       Variante del juego que lo usa (mismos stats de siempre)          Dónde aparece
+   mc0 Ghoul pálido             «perro salvaje» (rdog)                                            Llanuras de Chang'an y primeras zonas
+   mc1 Goblin salvaje           «chacal» (jackal)                                                 Llanuras de Chang'an y primeras zonas
+   mc2 Goblin guerrero (casco)  «lobo» (wolf)                                                     Bosques y estepas (zonas 2 a 4)
+   mc3 Goblin lancero           «araña» (spider) y «bandido» (bandit)                             Bosques, estepas y caminos
+   mc4 Goblin encapuchado       «ladrón» (thief) y «asesino» (assassin)                           Desde la zona 2 hacia arriba
+   mc5 Orco cornudo             «capitán de campamento» (raider)                                  Campamentos de bandidos (el jefe del grupo)
+   mc6 Momia del desierto       NUEVA variante: 8 % de los mobs de desierto                       Desiertos (zonas 1 a 3)
+   mc7 Momia ancestral          NUEVA variante: 8 % de los mobs de desierto, zonas 4 en adelante  Desiertos fuertes
+   (El murciélago variante «bat» ahora usa el murciélago de la hoja de v404.)
+
+══════════════ LO QUE NO CAMBIA ══════════════
+   • Las variantes conservan su clave, vida, daño, velocidad y comportamiento (el ladrón sigue robando, el capitán sigue siendo capitán). Por eso las misiones y cacerías que piden «chacales», «lobos», «arañas», «bandidos»… siguen funcionando, aunque ahora se vean como goblins (el texto de la misión no se renombró).
+   • Escorpiones y los demás animales de desierto se quedan con su sprite.
+   • El mapa y las posiciones de los mobs no se mueven: las momias salen de un número aleatorio que ya se sacaba, no se agregó ninguno. En línea, el servidor sigue con los stats de world.json; los nombres/aspecto nuevos los pone el cliente (si quieres que las momias tengan vida/daño propios en línea, hay que volver a exportar world.json con tools/export-world.js).
+
+══════════════ CÓMO ESTÁ HECHO ══════════════
+   • play.html: hoja MCSI embebida (30 KB) + lector mcGet; rama «mc» en sp() (32 px a k=2, mismo tamaño y anclaje que los sprites viejos); tabla VAR re-apuntada; XV.mumA/mumB (Momia del desierto: vida x1,8, daño 1,4; Momia ancestral: vida x3, daño 1,9); varPick con 8 % extra en desierto.
+   • sw.js: sr-v405.
+
+══════════════ PRUEBAS ══════════════
+   ✅ node --check en los 16 scripts de play.html y en sw.js: sin errores. Hoja con fondo transparente revisada a mano (8 monstruos x 4 direcciones; el orden de filas abajo/izquierda/derecha/arriba coincide con el del código).
+   ⚠️ SIN probar en navegador/celular: tamaño en pantalla, animación y que salgan las momias en desierto.

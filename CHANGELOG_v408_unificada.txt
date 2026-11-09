@@ -1,0 +1,26 @@
+v408 — VERSIÓN UNIFICADA: tu v406 «efectos» (cuevas + efectos de hechizos) + mis cambios de mobs y dragones. Manual Deploy en Render: NO (el servidor no cambió; solo cambian play.html, sw.js y wiki-data.js).
+
+══════════════ QUÉ SE UNIÓ ══════════════
+   Base (tu línea, intacta):  v403 → v404/v405 cuevas (entradas en montaña, interiores RPG Cave Tiles, cuevas a 130+ casillas) → v406 efectos (sangre pixel-art, tajos y hechizos por clase).
+   Sumado encima (mi línea):
+     • Mobs del mundo abierto con la hoja nueva de 8 monstruos (slime ocular, murciélago abismal, goblin, esqueleto, gárgola, espectro, demonio cornudo, súcubo + Archidemonio recoloreado).  [CHANGELOG_v404_mobs_nuevos.txt]
+     • Segunda hoja de mobs: goblins, ghoul, orco cornudo y momias de desierto en las variantes del mundo.  [CHANGELOG_v405_mobs_nuevos_2.txt]
+     • Santuario de los Dragones: 8 dragones elementales Nv 550 en el extremo noroeste.  [CHANGELOG_v406_dragones_elementales.txt]
+     • Efectos de partículas por elemento de los dragones.  [CHANGELOG_v407_efectos_dragones.txt]
+   Numeración: tus v404-v406 y mis v404-v407 se hicieron en paralelo y se pisaban los números; el resultado de unirlos se llama v408 (sw.js = sr-v408). Los changelogs viejos se conservan tal cual.
+
+══════════════ CÓMO SE UNIÓ ══════════════
+   • Solo cambió play.html entre tu zip y la v403; mis 4 cambios se aplicaron sobre tu play.html y TODOS los puntos de anclaje coincidieron (ningún conflicto de código).
+   • Dos ajustes de integración con tus efectos de v406 (en vfHit):
+     1) Los mobs base no tienen nombre, así que tu regla «no vivo» no los veía. Ahora se usa su nombre del Bestiario: Slime, Esqueleto, Gárgola y Espectro sueltan esquirlas (hueso / piedra / espectro) en vez de sangre; Murciélago, Goblin, Demonio y Súcubo sangran. Las momias de desierto ya salían como hueso por su nombre.
+     2) Los dragones no sangran: cada golpe suelta partículas de su elemento (fuego, hielo, rayo…).
+   • Tus cuevas y mis dragones conviven: los nidos se ajustan a una casilla caminable DESPUÉS de generar las cuevas, así que si una montaña de cueva cae cerca, el nido se mueve.
+
+══════════════ PRUEBAS ══════════════
+   ✅ node --check de los 16 scripts de play.html, sw.js y wiki-data.js: sin errores.
+   ✅ Arnés de Node sobre el archivo unificado: 16 jefes (8 + 8 dragones) con vida, daño, nido y botín; los 8 colores salen con el matiz esperado; los 8 efectos de estado y los 8 estilos de partículas funcionan; la regla de sangre queda como arriba.
+   ⚠️ SIN probar en navegador/celular: es una unión de dos líneas de trabajo y nunca se ha corrido junta. Primero revisa: (1) que carguen mundo y cuevas, (2) un mob de cada tipo nuevo, (3) un hechizo con sangre/partículas, (4) viajar al noroeste y mirar un dragón dormido (💤/🔒).
+
+══════════════ OJO ══════════════
+   • Tu v404 de cuevas mueve cuevas y levanta montañas que bloquean el paso, pero world.json no cambió en tu zip. Si no lo regeneraste con tools/export-world.js, el servidor sigue con la solidez vieja (efecto menor: mobs en línea cerca de esas montañas). Esa herramienta no estaba en los zips, así que no lo pude regenerar.
+   • Las momias de desierto y los dragones tienen stats propios solo en modo offline; en línea el servidor usa los stats de world.json (ver v405 y v406).

@@ -1,0 +1,30 @@
+v407 — EFECTOS VISUALES DE LOS DRAGONES ELEMENTALES. Cambia solo el cliente (se suma a v404–v406): Manual Deploy en Render: NO.
+
+Pedido (Mni): «dale ok los efectos» (efectos visuales para cada dragón según su elemento).
+
+══════════════ QUÉ SE VE (cada elemento con su propio estilo de partículas) ══════════════
+   Elemento  Dragón              Estilo de las partículas
+   Tierra    Esmeralda           rocas que caen y hojas que giran
+   Viento    Celeste             remolinos / ráfagas curvas
+   Agua      Zafiro              gotas que caen
+   Hielo     Escarcha            copos de nieve que bajan meciéndose
+   Rayo      Relámpago           chispas en zigzag que parpadean
+   Veneno    Amatista            burbujas moradas que suben
+   Sombra    Ébano               volutas oscuras que se disipan
+   Fuego     Carmesí             brasas y llamas (reutiliza las llamas del juego)
+
+   Cuándo aparecen:
+   • AURA permanente alrededor del dragón (fuerte al pelear, muy leve mientras duerme).
+   • CARGA DEL ATAQUE: la zona marcada en el suelo se llena de partículas de su elemento mientras se prepara el golpe (áreas y embestida).
+   • IMPACTO: al caer el ataque sale una explosión de partículas hacia afuera y un anillo del color del elemento (los demás jefes mantienen su anillo morado de siempre).
+   • RASTRO al embestir (la línea de dash deja partículas).
+   • SOBRE EL JUGADOR: cuando un golpe te aplica el efecto (aturdido, congelado, quemado…) salen partículas y un anillo del color del dragón; la quemadura además echa llamas pequeñas en cada tic.
+
+══════════════ CÓMO ESTÁ HECHO ══════════════
+   • play.html: tipo de partícula nuevo «dz» dentro del sistema PT que ya existía (mismo tope de 420 partículas, así no pesa); funciones dzEmit/dzAura/dzTg/dzBurst/dzBurstAt/dzTrail/dzPart y la tabla DZST (estilos por elemento). Los telégrafos ahora llevan el elemento (q.ek); el anillo del impacto acepta color (FX.c). Los otros jefes, guardianes y monstruos no cambian.
+   • sw.js: sr-v407.
+
+══════════════ PRUEBAS ══════════════
+   ✅ node --check de los 16 scripts de play.html y de sw.js: sin errores.
+   ✅ Arnés de Node con lienzo simulado (t407_test.js): los 8 elementos generan sus partículas (aura, carga, impacto, rastro) con valores válidos, sin pasar el tope y sin errores al dibujarlas.
+   ⚠️ SIN probar en navegador/celular: cómo se ve en pantalla (tamaño/cantidad de partículas, rendimiento en celulares flojos). Si va pesado: bajar las probabilidades en dzAura (0,7 y 0,3) y en dzTg (0,55).

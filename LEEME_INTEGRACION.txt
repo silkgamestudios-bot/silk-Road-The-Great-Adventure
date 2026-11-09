@@ -1,0 +1,28 @@
+SILK ROAD - PAQUETE PARA UNIFICAR (cambios v404 a v409 sobre tu v403)
+
+QUE INCLUYE
+ cambios_play_html.json   36 cambios exactos sobre play.html (lineas sueltas)
+ bloque_nuevo.js          codigo nuevo grande (cuevas, efectos, pueblos, edificios) que se inserta de una vez
+ bloque_secciones.txt     indice de lo que trae el bloque
+ aplicar_cambios.py       aplica todo a CUALQUIER otro play.html
+ assets/hn_ena.png        sprite nuevo de la Enana (va en la raiz, junto a play.html)
+ servidor/economy.js      servidor con las frutas (o solo agregar 'fr1'..'fr8' al inicio de la lista MNK)
+ CHANGELOG_*.txt          que hace cada version
+
+COMO UNIFICAR CON TU OTRO SCRIPT
+ 1) Poner el otro play.html en una carpeta junto a esta.
+ 2) Ejecutar:   python3 aplicar_cambios.py  otro_play.html  play_unificado.html
+ 3) El script dice cuantos cambios aplico. "FALLO" = ese pedazo de codigo ya fue
+    modificado en el otro script: me pasas el archivo y lo resuelvo yo.
+ 4) Copiar hn_ena.png a la raiz y subir economy.js.
+ Si no quieres tocar nada: mandame el otro script y yo hago la union completa.
+
+PRUEBA HECHA: aplicar este paquete sobre la v403 original da EXACTAMENTE la v409 (archivo identico).
+Aplicarlo dos veces no duplica nada.
+
+QUE TIENE CADA VERSION
+ v404/v405 Cuevas: entradas de montana, interiores tematizados, lejos de los pueblos.
+ v406 Efectos: sangre pixel, hechizos por clase (cuerpo a cuerpo / distancia / magia).
+ v407 Pueblos: comercios en sprite, casas entrables, Mercado de Frutas y 8 frutas que curan HP/MP.
+ v408 Edificios: Iglesia, Mercado de Gemas y Mercado de Items con sprite propio.
+ v409 Enana: sprite nuevo.

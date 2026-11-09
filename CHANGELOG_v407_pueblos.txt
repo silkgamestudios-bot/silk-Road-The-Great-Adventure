@@ -1,0 +1,6 @@
+v407 - PUEBLOS EN SPRITE + CASAS ENTRABLES + MERCADO DE FRUTAS (sobre v406)
+1. Comercios con los sprites nuevos: Gremio de la Seda, Posada, Información, Canje, Establo, Cazadores, Herreria, Armeria, Botica, Materiales, Gremio de Forja y Carpa del Almacen.
+2. Casas del anillo exterior de cada pueblo: 8 modelos distintos, y se puede ENTRAR a todas (boton "Entrar · Casa"). Interior propio por tema de ciudad (cama, chimenea, mesa, cofre, vecino que habla). Cada casa guarda frutas en la alacena (1 revision cada 30 min por casa).
+3. MERCADO DE FRUTAS en los 12 pueblos: edificio grande, puesto, carreta y 7 arboles frutales cosechables.
+4. 8 frutas: Manzana, Naranja, Limon, Pera, Durazno, Uvas, Cereza, Melon de Hami. Curan HP y/o MP de forma pasiva cada 5 s durante 3 min (entran en el cupo de raciones, igual que la comida). Boton "Comer fruta" aparece cuando hay frutas y falta vida o mana. Arboles se regeneran en 4 a 8 min. El puesto vende cestas de 3 frutas por 90 de oro.
+5. Servidor: economy.js ahora reconoce fr1..fr8 (subir tambien este archivo).

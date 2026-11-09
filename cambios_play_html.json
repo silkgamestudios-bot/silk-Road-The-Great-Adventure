@@ -1,0 +1,217 @@
+[
+{
+"tipo": "texto",
+"old": "ownBlk(x,y,r)||ruinBlk(x,y,r)||coBlk(x,y,r)||(window.slBlk&&slBlk(x,y,r))||(window.SRSPB&&",
+"new": "ownBlk(x,y,r)||ruinBlk(x,y,r)||coBlk(x,y,r)||cvBlk(x,y,r)||(window.slBlk&&slBlk(x,y,r))||(window.SRSPB&&",
+"linea": 1017
+},
+{
+"tipo": "texto",
+"old": "function critFx(e,dm,c){if(FT.length>=80&&!c.cr)return;if(FT.length>=",
+"new": "function critFx(e,dm,c){try{vfHit(e,dm,c)}catch(x){}if(FT.length>=80&&!c.cr)return;if(FT.length>=",
+"linea": 1263
+},
+{
+"tipo": "texto",
+"old": " if(ok){if(sp.bk)P.b[sp.bk]=sp.bd;if(sp.hl){P.hp=Math",
+"new": " if(ok){try{vfSpell(sp,i,t)}catch(x){console.log('vfx',x)}if(sp.bk)P.b[sp.bk]=sp.bd;if(sp.hl){P.hp=Math",
+"linea": 1310
+},
+{
+"tipo": "texto",
+"old": "cocinado enorme'],['hil','🧵','Hilo de pesca']].filter(x=>P.fd[x[0]]>0)])h+=`<div class=\"ro",
+"new": "cocinado enorme'],['hil','🧵','Hilo de pesca'],...FRU.map(f=>[f.k,f.ic,f.n])].filter(x=>P.fd[x[0]]>0)])h+=`<div class=\"ro",
+"linea": 1802
+},
+{
+"tipo": "texto",
+"old": ";P.rc.push({k:b.k,hp:b.hp,mp:b.mp,nm:b.nm,ic:FCK.includes(b.k)?'🍤':'🍖',e:n+36e4,n:n+5000,pc:1});toast('🍽️ '+b.nm+' ('+P.rc.l",
+"new": ";P.rc.push({k:b.k,hp:b.hp,mp:b.mp,nm:b.nm,ic:b.ic||(FCK.includes(b.k)?'🍤':'🍖'),d:b.dur,e:n+(b.dur||36e4),n:n+5000,pc:1});toast('🍽️ '+b.nm+' ('+P.rc.l",
+"linea": 2288
+},
+{
+"tipo": "texto",
+"old": "rcPc(b.mp)+' 💧 de tu máximo cada 5 s durante 6 min',4000);vib(15);save()}",
+"new": "rcPc(b.mp)+' 💧 de tu máximo cada 5 s durante '+Math.round((b.dur||36e4)/6e4)+' min',4000);vib(15);save()}",
+"linea": 2288
+},
+{
+"tipo": "texto",
+"old": "\"width:'+Math.max(0,Math.min(100,100*(r.e-n)/36e4)).toFixed(1)+'%\"></u></i></div>'}).join('')}",
+"new": "\"width:'+Math.max(0,Math.min(100,100*(r.e-n)/(r.d||36e4))).toFixed(1)+'%\"></u></i></div>'}).join('')}",
+"linea": 2293
+},
+{
+"tipo": "texto",
+"old": "function church(sx,sy,w,h,now){const cx=sx+w/2,pul=.5+.5*Math.sin(now*1.6);",
+"new": "function church(sx,sy,w,h,now){if(vbBig('ig',sx,sy,w,h,now))return;const cx=sx+w/2,pul=.5+.5*Math.sin(now*1.6);",
+"linea": 2356
+},
+{
+"tipo": "texto",
+"old": "function gemTent(sx0,sy0,w0,h0,now){",
+"new": "function gemTent(sx0,sy0,w0,h0,now){if(vbBig('gk',sx0,sy0,w0,h0,now))return;",
+"linea": 2449
+},
+{
+"tipo": "texto",
+"old": "function sedaTent(sx0,sy0,w0,h0,now){",
+"new": "function sedaTent(sx0,sy0,w0,h0,now){if(vbBig('sd',sx0,sy0,w0,h0,now))return;",
+"linea": 2485
+},
+{
+"tipo": "texto",
+"old": "function house(sx,sy,w,h,c1,c2,name,ic,k){",
+"new": "function house(sx,sy,w,h,c1,c2,name,ic,k){try{if(vbHouse(sx,sy,w,h,name,ic,k))return}catch(e){}",
+"linea": 2559
+},
+{
+"tipo": "texto",
+"old": " const inH=(dx,dy,m)=>hs.some(h=>dx>=h[0]-m&&dx<h[0]+h[2]+m&&dy>=h[1]-m&&dy<h[1]+h[3]+m);",
+"new": " let mkr=null;const inH=(dx,dy,m)=>hs.some(h=>dx>=h[0]-m&&dx<h[0]+h[2]+m&&dy>=h[1]-m&&dy<h[1]+h[3]+m)||(mkr&&dx>=mkr.dx-m&&dx<mkr.dx+mkr.w+m&&dy>=mkr.dy-m&&dy<mkr.dy+mkr.h+m);try{mkr=vbPick(hs,e,R0,R1)}catch(x){mkr=null}",
+"linea": 2920
+},
+{
+"tipo": "texto",
+"old": " hs.forEach((h,i)=>{for(let dy=0;dy<3;dy++)for(let dx=0;dx<5;dx++){const xx=c.tx+h[0]+dx,yy=c.ty+h[1]+dy;M[yy][xx]=6;TL[yy*W+xx]=1}It.push([(h[1]+3)*T,'h',h[0]*T,h[1]*T,i])});\n const pushT=(dx,dy)=>{It.push([dy*T+22,'t',dx*T+16,dy*T+22,hh(dx,dy)>>5]);Ob.push([0,(c.tx+dx)*T+16,(c.ty+dy)*T+22,9])};",
+"new": " hs.forEach((h,i)=>{for(let dy=0;dy<3;dy++)for(let dx=0;dx<5;dx++){const xx=c.tx+h[0]+dx,yy=c.ty+h[1]+dy;M[yy][xx]=6;TL[yy*W+xx]=1}It.push([(h[1]+3)*T,'h',h[0]*T,h[1]*T,i])});\n if(mkr)try{vbPlaceMarket(c,ci,hh,It,Ob,mkr)}catch(x){console.log('mercado',x)}\n const pushT=(dx,dy)=>{It.push([dy*T+22,'t',dx*T+16,dy*T+22,hh(dx,dy)>>5]);Ob.push([0,(c.tx+dx)*T+16,(c.ty+dy)*T+22,9])};",
+"linea": 2923
+},
+{
+"tipo": "texto",
+"old": "  if(k=='h'){CURCI=ci;house(x,y,5*T,3*T,TH.r[q[4]%TH.r.length],TH.",
+"new": "  if(k=='h'){CURCI=ci;VBI=q[4];house(x,y,5*T,3*T,TH.r[q[4]%TH.r.length],TH.",
+"linea": 2938
+},
+{
+"tipo": "texto",
+"old": "  else if(k=='t')parkTree(x,y,st,now,q[4]&255);\n  else if(k=='l')lamp(x,y,now,TH.lc);",
+"new": "  else if(k=='t')parkTree(x,y,st,now,q[4]&255);\n  else if(k=='f')vfTree(x,y,q,now,ci);else if(k=='m'||k=='fs'||k=='fw')vbMk(x,y,q,k,now,c);\n  else if(k=='l')lamp(x,y,now,TH.lc);",
+"linea": 2939
+},
+{
+"tipo": "texto",
+"old": "ect'&&HFX)HFX.sil={}};im.src='hn_'+k+'.png?v=394'})}",
+"new": "ect'&&HFX)HFX.sil={}};im.src='hn_'+k+'.png?v=409'})}",
+"linea": 5970
+},
+{
+"tipo": "texto",
+"old": "cy);continue}const a=f.t/.3;g.globalAlpha=a*.7;g.fillStyle=f.k=='heal'?'#7dff9a':f.k=='mana",
+"new": "cy);continue}const a=f.t/.3;g.globalAlpha=a*.12;g.fillStyle=f.k=='heal'?'#7dff9a':f.k=='mana",
+"linea": 6500
+},
+{
+"tipo": "texto",
+"old": "  else{g.globalAlpha=Math.min(1,p.t/.2);g.fillStyle=p.k=='quake'?(p.s>5?'#8a6a45':'#b99a6a'):'#bbb';g.fillRect(x-p.s/2,y-p.s/2,p.s,p.s);g.globalAlpha=1}}\n if(INT.on){try{intFront(cx,cy,now)}catch(e){console.log(e)}}else if(UG.on){try{ugFront(cx,cy,now)}catch(e){console.log(e)}}else{try{slFront(cx,cy,now)}catch(e){}try{drawTempleRoof(cx,cy,now);drawLife(cx,cy,now)}catch(e){}}",
+"new": "  else{g.globalAlpha=Math.min(1,p.t/.2);g.fillStyle=p.k=='quake'?(p.s>5?'#8a6a45':'#b99a6a'):'#bbb';g.fillRect(x-p.s/2,y-p.s/2,p.s,p.s);g.globalAlpha=1}}\n try{vfDraw(cx,cy)}catch(e){}\n if(INT.on){try{intFront(cx,cy,now)}catch(e){console.log(e)}}else if(UG.on){try{ugFront(cx,cy,now)}catch(e){console.log(e)}}else{try{slFront(cx,cy,now)}catch(e){}try{drawTempleRoof(cx,cy,now);drawLife(cx,cy,now)}catch(e){}}",
+"linea": 6521
+},
+{
+"tipo": "texto",
+"old": "[si].n}$('harv').hidden=nearGrass()<0||modal;$('cook').hidden=!nearCook()||modal;$('inn').",
+"new": "[si].n}$('harv').hidden=nearGrass()<0||modal;try{frBtn()}catch(e){}$('cook').hidden=!nearCook()||modal;$('inn').",
+"linea": 6538
+},
+{
+"tipo": "texto",
+"old": "];\nfunction dgFree(tx,ty){for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const r=M[ty+dy];if(!r)return 0;const v=r[tx+dx];if(v!=0&&v!=1)return 0}return 1}",
+"new": "];\nfunction dgFreeW(tx,ty){for(let dy=-13;dy<=4;dy+=2)for(let dx=-10;dx<=10;dx+=2){const r=M[ty+dy];if(!r)return 0;const v=r[tx+dx];if(v!=0&&v!=1)return 0}return 1}\nfunction dgFree(tx,ty){for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const r=M[ty+dy];if(!r)return 0;const v=r[tx+dx];if(v!=0&&v!=1)return 0}return 1}",
+"linea": 6992
+},
+{
+"tipo": "texto",
+"old": "  /* 2) entrada en la superficie, cerca del pueblo */\n  let ent=null;const a0=sp.sd%628/100;",
+"new": "  /* 2) entrada en la superficie. v404: las cuevas quedan LEJOS de los pueblos (≥ 90-115 casillas de cualquiera); el Coliseo y la Torre siguen cerca */\n  let ent=null;const FAR=sp.id!='co'&&sp.id!='to';\n  if(FAR){const MDS=sp.tier<=2?[90,75,60,45]:[115,95,75,55,40],hs=(a,b)=>cvHash(a,b,sp.sd);\n   for(const MD of MDS){let bs2=1e9,bp=null;\n    for(let ty=24;ty<H-24;ty+=3)for(let tx=24;tx<W-24;tx+=3){\n     if(TM[ty*W+tx]>sp.tier)continue;\n     let md=1e9;for(const c of C){const q=Math.hypot(c.tx-tx,c.ty-ty);if(q<md)md=q}\n     if(md<MD)continue;const dc=Math.hypot(city.tx-tx,city.ty-ty);if(dc>330)continue;\n     const sc=Math.abs(md-135)+dc*.06+hs(tx,ty)*30;if(sc>=bs2)continue;\n     if(dgNear(tx,ty,16)||hasP(best[0],best[1],sp.w,sp.h,8,tx,ty)||DGL.some(d=>d.ent&&Math.hypot(d.ent.tx-tx,d.ent.ty-ty)<70)||!dgFreeW(tx,ty))continue;\n     bs2=sc;bp={tx,ty}}\n    if(bp){ent=bp;break}}}\n  else{const a0=sp.sd%628/100;",
+"linea": 7007
+},
+{
+"tipo": "texto",
+"old": "   if(tx<14||ty<14||tx>W-14||ty>H-14||TM[ty*W+tx]>sp.tier||dgNear(tx,ty,14)||hasP(best[0],best[1],sp.w,sp.h,8,tx,ty)||C.some((c,i)=>i!=sp.c&&Math.hypot(c.tx-tx,c.ty-ty)<26)||!dgFree(tx,ty))continue;ent={tx,ty}}\n  if(!ent)continue;",
+"new": "   if(tx<14||ty<14||tx>W-14||ty>H-14||TM[ty*W+tx]>sp.tier||dgNear(tx,ty,14)||hasP(best[0],best[1],sp.w,sp.h,8,tx,ty)||C.some((c,i)=>i!=sp.c&&Math.hypot(c.tx-tx,c.ty-ty)<26)||!dgFree(tx,ty))continue;ent={tx,ty}}\n}\n  if(!ent)continue;",
+"linea": 7010
+},
+{
+"tipo": "texto",
+"old": "  for(let dy=-7;dy<=7;dy++)for(let dx=-9;dx<=9",
+"new": "  if(FAR){for(let dy=-14;dy<=5;dy++)for(let dx=-12;dx<=12;dx++){const yy=ent.ty+dy,xx=ent.tx+dx;if(yy>=0&&xx>=0&&yy<H&&xx<W)TREE[yy*W+xx]=0}}else for(let dy=-7;dy<=7;dy++)for(let dx=-9;dx<=9",
+"linea": 7012
+},
+{
+"tipo": "texto",
+"old": "ot((e.hx||0)/T-ent.tx,(e.hy||0)/T-ent.ty)<7||inR(e,best[0],best[1],sp.w,sp.h,2))E.splice(j",
+"new": "ot((e.hx||0)/T-ent.tx,(e.hy||0)/T-ent.ty)<7||(FAR&&Math.abs((e.hx||0)/T-ent.tx)<12&&(e.hy||0)/T>ent.ty-14&&(e.hy||0)/T<ent.ty+5)||inR(e,best[0],best[1],sp.w,sp.h,2))E.splice(j",
+"linea": 7014
+},
+{
+"tipo": "bloque",
+"anchor": "/* ===== COLISEO (v276): fachada romana",
+"archivo": "bloque_nuevo.js"
+},
+{
+"tipo": "texto",
+"old": "ndmarkM(d,x,y,now){if(d.id=='mi'){miLandmark(x,y,now);return}if(d.id=='to'){twLandmark(d,x",
+"new": "ndmarkM(d,x,y,now){if(d.id=='mi'){miLandmark(x,y,now);return}if(CVP[d.id]){cvMount(d,x,y,now);return}if(d.id=='to'){twLandmark(d,x",
+"linea": 7095
+},
+{
+"tipo": "texto",
+"old": " if(DG.id=='co')return coTile(t,x,y,px,py);\n const TH=DG.th,f=Math.max(1,DG.f|0),dp=Math.min(1,(f-1)/Math.max(1,DG.n-1)),fl=(xx,yy)=>{const r=M[yy];const v=r&&r[xx];return v==7||v==8},",
+"new": " if(DG.id=='co')return coTile(t,x,y,px,py);\n if(CVI[DG.id])return cvTile(t,x,y,px,py);\n const TH=DG.th,f=Math.max(1,DG.f|0),dp=Math.min(1,(f-1)/Math.max(1,DG.n-1)),fl=(xx,yy)=>{const r=M[yy];const v=r&&r[xx];return v==7||v==8},",
+"linea": 7107
+},
+{
+"tipo": "texto",
+"old": "   if(r8(12)<.03)sp('candle-'+(1+((x+y)&1)),px+16,py+14,2)}",
+"new": "   cvWall(x,y,px,py,q,fl(x,y+1));if(r8(12)<.03)sp('candle-'+(1+((x+y)&1)),px+16,py+14,2)}\n  else cvDeep(x,y,px,py,q);",
+"linea": 7128
+},
+{
+"tipo": "texto",
+"old": " g.fillStyle='rgba(8,5,6,'+(.26+.2*dp).toFixed",
+"new": " cvFloor(x,y,px,py,q);g.fillStyle='rgba(8,5,6,'+(.26+.2*dp).toFixed",
+"linea": 7142
+},
+{
+"tipo": "texto",
+"old": " const su=DG.su||3;return{rooms,r,ups:perm.slice(0,su),dns:perm.",
+"new": " const su=DG.su||3;\n if(CVI[DG.id]&&DG.id!='cs'){const pr=dgRng((DG.sd||9100)*5+f*131),keep=new Set(perm.slice(0,su*2+1)),pools=[];\n  rooms.forEach((o,i)=>{if(keep.has(i)||o.w<10||pr()<.12)return;for(let n=0;n<3;n++){if(n&&pr()<.45)break;const pcx=o.cx+Math.round((pr()-.5)*o.w*.5),pcy=o.cy+Math.round((pr()-.5)*o.h*.45),rad=1.5+pr()*1.5;\n    if(pools.some(p=>Math.hypot(p[0]-pcx,p[1]-pcy)<6))continue;const tl=[];let ok=1;\n    for(let yy=Math.floor(pcy-rad-1);yy<=pcy+rad+1&&ok;yy++)for(let xx=Math.floor(pcx-rad-1);xx<=pcx+rad+1;xx++){const d=Math.hypot(xx-pcx,yy-pcy);if(d<=rad+(pr()-.5)*.5){for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){if(!isF(xx+a,yy+b)){ok=0}}tl.push([xx,yy])}}\n    if(ok&&tl.length>=4){for(const [xx,yy] of tl)M[ry+yy][rx+xx]=3;pools.push([pcx,pcy])}}})}\n return{rooms,r,ups:perm.slice(0,su),dns:perm.",
+"linea": 7192
+},
+{
+"tipo": "texto",
+"old": "),ly=d.id=='co'?y-246:d.th?(d.id=='to'?y-372:y-72):y-236;g.fillStyle='#000';g.fillText(lb,x+1,",
+"new": "),ly=d.id=='co'?y-246:d.th?(d.id=='to'?y-372:(CVP[d.id]?y-150:y-72)):y-236;g.fillStyle='#000';g.fillText(lb,x+1,",
+"linea": 7980
+},
+{
+"tipo": "texto",
+"old": "lStyle='#ffe0a0';g.fillText(lb,x,ly)}}return}",
+"new": "lStyle='#ffe0a0';g.fillText(lb,x,ly)}}return}\n try{cvAmb(cx,cy,now)}catch(e){}",
+"linea": 7980
+},
+{
+"tipo": "texto",
+"old": ":1,rm:0,su:0,dn:0,exs:null,th:null};INT.ok=1;",
+"new": ":1,rm:0,su:0,dn:0,exs:null,th:null};INT.ok=1;try{homeInit()}catch(e){console.log('home',e)}",
+"linea": 8022
+},
+{
+"tipo": "texto",
+"old": "n)return null;const c=cityAt(P);if(!c)return null;const ci=C.indexOf(c);for(const b of BLD){if",
+"new": "n)return null;const c=cityAt(P);if(!c)return vbDoor(null,0);const ci=C.indexOf(c);for(const b of BLD){if",
+"linea": 8028
+},
+{
+"tipo": "texto",
+"old": "ot(P.x-x,P.y-y)<56)return{c,b,x,y,ci}}return null}",
+"new": "ot(P.x-x,P.y-y)<56)return{c,b,x,y,ci}}return vbDoor(c,ci)}",
+"linea": 8028
+},
+{
+"tipo": "texto",
+"old": " INT.fd=1;try{vib(15)}catch(e){}}",
+"new": " INT.fd=1;try{vib(15)}catch(e){}try{if(d.b.k=='home')homeLoot(d)}catch(e){}}",
+"linea": 8036
+}
+]

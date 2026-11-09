@@ -1,0 +1,12 @@
+v404 — CUEVAS (sobre la v403)
+1. Entradas nuevas: cada cueva es una montaña con boca de cueva dibujada (estilo pixel), con tema propio:
+   Hombres Lobo (roca fría con nieve y colmillos), Madriguera de Ratas (colina con pasto, vigas de madera, paja y huecos),
+   Arañas (telarañas y huevos), Catacumbas (calaveras y tumbas), Pantano (musgo, lianas y estanque),
+   Abismo (roca volcánica con lava y humo), Cuatro Sellos (arenisca con 4 sellos). Antorchas, luz y partículas.
+2. Las montañas bloquean el paso: solo se entra por la boca.
+3. Ubicación: todas las cuevas quedan a 130+ casillas del pueblo más cercano (antes ~30), se aleja también la Mina y los Sellos.
+4. Interiores con más detalle por tema: paredes profundas con estratos y vetas, estalactitas/estalagmitas, huellas y escarcha (lobos),
+   paja y madrigueras (ratas), losas y nichos con calaveras (catacumbas), lava (abismo), musgo y hongos (pantano), etc.
+   Partículas ambientales dentro de cada cueva.
+5. (v405) Interior de cuevas estilo "RPG Cave Tiles": paredes de piedras redondas con contorno oscuro y cara frontal, suelo limpio con sombras de pared,
+   vigas de mina con farol, barriles y cristales pegados a la pared, pozos de agua / lava (no se pueden cruzar) según la cueva, paleta propia por tema.

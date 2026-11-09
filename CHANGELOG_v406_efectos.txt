@@ -1,0 +1,9 @@
+v406 - EFECTOS VISUALES NUEVOS (sobre v405 cuevas)
+1. SANGRE pixel-art en todo lo vivo: cada golpe a un mob suelta salpicadura roja (estallido + gotas con gravedad + mancha). Crítico = más grande. El héroe también sangra al recibir daño.
+2. Lo NO vivo (golems, esqueletos, fantasmas, elementales) no sangra: sueltan esquirlas de piedra / hueso / fuego / espectro.
+3. Cada hechizo de las 8 clases tiene su efecto propio segun el elemento (fuego, hielo, rayo, luz, naturaleza, piedra, monedas, chi, arcano):
+   - Cuerpo a cuerpo (Mercader, Caballero, Monje, Enana): tajos de acero/chi/fuego, ondas de piedra, torbellinos, temblor de pantalla.
+   - A distancia (Arquero): flechas con estela, lluvia de flechas, lluvia de fuego, flecha explosiva.
+   - Magia (Mago, Sanador, Druida): bolas con estela, rayos desde el cielo, cadena de rayos, columnas de luz, hojas en espiral, auras y domos de escudo.
+4. Ataques basicos tambien con efecto: tajo (melee) o destello magico (magos/curanderos/druida/arquero).
+5. Los circulos planos viejos quedan casi invisibles (reemplazados por los nuevos).

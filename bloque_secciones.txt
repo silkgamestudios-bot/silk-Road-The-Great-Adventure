@@ -1,0 +1,5 @@
+       0  /* ===== v404: MONTAÑAS CON BOCA DE CUEVA (entrada en la superficie) + interiores temáticos =====
+   24095  /* ===== v405: interior de cuevas estilo "RPG Cave Tiles": paredes de piedras redondas con contorn
+   31546  /* ===== v406: EFECTOS VISUALES pixel-art (sangre, tajos, hechizos por clase) ===== */
+   46286  /* ===== v407: casas y comercios en sprite, casas enterables, huerto/Mercado de Frutas con frutas 
+  457934  /* ===== v408: Iglesia, Mercado de Gemas y Mercado de Items con sprite propio ===== */

@@ -1,0 +1,6 @@
+v408 (sobre v407)
+- Iglesia: castillo de piedra con antorchas (imagen 1).
+- Mercado de Gemas: casa azul con bandera (imagen 2).
+- Mercado de Items (antes "Mercado de la Seda"): casa de techo rojo (imagen 3). El nombre del cartel cambia a "Mercado de Items".
+- De noche los tres brillan con luz calida en las ventanas.
+- Todo lo demas (botones, interiores, tienda de cada uno) queda igual.

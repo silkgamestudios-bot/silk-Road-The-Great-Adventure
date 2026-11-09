@@ -1,0 +1,4 @@
+v409 (sobre v408)
+- Enana Guerrera: sprite nuevo (rubia con diadema, armadura blanca y azul). Archivo hn_ena.png (96x128, 3 pasos x 4 direcciones, mismo formato que los demas heroes).
+- Revisados los movimientos de Enana y Mercader en las 4 direcciones (abajo, izquierda, derecha, arriba) caminando e inmovil: miran para donde deben y el ciclo de pasos funciona.
+- Version de cache de los sprites subida (v=409) para que los jugadores vean el nuevo sin borrar cache.

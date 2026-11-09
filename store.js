@@ -21,8 +21,8 @@ ops['name.claim']=(u,m)=>{const r=E.claimName(u,m.name);if(r.e)return r;E.pushEn
 /* ---- Ranking: los 100 mejores por nivel o por habilidad, global o por clase. Lo calcula el servidor con datos ya validados ---- */
 const RKC={},RKTTL=+process.env.RK_TTL||8e3;/* ranking: se recalcula cada 8 s (antes 45 s: un héroe nuevo o que subía de nivel tardaba casi un minuto en aparecer) */
 function rkList(cc,k){const key=cc+'|'+k,h=RKC[key],t=Date.now();if(h&&t-h.t<RKTTL)return h.l;
- const l=[];for(const u in S.ECO.acc){const a=S.ECO.acc[u];if(!a||!(a.nm||a.pn)||!(a.cls>=0)||(cc>=0&&a.cls!==cc)||(a.strikes|0)>=8)continue;let mst=false;try{mst=S.isMaster(u)}catch(e){}if(mst)continue;
-  const sx=Array.isArray(a.sx)?a.sx:[1,1,1];l.push({u,n:a.nm||a.pn,c:a.cls|0,l:a.lv|0,x:a.xp||0,s:[sx[0]|0||1,sx[1]|0||1,sx[2]|0||1],g:(S.tagOf&&S.tagOf(u))||''})}
+ const l=[];for(const u in S.ECO.acc){const a=S.ECO.acc[u];if(!a||!(a.nm||a.pn)||(cc>=0&&(a.cls>=0?a.cls:-9)!==cc)||(a.strikes|0)>=8)continue;let mst=false;try{mst=S.isMaster(u)}catch(e){}if(mst)continue;
+  const sx=Array.isArray(a.sx)?a.sx:[1,1,1];l.push({u,n:a.nm||a.pn,c:a.cls>=0?a.cls|0:0,l:Math.max(1,a.lv|0),x:a.xp||0,s:[sx[0]|0||1,sx[1]|0||1,sx[2]|0||1],g:(S.tagOf&&S.tagOf(u))||''})}
  const v=k==='lv'?(x=>0):k==='st'?(x=>x.s[0]+x.s[1]+x.s[2]):(x=>x.s[+k[1]]);
  l.sort((p,q)=>k==='lv'?(q.l-p.l||q.x-p.x):(v(q)-v(p)||q.l-p.l||q.x-p.x));RKC[key]={t,l};return l}
 ops['rank.get']=(u,m)=>{const c=Math.floor(+m.c),cc=c>=0&&c<=7?c:-1,k=['lv','s0','s1','s2','st'].includes(m.k)?m.k:'lv',l=rkList(cc,k);

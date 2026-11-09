@@ -1,0 +1,6 @@
+v410 - Ranking + combate
+- Ranking global: ahora entran TODAS las clases y cuentas viejas sin clase (store.js + economy.js asignan clase; nivel minimo 1).
+- Mercader, Caballero y Enana: cada golpe pega a los 8 casilleros alrededor a la vez. Objetivo principal: dano completo + doble tajo, onda y temblor; los demas 70% con su propio efecto independiente.
+- Mobs -> jugador: garras (bestias), orbes (magos), golpe pesado (resto); jefes/area-jefes: onda de choque + temblor de pantalla.
+- Sonidos nuevos: claw, slash, smash, coin, heavy.
+- Edificios del pueblo: cada sprite se ajusta a su contenedor (ancho de su lote), ya no se montan unos sobre otros.

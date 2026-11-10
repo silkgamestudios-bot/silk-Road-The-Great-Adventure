@@ -92,7 +92,8 @@ const TR=require('./terr')(S,E);
 const SD=require('./seda')(S,E);
 const TB=require('./tablon')(S,E,{SO});   /* v398: Tablón de la Ruta (misiones globales «gana el primero») */
 const PY=require('./pay')(S,E,{PAY_ID});
-const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops,TB.ops,PY.ops);
+const UM=require('./usdtmkt')(S,E,{PY,MK,CM});CM.setPY(PY);   /* v410: Mercado USDT con garantía vía Binance Pay (sin MetaMask) */
+const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops,TB.ops,PY.ops,UM.ops);
 /* Acceso anticipado: solo el master. */
 OPS['adm.lv']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const n=String(m.who||'').trim().toLowerCase().slice(0,40),lv=Math.floor(+m.lv);if(!n)return{e:'Escribe el nombre del jugador'};if(!(lv>=1&&lv<=E.CFG.lvMax))return{e:'Nivel entre 1 y '+E.CFG.lvMax};
  let id=E.uidByName(n);if(!id)for(const k in (ECO.acc||{})){const q=ECO.acc[k];if(q&&[q.nm,q.pn].some(x=>x&&String(x).toLowerCase()===n)){id=k;break}}

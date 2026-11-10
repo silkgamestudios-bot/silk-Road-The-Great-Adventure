@@ -39,9 +39,10 @@ function cents(o){return o.c}
 function busy(c,t){/* ¿algún pedido con esa cantidad sigue "vivo"? (pendiente, o vencido hace menos de FREE_LAG) */
  const d=G();for(const id in d.o){const o=d.o[id];if(o.c!==c||o.st==='paid')continue;if(t<o.x+FREE_LAG)return true}return false}
 function dmax(base){return Math.max(5,Math.min(49,Math.floor(base*DISC)))}   /* descuento máximo en centavos: DISC % del precio base (5% → 1 USDT: 5 c · 3: 15 c · 5: 25 c · 10 o más: 49 c) */
+function pickCentsC(bc,t){const free=[],M=Math.max(5,Math.min(49,Math.floor(bc*DISC/100)));for(let d=1;d<=M;d++)if(!busy(bc-d,t))free.push(bc-d);if(!free.length)return 0;return free[crypto.randomInt(free.length)]}
 function pickCents(base,t){const b=base*100,free=[],M=dmax(base);for(let d=1;d<=M;d++)if(!busy(b-d,t))free.push(b-d);if(!free.length)return 0;return free[crypto.randomInt(free.length)]}
-function pending(u){const d=G(),t=now();for(const id in d.o){const o=d.o[id];if(o.u===u&&o.st==='p'&&t<o.x)return o}return null}
-function view(o){const t=now(),live=o.st==='p'&&t<o.x;return{id:o.id,st:o.st==='paid'?'paid':(live?'p':'exp'),amt:fmt(o.c),usdt:o.c/100,base:o.b,g:o.g,pb:o.pm?o.pm.b:0,left:live?Math.max(0,o.x-t):0,pid:PAY_ID,ttl:TTL}}
+function pending(u){const d=G(),t=now();for(const id in d.o){const o=d.o[id];if(o.u===u&&o.st==='p'&&t<o.x&&o.k!=='mk')return o}return null}
+function view(o){const t=now(),live=o.st==='p'&&t<o.x;return{id:o.id,k:o.k||'',st:o.st==='paid'?'paid':(live?'p':'exp'),amt:fmt(o.c),usdt:o.c/100,base:o.b,g:o.g,pb:o.pm?o.pm.b:0,left:live?Math.max(0,o.x-t):0,pid:PAY_ID,ttl:TTL}}
 function clean(){const d=G(),t=now();for(const id in d.o){const o=d.o[id];if(o.st!=='paid'&&t>o.x+KEEP){delete d.o[id];S.dirty()}}
  const k=Object.keys(d.tx);if(k.length>20000){k.sort((a,b)=>d.tx[a].t-d.tx[b].t).slice(0,k.length-15000).forEach(x=>delete d.tx[x]);S.dirty()}}
 
@@ -57,6 +58,10 @@ function usedPromo(u,c,skip){/* USDT de promo ya usados por la CUENTA: órdenes 
 function calc(u,base,t,skip){const c=promo(),g0=PACKS[base];let ph=0;if(c.on&&t>=c.t0&&t<c.t2)ph=t<c.t1?1:2;
  const pc=ph===1?c.p1:ph===2?c.p2:0,pu=pc>0?Math.max(0,Math.min(base,c.cap-usedPromo(u,c,skip))):0,pb=pc>0?Math.round(pu*pc/100):0;return{g:g0+pb,pb,pu,i:c.id,pc}}
 
+const H={};
+/* v410: orden de pago para el Mercado USDT (precio publicado en centavos); se verifica igual que las gemas */
+function newMk(u,baseCents,ref,kind){if(!ON)return err('El pago automático aún no está activado');if(!PAY_ID)return err('Falta configurar la cuenta de cobro');const t=now(),c=pickCentsC(baseCents,t);if(!c)return err('Hay muchos pedidos ahora mismo: intenta de nuevo en un minuto');
+ const id='p'+E.rid(8),o=G().o[id]={id,u,b:baseCents/100,g:0,c,t,x:t+TTL,st:'p',k:'mk',ref:String(ref||'').slice(0,40),pk:String(kind||'').slice(0,4)};S.dirty();log('[pay] orden mercado '+id+' de '+((E.acct(u)||{}).nm||u)+': '+fmt(c)+' USDT ('+(kind||'')+' '+ref+')');wake();return{ok:1,o,v:view(o)}}
 const ops={};
 ops['pay.new']=(u,m)=>{
  if(!ON)return err('El pago automático aún no está activado');
@@ -78,6 +83,7 @@ ops['adm.pay.rvok']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const
  r.done=1;r.by=String((E.acct(u)||{}).nm||u).slice(0,20);r.dt=now();S.dirty();return{ok:1}};
 
 function credit(o,tx,ts,how){if(o.st==='paid')return false;const a=E.acct(o.u);o.st='paid';o.tx=tx;o.pt=now();o.bt=ts;o.how=how||'auto';G().tx[tx]={t:now(),o:o.id,s:'ok'};
+ if(o.k==='mk'){S.dirty();log('[pay] PAGADA (mercado USDT) '+o.id+' '+(a.nm||o.u)+': '+fmt(o.c)+' USDT · tx '+tx+' ('+(how||'auto')+')');try{H.onMk&&H.onMk(o,tx)}catch(e){log('[mercado-usdt] error entregando: '+(e&&e.stack||e));try{S.notify('⚠️ SILK ROAD · Pago de mercado recibido pero la entrega falló\nOrden '+o.id+' · '+fmt(o.c)+' USDT · tx '+tx)}catch(x){}}return true}
  E.grantGems(o.u,o.g,'own','pago USDT '+fmt(o.c)+' (Binance '+tx+')');S.dirty();
  try{S.push(o.u,{t:'note',m:'💎 ¡Pago recibido! Se acreditaron '+o.g+' gemas'})}catch(e){}
  log('[pay] PAGADA '+o.id+' '+(a.nm||o.u)+': '+fmt(o.c)+' USDT → +'+o.g+' gemas · tx '+tx+' ('+(how||'auto')+')');
@@ -115,7 +121,7 @@ async function check(){
    const near=Object.values(d.o).find(o=>o.st==='p'&&t<o.x&&Math.abs(o.c-c)<=100);
    toReview(near?'Monto distinto al de la orden activa de '+String((E.acct(near.u)||{}).nm||near.u).slice(0,20)+' ('+fmt(near.c)+')':'Sin orden que coincida',tx,ts,c,near||null)}
   /* marca como vencidas las órdenes que pasaron su ventana */
-  for(const id in d.o){const o=d.o[id];if(o.st==='p'&&t>=o.x){o.st='exp';S.dirty()}}
+  for(const id in d.o){const o=d.o[id];if(o.st==='p'&&t>=o.x){o.st='exp';S.dirty();if(o.k==='mk'){try{H.onMkExp&&H.onMkExp(o)}catch(e){}}}}
   clean()}
  catch(e){const m=String(e&&e.message||e);if(/-1021|timestamp/i.test(m))await syncTime();lastErr=m;if(now()-lastErrT>300000){lastErrT=now();log('[pay] error consultando Binance: '+m)}}
  finally{busyQ=false}}
@@ -128,4 +134,4 @@ function loop(){let any=false;const d=G(),t=now();for(const id in d.o){const o=d
 function wake(){if(!ON||!started)return;if(nextAt-now()>POLL)sched(POLL)}
 function why(){return !KEY&&!SEC?'No llegan BINANCE_API_KEY ni BINANCE_SECRET al servidor':!KEY?'Falta BINANCE_API_KEY':!SEC?'Falta BINANCE_SECRET':!PAY_ID?'Falta BINANCE_PAY_ID':''}
 function start(){if(!ON){log('[pay] pagos automáticos APAGADOS: '+why()+' · variables con "BINANCE" que ve el servidor: '+(Object.keys(process.env).filter(k=>/binance/i.test(k)).join(', ')||'ninguna'));return}if(!PAY_ID)log('[pay] ⚠️ falta BINANCE_PAY_ID');started=true;syncTime().then(()=>{log('[pay] pagos automáticos ACTIVOS · paquetes '+JSON.stringify(PACKS)+' · orden de '+TTL/60000+' min');check().then(loop)})}
-return{ops,start,check,_PACKS:()=>PACKS}};
+return{ops,start,check,hooks:H,newMk,view,get:id=>G().o[id]||null,on:()=>ON&&!!PAY_ID,PAY_ID,_PACKS:()=>PACKS}};

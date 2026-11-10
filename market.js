@@ -50,6 +50,9 @@ function giveBack(o){if(o.wh&&o.it){const a=E.acct(o.u),W=wh(a);holdReg(o.it.id,
  else if(o.pv&&o.wh){const a=E.acct(o.u),W=wh(a),k=o.pv==='pocion'?'pot':o.pv==='mpocion'?'mpot':o.pv,q=o.q|0,old=W.find(x=>x.type!=='item'&&x.k===k);if(old)old.q+=q;else W.push({k,n:k,q,type:'res'});S.dirty()}else if(o.pv)E.deliver(o.u,Object.assign({note:'↩️ Oferta retirada'},provDl(o.pv,o.q|0)))
  else if(o.ec)E.deliver(o.u,{ec:{k:o.ec,q:o.q|0},note:'↩️ Monedas devueltas'})
  else if(o.tk)tkAdd(o.u,o.tk,o.q|0)}
+/* v410: entrega de una oferta ya pagada en USDT (la usa usdtmkt.js); no toca oro */
+function deliverOffer(o,u){const bd={note:'🛒 Compraste'};if(o.it){bd.item=o.it;bd.note+=' '+o.it.n;holdReg(o.it.id,u,0)}else if(o.pet){bd.pet=o.pet;bd.note+=' una mascota';holdReg(o.pet.id,u,0,'p')}else if(o.pv){Object.assign(bd,provDl(o.pv,o.q|0));bd.note+=' '+o.q+' de '+o.pv}else if(o.ec){bd.ec={k:o.ec,q:o.q|0};bd.note+=' '+o.q+' monedas'}else if(o.tk){tkAdd(u,o.tk,o.q|0);bd.note+=' '+(o.q|0)+' boleto(s) de plan'}
+ E.deliver(u,bd)}
 ops['offer.buy']=(u,m)=>{const id=String(m.id||''),o=col('offers')[id];if(!o||o.auc)return{e:'La oferta ya no existe'};if(o.u===u)return{e:'Es tu propia oferta'};
  const b=E.acct(u),t=tax(o.p);if(E.avail(b,'gold')<t.pay)return{e:'Oro insuficiente: te faltan '+(t.pay-E.avail(b,'gold'))};
  delDoc('offers',id);
@@ -294,4 +297,4 @@ const compRun=()=>{try{const fs=require('fs'),path=require('path');const f=path.
   if(ok){done[c.id]={u,k,q:Math.floor(+c.q),t:Date.now()};S.dirty();console.log('[comp] entregado',c.id,'a',c.nombre,k,c.q)}else console.log('[comp] '+c.id+': ítem "'+k+'" no válido')}}catch(e){console.log('[comp] error',e.message)}};
 setTimeout(compRun,8000);setInterval(compRun,10*60*1000);
 
-return{ops,shopView,iv,PVL,pvKill,btyHas,prizeOk,grant}};
+return{ops,shopView,iv,PVL,pvKill,btyHas,prizeOk,grant,giveBack,deliverOffer}};

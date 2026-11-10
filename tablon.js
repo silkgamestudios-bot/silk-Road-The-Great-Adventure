@@ -125,8 +125,9 @@ module.exports=function(S,E,X){
  /* ───────── hooks del mundo ───────── */
  function onKill(u,ty,kind,dyn){
   try{ty=ty|0;if(ty<0||ty>8)return;const a=S.ECO.acc[u];if(!a)return;const p=PS(u),t=now();
-   if(t-p.kt>=6e4){p.kt=t;p.kn=0}if(++p.kn>45)return;                  // tope por minuto contra hits fantasma
-   if(p.k[ty]<9999)p.k[ty]++;S.dirty()}catch(e){S.log&&S.log('[tablon] onKill '+e.message)}}
+   if(t-p.kt>=6e4){p.kt=t;p.kn=0}if(++p.kn>150)return;                 // tope por minuto contra hits fantasma (antes 45: frenaba a quien mata en grupo)
+   if(p.k[ty]<9999)p.k[ty]++;S.dirty();
+   if(t-(p.kp||0)>1500){p.kp=t;try{S.push(u,{t:'tbk',k:p.k.slice()})}catch(e){}}}catch(e){S.log&&S.log('[tablon] onKill '+e.message)}}
  /* ───────── operaciones ───────── */
  const taken=c=>({e:'¡Te la ganaron! La cumplió '+c.n+' antes que tú.',gone:1,by:c.n});
  function done(u,a,p,d,i,s){
@@ -157,6 +158,8 @@ module.exports=function(S,E,X){
    if(av<s[2])return err('Te faltan '+(s[2]-av)+' de «'+pk+'». Si ya los tienes, espera unos segundos a que se sincronicen e inténtalo otra vez.');
    E.deliver(u,{prov:{pk,q:-s[2]},note:'📜 Entregaste '+s[2]+' al Tablón'})}
   return done(u,a,p,d,i,s)};
+ /* posición para frío/caliente: la que manda el cliente si coincide con la del servidor (±14 casillas); si no, la del servidor */
+ const ppos=(w,m,T)=>{const sx=w.x/T,sy=w.y/T,cx=+m.x,cy=+m.y;return(Number.isFinite(cx)&&Number.isFinite(cy)&&Math.hypot(cx-sx,cy-sy)<=14)?[cx,cy]:[sx,sy]};
  const TEMP=[[7,'🔥','¡Muy caliente! Está a pocos pasos.'],[16,'🌡️','Caliente: vas bien encaminado.'],[32,'☀️','Tibio: sigues en la zona, pero aún queda.'],[64,'🌥️','Frío: te alejas o estás lejos.'],[1e9,'❄️','Helado: este no es el sitio.']];
  ops['tb.search']=(u,m)=>{
   const d=roll(),i=int(m.i,0,NM-1,-1);if(i<0)return err('Misión no válida');
@@ -168,11 +171,22 @@ module.exports=function(S,E,X){
   const w=S.world&&S.world.where&&S.world.where(u);
   if(!w)return err('Entra al mundo abierto para buscar.');
   if(w.city||w.dg)return err('Aquí no: sal al mundo abierto (fuera de la ciudad y de cuevas).');
-  p.sT=t;const sp=g.sp[i],T=S.world.dim?S.world.dim().t:32,dist=Math.hypot(w.x/T-(sp[0]+.5),w.y/T-(sp[1]+.5));
+  p.sT=t;const sp=g.sp[i],T=S.world.dim?S.world.dim().t:32,pos=ppos(w,m,T),dist=Math.hypot(pos[0]-(sp[0]+.5),pos[1]-(sp[1]+.5));
   if(dist<=R_FIND){
    if(d.c[i])return taken(d.c[i]);
    const r=done(u,a,p,d,i,s);r.found=1;return r}
   const b=TEMP.find(x=>dist<=x[0]);return{ok:1,hot:TEMP.indexOf(b),ic:b[1],txt:b[2]}};
+ /* v410: termómetro continuo (sin coordenadas): banda de temperatura + si te acercas o te alejas */
+ ops['tb.temp']=(u,m)=>{
+  const d=roll(),i=int(m.i,0,NM-1,-1);if(i<0)return err('Misión no válida');
+  const g=gen(d.day),s=g.pub[i];if(s[0]!==2)return err('Esa misión no es de búsqueda');
+  if(d.c[i])return taken(d.c[i]);
+  const p=PS(u),t=now();if(t-(p.tT||0)<1200)return{ok:1,wait:1};
+  const w=S.world&&S.world.where&&S.world.where(u);if(!w||w.city||w.dg)return{ok:1,off:1};
+  p.tT=t;const sp=g.sp[i],T=S.world.dim?S.world.dim().t:32,pos=ppos(w,m,T),dist=Math.hypot(pos[0]-(sp[0]+.5),pos[1]-(sp[1]+.5));
+  let tr=0;if(p.tI===i&&t-(p.tS||0)<15000&&p.tD!=null){if(dist<p.tD-.6)tr=1;else if(dist>p.tD+.6)tr=-1}
+  p.tI=i;p.tD=dist;p.tS=t;
+  const b=TEMP.findIndex(x=>dist<=x[0]);return{ok:1,hot:b,ic:TEMP[b][1],txt:TEMP[b][2],tr,near:dist<=R_FIND?1:0}};
  ops['tb.open']=(u,m)=>{
   const a=E.acct(u),t=int(m.ct,0,3,-1),T=TA(a);if(t<0)return err('Cofre no válido');
   if(T.ch[t]<1)return err('No tienes ese cofre.');

@@ -1,34 +1,27 @@
-# Silk Road — reglas del Bazar Global USDT (v350, testnet)
+# Silk Road — Mercado USDT con garantía (v410) · todo por NUESTRO Binance Pay
 
-## Reglas acordadas
-- Red objetivo: BNB Smart Chain.
-- Moneda de precio/pago del bazar: USDT.
-- Referencia de compra de Gemas: **1 Gema = 1 USDT**. Esto no significa que las Gemas sean canjeables o retirables por USDT.
-- Artículos normales: tarifa de publicación de **5% del precio anunciado**, cobrada en Gemas fraccionarias. Ejemplo: artículo de 1.00 USDT → 0.0500 Gemas.
-- Personajes: tarifa especial fija de publicación de **5 Gemas**; mientras estén publicados deben quedar bloqueados para evitar transferencias paralelas.
-- Venta completada: comisión del vendedor de **5% del precio de venta**, descontada del importe del vendedor.
-- No se incluye una tarifa adicional fija para el comprador en las reglas actuales.
-- Gemas fraccionarias: 1 Gema = 10,000 unidades internas (0.0001 Gema por unidad). Los cálculos usan enteros, no números de coma flotante.
-- Solo se deben publicar artículos transferibles; excluir objetos ligados, consumidos, de misión o no transferibles. La lista definitiva requiere validación con el inventario del servidor.
+Sin MetaMask, sin blockchain, sin contratos. Nosotros somos el intermediario.
 
-## Ejemplos
-- Publicar artículo de 1.00 USDT: 0.0500 Gemas.
-- Publicar artículo de 10.00 USDT: 0.5000 Gemas.
-- Publicar personaje: 5.0000 Gemas.
-- Venta por 100.00 USDT: comisión 5.00 USDT; neto teórico del vendedor 95.00 USDT.
+## Flujo
+1. **Vendedor** publica (objeto, mascota, boleto o gemas) con precio en USDT y escribe su **ID de Binance Pay** y su **usuario de Binance**. El servidor retiene el artículo (garantía).
+2. **Comprador** pulsa Comprar → el anuncio queda reservado y se crea una orden con un monto único (precio − 0.01…0.49). Paga ese monto exacto al Pay ID del juego.
+3. `pay.js` lee el historial de Binance Pay (API de solo lectura) y al ver el pago: entrega el artículo, avisa al comprador (aviso + buzón), avisa al vendedor y te manda **a ti** (master) una notificación con todos los datos: qué se vendió, quién compró, cuánto pagó, a quién pagar (Pay ID + usuario) y cuánto (precio − 5%).
+4. **Tú pagas** al vendedor desde tu Binance y pulsas «Ya pagué» en Mercado USDT → Master. El vendedor recibe el aviso en su buzón.
 
-## Estado técnico real
-- `usdt-market-config.js` calcula tarifas; **no cobra ni transfiere fondos**.
-- `bnb-payments.js` verifica evidencia de una transferencia ERC-20 según configuración; **no crea órdenes ni acredita Gemas**.
-- El mercado actual de `market.js` es un mercado interno basado en oro/recursos; no se debe confundir con un bazar USDT ya operativo.
-- Esta entrega sigue en modo de preparación/testnet. No se debe activar dinero real ni anunciar que las ventas se liquidan automáticamente.
+## Reglas
+- Comisión: **5% del precio de venta**, descontada al vendedor y pagada en USDT. Ej.: venta de 100 USDT → vendedor recibe 95.00.
+- Precio mínimo 1.00 USDT, máximo 50 000. Máx. 15 anuncios por jugador.
+- Reserva/orden: 15 min (PAY_TTL_MIN). Si vence sin pago, el anuncio vuelve a estar disponible.
+- Cada pago de Binance se usa una sola vez (ID de transacción). Pagos con monto raro, tarde o sin orden van a **revisión manual** (igual que las gemas).
+- Si llega un pago y el artículo ya no está, te llega el aviso «REEMBOLSO NECESARIO» y aparece en la pestaña Master.
+- Personajes: el mercado de personajes también verifica el pago solo y aprueba la venta (antes lo aprobaba el master a mano; el comprobante manual sigue como respaldo).
+- Gemas por USDT: el vendedor pone N gemas a un precio total en USDT; el comprador paga y recibe las gemas.
 
-## Antes de producción
-1. Crear órdenes de pago persistentes en el servidor vinculadas a cuenta, propósito, importe y vencimiento.
-2. Confirmar el contrato exacto del token en la red elegida; no confiar solo en el ticker “USDT”.
-3. Verificar chain ID, token, receptor, importe, recibo exitoso y confirmaciones en el servidor.
-4. Registrar de forma persistente e idempotente `chainId:txHash:logIndex`; impedir doble acreditación tras reinicios o reintentos.
-5. Diseñar estados de compra, reserva/bloqueo de artículo, entrega y recuperación/reembolso ante fallos.
-6. Para personajes, bloquear la cuenta/personaje durante la publicación y transferirlo como personaje secundario solo al completar la venta de forma segura.
-7. Probar pagos duplicados, importes incorrectos, token falso, red incorrecta, fallos, reinicios y reorganizaciones de cadena.
-8. Revisar requisitos legales, fiscales y de custodia aplicables antes de aceptar dinero real.
+## Variables de entorno (las mismas de los pagos de gemas)
+BINANCE_API_KEY, BINANCE_SECRET (solo lectura), BINANCE_PAY_ID. Sin ellas el Mercado USDT queda apagado y lo dice en pantalla.
+
+## Archivos
+- `usdtmkt.js` (nuevo): anuncios, garantía, buzón, pagos a vendedores.
+- `pay.js`: órdenes del mercado (`newMk`) con el mismo verificador de pagos.
+- `charmkt.js`: personajes con verificación automática.
+- Ya NO se usan: `bnb-payments.js`, `usdt-market-config.js`, `contracts/`, `scripts/deploy-escrow.js` (se pueden borrar).

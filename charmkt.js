@@ -102,7 +102,7 @@ const ops={};
 ops['chm.list']=(u)=>{sweep();const c=C(),p=E.prim(u),all=Object.values(c.L).sort((a,b)=>b.ts-a.ts);
  const l=all.filter(x=>x.p!==p&&(x.st==='open'||x.st==='resv')).slice(0,150).map(x=>view(x,u));
  const mine=all.filter(x=>x.p===p).map(x=>view(x,u));
- const buying=all.filter(x=>x.b===p&&(x.st==='resv'||x.st==='paid')).map(x=>Object.assign(view(x,u),{ref:x.ref||'',pid:X.PAY_ID,usdt:(x.pr.u||0)/100,paid:x.st==='paid'?1:0}));
+ const buying=all.filter(x=>x.b===p&&(x.st==='resv'||x.st==='paid')).map(x=>Object.assign(view(x,u),{ref:x.ref||'',pid:X.PAY_ID,usdt:(x.pr.u||0)/100,paid:x.st==='paid'?1:0,amt:(()=>{try{const o=PYR&&x.oid&&PYR.get(x.oid);return o&&o.st==='p'?(o.c/100).toFixed(2):''}catch(e){return ''}})()}));
  const pay=c.P.filter(x=>x.p===p).slice(-8).reverse().map(x=>({id:x.id,nm:x.nm,net:x.net/100,fg:x.fg|0,st:x.st,ts:x.ts}));
  const rm=E.chRoom(p);
  return{ok:1,l,mine,buying,pay,h:c.H.slice(-8).reverse(),can:canPub(u)?1:0,fee:FEE,gu:GEMUSD,refund:REFUND?1:0,gem:E.gTot(E.acct(u)),room:rm.e?0:1,max:E.CH_MAX,adm:S.isMaster(u)?all.filter(x=>x.st==='paid').length:undefined}};
@@ -148,7 +148,8 @@ ops['chm.buy']=(u,m)=>{sweep();const L=C().L[String(m.id||'')],c=String(m.c||'')
   if(E.chRoom(bp).e)return err(fullMsg);
   L.st='resv';L.b=bp;L.bu=u;L.bn=nmOf(u);L.rts=now();L.xb='';S.dirty();
   note(L.p,'🏷️ Alguien está comprando tu personaje '+nm+' por USDT');
-  return{ok:1,rsv:1,id:L.id,usdt:L.pr.u/100,pid:X.PAY_ID,until:L.rts+RESV_MS}}
+  let au=null;try{if(PYR&&PYR.on()){const r=PYR.newMk(u,L.pr.u,'c:'+L.id,'chm');if(r&&r.o){L.oid=r.o.id;au={oid:r.o.id,amt:(r.o.c/100).toFixed(2),auto:1}}}}catch(e){}
+  return Object.assign({ok:1,rsv:1,id:L.id,usdt:L.pr.u/100,pid:X.PAY_ID,until:L.rts+RESV_MS},au||{})}
  if(L.st!=='open')return err('Alguien está pagando este personaje con USDT: espera unos minutos');
  const price=L.pr.m,leg=L.hold===undefined,fee=leg?Math.floor(price*FEE/100):0,get=price-fee,b=E.acct(u),hold=L.hold|0;
  const tt=E.gTot(b);if(tt<price)return err('Te faltan '+fmt(price-tt)+' 💎');
@@ -174,7 +175,8 @@ const pv=x=>({id:x.id,nm:x.nm,net:x.net/100,gross:x.cents/100,fee:x.fee/100,fg:x
 ops['chm.adm']=(u)=>{const x=gm(u);if(x)return x;sweep();const c=C();
  const o=Object.values(c.L).filter(L=>L.st==='resv'||L.st==='paid').sort((a,b)=>(b.pts||b.rts)-(a.pts||a.rts)).map(L=>({id:L.id,nm:(L.snap||{}).nm,cl:(L.snap||{}).cl,lv:(L.snap||{}).lv,usdt:(L.pr.u||0)/100,fg:L.hold|0,st:L.st,bn:L.bn,be:emailOf(L.b),sn:L.sn,se:emailOf(L.p),ref:L.ref||'',rts:L.rts,pts:L.pts||0}));
  return{ok:1,o,pay:c.P.filter(x=>x.st==='topay').map(pv),done:c.P.filter(x=>x.st==='paid').slice(-6).reverse().map(pv)}};
-ops['chm.approve']=(u,m)=>{const x=gm(u);if(x)return x;sweep();const L=C().L[String(m.id||'')];
+ops['chm.approve']=(u,m)=>{const x=gm(u);if(x)return x;return approve(String(m.id||''),nmOf(u))};
+function approve(lid,by){sweep();const L=C().L[lid];
  if(!L||!(L.st==='resv'||L.st==='paid')||!L.b)return err('Esa orden ya no está pendiente');if(!L.pr.u)return err('Esta venta no es por USDT');
  const cents=L.pr.u,leg=L.hold===undefined,fee=leg?Math.floor(cents*FEE/100):0,net=cents-fee,fg=L.hold|0,bp=L.b,bn=L.bn,snap=L.snap||{},seller=L.p,sn=L.sn,pay=L.pay,id=L.id,ref=L.ref;
  const r=finishSale(L,bp);if(r.e)return err(r.e);
@@ -182,7 +184,7 @@ ops['chm.approve']=(u,m)=>{const x=gm(u);if(x)return x;sweep();const L=C().L[Str
  hist({snap},'u',cents/100);S.dirty();
  note(bp,'✅ ¡Tu compra fue aprobada! '+snap.nm+' ya está en tu cuenta: ábrelo desde «Elige tu personaje».');
  note(seller,'✅ Vendiste a '+snap.nm+' por '+(cents/100).toFixed(2)+' USDT. Te pagaremos '+(net/100).toFixed(2)+' USDT'+(leg?' (comisión '+FEE+'%)':' completos (la comisión ya la pagaste en 💎)')+' a tu ID '+pay+'.');
- S.log('[personajes] '+nmOf(u)+' aprobó la venta USDT de '+snap.nm+' ('+(cents/100).toFixed(2)+' USDT, orden '+ref+'): pagar '+(net/100).toFixed(2)+' a '+pay+' · comisión '+(leg?fee/100+' USDT':fg+' 💎'));
+ S.log('[personajes] '+by+' aprobó la venta USDT de '+snap.nm+' ('+(cents/100).toFixed(2)+' USDT, orden '+ref+'): pagar '+(net/100).toFixed(2)+' a '+pay+' · comisión '+(leg?fee/100+' USDT':fg+' 💎'));
  return{ok:1,pay:pv(c.P[c.P.length-1])}};
 ops['chm.reject']=(u,m)=>{const x=gm(u);if(x)return x;sweep();const L=C().L[String(m.id||'')];if(!L||!(L.st==='resv'||L.st==='paid'))return err('Esa orden ya no está pendiente');
  const why=String(m.why||'').replace(/[<>]/g,'').trim().slice(0,120)||'no se pudo verificar el pago',bp=L.b;
@@ -190,4 +192,9 @@ ops['chm.reject']=(u,m)=>{const x=gm(u);if(x)return x;sweep();const L=C().L[Stri
  S.log('[personajes] '+nmOf(u)+' rechazó el pago USDT de '+(L.snap||{}).nm+': '+why);return{ok:1}};
 ops['chm.paidout']=(u,m)=>{const x=gm(u);if(x)return x;const e=C().P.find(y=>y.id===String(m.id||'')&&y.st==='topay');if(!e)return err('Ese pago ya está marcado o no existe');
  e.st='paid';e.pts=now();S.dirty();note(e.p,'💵 Te pagamos '+(e.net/100).toFixed(2)+' USDT por la venta de '+e.nm+'. ¡Gracias!');S.log('[personajes] pagado al vendedor '+e.sn+': '+(e.net/100).toFixed(2)+' USDT');return{ok:1}};
-return{ops,sweep,snapOf}};
+/* v410: el pago de un personaje por USDT se verifica solo (pay.js) y aprueba la venta sin intervención */
+let PYR=null;
+function autoPaid(o,tx){const lid=String(o.ref||'').replace(/^c:/,''),L=C().L[lid];
+ if(!L||!(L.st==='resv'||L.st==='paid')||!L.b||L.b!==E.prim(o.u)||!L.pr.u){S.log('[personajes] pago automático sin venta activa (orden '+o.id+', tx '+tx+')');try{S.notify('⚠️ SILK ROAD · Pago de personaje recibido pero la venta ya no estaba activa\nOrden '+o.id+' · '+(o.c/100).toFixed(2)+' USDT · tx '+tx+'\nDevuelve el pago por Binance Pay o revisa en Mercado de personajes.')}catch(e){}return}
+ L.ref='Binance '+tx;L.pts=now();L.st='paid';S.dirty();approve(lid,'Pago automático Binance')}
+return{ops,sweep,snapOf,autoPaid,setPY:p=>{PYR=p}}};

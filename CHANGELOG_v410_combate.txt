@@ -4,3 +4,13 @@ v410 - Ranking + combate
 - Mobs -> jugador: garras (bestias), orbes (magos), golpe pesado (resto); jefes/area-jefes: onda de choque + temblor de pantalla.
 - Sonidos nuevos: claw, slash, smash, coin, heavy.
 - Edificios del pueblo: cada sprite se ajusta a su contenedor (ancho de su lote), ya no se montan unos sobre otros.
+- Efectos en alta calidad: particulas suaves con brillo (halo) en vez de cuadrados, resplandor de color en cada efecto, destello inicial.
+- Ranking: ya no se oculta a nadie por strikes del antitrampas; Sanche y Artoria fijados (variable RK_PIN para agregar mas nombres). Nuevo diagnostico del servidor: al arrancar escribe en el log el estado de esos nombres (nivel, clase, strikes, si es master) y existe la operacion rank.why.
+- Casas: sin letreros; las casas de los alrededores ya no usan sprites de comercios (forja, cazadores, canje), asi no hay "armerias/mercados" repetidos.
+- Mercado de Frutas: ahora hay UNO solo en todo el mundo (antes uno por pueblo).
+- Frutales silvestres: ~2900 arboles repartidos por todo el mapa, cosechables, con colision; cada zona/bioma da su fruta (pasto: manzana/pera, bosque: durazno/manzana, estepa: melon/uvas, montana: cereza/pera, desierto: melon/naranja, hielo: cereza, canones: uvas/limon, cenizas: limon).
+- MERCADO USDT con garantia (escrow) via NUESTRO Binance Pay, sin MetaMask (se elimino el panel Bazar MetaMask). Boton "💵 Mercado USDT" en la cabecera del Mercado: Comprar / Vender / Mi buzon / Master.
+  Vender: objeto, mascota, boleto o gemas por USDT con ID de Binance Pay + usuario del vendedor. Pago del comprador verificado solo (pay.js), entrega automatica, aviso al comprador y vendedor (buzon) y notificacion al master con datos para pagar al vendedor (precio - 5%). Pestaña Master: pagos pendientes / reembolsos.
+  Personajes por USDT tambien se verifican solos.
+  Archivos de servidor nuevos/cambiados: usdtmkt.js (nuevo), pay.js, market.js, charmkt.js, server.js, claude-shim.js.
+- TABLON: (1) bajas: el servidor avisa cada baja contada y el Diario se actualiza en vivo; tope anti-trampa subido de 45 a 150 bajas/min (frenaba a quien mata rapido en grupo o con golpes multiples). (2) Busqueda: termometro EN VIVO (🔥🔥🔥🔥 ... ❄️❄️) con "te acercas / te alejas", sin depender del mapa ni del zoom; el servidor usa la posicion del cliente si coincide con la suya (±14 casillas). Archivos: tablon.js, claude-shim.js, play.html.

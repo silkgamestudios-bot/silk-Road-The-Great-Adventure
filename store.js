@@ -19,12 +19,18 @@ ops['class.change']=(u,m)=>{
 };
 ops['name.claim']=(u,m)=>{const r=E.claimName(u,m.name);if(r.e)return r;E.pushEnt(u);return{ok:1,nm:r.nm}};
 /* ---- Ranking: los 100 mejores por nivel o por habilidad, global o por clase. Lo calcula el servidor con datos ya validados ---- */
+/* v410: nombres que siempre deben aparecer (aunque tengan strikes del antitrampas o sean cuentas especiales) */
+const RKPIN=new Set(String(process.env.RK_PIN||'sanche,artoria').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean));
 const RKC={},RKTTL=+process.env.RK_TTL||8e3;/* ranking: se recalcula cada 8 s (antes 45 s: un héroe nuevo o que subía de nivel tardaba casi un minuto en aparecer) */
 function rkList(cc,k){const key=cc+'|'+k,h=RKC[key],t=Date.now();if(h&&t-h.t<RKTTL)return h.l;
- const l=[];for(const u in S.ECO.acc){const a=S.ECO.acc[u];if(!a||!(a.nm||a.pn)||(cc>=0&&(a.cls>=0?a.cls:-9)!==cc)||(a.strikes|0)>=8)continue;let mst=false;try{mst=S.isMaster(u)}catch(e){}if(mst)continue;
+ const l=[];for(const u in S.ECO.acc){const a=S.ECO.acc[u];if(!a||!(a.nm||a.pn)||(cc>=0&&(a.cls>=0?a.cls:-9)!==cc))continue;const pin=RKPIN.has(String(a.nm||a.pn).trim().toLowerCase());let mst=false;try{mst=S.isMaster(u)}catch(e){}if(mst&&!pin)continue;
   const sx=Array.isArray(a.sx)?a.sx:[1,1,1];l.push({u,n:a.nm||a.pn,c:a.cls>=0?a.cls|0:0,l:Math.max(1,a.lv|0),x:a.xp||0,s:[sx[0]|0||1,sx[1]|0||1,sx[2]|0||1],g:(S.tagOf&&S.tagOf(u))||''})}
  const v=k==='lv'?(x=>0):k==='st'?(x=>x.s[0]+x.s[1]+x.s[2]):(x=>x.s[+k[1]]);
  l.sort((p,q)=>k==='lv'?(q.l-p.l||q.x-p.x):(v(q)-v(p)||q.l-p.l||q.x-p.x));RKC[key]={t,l};return l}
+/* diagnostico: por que un jugador no sale en el ranking (solo master) */
+function rkWhy(q){q=String(q||'').trim().toLowerCase();const L=[];for(const u in S.ECO.acc){const a=S.ECO.acc[u];if(!a)continue;const n=String(a.nm||a.pn||'');if(!n||!n.toLowerCase().includes(q))continue;let mst=false;try{mst=S.isMaster(u)}catch(e){}L.push({id:u,nm:n,lv:a.lv|0,cls:a.cls,strikes:a.strikes|0,master:mst,pin:RKPIN.has(n.toLowerCase())})}return L}
+ops['rank.why']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');return{ok:1,l:rkWhy(m.q).slice(0,20)}};
+setTimeout(()=>{try{for(const q of RKPIN)console.log('[ranking] '+q+':',JSON.stringify(rkWhy(q)))}catch(e){}},4000);
 ops['rank.get']=(u,m)=>{const c=Math.floor(+m.c),cc=c>=0&&c<=7?c:-1,k=['lv','s0','s1','s2','st'].includes(m.k)?m.k:'lv',l=rkList(cc,k);
  const i=l.findIndex(x=>x.u===u);return{ok:1,n:l.length,me:i>=0?i+1:0,l:l.slice(0,100).map(x=>({n:x.n,c:x.c,l:x.l,s:x.s,g:x.g,me:x.u===u?1:0}))}};
 ops['name.change']=(u,m)=>{const a=E.acct(u),first=(a.nch|0)===0,n=String(m.name||'').trim().replace(/\s+/g,' ');

@@ -6,6 +6,12 @@ const FILE=process.env.WORLD_FILE||__dirname+'/world.json';
 if(!fs.existsSync(FILE)){log('mundo: falta world.json (node tools/export-world.js) → mundo desactivado');return null}
 const J=JSON.parse(fs.readFileSync(FILE,'utf8')),W=J.W,H=J.H,T=J.T,bits=Buffer.from(J.bits,'base64');
 /* v403: mobs como en los MMORPG modernos (SWARM_AI=0 en Render los deja como antes): te ven desde más lejos (SW_AGGRO, 150 px), si golpeas a uno sus vecinos se unen y te rodean en las 8 casillas pegadas a ti sin amontonarse */
+/* v409: ATRACCIÓN (hechizo del Caballero): los mobs a menos de 340 px te persiguen 5 s caminando 25% más rápido que el héroe (hasta 35% según su tipo 0-8) y entran al cerco de 8 casillas */
+const pSpd=(m,now)=>m.pu>now?m.ph*(1.25+.1*Math.min(1,(m.ty|0)/8)):m.sp;
+/* v410: ESCUADRAS (servidor). Tamaño de escuadra por tipo de mob 0-8: 8 / 10 / 12; los que sobran esperan en reserva (m.sqr) y el que muere llama refuerzos (hasta 4 cada 3 s); desde el tipo 3 los de la otra mitad flanquean en arco; los tipos altos atacan algo más seguido. */
+const SQN=[8,8,8,10,10,10,12,12,12],SQCD=[1,1,1,.9,.9,.9,.8,.8,.8],SQFL=3,SQS=new Map();
+function sqRun(p,L,now){L.sort((a,b)=>a.dd-b.dd);let mt=0;for(let i=0;i<Math.min(L.length,12);i++)mt=Math.max(mt,L[i].ty|0);const cap=SQN[mt];if(L.length>cap)for(const m of L.splice(cap)){m.tg=null;m.sqr=now+3500}let st=SQS.get(p.uid);if(!st)SQS.set(p.uid,st={n:0,cap,c:0,t:0});st.n=L.length;st.cap=cap;st.t=now}
+function sqCall(uid,m){const p=PL.get(uid),st=SQS.get(uid),now=Date.now();if(!p||!st||now-st.t>2000||now-(st.c||0)<3000)return;const need=Math.min(4,st.cap-Math.max(0,st.n-1));if(need<=0)return;const c=[];for(const o of near(p.x,p.y,300)){if(o.dead||o.dyn||o.tg||!(o.sqr>now))continue;c.push([Math.hypot(o.x-p.x,o.y-p.y),o])}c.sort((a,b)=>a[0]-b[0]);let n=0;for(const q of c.slice(0,need)){q[1].sqr=0;q[1].tg=uid;n++}if(n){st.c=now;send(p.ws,{t:'wsd',n})}}
 const SW=process.env.SWARM_AI!=='0',SWO=[[32,0],[32,32],[0,32],[-32,32],[-32,0],[-32,-32],[0,-32],[32,-32]];
 const CFG={tick:100,aggro:SW?Math.max(60,Math.min(400,+process.env.SW_AGGRO||150)):60,assist:140,leash:600,view:700,pview:1800,rng:900,sview:1300,rez:30000,hitMax:14,gcap:25000,shareMin:.5,prng:600,phMax:6,pct:.035,pvMin:+process.env.PVP_MIN_LV||1,speed:480,dmg0:J.dmg0||40}; // balance: aquí se ajusta todo
 const solid0=(x,y)=>{const tx=Math.floor(x/T),ty=Math.floor(y/T);if(tx<0||ty<0||tx>=W||ty>=H)return true;const i=ty*W+tx;return(bits[i>>3]>>(i&7)&1)===1};
@@ -29,18 +35,18 @@ function step(dt,now){const act=new Set();for(const p of PL.values())for(const m
  const SWL=new Map();
  for(const m of act){if(m.dead){if(now>=m.rt){if(m.dyn&&!m.rz){dyDel(m);continue}m.dead=0;m.hp=m.mx;m.x=m.hx;m.y=m.hy;m.tg=null;m.dmg={}}continue}
   let tg=m.tg&&PL.get(m.tg);if(tg&&(tg.city||tg.dg||tg.hp<=0||Math.hypot(tg.x-m.x,tg.y-m.y)>(m.vw||CFG.view)||Math.hypot(m.x-m.hx,m.y-m.hy)>(m.ls||CFG.leash)))tg=null;
-  if(!tg)tg=nearP(m,m.ag||CFG.aggro);
+  if(!tg&&!(m.sqr>now))tg=nearP(m,m.ag||CFG.aggro);
   m.tg=tg?tg.uid:null;m.t-=dt;
   if(tg){m.idl=0;const dx=tg.x-m.x,dy=tg.y-m.y,d=Math.hypot(dx,dy)||1,vg=.55+.45*Math.max(0,m.hp/m.mx);
    if(SW&&!m.dyn&&!m.rg){m.dd=d;m.vg=vg;let a=SWL.get(tg.uid);if(!a)SWL.set(tg.uid,a=[]);a.push(m);continue}   /* v403: este mob entra al cerco de su objetivo (se mueve y pega en swStep) */
-   if(d>(m.rg?m.rg*.6:20)){const s=m.sp*vg*dt;mvM(m,dx/d*s,dy/d*s)}
+   if(d>(m.rg?m.rg*.6:20)){const s=pSpd(m,now)*vg*dt;mvM(m,dx/d*s,dy/d*s)}
    if(d<(m.rg||24)&&m.t<=0)mAtk(m,tg,now)}
   else{if(m.dyn&&m.k!=='ww'){m.idl=(m.idl||0)+dt;if(m.idl>(m.k==='hunt'?EVN.idleH:EVN.idleW)){dyDel(m);continue}}   /* v390: sin objetivo (te refugiaste o te alejaste) se esfuman */
    if(m.k==='hunt')continue;const hx=m.hx-m.x,hy=m.hy-m.y,hd=Math.hypot(hx,hy);if(hd>12){mvM(m,hx/hd*55*dt,hy/hd*55*dt);if(hd<60)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}else if(m.hp<m.mx)m.hp=Math.min(m.mx,m.hp+m.mx*.25*dt)}}
- if(SWL.size){for(const [uid,L2] of SWL){const t2=PL.get(uid);if(t2)swStep(t2,L2,dt,now)}}   /* v403 */
+ if(SWL.size){for(const [uid,L2] of SWL){const t2=PL.get(uid);if(t2){sqRun(t2,L2,now);swStep(t2,L2,dt,now)}}}   /* v403 */
  for(const p of PL.values()){if(p.pvp&&!p.ar&&(p.city||p.dg)){p.pvp=0;p.lp=null;send(p.ws,{t:'wpv',on:0,e:'PvP apagado: zona segura'})}p.ct.dm*=.9985;p.ct.tk*=.9985;p.ct.ut*=.9985}}
 /* v403: golpe de un mob a su objetivo (antes estaba dentro de step; es el mismo código) */
-function mAtk(m,tg,now){m.t=.8;let dm=m.dm*(m.sf?sD(tg.lv,m):1)*(.6+.4*Math.max(0,m.hp/m.mx));
+function mAtk(m,tg,now){m.t=.8*(SQCD[m.ty|0]||1);let dm=m.dm*(m.sf?sD(tg.lv,m):1)*(.6+.4*Math.max(0,m.hp/m.mx));
     if(m.dyn){/* v390: nadie muere de un golpe: tope por golpe y por segundo (suma de todos los monstruos del evento) según la vida máxima */
      const mh=Math.max(60,+tg.mhp||0),w=tg.bw||(tg.bw=[]);dm=Math.min(dm,mh*EVN.hitCap);while(w.length&&now-w[0][0]>1050)w.shift();let sq=0;for(let i=0;i<w.length;i++)sq+=w[i][1];dm=Math.min(dm,Math.max(0,mh*EVN.secCap-sq));if(dm>=.1)w.push([now,dm])}   /* ventana deslizante exacta (1,05 s) */
     if(dm>=.1){tg.ct.tk+=dm;send(tg.ws,{t:'wd',d:Math.round(dm*10)/10,mid:m.id})}}
@@ -52,8 +58,8 @@ function swStep(tg,L,dt,now){
  for(let i=0;i<n;i++){const m=L[i];if(m._sl>=0&&ok[m._sl]&&!(used>>m._sl&1)){used|=1<<m._sl;m._sk=m._sl}else m._sk=-1}
  for(let i=0;i<n;i++){const m=L[i];if(m._sk>=0)continue;let bk=-1,bd=1e9;for(let k=0;k<8;k++){if(!ok[k]||(used>>k&1))continue;const dd=Math.hypot(tg.x+SWO[k][0]-m.x,tg.y+SWO[k][1]-m.y);if(dd<bd){bd=dd;bk=k}}if(bk>=0){m._sk=bk;used|=1<<bk}}
  for(let i=0;i<L.length;i++){const m=L[i];if(i>=n)m._sk=-1;m._sl=m._sk;
-  const s=m.sp*m.vg*dt;let vx=0,vy=0;
-  if(m._sk>=0){const ex=tg.x+SWO[m._sk][0]-m.x,ey=tg.y+SWO[m._sk][1]-m.y,ed=Math.hypot(ex,ey);
+  const s=pSpd(m,now)*m.vg*dt;let vx=0,vy=0;
+  if(m._sk>=0){let ex=tg.x+SWO[m._sk][0]-m.x,ey=tg.y+SWO[m._sk][1]-m.y;if((m.ty|0)>=SQFL&&m.dd>70){const am=Math.atan2(m.y-tg.y,m.x-tg.x),as=Math.atan2(SWO[m._sk][1],SWO[m._sk][0]);let da=as-am;da=Math.atan2(Math.sin(da),Math.cos(da));if(Math.abs(da)>1.75){const aw=am+(da>0?1:-1)*1;ex=tg.x+Math.cos(aw)*78-m.x;ey=tg.y+Math.sin(aw)*78-m.y}}const ed=Math.hypot(ex,ey);
    if(ed>3){const ss=Math.min(ed,s);vx=ex/ed*ss;vy=ey/ed*ss;if(m.dd<=46&&m.dd>=22){const ux=(tg.x-m.x)/m.dd,uy=(tg.y-m.y)/m.dd,rd=vx*ux+vy*uy;if(rd<0){vx-=rd*ux;vy-=rd*uy}}}}   /* con casilla: va a ella y, si ya está pegado, NO retrocede aunque el jugador empuje */
   else{const rx=m.x-tg.x,ry=m.y-tg.y,rd=Math.hypot(rx,ry)||1,er=64+(m.id%3)*16-rd;   /* en espera: sube o baja en línea recta hasta su carril (64, 80 o 96 px), sin cruzar el cerco */
    vx=rx/rd*Math.max(-s,Math.min(s,er));vy=ry/rd*Math.max(-s,Math.min(s,er));
@@ -63,10 +69,10 @@ function swStep(tg,L,dt,now){
   if(vx||vy)mvM(m,vx,vy);
   if(m._sk>=0&&m.dd<56&&m.t<=0)mAtk(m,tg,now)}}
 /* v403: si golpeas a un mob, los vecinos (a menos de 140 px) también te persiguen */
-function swAssist(m,p){const t=Date.now();if(t-(m._as||0)<700)return;m._as=t;for(const o of near(m.x,m.y,CFG.assist)){if(o===m||o.dead||o.tg||o.dyn)continue;if(Math.hypot(o.x-m.x,o.y-m.y)<CFG.assist)o.tg=p.uid}}
+function swAssist(m,p){const t=Date.now();if(t-(m._as||0)<700)return;m._as=t;for(const o of near(m.x,m.y,CFG.assist)){if(o===m||o.dead||o.tg||o.dyn||o.sqr>t)continue;if(Math.hypot(o.x-m.x,o.y-m.y)<CFG.assist)o.tg=p.uid}}
 /* v390: BOTÍN IGUAL AL PROGRAMADO (tablas HC_* del juego, por nivel de monstruo): antes el servidor soltaba pociones al ~50% de lo programado (0% en los niveles 0-1), nunca poción de MP, y un objeto fijo */
 const HCIC=[.30,.31,.32,.32,.33,.34,.34,.35,.35],HCPC=[.05,.06,.07,.08,.08,.09,.09,.10,.11],HCMPC=[0,.03,.05,.06,.07,.07,.08,.09,.10],HCMC=[.6,.5,0,0,0,0,0,0,0];
-function kill(m){m.dead=1;m.hp=0;m.rt=Date.now()+(m.dyn?(m.rz||15000):CFG.rez);m.tg=null;let o=null,b=0;for(const u in m.dmg){const p=PL.get(u);if(p&&m.dmg[u]>b){b=m.dmg[u];o=p}}m.dmg={};if(!o)return;try{X.mk&&X.mk(o.uid,m.ty|0,m.k||'',m.dyn?1:0)}catch(e){}
+function kill(m){const _tg=m.tg;m.dead=1;m.hp=0;m.rt=Date.now()+(m.dyn?(m.rz||15000):CFG.rez);m.tg=null;let o=null,b=0;for(const u in m.dmg){const p=PL.get(u);if(p&&m.dmg[u]>b){b=m.dmg[u];o=p}}m.dmg={};if(_tg&&SW&&!m.dyn)try{sqCall(_tg,m)}catch(e){}if(!o)return;try{X.mk&&X.mk(o.uid,m.ty|0,m.k||'',m.dyn?1:0)}catch(e){}
  const ty=Math.min(8,Math.max(0,m.ty|0)),TY=J.types[ty],t=TY.loot[Math.floor(Math.random()*TY.loot.length)],gd=m.gx?Math.round(m.gx*(.7+Math.random()*.6)):Math.round(t[0]*m.rw),xp0=Math.max(1,Math.round(TY.xp*m.rw)),pd=pid(o.uid),E=[o];
  // Drop independiente de equipo común: 30% por monstruo. Se conserva el grupo de objetos propio de cada tipo; los dos tipos iniciales usan el primer grupo disponible.
  const itemPool=TY.loot.map(a=>a[1]).filter(it=>it&&it.r===0),fallbackPool=J.types[2].loot.map(a=>a[1]).filter(it=>it&&it.r===0),pool=itemPool.length?itemPool:fallbackPool,dropItem=Math.random()<Math.min(.6,HCIC[ty]*(m.rw>1?1.5:1))&&pool.length?JSON.parse(JSON.stringify(pool[Math.floor(Math.random()*pool.length)])):null;
@@ -206,7 +212,7 @@ function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
  if(m.t==='wpv')return pvSet(p,m);
  if(m.t==='wph')return p.ar?arHit(p,m):pvHit(p,m);
  if(m.t==='wdie')return pvDie(p);
- if(m.t==='wa'){if(now-(p.atT||0)<80)return;p.atT=now;AT.push([u,num(m.k,0,7,0)|0,Math.round(num(m.a,-7,7,0)*100)/100,Math.round(p.x),Math.round(p.y),p.dg?1:0,String(m.ty||'').replace(/[^a-z]/g,'').slice(0,8),num(m.r,0,400,0)|0,p.ar?1:0])}}   /* v145: también habilidades y también dentro de mazmorras (solo para tu party) */
+ if(m.t==='wa'){if(now-(p.atT||0)<80)return;p.atT=now;if(String(m.ty||'')==='pull'&&!p.city&&!p.dg&&p.hp>0&&now-(p.plT||0)>1500){p.plT=now;const hs=num(m.hs,30,140,54);for(const o of near(p.x,p.y,340)){if(o.dead||Math.hypot(o.x-p.x,o.y-p.y)>=340)continue;o.tg=p.uid;o.pu=now+5000;o.ph=hs}}AT.push([u,num(m.k,0,7,0)|0,Math.round(num(m.a,-7,7,0)*100)/100,Math.round(p.x),Math.round(p.y),p.dg?1:0,String(m.ty||'').replace(/[^a-z]/g,'').slice(0,8),num(m.r,0,400,0)|0,p.ar?1:0])}}   /* v145: también habilidades y también dentro de mazmorras (solo para tu party) */
 
 /* ===== v153: MOBS DINÁMICOS COMPARTIDOS (cazadores de la noche, hordas de evento, Hombres Lobo). Los crea y mueve el servidor: todos ven lo mismo. ===== */
 const DYL=[],HPT=[30,100,220,420,750,1600,2800,4600,7500],REC=t=>Math.round(t*3.5)+1;

@@ -1,0 +1,40 @@
+v410 — CADÁVERES CON MANCHA + ESCUADRAS DE MOBS. Cambia cliente y SERVIDOR (world.js, world-client.js): Manual Deploy en Render: SÍ.
+
+Pedido (Mni): implementar estos dos sistemas (traídos de una guía para Roblox, adaptados a este juego en JavaScript):
+  1) Cuerpo + mancha al morir el mob: no desaparece de golpe, queda ~15 s y se desvanece.
+  2) Mobs organizados en escuadras de 8 a 12 con líder, que rodean sin amontonarse, esperan su turno, llaman refuerzos y se vuelven más agresivos al avanzar.
+
+══════════════ 1) CADÁVERES ══════════════
+   • Al morir un mob (sin conexión y en línea) queda su cuerpo TENDIDO sobre una mancha durante 15 s; en los últimos 3 s se desvanece. No tiene barra de vida. Máximo 90 a la vez; solo se ven en la zona/cueva donde murieron; se dibujan debajo del botín para no taparlo.
+   • La mancha depende de lo que era: sangre oscura (carne y hueso: goblin, murciélago, demonio, súcubo…), baba azul (slime), polvo de hueso (esqueleto, momias, ghoul-zombi), polvo gris (gárgola, golem), nube violeta (espectro). Los mobs grandes (capitán, alfa, élite) dejan cuerpo y mancha más grandes.
+   • No dejan cadáver: jefes, guardianes, dragones, depredadores, bestias salvajes ni mobs temporales.
+
+══════════════ 2) ESCUADRAS ══════════════
+   Equivalencias con la guía de Roblox (aquí los mobs escalan por el TIPO de mob 0-8, no por tu nivel):
+   • Tamaño: 8 mobs (tipos 0-2), 10 (tipos 3-5), 12 (tipos 6-8). Los que sobran se quedan en RESERVA (quietos, sin atacar) hasta que haga falta.
+   • Rodear sin amontonarse: lo que ya tenías (8 casillas pegadas al héroe, sin chocar entre ellos); los demás esperan cerca en carriles a 64–96 px (esperan su turno).
+   • LÍDER: el más fuerte de los que te rodean (≥ 4 cerca) lleva la marca «🚩 Líder» sobre la cabeza.
+   • REFUERZOS: cuando muere un miembro y la escuadra no está completa, el líder grita «📯 ¡Refuerzos! +N» y entran hasta 4 mobs de la reserva (cada 3 s como mucho). Si golpeas a uno de la reserva, también entra a pelear.
+   • FLANQUEO (desde el tipo 3): el mob cuya casilla queda al otro lado del héroe ya no cruza por encima: te rodea en arco (radio 78 px).
+   • AGRESIVIDAD: intervalo entre golpes por tipo = 0,8 s (tipos 0-2), 0,72 s (3-5) y 0,64 s (6-8). ¡Ojo!, es subir el daño por segundo de cada mob hasta un 25 % en los tipos altos. Para neutralizarlo: poner SQCD=[1,1,1,1,1,1,1,1,1].
+   • NO incluido: «si te curas, 3 van a por tu sanador» (aquí los mobs no eligen entre jugadores por rol).
+   • Ajustes: SQN (tamaños), SQCD (cadencia) y SQFL (tipo desde el que flanquean) en play.html y world.js.
+
+══════════════ CÓMO ESTÁ HECHO ══════════════
+   • play.html: CORPSES/corpseAdd/corpseDraw (detecta el paso vivo→muerto en el bucle de dibujo, por eso sirve también en línea); escuadra: tope y reserva en el escaneo del cerco (cada 0,25 s), sqLead, sqKill (refuerzos), sqFlank en SLOT, cadencia en el golpe del mob; etiqueta del líder.
+   • world.js: sqRun (tamaño y reserva por jugador), sqCall (refuerzos al morir un mob), flanqueo en swStep, cadencia en mAtk; los mobs en reserva no buscan objetivo durante 3,5 s (tampoco por «ayuda» de vecinos).
+   • world-client.js: mensaje «wsd» del servidor → texto «¡Refuerzos!».
+   • sw.js: sr-v410.
+
+══════════════ PRUEBAS ══════════════
+   ✅ node --check de los 16 scripts de play.html, world.js, world-client.js y sw.js: sin errores.
+   ✅ Servidor (20 mobs): escuadra de 8 / 10 / 12 según tipo, el resto en reserva sin objetivo; al morir 1 de 12 pide 1 refuerzo, el segundo aviso dentro de 3 s no hace nada, con 6 bajas pide 4; flanqueo: sin él el mob del lado opuesto cruza a 1 px del héroe, con él rodea a 56 px o más y llega a su casilla en 4,6 s (vs 4,0 s).
+   ✅ Cliente: 9 tipos de mancha correctos; cadáver 15 s con desvanecido, jefe/guardián sin cadáver, tope 90; líder = el de más vida de los cercanos (≥ 4); refuerzos con cooldown y tope; rodeo hacia el lado opuesto.
+   ✅ Vista previa de cadáveres (cuerpo tendido sobre su mancha) revisada a mano.
+   ⚠️ SIN probar en el juego. Mira sobre todo: (1) que no sea demasiado difícil con la cadencia nueva, (2) rendimiento con muchos cuerpos, (3) en línea, que los refuerzos lleguen y el texto salga.
+
+══════════════ AUDITORÍA FINAL (misma v410) ══════════════
+   ✅ Servidor real: world.js + world.json completo con un jugador simulado junto a 33 mobs de tipo 7 → 12 persiguen (tope de escuadra), 8 ocupan casilla distinta, 21 quedan en reserva; al morir un miembro llega el aviso de refuerzos; la atracción acelera a 34 mobs sin pasar de 72,2 px/s.
+   ✅ server.js completo con sus dependencias (npm install): carga «10714 enemigos, 1400x900 casillas», escucha en el puerto, responde HTTP 200 y no registra errores.
+   ✅ Todas las pruebas de las versiones anteriores (colores y efectos de dragones, atracción, escuadras) repetidas sobre el proyecto final: sin fallos.
+   🔧 Corregido en la auditoría: el aviso de refuerzos se llamaba «wsq», igual que una consulta que ya existía (cliente → servidor). No chocaba, pero se renombró a «wsd» para evitar confusiones futuras.

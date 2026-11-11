@@ -14,3 +14,22 @@ v410 - Ranking + combate
   Personajes por USDT tambien se verifican solos.
   Archivos de servidor nuevos/cambiados: usdtmkt.js (nuevo), pay.js, market.js, charmkt.js, server.js, claude-shim.js.
 - TABLON: (1) bajas: el servidor avisa cada baja contada y el Diario se actualiza en vivo; tope anti-trampa subido de 45 a 150 bajas/min (frenaba a quien mata rapido en grupo o con golpes multiples). (2) Busqueda: termometro EN VIVO (🔥🔥🔥🔥 ... ❄️❄️) con "te acercas / te alejas", sin depender del mapa ni del zoom; el servidor usa la posicion del cliente si coincide con la suya (±14 casillas). Archivos: tablon.js, claude-shim.js, play.html.
+
+CUEVAS · ARQUITECTURA PROPIA (play.html)
+Antes todas las cuevas usaban el mismo laberinto. Ahora cada una tiene su plano (se regenera distinto en cada piso):
+- Arañas: telaraña (anillos + radios, huevos en los cruces, reina en el extremo opuesto a la entrada)
+- Catacumbas: cuadrícula de criptas rectangulares con nave central y pilares
+- Pantano: islas unidas por pasarelas sinuosas con charcas de agua
+- Abismo: gran sima de lava con cornisa, puentes en cruz e isla central del Señor
+- Torre: fortaleza simétrica (anillo exterior, 9 cámaras, gran salón central con pilares)
+- Mina: galerías horizontales, pozos verticales y bolsas de mineral sin salida
+- Hombres Lobo: gran caverna natural abierta con lagos helados
+- Madriguera: túneles sinuosos de gusano con nidos redondos
+- Cuatro Sellos: templo en cruz, cámara circular central y cuatro cámaras de sello con claustros
+Todas verificadas: escaleras y jefe siempre conectados. Coliseo sin cambios.
+
+SONIDO DE COMBATE (play.html)
+- Cadena de audio nueva: compresor (sin saturar con muchos golpes), reverb corta y ganancia más alta.
+- Cada golpe tiene variación de tono y paneo estéreo (ya no suena igual repetido).
+- Sonidos de impacto rehechos en capas (chasquido + cuerpo grave + cola): golpe, crítico, daño recibido, tajo, aplastar, garra, golpe pesado y los 8 ataques básicos.
+- Más voces simultáneas (14→28) para peleas grandes.

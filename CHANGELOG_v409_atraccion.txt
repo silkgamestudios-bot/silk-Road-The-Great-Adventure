@@ -1,0 +1,24 @@
+v409 — ATRACCIÓN: LOS MOBS YA NO VUELAN HACIA TI. Cambia cliente y SERVIDOR (world.js): Manual Deploy en Render: SÍ.
+
+Pedido (Mni): al usar el hechizo de atracción los mobs caminan demasiado rápido. Deben caminar solo 25 % más rápido que los héroes (hasta 35 % los de nivel más alto), buscar siempre rodear al héroe en las 8 casillas de alrededor, y los demás mantenerse cerca para rellenar el hueso cuando muera uno. (Interpreté «0.25 %» como 25 %.)
+
+══════════════ QUÉ PASABA ══════════════
+   El hechizo (Atracción, Caballero) arrastraba a todos los mobs a 340 px a 230 px/s en línea recta, unas 4 veces el ritmo de un mob y de un héroe, y los dejaba amontonados encima del jugador, ignorando las 8 casillas del cerco. En línea ni siquiera lo manejaba el servidor.
+
+══════════════ CÓMO QUEDA ══════════════
+   • Velocidad durante los 5 s de atracción = velocidad de caminar del héroe (sin correr, con su equipo, nivel y monta) × 1,25 para el tipo de mob 0, subiendo en línea recta hasta × 1,35 para el tipo 8. Ejemplo con héroe a 54 px/s: 67,5 px/s (tipo 0) … 72,9 px/s (tipo 8). Pasados los 5 s vuelven a su velocidad normal.
+   • Los mobs a menos de 340 px te persiguen. Hasta 190 px caminan hacia ti a esa velocidad; desde 190 px entra el cerco de siempre: los 8 más cercanos ocupan las 8 casillas y atacan; el resto espera en carriles a 64–96 px sin cruzar el cerco, y cuando muere uno el más cercano rellena la casilla (se reparte cada 0,25 s en el modo sin conexión y en cada tic en línea).
+   • No afecta a jefes, guardianes, dragones, depredadores ni mobs de evento aturdidos; en línea, la atracción la maneja el servidor (los mobs sincronizados no se mueven en el cliente).
+   • Para ajustar: 1,25 y 0,1 (= 35 %) en pullSp (play.html) y pSpd (world.js).
+
+══════════════ CÓMO ESTÁ HECHO ══════════════
+   • play.html: hWalk() (velocidad de caminar del héroe), pullSp(e); el bucle de atracción ya no teletransporta: mueve a pullSp hasta 190 px y activa la persecución (e.ch); SLOT y la órbita de espera usan pullSp mientras dure la atracción.
+   • world-client.js: el aviso «wa» de la atracción lleva la velocidad del héroe (hs).
+   • world.js: al recibir «wa» con tipo «pull», los mobs a menos de 340 px fijan al jugador como objetivo durante 5 s con velocidad pSpd (limitada: hs entre 30 y 140; reutilización mínima 1,5 s); el paso normal y el del cerco usan pSpd.
+   • sw.js: sr-v409.
+
+══════════════ PRUEBAS ══════════════
+   ✅ node --check de los 16 scripts de play.html, world.js, world-client.js y sw.js: sin errores.
+   ✅ Simulación del servidor (14 mobs atraídos, 4,5 s): ninguno superó el límite de velocidad; 8 casillas ocupadas y distintas; los que esperan quedan a 67–96 px; al morir uno su casilla la ocupó otro mob en un tic; tras la atracción cada mob vuelve a su velocidad.
+   ✅ Simulación del cliente: cada tipo 0-8 avanza exactamente a 67,5 → 72,9 px/s; jefes, mobs sincronizados y mobs a más de 340 px no se mueven; a menos de 190 px lo mueve el cerco.
+   ⚠️ SIN probar en el juego (ni en línea ni sin conexión). Mide a ojo si «25 % más rápido que el héroe» se siente bien; si prefieres que sea 25 % sobre la velocidad normal del mob, se cambia en una línea.

@@ -19,6 +19,7 @@ N.onopen=()=>{uwJ=0;on=0;WBAD=0;PV.on=0;PV.t=null};
 N.onmsg=m=>{
  if(m.t=='wnc'){try{window.SREST&&SREST.msg(m)}catch(e){}return}   /* v391: ANTORCHA: lista de antorchas clavadas de mi zona */
  if(m.t=='wnq'){try{window.SREST&&SREST.ans(m)}catch(e){}return}   /* v391: ANTORCHA: respuesta a «clavar» */
+ if(m.t=='wsd'){try{sqShout(m)}catch(e){}return}
  if(m.t=='wsx'){try{xRecv(m)}catch(e){}return}
  if(m.t=='wss'){try{xState(m)}catch(e){}return}
  if(m.t=='wsp'){try{xPos(m)}catch(e){}return}
@@ -194,7 +195,7 @@ setInterval(()=>{if(!ready()||!N.up())return;
 setInterval(()=>{if(!on||!LS)return;const n=Date.now();if(n-LS>1500)return;   // vigilante: si el servidor no reporta un enemigo cercano en 4 s, vuelve a modo local (nunca queda inmortal)
  for(const e of NR){if(!e.sync||n-(e.lt||0)<4000||Math.abs(e.x-P.x)>800||Math.abs(e.y-P.y)>800)continue;if(e.dyn){dynRm(e.sid);continue}e.sync=0;e.stun=0;e.gs=0;e.sid=-1;if(!(e.hp>0))e.hp=Math.max(1,Math.round(e.mx*.05))}},1000);
 setInterval(()=>{const dgOn=typeof DG!=='undefined'&&DG.f&&XM.length>0;if(!on&&!dgOn)return;for(const e of (dgOn?XM:E)){if(!e||!e.gs)continue;const dx=e.gx-e.x,dy=e.gy-e.y;if(Math.abs(dx)+Math.abs(dy)<1.5){e.x=e.gx;e.y=e.gy;e.gs=0;if(dgOn)e.mov=0}else{e.x+=dx*.4;e.y+=dy*.4;if(dgOn){e.mov=1;e.dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')}}}},33);
-const _sk=skill;skill=function(i){const s0=P.sc?+P.sc[i]||0:0;_sk(i);if(on&&P.sc&&(+P.sc[i]||0)>s0+.2){const sp=(SP[P.cls|0]||[])[i]||{};const fd={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[P.dir||'down'];let b=null,bd=560;for(const e of E){if(!e.sync||e.dead>0)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;b=e}}N.send({t:'wa',k:P.cls|0,a:b?Math.atan2(b.y-P.y,b.x-P.x):fd,ty:String(sp.t||'hit'),r:Math.round((sp.r||90))})}};
+const _sk=skill;skill=function(i){const s0=P.sc?+P.sc[i]||0:0;_sk(i);if(on&&P.sc&&(+P.sc[i]||0)>s0+.2){const sp=(SP[P.cls|0]||[])[i]||{};const fd={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[P.dir||'down'];let b=null,bd=560;for(const e of E){if(!e.sync||e.dead>0)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;b=e}}N.send({t:'wa',k:P.cls|0,a:b?Math.atan2(b.y-P.y,b.x-P.x):fd,ty:String(sp.t||'hit'),r:Math.round((sp.r||90)),hs:typeof hWalk=='function'?Math.round(hWalk()):54})}};
 const _atk=atk;atk=function(auto){const c0=P.cd;_atk(auto);if(on&&!(c0>0)&&P.cd>0){let b=null,bd=560;for(const e of E){if(!e.sync||e.dead>0)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;b=e}}const fd={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[P.dir||'down'];N.send({t:'wa',k:P.cls|0,a:b?Math.atan2(b.y-P.y,b.x-P.x):fd})}};
 /* ===== COLISEO (v276): cliente de la arena. El servidor manda: tiempo, zona, vida igualada y premio. ===== */
 const AR={gm:0,spec:0,gl:[],pvn:0,on:0,st:'',left:0,r:0,cx:0,cy:0,al:0,tot:0,hp:1000,mhp:1000,out:0,pot:0,at:0,ask:0,ov:null};

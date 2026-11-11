@@ -1,0 +1,21 @@
+v411 — VERSIÓN UNIFICADA de las dos líneas de trabajo. Manual Deploy en Render: SÍ (cambian world.js, world-client.js y los archivos del servidor de la línea mía).
+
+LÍNEA A (la tuya del zip «Subir_a_GitHub_v410_cadaveres_escuadras_2»):
+  mobs nuevos (2 hojas), 8 dragones elementales + sus efectos de partículas, atracción más lenta con cerco de 8 casillas, cadáveres con mancha (15 s), escuadras de 8-12 con líder, refuerzos y flanqueo.
+  Archivos: play.html, world.js, world-client.js, wiki-data.js (changelogs v404-v410 de esa línea incluidos).
+LÍNEA B (la mía, v407→v410):
+  pueblos en sprite y casas entrables, mercado único de frutas y frutales por el mapa, Enana, combate melee a 8 casillas, efectos/sonidos de ataque nuevos, ranking global completo, mercado USDT por Binance Pay con buzón, tablón de misiones reforzado, 9 cuevas con arquitectura propia.
+  Archivos: play.html, usdtmkt.js, pay.js, market.js, charmkt.js, tablon.js, store.js, economy.js, server.js, claude-shim.js.
+
+CÓMO SE UNIÓ
+  • Ambas líneas salen de la v406. Solo play.html cambió en las dos; world.js, world-client.js, sw.js y wiki-data.js solo cambiaron en la línea A y el resto del servidor solo en la B, así que esos se copiaron tal cual.
+  • play.html: fusión automática de tres vías (base v406 + A + B). Un único conflicto, en bossHurt: se combinaron los dos (si el dragón tiene elemento activo usa su efecto elemental; si no, el efecto de piedra de siempre; el temblor y el sonido pesado se mantienen en ambos).
+  • sw.js = sr-v411.
+
+PRUEBAS
+  ✅ node --check de los 18 scripts de play.html y de todos los .js: sin errores. Sin declaraciones duplicadas.
+  ✅ Navegador sin conexión: carga sin errores; existen a la vez cadáveres, escuadras, atracción, efectos de dragones, mercado USDT, tablón, melee, frutales y cuevas nuevas.
+  ✅ Pelea real contra un grupo de 35 mobs: golpe melee mío + escuadras suyas + cadáveres (16 en pantalla), sin errores.
+  ✅ Cuevas nuevas siguen conectadas tras la fusión.
+  ✅ server.js arranca con el world.js nuevo: «10714 enemigos, 1400x900 casillas», puerto abierto, sin errores.
+  ⚠️ SIN probar en línea con jugadores. Mira: (1) cadencia de mobs de la línea A + mi melee (¿muy difícil?), (2) rendimiento con muchos cuerpos y efectos de dragones, (3) pago real de 1 USDT.

@@ -5,3 +5,12 @@ v413 · Montaña de los Dragones
 - Cada nido tiene su halo del elemento, grietas, cristales, montón de oro y huesos.
 - Mobs normales dentro del macizo retirados (marcados e.nsp, no se sincronizan); world.json regenerado.
 - Cenizas volcánicas dentro de la montaña: lluvia de ceniza gris con viento, rachas fuertes cada cierto tiempo, bruma gris y manchas de ceniza en el suelo.
+
+v414 · Desgaste de equipo
+- El equipo se rompía muy rápido y daba igual su nivel. Ahora el desgaste por golpe depende del nivel (y rareza) de la pieza: nv 1 ≈ cada 2 golpes, nv 30 ≈ cada 6, nv 100 ≈ cada 14, nv 1000 casi no se gasta; además máximo 1 punto cada 1,5 s por pieza (antes 0,6 s).
+
+v415 · Desgaste calibrado
+- Solo las piezas comunes se rompen (de nv 1 a 110: ~330 golpes en nv 1, ~580 en nv 10, ~1600 en nv 50, ~2300 en nv 110 antes de romperse).
+- Poco comunes, raras y superiores NUNCA se rompen: al desgastarse pierden efectividad hasta un mínimo de 40% y se restauran con el Herrero.
+
+v416 · Rata del inicio con sprite nuevo (rata guerrera con capa azul, 4 direcciones x 3 cuadros, del tamaño del héroe).

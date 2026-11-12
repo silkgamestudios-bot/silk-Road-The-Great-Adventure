@@ -1,0 +1,7 @@
+v413 · Montaña de los Dragones
+- Los 8 dragones elementales ahora viven dentro de un gran macizo montañoso (anillo de picos, ~100x108 casillas) en el noroeste del mapa. Interior de piedra oscura con penumbra y brasas.
+- Una sola entrada al sur: puerta de piedra con relieve de dragón, sellada (runas rojas + candado) hasta alcanzar el nivel del primer dragón (Nv 550). Camino de acceso hasta la puerta; aviso al acercarse sin nivel.
+- Cada color define nivel y daño: Esmeralda Nv 550 · Celeste 575 · Zafiro 600 · Escarcha 630 · Relámpago 665 · Amatista 705 · Ébano 750 · Carmesí 800 (vida y daño crecientes, el rojo el más duro).
+- Cada nido tiene su halo del elemento, grietas, cristales, montón de oro y huesos.
+- Mobs normales dentro del macizo retirados (marcados e.nsp, no se sincronizan); world.json regenerado.
+- Cenizas volcánicas dentro de la montaña: lluvia de ceniza gris con viento, rachas fuertes cada cierto tiempo, bruma gris y manchas de ceniza en el suelo.

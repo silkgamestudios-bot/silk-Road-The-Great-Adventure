@@ -1,0 +1,9 @@
+v412 · Templo de los Celestiales (reemplaza la Ágora Caída)
+- Templo griego en ruinas sobre una meseta elevada: escalinata frontal, camino de acceso, peristilo de columnas dóricas (varias rotas), muro de fondo con nichos, mosaico circular con greca.
+- En el centro, la boca del Submundo devastada, rodeada por las estatuas de mármol del León, el Caballo y el Buey Celestiales sobre pedestales.
+- Ambiente de soledad: sangre vieja, huesos, cráneos, armas rotas, polvo, bruma, banderas rasgadas, árboles muertos.
+- Solo VIP / Combo Cazador descienden (sello violeta con candado para el resto; si el VIP vence dentro, el Submundo te expulsa).
+- Mobs nuevos (sprites nuevos): Minotauro nv 65 (embestida mágica con aviso ❗, 6% de soltar Bolso de Fuego 65 espacios), Gusano nv 35 (+35% vida) alrededor, Medusas nv 55 dentro del templo.
+- Demonio del Abismo nv 250 (hacha) en el Submundo bajo el templo: embestida, mucha vida, oro y 1-2 piezas de equipo + 12% de pieza nv 100-125.
+- Regla única: vida, daño, oro, exp y calidad del botín suben con el nivel del mob.
+- world.json regenerado (los mobs del templo se marcan e.tpl y no se sincronizan con el servidor).

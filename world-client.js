@@ -5,7 +5,7 @@
 const N=window.SRNET;if(!N)return;
 let uwJ=0,WBAD=0,on=0,OT={},WQ=[],lx=0,ly=0,ft=0,OFX=[],SM=[],LS=0;   // SM: id del servidor → enemigo (solo los 'base'); LS: último snapshot
 const ready=()=>P&&P.chosen&&P.name;
-const SKIP=e=>e.boss||e.guard||e.wild||e.tmp||e.alpha||e.vec;
+const SKIP=e=>e.boss||e.guard||e.wild||e.tmp||e.alpha||e.vec||e.tpl||e.nsp;
 /* Solo se congelan los enemigos BASE (índice < n, los que el servidor conoce). Los creados durante la partida
    (cuevas/torre, súbditos, estatua zodiacal, dragón, depredador…) se quedan en modo local: si los congelaba al
    reconectar, el servidor no los conocía y quedaban eternamente al 1% de vida sin poder morir. */

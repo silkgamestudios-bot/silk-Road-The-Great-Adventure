@@ -1,0 +1,8 @@
+SILK ROAD v422 – ARCHIVO COMPLETO
+1) Borra TODO el contenido del repo en GitHub (o reemplaza todo) y sube TODO lo de esta carpeta (no solo play.html).
+2) Archivos clave de recuperación de cuentas: accounts.js, server.js, claude-shim.js, play.html, sw.js
+3) world.json también va (mobs nuevos).
+4) En Render: Manual Deploy > Deploy latest commit (si no redeploya solo). Espera "Live".
+5) Recarga el juego con Ctrl+F5 (celular: cierra y abre la pestaña).
+6) Zona GM > 🔑 Recuperar cuenta > usuario > Clave temporal / Link.
+Si dice "El servidor todavía no tiene esta actualización": Render sigue con archivos viejos.

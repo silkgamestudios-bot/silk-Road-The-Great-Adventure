@@ -1,0 +1,17 @@
+v417 – RECUPERAR CUENTAS (urgente)
+- Cuando alguien toca "Olvidé mi contraseña" te llega un aviso a WhatsApp (usuario, correo escrito, si coincide con la cuenta). Funciona con o sin correo configurado.
+- Zona GM > 🔑 Recuperar cuenta: escribes usuario o correo y:
+  * 🎲 Clave temporal nueva (se cierra su sesión; el jugador entra con esa y la cambia en Cuenta)
+  * 🔗 Link de cambio (vale 24 h, un solo uso; el jugador elige su propia clave)
+  * 📋 Copiar / 📲 Enviar por WhatsApp (abre WhatsApp con el mensaje listo)
+- Las contraseñas están encriptadas (scrypt): NADIE puede verlas ni "restaurar la anterior". Por eso se da temporal o link.
+- Solo la cuenta master puede usar estas opciones.
+- Incluye además el Santuario de los Dragones (cueva subterránea 9 pisos) EN PRUEBAS.
+Archivos nuevos/cambiados: accounts.js, server.js, claude-shim.js, play.html, sw.js (sr-v417)
+
+v417 – SANTUARIO DE LOS DRAGONES (cueva subterránea de 9 pisos)
+- La Montaña de los Dragones se abre desde Nv 35 y en su centro hay la entrada a un santuario subterráneo (los dragones ya no están en la superficie).
+- 8 pisos, uno por especie (tierra, viento, agua, hielo, rayo, veneno, sombra, fuego), cada uno con arquitectura y paleta propias (minas, islas con puentes, cisternas, copo de nieve, circuito, serpiente, laberinto, caldera de lava) y piso 9: catedral del jefe.
+- Niveles: 35 / 150 / 250 / 350 / 450 / 550 / 650 / 750 / 850. Dragones duros (vida x1.7, daño x1.2) con aliento elemental (cono, se ve el aviso ❗). Mitad de tamaño que el jefe.
+- Jefe: Dragón Ancestral (gigante, ~Nv 938). Suelta 2% un arma ÉPICA Nv 700 aleatoria, ítems comunes/raros y pociones HP/MP.
+- Drop, exp y oro de los demás: igual que el resto (hardcore). Mundo: regenerar world.json (incluido).

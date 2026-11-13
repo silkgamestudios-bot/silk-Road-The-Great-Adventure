@@ -53,10 +53,18 @@ function pre(m,ip,rep,done,E){
    else{a.f=(a.f||0)+1;if(a.f>=5){a.lk=Date.now()+10*6e4;a.f=0}dirty();fail(BAD)}}).catch(()=>fail(BAD));return true}
  if(m.rq){const r=m.rq||{},k=norm(r.n),e=norm(r.e);const ok=()=>{rep({t:'rec',ok:1,m:'Si los datos coinciden, te enviamos un código al correo. Vale por 15 minutos.'});return true};
   if(!lim('rq'+ip,6,36e5)||!lim('rqk'+k,3,36e5))return fail('Demasiadas solicitudes. Intenta en una hora.');
-  if(!mailOn()){rep({t:'rec',ok:0,m:'El envío de correos aún no está activo. Escríbele al soporte por WhatsApp: +'+WA+' y te restablecemos la contraseña.'});return true}
+  {const a0=USR[k];try{ctx.notify&&ctx.notify('🔑 Silk Road · Pidieron recuperar contraseña\nUsuario escrito: '+String(r.n||'').slice(0,20)+(a0?' (existe)':' (NO existe)')+'\nCorreo escrito: '+String(r.e||'').slice(0,60)+(a0&&a0.e?(a0.e===e?' ✅ coincide con la cuenta':' ❌ no coincide (la cuenta tiene '+a0.e+')'):'')+'\nResuélvelo en Zona GM > 🔑 Recuperar cuenta.')}catch(x){}}
+  if(!mailOn()){rep({t:'rec',ok:0,m:'Avisamos al soporte de tu solicitud. Te escribirán para restablecer tu contraseña. También puedes escribir por WhatsApp: +'+WA})
+   ;return true}
   const a=USR[k];if(!a||!a.e||a.e!==e||a.u===masterUid)return ok();
   const code=String(crypto.randomInt(0,1e8)).padStart(8,'0');a.rc={h:sha(code+a.u),x:Date.now()+15*6e4,t:0};dirty();
   sendMail(a.e,'Código para recuperar tu contraseña · Silk Road','<div style="font-family:Georgia,serif"><h2>Silk Road: The Great Adventure</h2><p>Tu código para cambiar la contraseña de <b>'+a.n+'</b> es:</p><p style="font-size:30px;letter-spacing:4px"><b>'+code+'</b></p><p>Vale por 15 minutos. Si no lo pediste, ignora este correo.</p></div>').catch(x=>log('correo falló: '+x.message));return ok()}
+ if(m.rt){const r=m.rt||{},k=norm(r.n),t=String(r.t||'').replace(/[^a-f0-9]/g,''),p=String(r.p||'').trim();
+  if(!lim('rt'+ip,10,36e5))return fail('Demasiados intentos. Intenta en una hora.');
+  const a=USR[k],bad=()=>{rep({t:'rec',ok:0,m:'El link venció o ya se usó. Pídele uno nuevo al soporte.'});return true};
+  if(p.length<8||p.length>64){rep({t:'rec',ok:0,m:'La contraseña debe tener entre 8 y 64 caracteres.'});return true}
+  if(!a||!a.rt||a.rt.x<Date.now()||a.u===masterUid||!t||!eq(sha(t+a.u),a.rt.h))return bad();
+  mkPw(p).then(pw=>{a.h=pw.h;a.s=pw.s;a.rt=null;a.rc=null;a.f=0;a.lk=0;for(const q in SES)if(SES[q].u===a.u)delete SES[q];dirty();rep({t:'rec',ok:1,done:1,m:'Contraseña cambiada. Ya puedes entrar.'})}).catch(()=>bad());return true}
  if(m.rs){const r=m.rs||{},k=norm(r.n),e=norm(r.e),c=String(r.c||'').replace(/\D/g,''),p=String(r.p||'').trim();
   if(!lim('rs'+ip,10,36e5))return fail('Demasiados intentos. Intenta en una hora.');
   const a=USR[k],bad=()=>{rep({t:'rec',ok:0,m:'Código incorrecto o vencido.'});return true};
@@ -79,6 +87,10 @@ const ops={
   if(!NAME.test(n))return{e:'Usuario: de 3 a 16 letras, números o guion bajo'};if(p.length<8||p.length>64)return{e:'Contraseña de 8 a 64 caracteres'};if(norm(p)===norm(n))return{e:'La contraseña no puede ser igual al usuario'};
   if(USR[norm(n)])return{e:'Ese usuario ya existe'};if(!lim('mk'+u,20,36e5))return{e:'Demasiados intentos'};
   const pw=await mkPw(p);if(USR[norm(n)])return{e:'Ese usuario ya existe'};const uid=uidOf(n);USR[norm(n)]={u:uid,n,e:'',h:pw.h,s:pw.s,ts:Date.now(),f:0,lk:0,mk:1};ACC[uid]={e:'',n,ts:Date.now(),pw:1,mk:1};dirty();log('adm.mk '+n);return{ok:1,n}},
+ 'adm.tmp':async(u,m)=>{if(!ctx.isMaster(u))return{e:'solo el master'};const q=norm(m.n),a=USR[q]||Object.values(USR).find(x=>x.e&&x.e===q);if(!a)return{e:'No existe ese usuario o correo'};if(a.u===masterUid)return{e:'No se puede'};
+  const A='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789',p=[...crypto.randomBytes(10)].map(x=>A[x%A.length]).join('');const pw=await mkPw(p);a.h=pw.h;a.s=pw.s;a.f=0;a.lk=0;a.rc=null;a.rt=null;for(const t in SES)if(SES[t].u===a.u)delete SES[t];dirty();log('adm.tmp '+a.n);return{ok:1,n:a.n,e:a.e||'',p}},
+ 'adm.link':async(u,m)=>{if(!ctx.isMaster(u))return{e:'solo el master'};const q=norm(m.n),a=USR[q]||Object.values(USR).find(x=>x.e&&x.e===q);if(!a)return{e:'No existe ese usuario o correo'};if(a.u===masterUid)return{e:'No se puede'};
+  const t=crypto.randomBytes(18).toString('hex');a.rt={h:sha(t+a.u),x:Date.now()+24*36e5};dirty();log('adm.link '+a.n);return{ok:1,n:a.n,e:a.e||'',q:'rt='+encodeURIComponent(a.n)+'.'+t}},
  'adm.pw':async(u,m)=>{if(!ctx.isMaster(u))return{e:'solo el master'};const a=USR[norm(m.n)];if(!a)return{e:'No existe ese usuario'};if(a.u===masterUid)return{e:'No se puede'};
   const np=String(m.p||'').trim();if(np.length<8||np.length>64)return{e:'Contraseña temporal de 8 a 64 caracteres'};const pw=await mkPw(np);a.h=pw.h;a.s=pw.s;a.f=0;a.lk=0;a.rc=null;for(const t in SES)if(SES[t].u===a.u)delete SES[t];dirty();return{ok:1}}};
 return{pre,ops,masterUid,mailOn,isAcct:u=>!!byUid(u),unameOf:u=>{const a=byUid(u);return a?a.n:''}}};

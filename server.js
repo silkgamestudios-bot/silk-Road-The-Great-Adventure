@@ -87,7 +87,7 @@ if(process.env.TRIM_ID&&DB.cfg.trim!==process.env.TRIM_ID){try{
  DB.cfg.trim=TID;dirty=1;save(1);log('[RECORTE] '+TID+': '+n+' personajes recortados, '+GEM+' gemas c/u (copia en '+bk+')');
 }catch(e){log('[RECORTE] error '+e.stack)}}
 S.onDeliver=u=>{try{if(DB.shops&&DB.shops[u])MK.shopView(u)}catch(e){}};
-AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster,prim:u=>E.prim(u),refOk:c=>!!((DB.inf||{})[c])});
+AC=require('./accounts')({USR,ACC,SES,sha,log,WA:WA_NUMBER,dirty:()=>{dirty=1},isMaster,prim:u=>E.prim(u),refOk:c=>!!((DB.inf||{})[c]),notify:t=>notifyRL(t)});
 const TR=require('./terr')(S,E);
 const SD=require('./seda')(S,E);
 const TB=require('./tablon')(S,E,{SO});   /* v398: Tablón de la Ruta (misiones globales «gana el primero») */

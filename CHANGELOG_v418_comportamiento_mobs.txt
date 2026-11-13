@@ -1,0 +1,10 @@
+v418 – COMPORTAMIENTO SISTEMÁTICO DE MOBS (estilo MMORPG)
+Antes: manadas pegadas en bola; si uno te veía, TODA la manada te perseguía a la vez.
+Ahora:
+- Puntos de aparición separados: los mobs de cada grupo se reparten en espiral por la zona (≈4–5 tiles entre sí), cada uno con su "casa" y su correa.
+- Aggro individual: cada mob te ve por su cuenta (cono de visión + obstáculos).
+- Llamada local: al verte, solo avisa a los compañeros a menos de ~200 px (reaccionan escalonados, no todos de golpe).
+- Idle: pausas largas (2–7 s) y paseos cortos alrededor de su punto; ~35% hacen PATRULLA entre 2–3 puntos.
+- Se mantiene: correa (vuelven a casa y regeneran), refuerzos, campamentos de bandidos y hordas (más abiertas).
+- world.json regenerado (hay que subirlo).
+- Santuario de los Dragones: mismo sistema (1 dragón por punto, repartidos por cada piso, grupos locales de ~10 tiles que se avisan solo entre vecinos, patrullas y correa).

@@ -44,7 +44,8 @@ window.SRNET={flush:flushNow,rpc,send:m=>{if(ws&&ws.readyState==1&&ok)ws.send(JS
 window.claude=window.claude||{use:async k=>k=='db'?db:k=='user'?{id:()=>idP}:null};
 window.SRACC={get:()=>me,logout:()=>logout(),open:()=>accOpen(),state:()=>ST,hasChars:()=>!!(GATED&&me&&Array.isArray(me.chars)&&me.chars.length),chars_open:o=>chOpen(o||{}),market_open:o=>cmOpen(o||{})};
 /* ---- Inicio de sesión: usuario y contraseña (+ Google si está configurado) ---- */
-let ov=null,tab='in';let wt=null,cl=0;let got=0,cov=null,cT0=0;const stopWt=()=>{if(wt){clearTimeout(wt);wt=null}};
+let RT=null;try{const q=new URLSearchParams(location.search).get('rt');if(q&&q.indexOf('.')>0){const i=q.lastIndexOf('.');RT={n:decodeURIComponent(q.slice(0,i)),t:q.slice(i+1)};history.replaceState(null,'',location.pathname)}}catch(e){}
+let ov=null,tab=RT?'rt':'in';let wt=null,cl=0;let got=0,cov=null,cT0=0;const stopWt=()=>{if(wt){clearTimeout(wt);wt=null}};
 const pre=m=>{if(ws&&ws.readyState==1){try{ws.send(JSON.stringify(m));return true}catch(e){pendingPre=m;return true}}pendingPre=m;return true};
 const CSS='width:100%;box-sizing:border-box;padding:11px 12px;margin:5px 0;border-radius:10px;border:2px solid #6b4a17;background:#0b1224;color:#f5e6c4;font:16px Georgia,serif';
 const BTN='width:100%;padding:12px;margin:8px 0 2px;border-radius:10px;border:0;background:linear-gradient(#e0434a,#b3262e);color:#fff;font:700 17px Georgia,serif;cursor:pointer;box-shadow:0 3px 0 #6f1319';
@@ -70,17 +71,18 @@ function loginBody(){
  const tabs='<div style="display:flex;gap:6px;margin:12px 0 2px"><button data-t="in" style="'+TAB+(tab=='in'?TABON:'')+'">Entrar</button><button data-t="up" style="'+TAB+(tab=='up'?TABON:'')+'">Crear cuenta</button></div>';
  if(tab=='in')return tabs+'<p class="srh" style="'+HINT+'">¿Ya creaste tu cuenta en otro aparato (celular o computadora)? Escribe aquí <b>el mismo usuario y la misma contraseña</b>: entras con tu mismo personaje y sigues donde lo dejaste.</p>'+U('Usuario',LS.get('sr_lu')||'')+PW('Contraseña','current-password')+'<button id="sgo" style="'+BTN+'">Entrar</button><div><button data-t="rq" style="'+LNK+'">Olvidé mi contraseña</button></div>';
  if(tab=='up')return tabs+'<p class="srh" style="'+HINT+'">Crea tu cuenta <b>una sola vez</b>. Para jugar en otro aparato no la crees de nuevo: toca «Entrar» y usa el mismo usuario y contraseña.</p>'+U('Usuario (3 a 16 letras o números)')+EM('Correo (para recuperar tu contraseña)')+PW('Contraseña (mínimo 8)','new-password')+f('sr','Código de influencer (opcional)','text','off',16,NA+' value="'+REFC()+'"')+'<button id="sgo" style="'+BTN+'">Crear cuenta y entrar</button>';
- if(tab=='rq')return '<p style="color:#d8c9a0;font-size:14px;margin:8px 0 4px">Te enviamos un código al correo con el que te registraste.</p>'+U('Usuario')+EM('Correo de tu cuenta')+'<button id="sgo" style="'+BTN+'">Enviar código</button><div><button data-t="rs" style="'+LNK+'">Ya tengo el código</button><button data-t="in" style="'+LNK+'">Volver</button></div>';
+ if(tab=='rt')return '<p style="color:#d8c9a0;font-size:14px;margin:8px 0 4px">Cuenta: <b>'+esc(RT?RT.n:'')+'</b><br>Escribe tu contraseña nueva.</p>'+PW('Contraseña nueva (mínimo 8)','new-password')+'<button id="sgo" style="'+BTN+'">Cambiar contraseña</button><div><button data-t="in" style="'+LNK+'">Volver</button></div>';
+ if(tab=='rq')return '<p style="color:#d8c9a0;font-size:14px;margin:8px 0 4px">Te enviamos un código al correo con el que te registraste. Si no te llega, igual avisamos al soporte para ayudarte.</p>'+U('Usuario')+EM('Correo de tu cuenta')+'<button id="sgo" style="'+BTN+'">Enviar código</button><div><button data-t="rs" style="'+LNK+'">Ya tengo el código</button><button data-t="in" style="'+LNK+'">Volver</button></div>';
  return '<div style="margin-top:8px"></div>'+U('Usuario')+EM('Correo de tu cuenta')+f('sc','Código de 8 dígitos','text','one-time-code',8,NA)+PW('Contraseña nueva (mínimo 8)','new-password')+'<button id="sgo" style="'+BTN+'">Cambiar contraseña</button><div><button data-t="in" style="'+LNK+'">Volver</button></div>'}
 function loginMsg(t,good){const e=$$('srge');if(e){if(!good&&t&&/incorrectos/.test(t))t+=' (el usuario no distingue mayúsculas; la contraseña sí). ¿Aún no creaste tu cuenta? Toca «Crear cuenta».';e.textContent=t||'';e.style.color=good?'#9fe8a8':'#ff9a9a'}}
 function loginRender(msg,good){if(!ov)return;ov.querySelector('#srb').innerHTML=loginBody()+(GID?'<div style="margin:12px 0 0;color:#b9a97f;font-size:13px">o</div><div id="srg" style="display:flex;justify-content:center;min-height:44px"></div>':'');
- const tt=$$('srt');if(tt)tt.textContent=tab=='in'?'Entra a tu cuenta':tab=='up'?'Crea tu cuenta':'Recupera tu contraseña';
+ const tt=$$('srt');if(tt)tt.textContent=tab=='in'?'Entra a tu cuenta':tab=='up'?'Crea tu cuenta':tab=='rt'?'Nueva contraseña':'Recupera tu contraseña';
  const ey=$$('seye');if(ey)ey.onclick=()=>{const i=$$('sp');if(i)i.type=i.type=='password'?'text':'password'};
  ov.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;loginRender()});
  ov.querySelectorAll('input').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')$$('sgo').click()}));
  $$('sgo').onclick=()=>{const v=id=>($$(id)||{}).value||'';loginMsg('');const go=m=>{if(!pre(m)){loginMsg('Conectando con el servidor… un momento.',1);return}loginMsg('Un momento…',1);stopWt();wt=setTimeout(()=>loginMsg('El servidor tardó en responder. Intenta de nuevo en unos segundos.'),8000)};
   if(tab=='in')go({t:'hi',lg:{n:v('su'),p:v('sp')}});else if(tab=='up')go({t:'hi',reg:{n:v('su'),e:v('se'),p:v('sp'),rc:v('sr')}});
-  else if(tab=='rq')go({t:'hi',rq:{n:v('su'),e:v('se')}});else go({t:'hi',rs:{n:v('su'),e:v('se'),c:v('sc'),p:v('sp')}})};
+  else if(tab=='rt'&&RT)go({t:'hi',rt:{n:RT.n,t:RT.t,p:v('sp')}});else if(tab=='rq')go({t:'hi',rq:{n:v('su'),e:v('se')}});else go({t:'hi',rs:{n:v('su'),e:v('se'),c:v('sc'),p:v('sp')}})};
  loginMsg(msg,good);if(GID)gbtn()}
 function gbtn(){const go=()=>{google.accounts.id.initialize({client_id:GID,callback:r=>pre({t:'hi',g:r.credential}),ux_mode:'popup'});const g=$$('srg');if(g)google.accounts.id.renderButton(g,{theme:'filled_blue',size:'large',shape:'pill',text:'signin_with',locale:'es'})};
  if(window.google&&google.accounts)go();else{const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=1;s.onload=go;s.onerror=()=>loginMsg('No se pudo cargar Google. Usa tu usuario y contraseña.');document.head.appendChild(s)}}
@@ -89,7 +91,7 @@ function lgFix(root){try{root.querySelectorAll('img[data-lg]').forEach(im=>{cons
 function showLogin(err){stopWt();if(!GATED)return;if(ov){loginMsg(err);return}ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:99999;background:radial-gradient(900px 500px at 50% 0,#24396b,#0d1526);display:flex;padding:16px;font-family:Georgia,serif;color:#f5e6c4;text-align:center;overflow:auto';
  ov.innerHTML='<div style="margin:auto;max-width:400px;width:100%;background:linear-gradient(#22345f,#121c35);border:3px solid #6b4a17;border-radius:16px;padding:22px;box-shadow:0 12px 40px #000c"><img id="srlg" data-lg="1" src="logo.jpg" style="width:100%;border-radius:10px;border:2px solid #6b4a17"><h2 id="srt" style="color:#ffd66b;margin:12px 0 4px">Entra a tu cuenta</h2><div id="srb"></div><p id="srge" style="font-size:14px;min-height:18px;margin:8px 0 0"></p><div style="font-size:11px;color:#8d7f5e;margin-top:6px">'+(typeof SR_V!=='undefined'?esc(SR_V):'')+'</div></div>';
  document.body.appendChild(ov);lgFix(ov);loginRender(err)}
-function recMsg(m){stopWt();if(m.done){tab='in';loginRender(m.m,1)}else loginMsg(m.m,m.ok)}
+function recMsg(m){stopWt();if(m.done){tab='in';RT=null;loginRender(m.m,1)}else loginMsg(m.m,m.ok)}
 if(GATED)addEventListener('DOMContentLoaded',()=>{if(!ses)showLogin()});
 /* ===== Pantalla de carga profesional: barra de progreso hasta que el servidor responde ===== */
 function covShow(){if(cov||got||!GATED)return;cT0=Date.now();cov=document.createElement('div');

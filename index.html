@@ -2,141 +2,163 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Silk Road · The Great Adventure</title>
-<meta name="description" content="Un MMORPG de navegador sobre la Ruta de la Seda. 8 clases, 12 ciudades, cuevas, dragones y bestias celestiales. La apertura del reino es el 23 de octubre a las 8:00 PM (hora RD).">
-<meta name="theme-color" content="#09070f">
-<meta property="og:title" content="Silk Road · The Great Adventure">
-<meta property="og:description" content="La Gran Ruta abre sus puertas. Cuenta regresiva a la apertura del reino."><meta property="og:image" content="https://silk-road-the-great-adventure.onrender.com/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:type" content="website"><meta property="og:url" content="https://silk-road-the-great-adventure.onrender.com/"><meta property="og:site_name" content="Silk Road"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Silk Road · The Great Adventure"><meta name="twitter:image" content="https://silk-road-the-great-adventure.onrender.com/og.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="site.css">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23e6b64f'/%3E%3Crect x='24' y='24' width='16' height='16' fill='%2309070f'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Karavan Online · MMORPG gratis en tu navegador (PC, Android y iOS)</title>
+<meta name="description" content="Karavan Online: un MMORPG de caravanas, desiertos y ciudades-oasis que se juega gratis en el navegador, en PC, Android y iPhone. 8 clases, +4.800 objetos, cuevas, dragones y bestias celestiales.">
+<meta name="theme-color" content="#0a1a45">
+<link rel="canonical" href="https://karavanonline.com/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Karavan Online"><meta property="og:locale" content="es_ES">
+<meta property="og:title" content="Karavan Online · MMORPG de caravanas en tu navegador">
+<meta property="og:description" content="Cruza el desierto con tu caravana, elige entre 8 héroes y conquista cuevas, dragones y ciudades. Gratis, sin descargas, en PC, Android y iPhone.">
+<meta property="og:url" content="https://karavanonline.com/"><meta property="og:image" content="https://karavanonline.com/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Karavan Online: caravana cruzando el desierto frente a la ciudad dorada">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Karavan Online · MMORPG de caravanas"><meta name="twitter:description" content="Gratis, sin descargas, en PC, Android y iPhone."><meta name="twitter:image" content="https://karavanonline.com/og.jpg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="kv-cinzel-900.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="kv-corm-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="kv-bg.jpg" as="image" media="(orientation:landscape) and (min-width:821px),(orientation:landscape) and (max-height:560px)" fetchpriority="high">
+<link rel="preload" href="kv-bg-p.jpg" as="image" media="(orientation:portrait),(max-width:820px) and (min-height:561px)" fetchpriority="high">
+<link rel="stylesheet" href="kv.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Karavan Online","url":"https://karavanonline.com/","description":"MMORPG de navegador de caravanas, desiertos y ciudades-oasis. Gratis, sin descargas.","genre":["MMORPG","Rol","Aventura"],"gamePlatform":["PC","Android","iOS"],"applicationCategory":"Game","operatingSystem":"Navegador web (Windows, macOS, Linux, Android, iOS)","inLanguage":"es","image":"https://karavanonline.com/og.jpg","publisher":{"@type":"Organization","name":"Silk Games Studios"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 </head>
 <body>
 
 <header class="top"><div class="wrap">
-  <a class="brand" href="index.html"><span class="spr" style="--k:2;--c:1;--t:3" aria-hidden="true"></span><span>SILK ROAD</span></a>
+  <a class="brand" href="index.html" aria-label="Karavan Online, inicio"><img src="icon-192.png" alt="" width="38" height="38"><span>KARAVAN<small>ONLINE</small></span></a>
   <nav class="nav" aria-label="Principal">
     <a href="index.html" class="on">Inicio</a>
+    <a href="#heroes" class="opt">Héroes</a>
+    <a href="#plataformas" class="opt">Plataformas</a>
+    <a href="wiki.html#/objetos">Objetos</a>
     <a href="wiki.html">Wiki</a>
-    <a href="wiki.html#/clases">Clases</a>
-    <a href="wiki.html#/arte">Arte</a>
-    <a href="play.html" class="play locked" data-play data-go="⚔️ Jugar" aria-disabled="true"><span data-lbl>🔒 Jugar</span></a>
+    <a href="play.html" class="play" data-play>⚔ Jugar</a>
   </nav>
 </div></header>
 
-<main>
-<section class="hero" id="inicio">
-  <canvas id="stars" aria-hidden="true"></canvas>
-  <div class="moon" aria-hidden="true"></div>
-  <div class="dunes" aria-hidden="true">
-    <svg viewBox="0 0 1440 400" preserveAspectRatio="none">
-      <path d="M0 220 C180 120 340 250 520 190 C720 120 880 260 1080 180 C1220 130 1340 190 1440 160 V400 H0Z" fill="#3a1a38"/>
-      <path d="M0 270 C200 200 360 300 560 250 C760 200 960 310 1160 240 C1280 200 1380 250 1440 230 V400 H0Z" fill="#241129"/>
-      <path d="M0 330 C220 270 420 350 640 310 C860 270 1040 350 1240 300 C1330 280 1400 310 1440 300 V400 H0Z" fill="#150a1a"/>
-    </svg>
+<main id="main">
+<section class="hero" id="inicio" aria-label="Karavan Online">
+  <div class="stage" aria-hidden="true">
+    <picture><source media="(orientation:portrait),(max-width:820px) and (min-height:561px)" srcset="kv-bg-p.jpg"><img class="art" src="kv-bg.jpg" alt="" width="2400" height="1350" fetchpriority="high" decoding="async"></picture>
+    <i class="kvc"></i>
   </div>
-  <svg class="caravan" viewBox="0 0 300 80" aria-hidden="true" fill="#0a0510">
-    <g id="cm"><ellipse cx="22" cy="40" rx="22" ry="10"/><path d="M14 32 q6 -16 12 0z"/><path d="M40 36 q10 -2 14 -16 q3 -6 9 -6 l3 5 q-5 2 -6 8 q-4 14 -14 20z"/><rect x="6" y="46" width="3.2" height="26"/><rect x="14" y="46" width="3.2" height="26"/><rect x="31" y="46" width="3.2" height="26"/><rect x="39" y="46" width="3.2" height="26"/></g>
-    <use href="#cm" x="86"/><use href="#cm" x="172"/>
-  </svg>
-  <div class="heroes" id="heroes" aria-hidden="true"></div>
-
-  <div class="wrap hero-in">
-    <div class="eyebrow">Un MMORPG de la Ruta de la Seda</div>
-    <h1 class="logo">SILK ROAD<small>The Great Adventure</small></h1>
-    <p class="tag">De las murallas de Chang'an a las puertas de Constantinopla. Cruza el desierto, funda tu gremio y escribe tu leyenda.</p>
-    <div class="orn">◆</div>
-
-    <div class="cd" id="cd">
-      <div class="cd-label" id="cd-label">La Gran Ruta abre en</div>
-      <div class="cd-row" role="timer" aria-live="off">
-        <div class="cd-box"><span class="cd-num" id="cd-d">--</span><span class="cd-u">Días</span></div>
-        <div class="cd-box"><span class="cd-num" id="cd-h">--</span><span class="cd-u">Horas</span></div>
-        <div class="cd-box"><span class="cd-num" id="cd-m">--</span><span class="cd-u">Minutos</span></div>
-        <div class="cd-box"><span class="cd-num" id="cd-s">--</span><span class="cd-u">Segundos</span></div>
+  <div class="hero-in">
+    <h1 class="vh">Karavan Online · MMORPG de caravanas para navegador</h1>
+    <img class="hero-logo" src="kv-logo.webp" alt="Karavan Online" width="1500" height="696" fetchpriority="high">
+    <div class="hero-low">
+      <p class="hero-tag">Cruza el desierto con tu caravana, elige entre <b>8 héroes</b> y conquista cuevas, dragones y ciudades-oasis. <b>Gratis, sin descargas.</b></p>
+      <div class="hero-cta">
+        <a class="btn btn-gold" href="play.html" data-play>⚔ Jugar ahora</a>
+        <a class="btn" href="wiki.html">📖 Explorar la wiki</a>
       </div>
-      <p class="cd-when" id="cd-when"></p>
-      <div class="cd-bar" id="cd-bar"><i></i></div>
-    </div>
-
-    <div class="play-wrap">
-      <a class="btn btn-play" href="play.html" data-play data-lock="🔒 Se abre a las 8:00 PM" aria-disabled="true"><span data-lbl>🔒 Se abre a las 8:00 PM</span></a>
-      <p class="play-hint" id="play-hint">El botón se desbloquea solo cuando termine la cuenta regresiva.</p>
+      <ul class="chips"><li>🆓 <b>Gratis</b></li><li>🌐 Sin descargas</li><li>📱 PC · Android · iOS</li><li>👥 Mundo en línea</li></ul>
     </div>
   </div>
+  <a class="scroll" href="#mundo" aria-label="Seguir bajando">⌄</a>
 </section>
 
-<section class="s band" id="mundo">
+<section class="sec" id="mundo">
   <div class="wrap">
-    <h2>Un mundo hecho para cruzarse</h2>
-    <p class="lead" id="mundo-lead"></p>
-    <div class="grid g4" id="nums"></div>
+    <div class="sec-h"><span class="eyebrow">El reino</span><h2>Un mundo hecho para cruzarse</h2><div class="orn"><i></i></div><p id="mundo-lead"></p></div>
+    <div class="nums" id="nums"></div>
   </div>
 </section>
 
-<section class="s" id="clases">
+<section class="sec alt" id="heroes">
   <div class="wrap">
-    <h2>Ocho caminos, una sola Ruta</h2>
-    <p class="lead">Cada clase tiene su estilo, sus habilidades y su propia leyenda. Toca una carta para ver a tu héroe tal como se ve en el juego, con su historia y sus habilidades.</p>
-    <div class="grid g4 slots" id="cls"></div>
+    <div class="sec-h"><span class="eyebrow">Tu leyenda</span><h2>Ocho héroes, una sola Ruta</h2><div class="orn"><i></i></div><p>Cada clase tiene su estilo, sus habilidades y su propia leyenda. <b>Toca una carta</b> para ver a tu héroe tal como se ve en el juego, con su historia, sus habilidades y sus apariencias.</p></div>
+    <div class="hgrid" id="cls"></div>
+    <noscript><p style="text-align:center;margin-top:20px">Activa JavaScript para ver las cartas de los héroes, o visita la <a href="wiki.html#/clases">wiki de clases</a>.</p></noscript>
   </div>
 </section>
 
-<section class="s band" id="todo">
+<section class="sec" id="tesoros">
   <div class="wrap">
-    <h2>Lo que te espera</h2>
-    <div class="grid g3" id="feats"></div>
+    <div class="sec-h"><span class="eyebrow">Botín</span><h2>Tesoros de la Ruta</h2><div class="orn"><i></i></div><p>Más de <b>4.700 objetos</b> en cuatro rarezas: armas, armaduras, joyas, pociones, minerales, monturas y apariencias. Aquí, las armas legendarias de cada clase.</p></div>
+    <div class="tgrid" id="show"></div>
+    <p style="text-align:center;margin-top:30px"><a class="btn" href="wiki.html#/objetos">🗡️ Ver el catálogo completo</a></p>
   </div>
 </section>
 
-<section class="s" id="arte">
+<section class="sec alt" id="todo">
   <div class="wrap">
-    <h2>Arte conceptual</h2>
-    <p class="lead">Un vistazo a los paisajes de la Ruta: del desierto de Taklamakán al Santuario Celestial.</p>
-    <div class="gal" id="gal" style="margin-top:40px"></div>
-    <p style="text-align:center;margin-top:26px"><a class="btn" href="wiki.html#/arte">Ver toda la galería</a></p>
+    <div class="sec-h"><span class="eyebrow">Aventura</span><h2>Lo que te espera</h2><div class="orn"><i></i></div></div>
+    <div class="fgrid" id="feats"></div>
   </div>
 </section>
 
-<section class="s band" style="text-align:center">
+<section class="sec" id="plataformas">
   <div class="wrap">
-    <h2>Tu nombre empieza hoy</h2>
-    <p class="lead">Estudia la wiki, elige tu clase y prepara tu caravana. Cuando el reloj llegue a cero, la Gran Ruta se abre.</p>
-    <div style="margin-top:34px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
-      <a class="btn btn-play" href="play.html" data-play data-lock="🔒 Se abre a las 8:00 PM" aria-disabled="true"><span data-lbl>🔒 Se abre a las 8:00 PM</span></a>
-      <a class="btn" href="wiki.html">Abrir la wiki</a>
+    <div class="sec-h"><span class="eyebrow">Multiplataforma</span><h2>Juega donde quieras</h2><div class="orn"><i></i></div><p>Karavan Online corre directo en el navegador: la misma cuenta y el mismo personaje en tu PC, tu Android y tu iPhone.</p></div>
+    <div class="plat">
+      <div class="devs" aria-label="El juego en PC, Android e iPhone">
+        <figure class="dev dev-pc"><div class="scr"><img src="kv-dev-pc.jpg" alt="Karavan Online en una computadora" width="1600" height="900" loading="lazy"></div><div class="base"></div><figcaption>PC y Mac<small>Teclado y ratón</small></figcaption></figure>
+        <figure class="dev dev-ph dev-and"><div class="scr"><img src="kv-dev-and.jpg" alt="Karavan Online en un celular Android" width="1170" height="540" loading="lazy"></div><figcaption>Android<small>Pantalla completa</small></figcaption></figure>
+        <figure class="dev dev-ph dev-ios"><div class="scr"><img src="kv-dev-ios.jpg" alt="Karavan Online en un iPhone" width="1170" height="540" loading="lazy"></div><figcaption>iPhone y iPad<small>Safari</small></figcaption></figure>
+      </div>
+      <div>
+        <div class="plist">
+          <div class="pi"><span class="e">🖥️</span><div><b>PC, Mac y Linux</b><span>Chrome, Edge, Firefox o Safari. Muévete con <strong>WASD</strong> o las flechas, ataca con la <strong>barra espaciadora</strong>, interactúa con <strong>E</strong> y abre tu héroe con <strong>I</strong>. Pantalla completa con <strong>F11</strong>.</span></div></div>
+          <div class="pi"><span class="e">🤖</span><div><b>Android</b><span>Abre el juego en Chrome y <strong>gira el celular a horizontal</strong>: joystick a la izquierda, ataques y hechizos a la derecha, y pantalla completa automática.</span></div></div>
+          <div class="pi"><span class="e">🍎</span><div><b>iPhone y iPad</b><span>Funciona en Safari. Pon el teléfono en <strong>horizontal</strong> y, para jugar sin barras del navegador, usa <strong>Compartir → Añadir a pantalla de inicio</strong>.</span></div></div>
+        </div>
+        <div class="howto">
+          <div><b>Instalar en Android</b>Chrome ⋮ → «Añadir a pantalla de inicio». Tendrás el ícono de Karavan Online como una app.</div>
+          <div><b>Instalar en iPhone</b>Safari → Compartir ⬆️ → «Añadir a pantalla de inicio». Se abre a pantalla completa.</div>
+        </div>
+        <p style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn-gold btn-sm" href="play.html" data-play>⚔ Jugar ahora</a><a class="btn btn-sm" href="wiki.html#/plataformas">📱 Guía por plataforma</a></p>
+      </div>
     </div>
-    <p class="play-hint">Faltan <b data-eta>--</b></p>
+  </div>
+</section>
+
+<section class="sec alt" id="arte">
+  <div class="wrap">
+    <div class="sec-h"><span class="eyebrow">Arte</span><h2>Fondos de pantalla</h2><div class="orn"><i></i></div><p>La ciudad dorada, el oasis y una caravana en marcha. Descárgalos gratis para tu computadora o tu celular.</p></div>
+    <div class="walls">
+      <figure class="wall shot"><img src="kv-bg.jpg" data-big="kv-bg.jpg" alt="Fondo de pantalla de Karavan Online para PC" width="2400" height="1350" loading="lazy"><a class="btn btn-sm dl" href="kv-bg.jpg" download="Karavan-Online-fondo-PC.jpg" onclick="event.stopPropagation()">⬇ Fondo PC</a></figure>
+      <figure class="wall shot"><img src="kv-bg-p.jpg" data-big="kv-bg-p.jpg" alt="Fondo de pantalla de Karavan Online para celular" width="900" height="1948" loading="lazy"><a class="btn btn-sm dl" href="kv-bg-p.jpg" download="Karavan-Online-fondo-celular.jpg" onclick="event.stopPropagation()">⬇ Fondo celular</a></figure>
+    </div>
+    <p style="text-align:center;margin-top:28px"><a class="btn" href="wiki.html#/arte">🎨 Ver toda la galería</a></p>
+  </div>
+</section>
+
+<section class="sec" style="text-align:center">
+  <div class="wrap">
+    <div class="sec-h" style="margin-bottom:26px"><span class="eyebrow">Tu caravana te espera</span><h2>Tu leyenda empieza hoy</h2><div class="orn"><i></i></div><p>Elige tu clase, arma tu caravana y escribe tu leyenda en la Gran Ruta.</p></div>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap"><a class="btn btn-gold" href="play.html" data-play>⚔ Jugar ahora</a><a class="btn" href="wiki.html">📖 Abrir la wiki</a></div>
   </div>
 </section>
 </main>
 
 <footer class="foot"><div class="wrap">
-  <p>© Silk Games Studios · <a href="wiki.html">Wiki</a> · <a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos</a></p>
-  <p class="credit">Los sprites de personajes usan el tileset DawnLike (CC-BY 4.0) de DragonDePlatino y DawnBringer. Las escenas y emblemas de esta página son ilustraciones originales.</p>
+  <img src="icon-192.png" alt="" width="76" height="76" loading="lazy">
+  <p>© Silk Games Studios · <b>Karavan Online</b> · <a href="wiki.html">Wiki</a></p>
+  <p class="credit">Sprites y arte de terceros con sus créditos en <a href="wiki.html#/creditos">Créditos</a>. El logo, el arte de portada y la música «Caravana de Oro» son originales de Karavan Online.</p>
 </div></footer>
+<div class="lightbox" id="lb" aria-label="Imagen ampliada"></div>
 
-<script src="site-config.js"></script>
 <script src="wiki-data.js"></script>
 <script src="wiki-lore.js"></script>
-<script src="site-heroes.js"></script>
-<script src="art.js"></script>
-<script src="site-hero.js"></script>
-<script src="site.js"></script>
+<script src="kv.js"></script>
 <script>
 (function(){
-  const W=window.WIKI,A=window.ART,CG=['#b8862a','#6b7c93','#b8442a','#3a8f4a','#e3d79a','#d8892a','#2f9f78','#a8552d'];
-  document.getElementById('heroes').innerHTML=[0,1,2,3,4,5,6,7].map(c=>HERO.img(c,'down',0,5,'data-anim="1"')).join('');
-  document.getElementById('mundo-lead').textContent='Dieciséis tierras, doce ciudades-oasis y casi '+W.world.mobs.toLocaleString('es')+' enemigos repartidos entre las murallas de Chang\'an y las fronteras de Constantinopla.';
-  const nums=[['🗺️',W.regions.length,'tierras por explorar'],['🏛️',W.cities.length,'ciudades-oasis'],['⚔️',W.classes.length,'clases jugables'],['⭐',W.train_skill.lvmax.toLocaleString('es'),'niveles de poder'],['🕳️',W.caves.length,'cuevas y torres'],['🐉',3,'dragones al mes'],['🌠',W.celest.length,'bestias celestiales'],['🐎',W.pets.length,'mascotas y monturas']];
-  document.getElementById('nums').innerHTML=nums.map(n=>'<div class="card" style="text-align:center"><span class="ico">'+n[0]+'</span><h3 style="font-size:34px;margin:0">'+n[1]+'</h3><p style="margin-top:4px">'+n[2]+'</p></div>').join('');
-  document.getElementById('cls').innerHTML=W.classes.map((c,i)=>HERO.slot(i)).join('');
-  const F=[['🏛️','Ciudades-oasis','Doce ciudades con mercado de jugadores, establo, herrería, botica, almacén y mucho más.'],['🕳️','Cuevas y la Torre','Cinco mazmorras, desde las Arañas hasta una torre de 600 pisos que nadie ha terminado.'],['🌠','Bestias Celestiales','Dos guardianas del Zodiaco con millones de vida esconden monturas que no se venden.'],['🐉','Dragones del mes','Ignarax y Glacius bajan tres veces al mes, a la misma hora para todos.'],['🛡️','Gremios y territorios','Funda tu gremio, levanta muros y torres y defiende tu bandera.'],['🏕️','Carpa de entrenamiento','Tres ritos para subir tus skills de ataque, defensa y agilidad hasta el 600.'],['💰','Economía de jugadores','Tiendas, Mercado de Gemas y rutas de caravana: el oro lo mueven los jugadores.'],['🐺','Mascotas y monturas','Perros, lobos, halcones, búhos, caballos y camellos que pelean contigo.'],['🌦️','Clima vivo','Lluvia, rayos, ventiscas, nieve que se acumula, olas de calor y tormentas de arena. Cada estación cambia las reglas.'],['🎃','Eventos y estaciones','Noche de Brujas, Navidad, Año Nuevo Lunar, Nowruz… y el clima cambia con las estaciones.']];
-  document.getElementById('feats').innerHTML=F.map(x=>'<div class="card"><span class="ico">'+x[0]+'</span><h3>'+x[1]+'</h3><p>'+x[2]+'</p></div>').join('');
-  const picks=['d','celest','tower'];
-  document.getElementById('gal').innerHTML=picks.map(k=>{const m=A.placeMeta(k);return '<a class="shot" href="wiki.html#/arte" style="cursor:pointer">'+A.place(k)+'<figcaption>'+m.n+'<small>'+m.s+'</small></figcaption></a>'}).join('');
+  const W=window.WIKI,KV=window.KV,SHOW=[["Maza Omnipotente de Riqueza",273,3,1200,{"dm":60}],["Dagas Celestiales del Caos",487,3,1200,{"dm":60}],["Vara Omnipotente Arcana",909,3,1200,{"dm":60}],["Arco Supremo del Caos",68,3,1200,{"dm":60}],["Báculo Omnipresente",673,3,1200,{"dm":60}],["Báculo de la Creación Total",369,3,1200,{"dm":60}],["Báculo Omnipresente Élfico",600,3,1200,{"dm":60}],["Dagas Celestiales del Caos Enano",221,3,1200,{"dm":60}]];
+  document.getElementById('mundo-lead').textContent='Dieciséis tierras, doce ciudades-oasis y más de '+(Math.floor(W.world.mobs/100)*100).toLocaleString('es')+' enemigos repartidos entre las murallas de Chang\'an y las fronteras de Constantinopla.';
+  const N=[['🗺️',W.regions.length,'tierras por explorar','#21d6c4'],['🏛️',W.cities.length,'ciudades-oasis','#ffc83d'],['⚔️',W.classes.length,'clases jugables','#ff4a62'],['🛡️','+4.800','objetos y equipos','#b27bff'],['🕳️',13,'cuevas y mazmorras','#46a8ff'],['🐉','3','dragones al mes','#ff9d1c'],['🐎',11,'mascotas y monturas','#34d27b'],['📋','+600','misiones globales','#ffe49a']];
+  document.getElementById('nums').innerHTML=N.map(n=>'<div class="nm" style="--c:'+n[3]+'"><span class="ni">'+n[0]+'</span><b>'+n[1]+'</b><span>'+n[2]+'</span></div>').join('');
+  document.getElementById('cls').innerHTML=W.classes.map((c,i)=>KV.heroCard(i)).join('');
+  const RN=['Común','Rara','Épica','Legendaria'],RCL=['#b9b9b9','#4aa3ff','#c46bff','#ffb020'];
+  document.getElementById('show').innerHTML=SHOW.map((s,i)=>'<a class="tc" href="wiki.html#/objetos/sets/'+i+'/9~0" style="--rc:'+RCL[s[2]]+'">'+KV.ic(s[1],2)+'<b>'+KV.esc(s[0])+'</b><small>'+KV.esc(W.classes[i].n)+' · nivel '+s[3].toLocaleString('es')+'<br>+'+s[4].dm+'% daño</small><em>'+RN[s[2]]+'</em></a>').join('');
+  const SP=(n,k)=>KV.sp(n,k,'data-an="'+n.replace(/-\d$/,'')+'"');
+  const F=[['🏛️','Ciudades-oasis','Doce ciudades con mercado de jugadores, establo, herrería, botica, almacén y mucho más.','#ffc83d',[KV.sp('trader-basic-1',3),KV.sp('trader-priest-1',3),KV.sp('ruler-1',3)]],
+   ['🕳️','Cuevas, Torre y Red Subterránea','Mazmorras con jefes únicos, una torre de 600 pisos, el Santuario de los Dragones y una red de túneles bajo las ciudades.','#46a8ff',[KV.sp('spx2-1',3),KV.sp('skel-1',3),KV.sp('ghost-1',3),KV.sp('tw-g600-1',3)]],
+   ['🌠','Bestias Celestiales','Guardianas del Zodiaco con millones de vida esconden monturas que no se venden.','#b27bff',[KV.sp('an-nhorse-1',3),KV.sp('an-cow-1',3),KV.sp('an-lion-1',3)]],
+   ['🐉','Dragones y Santuario','Ignarax y Glacius bajan tres veces al mes, a la misma hora para todos. Y bajo la Montaña de los Dragones espera un santuario de 9 pisos con ocho dragones elementales.','#ff4a62',[KV.dz(7,0.62),KV.dz(3,0.62),KV.dz(2,0.62)]],
+   ['🛡️','Gremios y territorios','Funda tu gremio, levanta muros y torres y defiende tu bandera.','#21d6c4',[KV.sp('c1-down-1',3),KV.sp('c7-down-1',3)]],
+   ['🏕️','Carpa de entrenamiento','Tres ritos para subir tus skills de ataque, defensa y agilidad hasta el 600.','#ff9d1c',[KV.sp('dungium-golem-down-1',3),KV.sp('iron-golem-down-1',3)]],
+   ['💰','Economía de jugadores','Tiendas, Mercado de Gemas, mercado de personajes y rutas de caravana.','#ffe49a',[KV.sp('chest',3),KV.ic(528,1.5)]],
+   ['🐺','Mascotas y monturas','Perros, lobos, halcones, búhos, caballos, camellos y escorpiones que pelean contigo.','#34d27b',[KV.sp('an-wolf-1',3),KV.sp('an-camel-1',3),KV.sp('an-horse-1',3),KV.sp('an-scorp-1',3)]],
+   ['🌦️','Clima y estaciones','Lluvia, rayos, ventiscas y nieve que se acumula. Noche de Brujas, Navidad, Año Nuevo Lunar, Nowruz… y la Gran Cacería.','#46a8ff',[KV.sp('jack-1',3),KV.sp('reno-1',3),KV.sp('cupid-1',3)]]];
+  document.getElementById('feats').innerHTML=F.map(x=>'<div class="fc" style="--c:'+x[3]+'"><span class="ico">'+x[0]+'</span><h3>'+x[1]+'</h3><p>'+x[2]+'</p>'+(x[4].length?'<div class="row">'+x[4].join('')+'</div>':'')+'</div>').join('');
 })();
 </script>
 </body>

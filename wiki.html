@@ -2,43 +2,53 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Wiki · Silk Road</title>
-<meta name="description" content="La wiki de Silk Road: The Great Adventure. Clases, habilidades, equipo, zonas, monstruos, farmeo, carpas y más.">
-<meta name="theme-color" content="#09070f">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="site.css">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23e6b64f'/%3E%3Crect x='24' y='24' width='16' height='16' fill='%2309070f'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wiki · Karavan Online</title>
+<meta name="description" content="La wiki oficial de Karavan Online: las 8 clases, el catálogo completo de objetos con sus sprites reales, mapas, cuevas, dragones, mascotas, forja y novedades.">
+<meta name="theme-color" content="#0a1a45">
+<link rel="canonical" href="https://karavanonline.com/wiki.html">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Karavan Online"><meta property="og:locale" content="es_ES">
+<meta property="og:title" content="Wiki de Karavan Online">
+<meta property="og:description" content="Clases, objetos con sus sprites reales, mapas, cuevas, dragones y secretos del MMORPG de caravanas.">
+<meta property="og:url" content="https://karavanonline.com/wiki.html"><meta property="og:image" content="https://karavanonline.com/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="kv-cinzel-900.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="kv-corm-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="kv.css">
 </head>
 <body>
+
 <header class="top"><div class="wrap">
-  <a class="brand" href="index.html"><span class="spr" style="--k:2;--c:1;--t:3" aria-hidden="true"></span><span>SILK ROAD</span></a>
+  <a class="brand" href="index.html" aria-label="Karavan Online, inicio"><img src="icon-192.png" alt="" width="38" height="38"><span>KARAVAN<small>ONLINE</small></span></a>
   <nav class="nav" aria-label="Principal">
     <a href="index.html">Inicio</a>
-    <a href="wiki.html" class="on">Wiki</a>
-    <a href="#/clases">Clases</a>
-    <a href="#/arte">Arte</a>
-    <a href="play.html" class="play locked" data-play data-go="⚔️ Jugar" aria-disabled="true"><span data-lbl>🔒 Jugar</span></a>
+    <a href="wiki.html#/inicio" class="on">Wiki</a>
+    <a href="wiki.html#/objetos" class="opt">Objetos</a>
+    <a href="wiki.html#/plataformas" class="opt">Plataformas</a>
+    <a href="play.html" class="play" data-play>⚔ Jugar</a>
   </nav>
 </div></header>
+
 <div class="wrap wiki">
-  <button class="btn menu-btn" type="button">☰ Menú de la wiki</button>
-  <aside class="side" id="side" aria-label="Wiki"></aside>
-  <main class="page" id="page" tabindex="-1"></main>
+  <button class="btn menu-btn" type="button" aria-controls="side">☰ Menú de la wiki</button>
+  <aside class="side" id="side" aria-label="Índice de la wiki"></aside>
+  <main class="page" id="page" tabindex="-1">
+    <noscript><p class="note warn">La wiki necesita JavaScript para mostrar sus páginas. Puedes seguir en la <a href="index.html">portada</a> o <a href="play.html">jugar ahora</a>.</p></noscript>
+  </main>
 </div>
-<div class="lightbox" id="lb" aria-label="Imagen ampliada"></div>
+
 <footer class="foot"><div class="wrap">
-  <p>© Silk Games Studios · <a href="index.html">Inicio</a> · <a href="privacidad.html">Privacidad</a> · <a href="terminos.html">Términos</a></p>
-  <p class="credit">Sprites: tileset DawnLike (CC-BY 4.0) de DragonDePlatino y DawnBringer. Escenas y textos originales.</p>
+  <img src="icon-192.png" alt="" width="76" height="76" loading="lazy">
+  <p>© Silk Games Studios · <b>Karavan Online</b> · <a href="index.html">Inicio</a></p>
+  <p class="credit">Sprites y arte de terceros con sus créditos en <a href="wiki.html#/creditos">Créditos</a>. El logo, el arte de portada y la música «Caravana de Oro» son originales de Karavan Online.</p>
 </div></footer>
-<script src="site-config.js"></script>
+<div class="lightbox" id="lb" aria-label="Imagen ampliada"></div>
+
 <script src="wiki-data.js"></script>
 <script src="wiki-lore.js"></script>
-<script src="site-heroes.js"></script>
-<script src="art.js"></script>
-<script src="site-hero.js"></script>
-<script src="site.js"></script>
+<script src="wiki-items.js"></script>
+<script src="kv.js"></script>
 <script src="wiki.js"></script>
 </body>
 </html>

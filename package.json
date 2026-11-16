@@ -1,6 +1,6 @@
 {
-  "name": "silk-road-server",
-  "version": "360.0.0",
+  "name": "karavan-online-server",
+  "version": "438.0.0",
   "private": true,
   "main": "server.js",
   "scripts": {

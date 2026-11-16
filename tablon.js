@@ -39,12 +39,25 @@ module.exports=function(S,E,X){
    if(y<h-1&&!m[v+w]&&!W.tsolid(x,y+1)){m[v+w]=1;q[qt++]=v+w}}
   return REACH={m,w,h,n:qt}}
  const cityBox=(c,tx,ty,m)=>{const e=c.ex||[0,0,0,0],dx=tx-c.tx-.5,dy=ty-c.ty-.5;return dx>-24.6-e[0]-m&&dx<24.6+e[1]+m&&dy>-18.6-e[2]-m&&dy<15.6+e[3]+m};
+ /* v438: la esquina NO del mapa (Montaña / Santuario de los Dragones, x<235 y<150) es la zona más lejana de toda ciudad y la que más dragones tiene:
+    las búsquedas difíciles caían casi todas ahí y no se podían cobrar. Ahora esa zona (con 12 casillas de margen) queda excluida y las búsquedas lejanas
+    se reparten por el resto del mapa: lo que no cabe dentro de la distancia máxima del resto se comprime en la última franja (no se amontonan en un punto). */
+ const DRX=247,DRY=162,inDrag=(tx,ty)=>tx<DRX&&ty<DRY;
+ let DCAP=0;
+ function dcap(rc,cs){
+  if(DCAP)return DCAP;const a=[];
+  for(let ty=4;ty<rc.h-4;ty+=4)for(let tx=4;tx<rc.w-4;tx+=4){
+   if(!rc.m[ty*rc.w+tx]||inDrag(tx,ty))continue;
+   let dn=1e9;for(const c of cs){const dd=Math.hypot(c.tx-tx,c.ty-ty);if(dd<dn)dn=dd}
+   if(dn<32||cs.some(c=>cityBox(c,tx,ty,8)))continue;a.push(dn)}
+  a.sort((x,y)=>x-y);return DCAP=a.length?Math.max(120,a[Math.floor(a.length*.97)]):300}
  function pickSpot(R,i){
-  const f=i/(NM-1),target=24+500*Math.pow(f,1.15),W=S.world,rc=reach();
+  const f=i/(NM-1),W=S.world,rc=reach();let target=24+500*Math.pow(f,1.15);
   if(!rc||!W.cities){return[100+Math.floor(R()*1200),60+Math.floor(R()*760)]}
   const cs=W.cities();let best=null,bd=1e9;
+  const dc=dcap(rc,cs),T0=.72*dc;if(target>T0)target=T0+(target-T0)/(524-T0)*(dc-T0);
   for(let k=0;k<9000;k++){
-   const tx=4+Math.floor(R()*(rc.w-8)),ty=4+Math.floor(R()*(rc.h-8));if(!rc.m[ty*rc.w+tx])continue;
+   const tx=4+Math.floor(R()*(rc.w-8)),ty=4+Math.floor(R()*(rc.h-8));if(!rc.m[ty*rc.w+tx]||inDrag(tx,ty))continue;
    let dn=1e9;for(const c of cs){const dd=Math.hypot(c.tx-tx,c.ty-ty);if(dd<dn)dn=dd}
    if(dn<32||cs.some(c=>cityBox(c,tx,ty,8)))continue;                 // fuera de toda ciudad (mismo rectángulo que usa el mundo) y con margen
    const gap=Math.abs(dn-target);

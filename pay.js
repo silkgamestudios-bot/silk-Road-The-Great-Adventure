@@ -1,4 +1,4 @@
-/* Silk Road · COBRO AUTOMÁTICO EN USDT (Binance Pay, API de SOLO LECTURA).
+/* Karavan Online · COBRO AUTOMÁTICO EN USDT (Binance Pay, API de SOLO LECTURA).
    Flujo: el jugador elige un paquete → el servidor crea una orden con un monto ÚNICO (precio base − 0.01…0.49) válida 15 min →
    el jugador paga ese monto exacto al Pay ID → el servidor lee el historial de Binance Pay cada pocos segundos, cruza monto+ventana
    y acredita las gemas UNA sola vez (guarda el ID de transacción de Binance). Lo que no coincide va a la lista de revisión manual.
@@ -83,13 +83,13 @@ ops['adm.pay.rvok']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const
  r.done=1;r.by=String((E.acct(u)||{}).nm||u).slice(0,20);r.dt=now();S.dirty();return{ok:1}};
 
 function credit(o,tx,ts,how){if(o.st==='paid')return false;const a=E.acct(o.u);o.st='paid';o.tx=tx;o.pt=now();o.bt=ts;o.how=how||'auto';G().tx[tx]={t:now(),o:o.id,s:'ok'};
- if(o.k==='mk'){S.dirty();log('[pay] PAGADA (mercado USDT) '+o.id+' '+(a.nm||o.u)+': '+fmt(o.c)+' USDT · tx '+tx+' ('+(how||'auto')+')');try{H.onMk&&H.onMk(o,tx)}catch(e){log('[mercado-usdt] error entregando: '+(e&&e.stack||e));try{S.notify('⚠️ SILK ROAD · Pago de mercado recibido pero la entrega falló\nOrden '+o.id+' · '+fmt(o.c)+' USDT · tx '+tx)}catch(x){}}return true}
+ if(o.k==='mk'){S.dirty();log('[pay] PAGADA (mercado USDT) '+o.id+' '+(a.nm||o.u)+': '+fmt(o.c)+' USDT · tx '+tx+' ('+(how||'auto')+')');try{H.onMk&&H.onMk(o,tx)}catch(e){log('[mercado-usdt] error entregando: '+(e&&e.stack||e));try{S.notify('⚠️ KARAVAN ONLINE · Pago de mercado recibido pero la entrega falló\nOrden '+o.id+' · '+fmt(o.c)+' USDT · tx '+tx)}catch(x){}}return true}
  E.grantGems(o.u,o.g,'own','pago USDT '+fmt(o.c)+' (Binance '+tx+')');S.dirty();
  try{S.push(o.u,{t:'note',m:'💎 ¡Pago recibido! Se acreditaron '+o.g+' gemas'})}catch(e){}
  log('[pay] PAGADA '+o.id+' '+(a.nm||o.u)+': '+fmt(o.c)+' USDT → +'+o.g+' gemas · tx '+tx+' ('+(how||'auto')+')');
- try{S.notify('💎 SILK ROAD · Pago automático recibido\nJugador: '+String(a.nm||o.u).slice(0,30)+'\nMonto: '+fmt(o.c)+' USDT → '+o.g+' 💎\nTx Binance: '+tx)}catch(e){}return true}
+ try{S.notify('💎 KARAVAN ONLINE · Pago automático recibido\nJugador: '+String(a.nm||o.u).slice(0,30)+'\nMonto: '+fmt(o.c)+' USDT → '+o.g+' 💎\nTx Binance: '+tx)}catch(e){}return true}
 function toReview(why,tx,ts,c,o){const d=G();if(d.tx[tx])return;d.tx[tx]={t:now(),s:'rv'};d.rv.push({tx,ts,c,why,oid:o?o.id:'',nm:o?String((E.acct(o.u)||{}).nm||o.u).slice(0,24):'',r:now()});while(d.rv.length>MAXREV)d.rv.shift();S.dirty();
- log('[pay] REVISIÓN MANUAL '+why+' · '+fmt(c)+' USDT · tx '+tx);try{S.notify('⚠️ SILK ROAD · Pago por revisar\n'+why+'\nMonto: '+fmt(c)+' USDT · tx '+tx+(o?'\nOrden de '+o.nm:''))}catch(e){}}
+ log('[pay] REVISIÓN MANUAL '+why+' · '+fmt(c)+' USDT · tx '+tx);try{S.notify('⚠️ KARAVAN ONLINE · Pago por revisar\n'+why+'\nMonto: '+fmt(c)+' USDT · tx '+tx+(o?'\nOrden de '+o.nm:''))}catch(e){}}
 
 /* ---------- consulta a Binance ---------- */
 let off=0,lastOk=0,lastErr='',lastErrT=0,busyQ=false,timer=null;

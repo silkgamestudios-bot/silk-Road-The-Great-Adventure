@@ -1,4 +1,4 @@
-/* Silk Road · MERCADO USDT con garantía (escrow) · todo pasa por NUESTRO Binance Pay (sin MetaMask ni blockchain).
+/* Karavan Online · MERCADO USDT con garantía (escrow) · todo pasa por NUESTRO Binance Pay (sin MetaMask ni blockchain).
    Flujo:
    1. El vendedor publica (objeto, mascota, boleto o gemas) con precio en USDT + su ID de Binance Pay y su usuario de Binance.
       El servidor retiene lo publicado (garantía): nadie más lo puede usar mientras esté a la venta.
@@ -68,7 +68,7 @@ ops['um.abort']=(u,m)=>{sweep();const L=Object.values(U().o).find(x=>x.id===Stri
 function onMk(o,tx){if(o.pk==='chm'){return CM&&CM.autoPaid(o,tx)}const d=U(),L=d.o[o.ref],bu=o.u,bnm=nmOf(bu);
  if(!L||(L.st==='r'&&L.b&&prim(L.b)!==prim(bu))){const sid='s'+E.rid(6);d.s[sid]={id:sid,bu,bnm,sn:'—',su:'',d:L?desc(L):'(anuncio ya no disponible)',c:Math.round(o.b*100),paid:o.c,fee:0,net:0,tx,t:now(),st:'refund'};S.dirty();
   inbox(bu,'⚠️ Recibimos tu pago de '+fmt(o.c)+' USDT pero el artículo ya no estaba disponible. Te lo reembolsaremos por Binance Pay.','b');
-  try{S.notify('⚠️ SILK ROAD · REEMBOLSO NECESARIO\nPago recibido de '+bnm+': '+fmt(o.c)+' USDT (tx '+tx+')\nEl anuncio ya no estaba disponible. Devuélvele el pago por Binance Pay.')}catch(e){}
+  try{S.notify('⚠️ KARAVAN ONLINE · REEMBOLSO NECESARIO\nPago recibido de '+bnm+': '+fmt(o.c)+' USDT (tx '+tx+')\nEl anuncio ya no estaba disponible. Devuélvele el pago por Binance Pay.')}catch(e){}
   return}
  const gross=L.pc,fee=Math.floor(gross*FEE_BPS/10000),net=gross-fee,dsc=desc(L);
  if(L.k==='g'){const b=E.acct(bu);b.gem.own+=L.q|0;E.glAdd(b,L.q|0,'Mercado USDT');E.pushEnt(bu)}else MK.deliverOffer(L,bu);
@@ -79,7 +79,7 @@ function onMk(o,tx){if(o.pk==='chm'){return CM&&CM.autoPaid(o,tx)}const d=U(),L=
  inbox(bu,'🛒 ¡Pago confirmado! Recibiste «'+dsc+'» (pagaste '+fmt(o.c)+' USDT). Gracias por comprar.','b');
  inbox(L.u,'💰 Se vendió «'+dsc+'» por '+fmt(gross)+' USDT. Te pagaremos '+fmt(net)+' USDT (comisión 5%: '+fmt(fee)+') por Binance Pay a '+L.bn+' · ID '+L.pay+'.','s');
  S.log('[mercado-usdt] VENTA '+dsc+' · '+L.nm+' → '+bnm+' · '+fmt(gross)+' USDT · pagar '+fmt(net)+' a '+L.bn+' ('+L.pay+') · tx '+tx);
- try{S.notify('💵 SILK ROAD · VENTA EN EL MERCADO USDT (pago ya verificado)\nArtículo: '+dsc+'\nComprador: '+bnm+' pagó '+fmt(o.c)+' USDT (tx '+tx+')\nVendedor: '+L.nm+'\nPAGAR AL VENDEDOR: '+fmt(net)+' USDT (precio '+fmt(gross)+' − 5% = '+fmt(fee)+')\nBinance Pay ID: '+L.pay+'\nUsuario Binance: '+L.bn+'\nCuando pagues, márcalo en el juego: Mercado USDT → Master.')}catch(e){}}
+ try{S.notify('💵 KARAVAN ONLINE · VENTA EN EL MERCADO USDT (pago ya verificado)\nArtículo: '+dsc+'\nComprador: '+bnm+' pagó '+fmt(o.c)+' USDT (tx '+tx+')\nVendedor: '+L.nm+'\nPAGAR AL VENDEDOR: '+fmt(net)+' USDT (precio '+fmt(gross)+' − 5% = '+fmt(fee)+')\nBinance Pay ID: '+L.pay+'\nUsuario Binance: '+L.bn+'\nCuando pagues, márcalo en el juego: Mercado USDT → Master.')}catch(e){}}
 PY.hooks.onMk=onMk;PY.hooks.onMkExp=()=>{try{sweep()}catch(e){}};
 setInterval(()=>{try{sweep()}catch(e){}},60000);
 

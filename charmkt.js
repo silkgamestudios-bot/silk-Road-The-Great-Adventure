@@ -167,7 +167,7 @@ ops['chm.paid']=(u,m)=>{sweep();const L=C().L[String(m.id||'')],bp=E.prim(u);if(
  if(L.st==='open'&&L.xb===bp&&!Object.values(C().L).some(x=>x.b===bp&&(x.st==='resv'||x.st==='paid'))){L.st='resv';L.b=bp;L.bu=u;L.bn=nmOf(u);L.rts=now();L.xb=''}
  if(L.b!==bp||(L.st!=='resv'&&L.st!=='paid'))return err('Esa orden no es tuya o ya no está activa');
  L.ref=ref;L.pts=now();L.st='paid';S.dirty();const s=L.snap||{},leg=L.hold===undefined;
- S.notify('💵 SILK ROAD · Venta de personaje por USDT por aprobar\nPersonaje: '+s.nm+' (Nv '+s.lv+')\nPrecio: '+(L.pr.u/100).toFixed(2)+' USDT\nComprador: '+L.bn+' ('+emailOf(L.b)+')\nVendedor: '+L.sn+' ('+emailOf(L.p)+')\nCobro del vendedor: '+(leg?((L.pr.u-Math.floor(L.pr.u*FEE/100))/100).toFixed(2)+' USDT (precio − comisión)':(L.pr.u/100).toFixed(2)+' USDT completos (su comisión de '+(L.hold|0)+' 💎 ya está retenida)')+' al ID '+(L.pay||'?')+'\nOrden Binance Pay: '+ref.slice(0,60)+'\nTu Pay ID: '+X.PAY_ID+'\nAprueba en el juego (Elige tu personaje → Mercado de personajes → 🛡️ Master).');
+ S.notify('💵 KARAVAN ONLINE · Venta de personaje por USDT por aprobar\nPersonaje: '+s.nm+' (Nv '+s.lv+')\nPrecio: '+(L.pr.u/100).toFixed(2)+' USDT\nComprador: '+L.bn+' ('+emailOf(L.b)+')\nVendedor: '+L.sn+' ('+emailOf(L.p)+')\nCobro del vendedor: '+(leg?((L.pr.u-Math.floor(L.pr.u*FEE/100))/100).toFixed(2)+' USDT (precio − comisión)':(L.pr.u/100).toFixed(2)+' USDT completos (su comisión de '+(L.hold|0)+' 💎 ya está retenida)')+' al ID '+(L.pay||'?')+'\nOrden Binance Pay: '+ref.slice(0,60)+'\nTu Pay ID: '+X.PAY_ID+'\nAprueba en el juego (Elige tu personaje → Mercado de personajes → 🛡️ Master).');
  return{ok:1}};
 /* ---- master ---- */
 const gm=u=>S.isMaster(u)?null:err('operación desconocida');
@@ -195,6 +195,6 @@ ops['chm.paidout']=(u,m)=>{const x=gm(u);if(x)return x;const e=C().P.find(y=>y.i
 /* v410: el pago de un personaje por USDT se verifica solo (pay.js) y aprueba la venta sin intervención */
 let PYR=null;
 function autoPaid(o,tx){const lid=String(o.ref||'').replace(/^c:/,''),L=C().L[lid];
- if(!L||!(L.st==='resv'||L.st==='paid')||!L.b||L.b!==E.prim(o.u)||!L.pr.u){S.log('[personajes] pago automático sin venta activa (orden '+o.id+', tx '+tx+')');try{S.notify('⚠️ SILK ROAD · Pago de personaje recibido pero la venta ya no estaba activa\nOrden '+o.id+' · '+(o.c/100).toFixed(2)+' USDT · tx '+tx+'\nDevuelve el pago por Binance Pay o revisa en Mercado de personajes.')}catch(e){}return}
+ if(!L||!(L.st==='resv'||L.st==='paid')||!L.b||L.b!==E.prim(o.u)||!L.pr.u){S.log('[personajes] pago automático sin venta activa (orden '+o.id+', tx '+tx+')');try{S.notify('⚠️ KARAVAN ONLINE · Pago de personaje recibido pero la venta ya no estaba activa\nOrden '+o.id+' · '+(o.c/100).toFixed(2)+' USDT · tx '+tx+'\nDevuelve el pago por Binance Pay o revisa en Mercado de personajes.')}catch(e){}return}
  L.ref='Binance '+tx;L.pts=now();L.st='paid';S.dirty();approve(lid,'Pago automático Binance')}
 return{ops,sweep,snapOf,autoPaid,setPY:p=>{PYR=p}}};

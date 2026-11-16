@@ -1,9 +1,9 @@
 /* Tienda del servidor: apariencias, servicios (buffs), gemas, nombres y entitlements. Precios y reglas SOLO viven aquí. */
 module.exports=function(S,E){
 const cat=S.cat,SK=Object.assign({},cat.SKINS,cat.TRAJES||{}),EVK=E.EVK;
-const GEMP={vpf:7,vph:4,vmf:12,vmh:7,tr:3,lt:3,ap:2,bl:4,es:3,cmb:6,lic:10,vipm:15,vipj:7,vip:11,pv:7,bh:5},GMON=['cmb','es','lic','vipm','vipj','pv','bh','tr','vpf','vph','vmf','vmh'],GEMSKIN=12,LIC_LV=1,GCMB=['lt','ap'],PRMK=['lt','ap','bl','es','pv','bh','tr'],DAY=864e5;
+const GEMP={vpf:7,vph:4,vmf:10,vmh:6,tr:3,lt:3,ap:2,bl:4,es:3,cmb:6,lic:10,vipm:15,vipj:7,vip:11,pv:7,bh:5},GMON=['cmb','es','lic','vipm','vipj','pv','bh','tr','vpf','vph','vmf','vmh'],GEMSKIN=12,LIC_LV=1,GCMB=['lt','ap'],PRMK=['lt','ap','bl','es','pv','bh','tr'],DAY=864e5;
 const price=(k,d)=>{const b=GEMP[k]||0;if(GMON.includes(k)){if(k==='es'||k==='pv'||k==='bh'||k==='vpf'||k==='vph'||k==='vmf'||k==='vmh'||d>=30)return b;return Math.min(b-1,Math.max(1,Math.round(b*d/30*1.3)))}if(d<=10)return b;return Math.max(1,Math.round(b*(d/10)*.8))};
-const blGold=lv=>Math.round(2000*Math.pow(1.28,Math.min(29,Math.max(0,lv-1))));
+const blGold=lv=>Math.round(1500*Math.pow(1.17,Math.min(29,Math.max(0,lv-1)))+Math.max(0,lv-30)*1500);
 const NAME_GOLD=2000,TAXP=c=>Math.ceil(Math.round(c)*.03),err=e=>({e});/* impuesto 3% sobre todo lo que se paga con oro */const ops={};
 ops['me.get']=(u)=>({ok:1,ent:E.ent(u)});
 /* v338: cambio de clase por 1 gema; el servidor valida la clase y realiza el cobro. */
@@ -52,8 +52,8 @@ const nmOf=u=>((S.ECO.acc[u]||{}).nm)||u;
 const GM_MAXG=1e6,GM_MAXO=1e9,H=36e5;
 function gmTarget(u,name){const nm=String(name||'').trim();let o=u;if(nm){o=E.uidByName(nm);if(!o&&Object.prototype.hasOwnProperty.call(S.ECO.acc,nm))o=nm}
  if(!o||!Object.prototype.hasOwnProperty.call(S.ECO.acc,o))return null;return o}
-function gmGiveGems(o,q,by,why){E.grantGems(o,q,'own','acreditadas por '+by);if(why!=='pago')S.push(o,{t:'note',m:'💎 Recibiste '+q+' gemas del equipo de Silk Road'})}
-function gmGiveGold(o,q,note){E.deliver(o,{gold:q,note:note||('🪙 Recibiste '+q+' de oro del equipo de Silk Road')})}
+function gmGiveGems(o,q,by,why){E.grantGems(o,q,'own','acreditadas por '+by);if(why!=='pago')S.push(o,{t:'note',m:'💎 Recibiste '+q+' gemas del equipo de Karavan Online'})}
+function gmGiveGold(o,q,note){E.deliver(o,{gold:q,note:note||('🪙 Recibiste '+q+' de oro del equipo de Karavan Online')})}
 ops['adm.gems']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const q=Math.floor(+m.q);if(!(q>=1&&q<=GM_MAXG))return err('Cantidad inválida (1 a 1.000.000)');
  const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u);
  gmGiveGems(o,q,'el master '+by,o===u?'pago':'');const a=E.acct(o);gmLogAdd(by,'gem',a.nm||o,q,'');
@@ -72,7 +72,7 @@ ops['adm.give']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const k=S
  E.deliver(o,{prov:{pk:k,q},note:'🎁 Devuelto por el equipo: '+q+' × '+k+' ya está en tu mochila'});gmLogAdd(by,'item',a.nm||o,q,k);S.log('[master] '+by+' entregó '+q+' de '+k+' a '+(a.nm||o));return{ok:1,nm:a.nm||o,q,k}};
 ops['adm.pet']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');/* v401: el tipo viaja en «pt» (en «t» va el tipo de mensaje 'x' y chocaba) */const t=String(m.pt||''),q=Math.max(0,Math.min(3,Math.floor(+m.q)||0));if(!/^[a-z]{2,12}$/.test(t))return err('Tipo de mascota no válido');
  const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u),a=E.acct(o),id='gm'+E.rid(8),nm=String(m.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t;
- S.ECO.reg[id]={o,k:'p',t:Date.now()};E.deliver(o,{pet:{id,t,nm,lv:1,xp:0,q,fd:80,hp:100,en:100,ill:0},note:'🎁 Devuelto por el equipo: tu mascota «'+nm+'» ya está en tu establo'});gmLogAdd(by,'pet',a.nm||o,1,t+' q'+q);S.log('[master] '+by+' entregó mascota '+t+' a '+(a.nm||o));return{ok:1,nm:a.nm||o,pt:t}/* v401: «pt», no «t»: la «t» de la respuesta es el sobre ('r') y la pisaba → la pantalla del master nunca recibía la confirmación */};
+ S.ECO.reg[id]={o,k:'p',t:Date.now(),ty:t};E.deliver(o,{pet:{id,t,nm,lv:1,xp:0,q,fd:80,hp:100,en:100,ill:0},note:'🎁 Devuelto por el equipo: tu mascota «'+nm+'» ya está en tu establo'});gmLogAdd(by,'pet',a.nm||o,1,t+' q'+q);S.log('[master] '+by+' entregó mascota '+t+' a '+(a.nm||o));return{ok:1,nm:a.nm||o,pt:t}/* v401: «pt», no «t»: la «t» de la respuesta es el sobre ('r') y la pisaba → la pantalla del master nunca recibía la confirmación */};
 ops['adm.item']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const c=E.cleanItem(m.item);if(!c)return err('Ítem no válido (revisa nivel, rareza o potenciación)');c.junk=m.item&&m.item.junk?1:undefined;if(!c.junk)delete c.junk;
  const o=gmTarget(u,m.name);if(!o)return err('No hay ningún jugador con ese nombre');const by=nmOf(u),a=E.acct(o);c.id='gm'+E.rid(8);S.ECO.reg[c.id]={o,k:'i',t:Date.now()};
  E.deliver(o,{item:c,ret:1,note:'🎁 Tu ítem «'+c.n+'» fue devuelto por el equipo y está en tu mochila de loot'});gmLogAdd(by,'item',a.nm||o,1,c.n);S.log('[master] '+by+' devolvió el ítem '+c.n+' a '+(a.nm||o));return{ok:1,nm:a.nm||o,n:c.n}};
@@ -254,13 +254,30 @@ ops['mine.take']=(u,m)=>{const f=Math.floor(+m.f),i=Math.floor(+m.i);if(!(f>=1&&
  if(!a.mnh||a.mnh[0]!==h)a.mnh=[h,0];if(!a.mnd||a.mnd[0]!==dy)a.mnd=[dy,0];if(a.mnh[1]>=MN_HOUR)return err('Tus brazos están cansados: descansa un poco antes de seguir minando');if(a.mnd[1]>=MN_DAY)return err('Ya extrajiste muchísimo hoy: vuelve mañana');
  mnClean();const d=mnDB(),k=f+':'+i;if(d[k])return{ok:0,gone:1};d[k]=n;a.mnh[1]++;a.mnd[1]++;S.dirty();S.log('[mina] '+(a.nm||a.pn||u)+' extrajo la veta '+k);return{ok:1}};
 
+
+/* ===== v425: RECURSOS GLOBALES (vetas de superficie, arboles, peces). Quien agota uno lo deja agotado para TODOS hasta que se repone.
+   Reposicion: RES_V_DAYS (vetas, 30), RES_T_DAYS (arboles, 30). Peces: reserva global que se recarga en RES_F_DAYS (90). Topes por cuenta anti-bot. ===== */
+const RS_DAYS={v:Math.max(.001,+process.env.RES_V_DAYS||30),t:Math.max(.001,+process.env.RES_T_DAYS||30)},RS_MAX={v:760,t:1400*900},RS_DAY={v:60,t:120,f:150},RS_HOUR={v:25,t:50,f:60},RS_GAP={v:1500,t:900,f:1500};
+const RS_DAU=+process.env.BAT_DAU||300,RS_FDAYS=Math.max(.001,+process.env.RES_F_DAYS||90),RS_FKPD=+process.env.RES_FISH_KPD||25;
+const rsDB=k=>{S.DB.rs=S.DB.rs||{};return S.DB.rs[k]=S.DB.rs[k]||{}};
+const rsClean=k=>{const d=rsDB(k),n=Date.now(),L=RS_DAYS[k]*864e5;for(const i of Object.keys(d))if(n-d[i]>L)delete d[i]};
+ops['res.get']=(u,m)=>{const k=String(m.k);if(k!=='v'&&k!=='t')return err('Recurso inválido');rsClean(k);const d=rsDB(k),s=Math.max(0,+m.s||0),l=[];for(const i of Object.keys(d))if(d[i]>s)l.push([+i,d[i]]);return{ok:1,l,n:Date.now(),days:RS_DAYS[k]}};
+ops['res.take']=(u,m)=>{const k=String(m.k),i=Math.floor(+m.i);if(k!=='v'&&k!=='t')return err('Recurso inválido');if(!(i>=0&&i<RS_MAX[k]))return err('Recurso inválido');
+ const a=E.acct(u),n=Date.now(),h=Math.floor(n/36e5),dy=Math.floor(n/864e5),kk='rs'+k;if(n-(a[kk+'T']||0)<RS_GAP[k])return err('Con calma: espera un instante');a[kk+'T']=n;
+ if(!a[kk+'h']||a[kk+'h'][0]!==h)a[kk+'h']=[h,0];if(!a[kk+'d']||a[kk+'d'][0]!==dy)a[kk+'d']=[dy,0];if(a[kk+'h'][1]>=RS_HOUR[k])return err('Estás cansado: descansa un poco');if(a[kk+'d'][1]>=RS_DAY[k])return err('Ya recolectaste muchísimo hoy: vuelve mañana');
+ rsClean(k);const d=rsDB(k);if(d[i])return{ok:0,gone:1};d[i]=n;a[kk+'h'][1]++;a[kk+'d'][1]++;S.dirty();return{ok:1}};
+ops['res.fish']=(u,m)=>{const a=E.acct(u),n=Date.now(),dy=Math.floor(n/864e5),h=Math.floor(n/36e5);if(n-(a.rsfT||0)<RS_GAP.f)return err('Con calma');a.rsfT=n;
+ if(!a.rsfh||a.rsfh[0]!==h)a.rsfh=[h,0];if(!a.rsfd||a.rsfd[0]!==dy)a.rsfd=[dy,0];if(a.rsfh[1]>=RS_HOUR.f||a.rsfd[1]>=RS_DAY.f)return err('Hoy ya pescaste mucho: vuelve más tarde');
+ const cap=RS_DAU*RS_FKPD*RS_FDAYS,d=(S.DB.rsf=S.DB.rsf&&typeof S.DB.rsf==='object'?S.DB.rsf:{b:cap,t:n});d.b=Math.min(cap,(isFinite(d.b)?d.b:cap)+(n-(d.t||n))*cap/(RS_FDAYS*864e5));d.t=n;
+ if(d.b<1)return{ok:0,empty:1};d.b-=1;a.rsfh[1]++;a.rsfd[1]++;S.dirty();return{ok:1,left:Math.round(d.b/cap*100)}};
+
 /* ===== v385: TOPE DE MOBS POR CUEVA (colmenas).
    Cada cueva-colmena tiene UN número de mobs para todo el servidor (por defecto HZ_MOBS = 20 000 000; se puede fijar otro para una cueva con HZ_MOBS_AR, HZ_MOBS_ES, HZ_MOBS_SE, HZ_MOBS_AB, HZ_MOBS_MI).
    Cada mob que muere, lo mate quien lo mate (un solo jugador o un equipo entero), se descuenta de ese número: no hay cuotas por jugador. Mientras quede, cada mob caído
    reaparece a los 3 min. Cuando llega a 0 la cueva queda sin mobs para todos hasta que se cumple su tiempo de reposición (HZ_DAYS = 90 días) y vuelve completa.
    Si no se agota, se repone sola HZ_DAYS días después de su primera muerte. Dentro de la cueva los mobs salen en zonas de 40 (HZ_ZONE). ===== */
 const hzNum=(v,d)=>{const x=+v;return v===undefined||v===''||!isFinite(x)?d:x};
-const HZ_DAYS=Math.max(.00001,hzNum(process.env.HZ_DAYS,90)),HZ_MOBS=Math.max(100,Math.floor(hzNum(process.env.HZ_MOBS,20000000)));
+const HZ_DAYS=Math.max(.00001,hzNum(process.env.HZ_DAYS,90)),HZ_MOBS=Math.max(100,Math.floor(hzNum(process.env.HZ_MOBS,800000)));
 const HZ_ZONE=40,HZ_GAP=600,HZ_HOUR=3000,HZ_VER=385;
 const HZ_FL={ar:5,es:6,se:12,ab:20,mi:12};/* cuevas-colmena y su número de pisos (la Torre, el Submundo y el Coliseo no son colmenas) */
 const hzZones=f=>Math.min(12,4+f);/* zonas por piso: las mismas que genera el cliente */

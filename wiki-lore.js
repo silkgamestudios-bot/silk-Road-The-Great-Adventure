@@ -2,7 +2,7 @@ window.LORE={
 world:{
  title:'La Gran Ruta',
  p:[
- 'Dicen que la Ruta de la Seda no la trazó ningún emperador: la dibujaron los pasos de quienes se atrevieron a cruzarla. Desde las murallas de Chang\'an hasta las puertas de Constantinopla se extienden dieciséis tierras, doce ciudades-oasis y un desierto que se traga caravanas enteras.',
+ 'Dicen que la Gran Ruta no la trazó ningún emperador: la dibujaron los pasos de quienes se atrevieron a cruzarla. Desde las murallas de Chang\'an hasta las puertas de Constantinopla se extienden dieciséis tierras, doce ciudades-oasis y un desierto que se traga caravanas enteras.',
  'Pero la Ruta ya no es solo comercio. En los Cañones Malditos duermen segadores; bajo el Abismo del Lodo Negro algo respira; y en los dos extremos del mapa, donde ningún camino llega, esperan las Bestias Celestiales, guardianas del Zodiaco, custodiando monturas que ningún mercader ha podido comprar.',
  'Tú llegas con una mochila liviana y un nombre que nadie conoce. La Ruta se encarga del resto.'],
  quote:'«Quien cruza el Taklamakán no vuelve siendo el mismo. O no vuelve.»  — Dicho de caravaneros'

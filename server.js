@@ -1,4 +1,4 @@
-/* Silk Road · servidor en tiempo real (WebSocket). El SERVIDOR MANDA en: cuentas, gemas, apariencias, oro/objetos verificados, mercado,
+/* Karavan Online · servidor en tiempo real (WebSocket). El SERVIDOR MANDA en: cuentas, gemas, apariencias, oro/objetos verificados, mercado,
    gremios y mundo compartido. El cliente solo muestra y pide; cada petición se valida aquí. */
 const http=require('http'),fs=require('fs'),crypto=require('crypto'),{WebSocketServer}=require('ws');
 const cat=require('./catalog');
@@ -41,7 +41,7 @@ async function notify(text){try{
  if(CALLMEBOT_KEY){await fetch(CALLMEBOT_URL+'?phone='+WA_NUMBER+'&text='+encodeURIComponent(text)+'&apikey='+encodeURIComponent(CALLMEBOT_KEY))}
  else if(WA_TOKEN&&WA_PHONE_ID){await fetch('https://graph.facebook.com/v20.0/'+WA_PHONE_ID+'/messages',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+WA_TOKEN},body:JSON.stringify({messaging_product:'whatsapp',to:WA_NUMBER,type:'text',text:{body:text}})})}
  else log('[notificación sin proveedor WhatsApp configurado] '+text.replace(/\n/g,' | '))}catch(e){log('notify error '+e.message)}
- if(NTFY){try{await fetch('https://ntfy.sh/'+encodeURIComponent(NTFY),{method:'POST',headers:{Title:'Silk Road',Priority:'high',Tags:'gem'},body:text})}catch(e){log('ntfy error '+e.message)}}}
+ if(NTFY){try{await fetch('https://ntfy.sh/'+encodeURIComponent(NTFY),{method:'POST',headers:{Title:'Karavan Online',Priority:'high',Tags:'gem'},body:text})}catch(e){log('ntfy error '+e.message)}}}
 let lastN=0;const notifyRL=t=>{const n=Date.now();if(n-lastN<3000){setTimeout(()=>notify(t),3000);lastN=n+3000}else{lastN=n;notify(t)}};
 async function gverify(cred){const r=await fetch(TOKINFO+encodeURIComponent(cred));if(!r.ok)throw new Error('token');const j=await r.json();
  if(j.aud!==GCID||!/accounts\.google\.com$/.test(String(j.iss||''))||String(j.email_verified)!=='true'||(+j.exp)*1000<Date.now()||!j.sub)throw new Error('token inválido');return{sub:String(j.sub),email:String(j.email||'').toLowerCase(),name:String(j.name||'').slice(0,40)}}
@@ -93,7 +93,9 @@ const SD=require('./seda')(S,E);
 const TB=require('./tablon')(S,E,{SO});   /* v398: Tablón de la Ruta (misiones globales «gana el primero») */
 const PY=require('./pay')(S,E,{PAY_ID});
 const UM=require('./usdtmkt')(S,E,{PY,MK,CM});CM.setPY(PY);   /* v410: Mercado USDT con garantía vía Binance Pay (sin MetaMask) */
-const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops,TB.ops,PY.ops,UM.ops);
+const MJ=require('./minijefes')(S,E);   /* v433: MINI-JEFES (Banshee, Necromancer, Velociraptor): territorios, misiones, ofrendas, cola de arena y botín. Todo lo decide el servidor */
+const PE=require('./pets')(S,E);   /* v428: tienda de mascotas, Templo de habilidades, equipo de mascota y mercado de mascotas en gemas */
+const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops,TB.ops,PY.ops,UM.ops,PE.ops,MJ.ops);
 /* Acceso anticipado: solo el master. */
 OPS['adm.lv']=(u,m)=>{if(!isMaster(u))return{e:'operación desconocida'};const n=String(m.who||'').trim().toLowerCase().slice(0,40),lv=Math.floor(+m.lv);if(!n)return{e:'Escribe el nombre del jugador'};if(!(lv>=1&&lv<=E.CFG.lvMax))return{e:'Nivel entre 1 y '+E.CFG.lvMax};
  let id=E.uidByName(n);if(!id)for(const k in (ECO.acc||{})){const q=ECO.acc[k];if(q&&[q.nm,q.pn].some(x=>x&&String(x).toLowerCase()===n)){id=k;break}}
@@ -112,7 +114,7 @@ OPS['bug.level.report']=(u,m)=>{
  const report={id:crypto.randomBytes(6).toString('hex'),ts:Date.now(),uid:u,nm:String(a.nm||a.pn||'').slice(0,40),account:String((ACC[E.prim(u)]&&ACC[E.prim(u)].e)||'').slice(0,100),level:Number(a.lv)||Number(snap.lv)||0,xp:Number(a.xp)||Number(snap.xp)||0,cls:Number(a.cls??snap.cls)||0,note,serverEvidence:{fileFound,acctLevel:Number(a.lv)||0,acctXp:Number(a.xp)||0,saved:snap},status:'open'};
  DB.levelReports=Array.isArray(DB.levelReports)?DB.levelReports:[];DB.levelReports.unshift(report);DB.levelReports=DB.levelReports.slice(0,200);dirty=1;
  log('[REPORTE_NIVEL] '+report.id+' uid='+u+' name='+(report.nm||'?')+' level='+report.level+' evidence='+fileFound);
- notifyRL('⚠️ Silk Road · Reporte de nivel '+report.id+'\nPersonaje: '+(report.nm||'?')+' · nivel de cuenta: '+report.level+' · XP: '+report.xp+'\nUID: '+u+'\nMotivo: '+(note||'(sin detalle)')+'\nEvidencia del servidor guardada en Zona GM > Incidencias.');
+ notifyRL('⚠️ Karavan Online · Reporte de nivel '+report.id+'\nPersonaje: '+(report.nm||'?')+' · nivel de cuenta: '+report.level+' · XP: '+report.xp+'\nUID: '+u+'\nMotivo: '+(note||'(sin detalle)')+'\nEvidencia del servidor guardada en Zona GM > Incidencias.');
  return{ok:1,id:report.id,message:'Reporte enviado al GM con evidencia del servidor.',ts:report.ts};
 };
 OPS['adm.level.reports']=(u)=>{if(!isMaster(u))return{e:'operación desconocida'};const l=Array.isArray(DB.levelReports)?DB.levelReports:[];return{l:l.slice(0,50).map(r=>({id:r.id,ts:r.ts,uid:r.uid,nm:r.nm,account:r.account,level:r.level,xp:r.xp,cls:r.cls,note:r.note,status:r.status,fileFound:!!(r.serverEvidence&&r.serverEvidence.fileFound),saved:r.serverEvidence&&r.serverEvidence.saved}))}};
@@ -187,31 +189,38 @@ const canDel=(c,u,id,o)=>{if(SRV_ONLY.has(c))return false;if(c==='gemreq')return
 const match=(d,w)=>!!d&&w.every(x=>x[1]==='=='&&d[x[0]]===x[2]);
 /* ===== El servidor también entrega el juego (carpeta public/): sirve de respaldo si Netlify no está disponible ===== */
 const path=require('path'),zlib=require('zlib'),PUB=path.join(__dirname,'public'),FC={};
-const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.webp':'image/webp','.mp3':'audio/mpeg','.ogg':'audio/ogg'};
-const RAIZ=new Set(['index.html','play.html','privacidad.html','terminos.html','wiki.html','wiki-data.json','wiki-data.js','wiki-lore.js','site-hero.js','site-heroes.js','wiki.js','art.js','site.js','site-config.js','sw.js','config.js','claude-shim.js','heroes.js','world-client.js','catalog.js','site.css','site2.css','manifest.webmanifest']);
+const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.webp':'image/webp','.mp3':'audio/mpeg','.ogg':'audio/ogg','.woff2':'font/woff2','.gif':'image/gif'};
+/* v404: sitio Karavan Online (kv.css, kv.js, wiki-items.js) · se quitaron los archivos del sitio viejo (site*.js/css, art.js) */
+const RAIZ=new Set(['index.html','play.html','privacidad.html','terminos.html','wiki.html','wiki-data.json','wiki-data.js','wiki-lore.js','wiki-items.js','wiki.js','kv.js','kv.css','sw.js','config.js','claude-shim.js','heroes.js','world-client.js','catalog.js','manifest.webmanifest']);
 const TXT=new Set(['.html','.js','.css','.json','.webmanifest','.svg','.txt']);
 /* v237: diagnóstico en /status: versión del cliente, si los datos están en un disco permanente, cuántos usuarios y personajes hay y cuántos arranques lleva esta carpeta de datos */
 function diskInfo(){const DD=process.env.DATA_DIR||'';let sep=false,mnt=false;try{if(DD){sep=fs.statSync(DD).dev!==fs.statSync(__dirname).dev;try{const R=path.resolve(DD);mnt=fs.readFileSync('/proc/mounts','utf8').split('\n').some(l=>{const q=l.split(' ')[1];return q&&path.resolve(q.replace(/\\040/g,' '))===R})}catch(e){}}}catch(e){}return{set:!!DD,dir:DD||'(sin DATA_DIR)',perm:sep||mnt}}
 function statusText(){const di=diskInfo(),nu=Object.keys(USR).length;let ns=0;try{ns=fs.readdirSync(SAVEDIR).filter(f=>/\.json$/.test(f)).length}catch(e){}
  const fd=t=>new Date(t).toLocaleString('es',{timeZone:'America/Santo_Domingo',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
- return 'Silk Road server OK'+(BUILD?' · cliente '+BUILD:'')+(world?' '+JSON.stringify(world.stats()):'')+' · cuentas:'+(AC?'si':'no')+(REQ?' · solo con cuenta':'')+(AC&&AC.mailOn()?' · correo:si':' · correo:no')
+ return 'Karavan Online server OK'+(BUILD?' · cliente '+BUILD:'')+(world?' '+JSON.stringify(world.stats()):'')+' · cuentas:'+(AC?'si':'no')+(REQ?' · solo con cuenta':'')+(AC&&AC.mailOn()?' · correo:si':' · correo:no')+(AC&&AC.waOn&&AC.waOn()?' · whatsapp:'+AC.waProv():' · whatsapp:no')
   +'\ndatos: '+di.dir+' → '+(di.perm?'DISCO PERMANENTE (los datos sobreviven a los reinicios)':di.set?'⚠ carpeta normal: NO parece un disco permanente':'⚠ SIN DATA_DIR: los datos se pierden en cada reinicio')
   +'\nusuarios registrados: '+nu+' · personajes guardados: '+ns
   +'\narranques con estos datos: '+BOOT.n+' (primero: '+fd(BOOT.first)+(BOOT.prev?' · anterior: '+fd(BOOT.prev):'')+')'}
 function serveStatic(q,r){let p;try{p=decodeURIComponent(String(q.url||'/').split('?')[0])}catch(e){return false}
  if(p==='/status'||p==='/health'||(q.method!=='GET'&&q.method!=='HEAD'))return false;if(p.endsWith('/'))p+='index.html';
  let f=path.normalize(path.join(PUB,p));if(f.indexOf(PUB+path.sep)!==0)return false;
- if(!FC[f]&&!fs.existsSync(f)){const b=p.slice(1);if(RAIZ.has(b)||/^[\w.-]+\.(png|jpg|jpeg)$/i.test(b)||/^audio\/[\w-]+\.mp3$/.test(b))f=path.join(__dirname,b);else return false}   /* respaldo: si no hay carpeta public/, sirve el cliente suelto en la raíz (solo archivos del juego, nunca los del servidor) */
+ if(!FC[f]&&!fs.existsSync(f)){const b=p.slice(1);if(RAIZ.has(b)||/^[\w.-]+\.(png|jpg|jpeg|webp|woff2|ico)$/i.test(b)||/^audio\/[\w-]+\.mp3$/.test(b))f=path.join(__dirname,b);else return false}   /* respaldo: si no hay carpeta public/, sirve el cliente suelto en la raíz (solo archivos del juego, nunca los del servidor) */
  let c=FC[f];if(!c){let st;try{st=fs.statSync(f)}catch(e){return false}if(!st.isFile())return false;const buf=fs.readFileSync(f),ext=path.extname(f).toLowerCase();
   c=FC[f]={buf,gz:TXT.has(ext)&&buf.length>1400?zlib.gzipSync(buf,{level:9}):null,type:MIME[ext]||'application/octet-stream',etag:'"'+crypto.createHash('md5').update(buf).digest('hex').slice(0,16)+'"',ext}}
- const h={'content-type':c.type,etag:c.etag,'cache-control':(TXT.has(c.ext)||p==='/sw.js')?'no-cache':'public, max-age=86400','x-content-type-options':'nosniff'};
+ const h={'content-type':c.type,etag:c.etag,'cache-control':(TXT.has(c.ext)||p==='/sw.js')?'no-cache':'public, max-age=86400','x-content-type-options':'nosniff','accept-ranges':'bytes'};
  if(q.headers['if-none-match']===c.etag){r.writeHead(304,h);r.end();return true}
+ /* v404: peticiones por rango (audio/video). iOS Safari las exige: sin 206 la música del sitio no suena en iPhone. */
+ {const rm=!TXT.has(c.ext)&&/^bytes=(\d*)-(\d*)$/.exec(q.headers.range||'');
+  if(rm&&(rm[1]||rm[2])){const L=c.buf.length,a=rm[1]===''?Math.max(0,L-(+rm[2])):+rm[1],e=(rm[1]===''||rm[2]==='')?L-1:Math.min(+rm[2],L-1);
+   if(a>e||a>=L){r.writeHead(416,{'content-range':'bytes */'+L});r.end();return true}
+   h['content-range']='bytes '+a+'-'+e+'/'+L;h['content-length']=e-a+1;r.writeHead(206,h);r.end(q.method==='HEAD'?undefined:c.buf.subarray(a,e+1));return true}}
  const gz=c.gz&&/\bgzip\b/.test(q.headers['accept-encoding']||'');if(gz){h['content-encoding']='gzip';h.vary='Accept-Encoding'}
  const b=gz?c.gz:c.buf;h['content-length']=b.length;r.writeHead(200,h);r.end(q.method==='HEAD'?undefined:b);return true}
 const srv=http.createServer((q,r)=>{if(String(q.url||'').split('?')[0]==='/maint'){maintHttp(q,r);return}if(String(q.url||'').split('?')[0]==='/launch'){r.writeHead(200,{'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'*'});r.end(JSON.stringify({at:LAUNCH_AT,now:Date.now()}));return}if(serveStatic(q,r))return;r.writeHead(200,{'content-type':'text/plain; charset=utf-8','cache-control':'no-store'});r.end(statusText())});
 const wss=new WebSocketServer({server:srv,maxPayload:450000});
 const world=require('./world')(DB,log,{
- lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),bdg:u=>bdgOf(u),pv:u=>true,fee:(u,n)=>{const a=E.acct(u);if(!(E.avail(a,'gold')>=n))return false;E.deliver(u,{gold:-n,note:'🏛️ Entrada al Coliseo (−'+n+' 🪙)'});return true},pay:(u,n,note)=>{E.deliver(u,{gold:n,note})},mk:(u,ty,kd,dy)=>TB.onKill(u,ty,kd,dy),kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),przok:k=>MK.prizeOk(k),prz:(u,k,q,n)=>MK.grant(u,k,q,n),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',
+ dirty:()=>{dirty=1},
+ lv:u=>E.acct(u).lv,tag:u=>GD.tagOf(u),bdg:u=>bdgOf(u),pv:u=>true,fee:(u,n)=>{const a=E.acct(u);if(!(E.avail(a,'gold')>=n))return false;E.deliver(u,{gold:-n,note:'🏛️ Entrada al Coliseo (−'+n+' 🪙)'});return true},pay:(u,n,note)=>{E.deliver(u,{gold:n,note})},mk:(u,ty,kd,dy,mb)=>{TB.onKill(u,ty,kd,dy);try{MJ.onKill(u,ty,kd,dy,mb)}catch(e){log('minijefes onKill '+e.message)}},mjZones:()=>MJ.zones(),mjStat:(b,L)=>MJ.stat(b,L),mjArenas:t=>MJ.arenas(t),mjSolid:()=>MJ.lakeSolid(),mjBlock:(x,y,u)=>MJ.blocked(x,y,u),mjOut:(u,x,y)=>MJ.outOf(u,x,y),mjHit:(u,m)=>MJ.hit(u,m),kill:(k,v,f,kn)=>MK.pvKill(k,v,f,kn),przok:k=>MK.prizeOk(k),prz:(u,k,q,n)=>MK.grant(u,k,q,n),wanted:u=>MK.btyHas(u),gm:u=>isMaster(u),gid:u=>E.acct(u).gld||'',
  /* v391: ANTORCHA DE ESTACA: el mundo cobra la antorcha de la cuenta al clavarla (el servidor descuenta; el cliente solo recibe la entrega) */
  tch:u=>{const a=E.acct(u);if(!(E.avail(a,'prov','ant')>=1))return false;E.deliver(u,{prov:{pk:'ant',q:-1},note:'🔥 Clavaste una antorcha de estaca'});return true},tjoin:u=>{try{TR.join(u)}catch(e){log('terr join '+e.message)}},
  look:u=>{const a=E.acct(u);return{lv:a.lv,gt:GD.tagOf(u),sk:a.sk}},
@@ -288,7 +297,7 @@ wss.on('connection',(ws,req)=>{const og=req.headers.origin;if(ORI.length&&og&&!O
    if(c==='gemreq'&&!old){d.ts=Date.now();d.pa=E.prim(d.u);/* v388: cuenta principal sellada por el servidor (el tope de la promo es por cuenta, no por personaje) */if(d.pm&&typeof d.pm==='object')d.pm={i:String(d.pm.i||'').slice(0,16),u:Math.max(0,Math.min(5000,Math.floor(+d.pm.u)||0)),b:Math.max(0,Math.min(5000,Math.floor(+d.pm.b)||0))};else delete d.pm}
    if(c==='pmsg'&&d.k==='bf'&&world)world.credit(u,'ut',12);
    (DB[c]=DB[c]||{})[id]=d;dirty=1;bc(c,id,old,d);rep({t:'r',rid:m.rid,ok:1});
-   if(c==='gemreq'&&!old&&d.st==='p')notifyRL('💎 SILK ROAD · Pago de gemas por revisar\nJugador: '+String(d.nm||'?').slice(0,30)+' ('+((ACC[E.prim(d.u)]||{}).e||d.u)+')\nMonto: '+d.usdt+' USDT → '+d.gems+' 💎'+(d.pm&&d.pm.b>0?' (incluye +'+d.pm.b+' de bono promo)':'')+'\nOrden Binance Pay: '+String(d.ref||'').slice(0,60)+'\nTu Pay ID: '+PAY_ID+'\nAprueba en el juego (menú → Gemas).');
+   if(c==='gemreq'&&!old&&d.st==='p')notifyRL('💎 KARAVAN ONLINE · Pago de gemas por revisar\nJugador: '+String(d.nm||'?').slice(0,30)+' ('+((ACC[E.prim(d.u)]||{}).e||d.u)+')\nMonto: '+d.usdt+' USDT → '+d.gems+' 💎'+(d.pm&&d.pm.b>0?' (incluye +'+d.pm.b+' de bono promo)':'')+'\nOrden Binance Pay: '+String(d.ref||'').slice(0,60)+'\nTu Pay ID: '+PAY_ID+'\nAprueba en el juego (menú → Gemas).');
    return}});
  ws.on('close',()=>{ws.subs={};if(ws.uid&&ONL.get(ws.uid)===ws){ONL.delete(ws.uid);try{SO.presence(ws.uid,0)}catch(e){}}if(world&&ws.uid)world.leave(ws.uid,ws)})});
 
@@ -309,7 +318,7 @@ setInterval(()=>{for(const ws of wss.clients){if(!ws.isAlive){ws.terminate();con
 /* v230: aviso de mantenimiento con cuenta regresiva para todos los jugadores conectados.
    Abre en el navegador: https://TU-SERVICIO.onrender.com/maint?pw=TU_MASTER_PASSWORD&warn=5&hold=5
    (warn = minutos de aviso antes de sacar a todos, hold = minutos que nadie puede entrar). Cancelar: &cancel=1 */
-const MT_KICK='🛠️ Estamos actualizando Silk Road (unos 5 minutos).\n\nCuando vuelvas: entra PRIMERO desde el dispositivo (PC o celular) donde tengas tu mejor progreso, espera a ver tu héroe y después ya puedes usar el otro. Solo por esta vez.';
+const MT_KICK='🛠️ Estamos actualizando Karavan Online (unos 5 minutos).\n\nCuando vuelvas: entra PRIMERO desde el dispositivo (PC o celular) donde tengas tu mejor progreso, espera a ver tu héroe y después ya puedes usar el otro. Solo por esta vez.';
 let MT=(DB.cfg&&DB.cfg.maint)||null;const MTS={};
 const maintSave=()=>{DB.cfg=DB.cfg||{};DB.cfg.maint=MT;dirty=1};
 const maintAll=m=>{for(const ws of wss.clients){if(ws.uid&&ws.readyState===1){try{ws.send(JSON.stringify(m))}catch(e){}}}};
@@ -331,5 +340,5 @@ function maintTick(){if(!MT)return;const now=Date.now();if(now>MT.until){MT=null
  else if(!MT.kicked){MT.kicked=1;maintSave();for(const ws of wss.clients){if(!ws.uid||(ws.uid&&isMaster(ws.uid)))continue;try{ws.send(JSON.stringify({t:'kick',e:MT_KICK}));ws.close(4002)}catch(e){}}}}
 setInterval(maintTick,1000);
 
-srv.listen(PORT,()=>console.log('Silk Road server en puerto',PORT));
+srv.listen(PORT,()=>console.log('Karavan Online server en puerto',PORT));
 try{PY.start()}catch(e){log('[pay] no arrancó: '+e)}

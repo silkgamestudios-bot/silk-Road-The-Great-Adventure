@@ -9,9 +9,11 @@ ECO.terr=ECO.terr||{t:{},r:{}};const TT=ECO.terr.t,RS=ECO.terr.r;
 const TW=1400,PS=60,WEEK=+process.env.TERR_WEEK_MS||7*DAY,HPK=+process.env.TERR_HPK||1;
 const PLOTS=[[150,660],[380,715],[755,700],[960,490],[580,590],[1170,360],[350,330],[625,395],[1080,620],[720,290],[315,25],[855,120],[870,315],[460,130],[840,510],[470,325],[440,10],[1320,725],[790,815],[385,510]];
 /* tamaños: lado, miembros mínimos, 💎 del plano de territorio, oro de reclamo (del tesoro), tributo MENSUAL = % del tesoro (con mínimo), vida de la Bandera, puntos de poder */
-const SZ={p:{n:'Pequeño',s:24,min:5,gems:15,gold:100000,pct:3,mn:20000,core:30000,pts:100},
- m:{n:'Mediano',s:40,min:50,gems:40,gold:400000,pct:5,mn:80000,core:60000,pts:300},
- g:{n:'Grande',s:60,min:150,gems:90,gold:1200000,pct:8,mn:250000,core:120000,pts:600}};
+/* v438: costos rebajados para un juego que empieza: planos de territorio 15/40/90 → 8/20/45 💎 · tributo 3/5/8 % (mín. 20k/80k/250k) → 2/3/5 % (mín. 10k/40k/120k) · y el PRIMER MES sin tributo (GRACE) */
+const SZ={p:{n:'Pequeño',s:24,min:5,gems:8,gold:100000,pct:2,mn:10000,core:30000,pts:100},
+ m:{n:'Mediano',s:40,min:50,gems:20,gold:400000,pct:3,mn:40000,core:60000,pts:300},
+ g:{n:'Grande',s:60,min:150,gems:45,gold:1200000,pct:5,mn:120000,core:120000,pts:600}};
+const GRACE=+process.env.TERR_GRACE_MS||4*WEEK;
 if(process.env.TERR_GOLDK!=null)for(const k in SZ)SZ[k].gold=Math.round(SZ[k].gold*+process.env.TERR_GOLDK);
 if(process.env.TERR_MIN!=null)for(const k in SZ)SZ[k].min=+process.env.TERR_MIN;/* (variable de prueba) */
 /* piezas: vida, materiales (provisiones del mercado: mad=madera, pie=piedra, hie=hierro), segundos de construcción, pass=los miembros del gremio pasan */
@@ -21,7 +23,7 @@ const PC={W:{n:'Muro',hp:9000,m:{mad:2,pie:2},t:5},G:{n:'Puerta',hp:12000,m:{mad
 const BP={muroH:{n:'Muralla horizontal (5)',plan:'muro',w:5,h:1,f:(x,y)=>'W'},muroV:{n:'Muralla vertical (5)',plan:'muro',w:1,h:5,f:()=>'W'},
  puerta:{n:'Puerta',plan:'puerta',w:1,h:1,f:()=>'G'},torre:{n:'Torre',plan:'torre',w:1,h:1,f:()=>'T'},
  casa:{n:'Casa (5×4)',plan:'casa',w:5,h:4,f:(x,y)=>(x===0||y===0||x===4||y===3)?((x===2&&y===3)?'d':'h'):null}};
-const PLAN={muro:{n:'Muralla',gems:8},puerta:{n:'Puerta',gems:5},torre:{n:'Torre',gems:12},casa:{n:'Casa',gems:18}};
+const PLAN={muro:{n:'Muralla',gems:3},puerta:{n:'Puerta',gems:2},torre:{n:'Torre',gems:5},casa:{n:'Casa',gems:8}};   /* v438: 8/5/12/18 → 3/2/5/8 💎 (una sola vez por gremio) */
 const HITDMG=lv=>12+Math.floor(lv/2),HITGAP=800,LOOT=.10,LOOTMAX=500000,RESMIN=60,AL_GAP=20000;
 const err=e=>({e});const W=()=>S.world;
 const G=()=>ECO.guilds||{};
@@ -83,7 +85,7 @@ ops['tr.claim']=(u,m)=>{const gid=gidOf(u),g=gOf(gid),i=Math.floor(+m.plot),sz=S
  const s=SZ[sz];if(nMem(g)<s.min)return err('Para el tamaño '+s.n+' necesitas '+s.min+' miembros (tienes '+nMem(g)+')');
  if((g.bank|0)<s.gold)return err('El tesoro necesita '+s.gold+' 🪙 (tiene '+(g.bank|0)+')');const a=E.acct(u);
  if(!E.spendGems(a,s.gems,false,'Plano de territorio '+s.n))return err('Te faltan '+(s.gems-E.gTot(a))+' 💎 para el plano');
- g.bank-=s.gold;delete RS[i];const t=TT[i]={g:gid,sz,ts:now(),pcs:{},gh:{},next:now()+WEEK,debt:0,warn:0};
+ g.bank-=s.gold;delete RS[i];const t=TT[i]={g:gid,sz,ts:now(),pcs:{},gh:{},next:now()+GRACE,debt:0,warn:0};
  const ar=area(i,sz);let cx=Math.floor((ar.x0+ar.x1)/2),cy=Math.floor((ar.y0+ar.y1)/2),best=null;
  for(let d=0;d<12&&!best;d++)for(let yy=cy-d;yy<=cy+d&&!best;yy++)for(let xx=cx-d;xx<=cx+d;xx++){if(Math.max(Math.abs(xx-cx),Math.abs(yy-cy))!==d)continue;if(!W().tsolid(xx,yy)){best=[xx,yy];break}}
  const c=best||[cx,cy];putPiece(i,t,c[0],c[1],'F',a.nm);glog(g,'🏰 '+(a.nm||'El líder')+' reclamó Tierra '+(i+1)+' ('+s.n+') por '+s.gold+' 🪙');

@@ -1,4 +1,4 @@
-/* Silk Road · EL SERVIDOR MANDA: cuentas, gemas, apariencias, validación de guardados (antitrampas), entregas y nombres.
+/* Karavan Online · EL SERVIDOR MANDA: cuentas, gemas, apariencias, validación de guardados (antitrampas), entregas y nombres.
    Principio: el cliente NUNCA aumenta oro/objetos/gemas por sí mismo; el servidor acepta un guardado solo si es plausible
    (límites de ritmo por nivel/tiempo, objetos con estadísticas legales y sin duplicados) y recorta lo que no lo es. */
 const crypto=require('crypto');
@@ -12,6 +12,8 @@ const CFG={slack:+(process.env.AUDIT_SLACK||1.5),mode:process.env.AUDIT_MODE||'e
  impGold:+(process.env.IMPORT_GOLD_PER_LV||150000),impOff:process.env.FIRST_IMPORT==='0',goodsCap:30000,goodsBase:[60,40,80,30,25],provCap:9999,provRate:2,ecRate:2,ecBurst:400,dlTtl:90e3};
 const RM=[1,1.6,2.4,3.5],EVK=['hl','nv','lu','am','nz'],PRK=['au','ap','lt','bl','es','pv','bh','tr'];
 const xpNeed=l=>Math.round((30+90*l+3*l*l)*(1.3+.05*l)*1.6);
+/* v438: la EXP por baja es ~6 veces mayor (el cliente ahora pide muchas menos bajas por nivel): el margen del antitrampas sube ×3 hasta Nv ~60 y crece con el nivel desde ahí, para no recortar a quien sube de forma legítima (hordas, élites, grupos). */
+const xpLvSc=l=>Math.max(3,Math.pow((+l||1)/30,1.6));
 const xpTot=(lv,xp)=>{let t=xp;for(let l=1;l<lv;l++)t+=xpNeed(l);return t};
 const xpInv=t=>{let l=1;while(l<CFG.lvMax&&t>=xpNeed(l)){t-=xpNeed(l);l++}return[l,Math.floor(t)]};
 const rid=n=>crypto.randomBytes(n||8).toString('hex');
@@ -20,7 +22,7 @@ const COOK={carne:'cocida',car2:'coc2',car3:'coc3',car4:'coc4',car5:'coc5',fi1:'
 /* fletchería (v139): lote de 20 flechas = 1 punta de mineral + madera; las básicas ar0 solo se compran con oro (5 c/u) */
 const ARQ={ar1:['pie',1,1],ar2:['cob',1,1],ar3:['hie',1,2],ar4:['pla',1,2],ar5:['aur',1,3],ar6:['mit',1,3],ar7:['dia',1,4]};
 const KEYK=new Set(['kl1','kl2','kl3','kl4','kl5','kl6','cf1','cf2','cf3','cf4','cf5','cf6','sg1','sg2','sg3','sg4']);
-const MNK=['fr1','fr2','fr3','fr4','fr5','fr6','fr7','fr8','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','pat','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','cbl','obs','cua','tur','mgm','jad','ama','amb','top','esa','cri','opf','lte','ant','sg1','sg2','sg3','sg4'];/* v391: ANTORCHA: «ant» = antorcha de estaca (se fabrica con madera; se clava en el mundo; se comercia) */
+const MNK=['fr1','fr2','fr3','fr4','fr5','fr6','fr7','fr8','pie','cob','hie','pla','aur','mit','rub','esm','zaf','dia','car2','car3','car4','car5','coc2','coc3','coc4','coc5','fi1','fi2','fi3','fi4','fc1','fc2','fc3','fc4','hil','mad','tel','cur','pat','ar0','ar1','ar2','ar3','ar4','ar5','ar6','ar7','ph2','ph3','ph4','ph5','pm2','pm3','pm4','pm5','ph6','ph7','pm6','pm7','gh1','gh2','gh3','gh4','gh5','gh6','gh7','am1','am2','am3','am4','am5','am6','am7','des','dco','kl1','cf1','kl2','cf2','kl3','cf3','kl4','cf4','kl5','cf5','kl6','cf6','cbl','obs','cua','tur','mgm','jad','ama','amb','top','esa','cri','opf','lte','ant','sg1','sg2','sg3','sg4','mbo1','mbo2','mbo3','mbt1','mbt2','mbt3','mm11','mm12','mm13','mm21','mm22','mm23','mm31','mm32','mm33'];/* v391: ANTORCHA: «ant» = antorcha de estaca (se fabrica con madera; se clava en el mundo; se comercia) · v433: ofrendas (mbo), tokens (mbt) y materiales (mm) de los mini-jefes */
 const UPC=[null,{g:1500,m:{pie:8,cob:4},p:1},{g:6000,m:{pie:16,cob:8},p:1},{g:13500,m:{cob:12,hie:6},p:1},{g:24000,m:{hie:12,pla:4},p:.9},{g:37500,m:{hie:16,pla:8},p:.8},{g:54000,m:{pla:14,aur:4},p:.66},{g:73500,m:{pla:18,aur:8,rub:1},p:.52},{g:96000,m:{aur:12,mit:4,esm:2},p:.4},{g:121500,m:{aur:14,mit:8,dia:1},p:.28},{g:150000,m:{mit:14,dia:3,zaf:2},p:.18},{g:220000,m:{mit:20,dia:4,des:6},p:.1},{g:320000,m:{dia:8,des:12,dco:1},p:.05}];
 /* ---------- v381: VARIOS PERSONAJES POR CUENTA ----------
    Cada personaje es un jugador completo (uid, guardado, nombre, nivel, gremio y mercado propios). El PRIMERO es el uid de la cuenta de siempre (no se migra nada);
@@ -95,7 +97,7 @@ function chSplit(t,x){t=String(t||'');const p=prim(t),A=ECO.acc[p],B=S.ACC[p];
  S.dirty();return{ok:1,x}}
 function flag(u,why,w){const a=acct(u);{const nk=x=>String(x).replace(/[0-9+]/g,'').slice(0,60),k=nk(why),t=Date.now();if((a.flags||[]).some(f=>f&&t-f[0]<6e5&&nk(f[1])===k))return}a.strikes+=w==null?1:w;a.flags.push([Date.now(),String(why).slice(0,120)]);if(a.flags.length>30)a.flags.shift();S.dirty();
  log('[antitrampas] '+u+' ('+(a.nm||'?')+'): '+why+' · strikes '+a.strikes);
- if(a.strikes>=3&&!a.notified){a.notified=Date.now();S.notify('⚠️ SILK ROAD · Posible trampa\nJugador: '+(a.nm||u)+'\nMotivo: '+why+'\nStrikes: '+a.strikes)}}
+ if(a.strikes>=3&&!a.notified){a.notified=Date.now();S.notify('⚠️ KARAVAN ONLINE · Posible trampa\nJugador: '+(a.nm||u)+'\nMotivo: '+why+'\nStrikes: '+a.strikes)}}
 /* ---------- gemas ---------- */
 const gTot=a=>a.gem.own+a.gem.tr;
 const glAdd=(a,d,why)=>{if(!Array.isArray(a.gl))a.gl=[];a.gl.push([Date.now(),d,String(why||'').slice(0,48),a.gem.own,a.gem.tr]);if(a.gl.length>40)a.gl.shift()};
@@ -128,7 +130,16 @@ function forceExpired(a){const now=Date.now();let n=0;for(const d of a.dl){if(d.
 /* ---------- validación de objetos y mascotas ---------- */
 const BASE={0:{dm:5},1:{hp:8},2:{hp:4,dm:1},3:{dm:2,hp:2},4:{hp:5},5:{sp:2},7:{dm:3},8:{hp:6,mp:3},9:{hp:3,mp:5}};/* 7 anillo, 8 amuleto, 9 pendientes */
 function itemMax(it,k){const m=RM[it.r]*(1+it.t*.6)*2.6;let b;if(it.sl<6||it.sl>=7)b=BASE[it.sl];else b=(it.k===2||it.k===4||it.k===6)?{mp:8}:{hp:3,gd:4};return Math.ceil((b[k]||0)*m)+1}
-function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0,9,-1),t=int(x.t,0,4,-1),r=int(x.r,0,3,-1);if(sl<0||t<0||r<0)return null;
+/* v428 · EQUIPO DE MASCOTA: 4 piezas (1 Casco · 2 Peto · 3 Garras · 4 Grebas) × 5 niveles (Hueso, Acero, Mitril, Dracónico, Ancestral).
+   Es un objeto normal (se vende, se cambia, se subasta). SOLO lo fabrica el Herrero (op pet.forge). Sus stats salen de la tabla del juego, nunca del guardado. */
+const PGSL=[0,2,1,3,4],PGNM=[null,['','Casco de Hueso','Casco de Acero','Casco de Mitril','Casco Dracónico','Casco Ancestral'],['','Peto de Hueso','Peto de Acero','Peto de Mitril','Peto Dracónico','Peto Ancestral'],['','Garras de Hueso','Garras de Acero','Garras de Mitril','Garras Dracónicas','Garras Ancestrales'],['','Grebas de Hueso','Grebas de Acero','Grebas de Mitril','Grebas Dracónicas','Grebas Ancestrales']];
+const PREMP=new Set(['trex']);/* mascotas premium: SOLO las crea la tienda (pets.js) o el master; un guardado del cliente no puede inventarlas ni convertir otra en una */
+function cleanPG(x){const pg=int(x.pg,1,4,0),pt=int(x.pgt,1,5,0);if(!pg||!pt)return null;const o={sl:PGSL[pg],t:pt-1,r:Math.min(3,pt-1),li:Math.min(3,pt-1),du:100,pg,pgt:pt,n:PGNM[pg][pt]};
+ if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}return o}
+/* v428 · mascotas alquiladas: no se venden, subastan ni cambian (en ninguno de los mercados) */
+function petLock(id){const r=ECO.reg[id];return r&&r.rent>Date.now()?'🔒 Las mascotas alquiladas no se pueden vender, subastar ni cambiar (solo las compradas).':''}
+function petCount(u){let n=0;for(const id in ECO.reg){const r=ECO.reg[id];if(r&&r.o===u&&r.k==='p')n++}return n}
+function cleanItem(x){if(!x||typeof x!=='object')return null;if(x.pg!=null)return cleanPG(x);const sl=int(x.sl,0,9,-1),t=int(x.t,0,4,-1),r=int(x.r,0,3,-1);if(sl<0||t<0||r<0)return null;
  const o={sl,t,r,li:int(x.li,0,9,0),du:int(x.du,0,100,100)};if(x.k!=null){const k=int(x.k,0,7,-1);if(k<0)return null;o.k=k}
  o.n=String(x.n||'Objeto').replace(/[^\p{L}\p{N} '.-]/gu,'').slice(0,34)||'Objeto';if(x.u)o.u=1;if(x.junk)o.junk=1;if(x.nt)o.nt=1;if(x.dv)o.dv=1;if(x.jv!=null){const jv=int(x.jv,0,300,0);if(jv)o.jv=jv}if(x.jm!=null){const jm=int(x.jm,1,150,10);if(jm!==10)o.jm=jm}if(x.rl!=null)o.rl=int(x.rl,0,1200,0);
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
@@ -139,7 +150,9 @@ function cleanItem(x){if(!x||typeof x!=='object')return null;const sl=int(x.sl,0
  return o}
 function cleanPetS(x){if(!x||typeof x!=='object')return null;const t=String(x.t||'');if(!/^[a-z]{2,12}$/.test(t))return null;
  const o={t,nm:String(x.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t,lv:int(x.lv,1,30,1),xp:int(x.xp,0,1e8,0),q:int(x.q,0,3,0),fd:int(x.fd,0,100,80),ill:0,hp:num(x.hp,1,4e8,1),en:num(x.en,0,2e5,0)};
- if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}return o}
+ if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
+ if(o.id){const r=ECO.reg[o.id];if(r&&r.k==='p'){if(Array.isArray(r.psk)&&r.psk.some(n=>n>0))o.sk=r.psk.slice(0,4).map(n=>int(n,0,5,0));if(Array.isArray(r.gr)&&r.gr.some(Boolean))o.gr=r.gr.slice(0,4).map(g=>g?cleanPG(g):null);if(r.rent>0)o.rt=r.rent}}/* v428: lo que dice el cliente de habilidades, equipo y alquiler no cuenta */
+ return o}
 const MINT={i:[[60,5e3],[25,40e3],[8,300e3],[3,1800e3]],p:[[15,60e3]]};
 function mintOk(a,kind,idx,now){const cfg=(MINT[kind]||MINT.i)[idx],b=a.mint[kind+idx]||(a.mint[kind+idx]={v:cfg[0],t:now});b.v=Math.min(cfg[0],b.v+(now-b.t)/cfg[1]);b.t=now;if(b.v>=1){b.v-=1;return 1}return 0}
 /* ---------- nombres ---------- */
@@ -170,7 +183,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  if(a.nm){if(v.nm!==a.nm){v.nm=a.nm}}else v.nm=String(v.nm||'').replace(/[^\p{L}\p{N} _-]/gu,'').slice(0,14);
  /* nivel y XP */
  const lv0=a.lv,xp0=a.xp;let lv=int(v.lv,1,CFG.lvMax,1),xp=int(v.xp,0,1e12,0);
- if(!master){const prev=xpTot(lv0,xp0),cur=xpTot(lv,xp),allow=(CFG.xpRate*dt+CFG.xpBurst*(1+Math.floor(dt/600)))*CFG.slack;
+ if(!master){const prev=xpTot(lv0,xp0),cur=xpTot(lv,xp),allow=(CFG.xpRate*dt+CFG.xpBurst*(1+Math.floor(dt/600)))*CFG.slack*xpLvSc(lv0);
   if(first&&!master){const cap=CFG.impOff?0:CFG.xpBurst*40;if(cur>cap){const r=xpInv(cap);lv=r[0];xp=r[1];notes.push('nivel importado recortado');fix.lv=lv;fix.xp=xp}}
   else if(cur>prev+allow){const r=xpInv(prev+allow);flag(u,'XP/nivel imposible: '+lv0+'→'+lv+' en '+Math.round(dt)+' s');lv=r[0];xp=r[1];fix.lv=lv;fix.xp=xp}}
  v.lv=lv;v.xp=xp;
@@ -218,7 +231,7 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  const bad=preBad.slice();const chk=(it,slot)=>{const r=chk0(it,slot);if(!r&&it&&it.id)bad.push(String(it.id));return r};const chk0=(it,slot)=>{const c=cleanItem(it);if(!c){dropped++;flag(u,'objeto inválido '+JSON.stringify(it).slice(0,90));return null}
   if(c.id){if(seen.has(c.id)){dropped++;flag(u,'objeto duplicado en la misma cuenta');return null}seen.add(c.id);const r=ECO.reg[c.id];
    if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'objeto de otro jugador/duplicado '+c.id,2);return null}
-   if(!r){if(!first&&!master&&!mintOk(a,'i',c.r,now)){dropped++;flag(u,'demasiados objetos nuevos de rareza '+c.r);return null}ECO.reg[c.id]={o:u,k:'i',t:now};S.dirty()}else if(r.o!==u&&master){ECO.reg[c.id]={o:u,k:'i',t:now}}}
+   if(!r){if(c.pg&&!master){dropped++;flag(u,'equipo de mascota inventado (solo lo fabrica el Herrero)',3);return null}if(!first&&!master&&!mintOk(a,'i',c.r,now)){dropped++;flag(u,'demasiados objetos nuevos de rareza '+c.r);return null}ECO.reg[c.id]={o:u,k:'i',t:now};S.dirty()}else if(r.o!==u&&master){ECO.reg[c.id]={o:u,k:'i',t:now}}}
   if(c.id&&ECO.reg[c.id]&&ECO.reg[c.id].nt)c.nt=1;else delete c.nt;   /* v398: intransferible = lo dice el registro del servidor */
   if(c.up){const rr=c.id&&ECO.reg[c.id],mx=(rr&&rr.up)|0;if(c.up>mx&&!master){flag(u,'potenciación falsa +'+c.up+' (permitido +'+mx+')');c.up=mx}if(!c.up)delete c.up}
   if(c.ar){const rr=c.id&&ECO.reg[c.id],mx=(rr&&rr.ar)|0;if(c.ar>mx&&!master){flag(u,'refuerzo arácnido falso '+c.ar+' (permitido '+mx+')');c.ar=mx}if(!c.ar)delete c.ar}
@@ -232,7 +245,9 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
     Antes el registro de propiedad solo recorría mochila/equipo/loot y podía caducar
     la propiedad de objetos almacenados, haciendo que el mercado los rechazara. */
  if(Array.isArray(v.storage)){const st=[];for(const x of v.storage){if(!x||typeof x!=='object')continue;const k=String(x.k||'').slice(0,30),n=String(x.n||k).slice(0,80),q=int(x.q,1,1e9,0);if(!k||!q)continue;if(x.type==='item'){const it=chk(x.item);if(!it||!it.id)continue;st.push({k:it.id,n:it.n||n,q:1,type:'item',item:it})}else if(/^[a-z0-9_]{1,30}$/.test(k)){st.push({k,n,q,type:'res'})}}v.storage=st}else v.storage=[];
- if(Array.isArray(v.pets)){const ids=[];v.pets=v.pets.slice(0,12).map(p=>{const c=cleanPetS(p);if(!c){dropped++;return null}if(c.id){if(seen.has(c.id)){dropped++;return null}seen.add(c.id);const r=ECO.reg[c.id];if(r&&r.o!==u&&!master){dropped++;if(now-(r.t||0)>3e4)flag(u,'mascota de otro jugador '+c.id,2);return null}if(!r){if(!first&&!master&&!mintOk(a,'p',0,now)){dropped++;flag(u,'demasiadas mascotas nuevas');return null}ECO.reg[c.id]={o:u,k:'p',t:now};S.dirty()}}return c}).filter(Boolean)}
+ const expd=[],fixp=[];if(Array.isArray(v.pets)){const ids=[];v.pets=v.pets.slice(0,12).map(p=>{const c=cleanPetS(p);if(!c){dropped++;return null}if(c.id){if(seen.has(c.id)){dropped++;return null}seen.add(c.id);const r=ECO.reg[c.id];if(r&&r.o===u&&r.rent&&now>r.rent){expd.push(c.id);delete ECO.reg[c.id];return null}/* v428: alquiler vencido: se retira sin castigo */if(r&&r.o!==u&&!master){dropped++;bad.push(c.id);if(now-(r.t||0)>3e4)flag(u,'mascota de otro jugador '+c.id,2);return null}if(!r){if(!first&&!master&&!mintOk(a,'p',0,now)){dropped++;flag(u,'demasiadas mascotas nuevas');return null}if(PREMP.has(c.t)&&!master){dropped++;bad.push(c.id);flag(u,(c.t==='trex'?'T-Rex':'mascota premium «'+c.t+'»')+' inventado (solo se compra en la tienda)',3);return null}ECO.reg[c.id]={o:u,k:'p',t:now,ty:c.t,lv:c.lv};S.dirty()}else if(r.o===u){if(!r.ty){if(PREMP.has(c.t)&&!master){dropped++;bad.push(c.id);flag(u,'mascota convertida en premium «'+c.t+'»',3);return null}r.ty=c.t}else if(r.ty!==c.t)c.t=r.ty;r.lv=c.lv}{const gid=x=>[0,1,2,3].map(i=>{const g=Array.isArray(x)?x[i]:null;return g&&g.id||''}).join(','),cs=[0,1,2,3].map(i=>Array.isArray(c.sk)?c.sk[i]|0:0),ps=[0,1,2,3].map(i=>Array.isArray(p&&p.sk)?int(p.sk[i],0,5,0):0);if(cs.join()!==ps.join()||gid(c.gr)!==gid(p&&p.gr)){if(!master&&(ps.reduce((x,y)=>x+y,0)>cs.reduce((x,y)=>x+y,0)||(Array.isArray(p&&p.gr)&&p.gr.some(g=>g&&g.id&&!(ECO.reg[g.id]&&(ECO.reg[g.id].o===u||String(ECO.reg[g.id].o).startsWith('E:')))))))flag(u,'habilidades o equipo de mascota falsos',1);fixp.push({id:c.id,sk:cs,gr:[0,1,2,3].map(i=>(c.gr||[])[i]||null)})}}}return c}).filter(Boolean)}
+ if(expd.length)deliver(u,{prm:expd,note:'⏳ Terminó el alquiler de tu mascota: ya no está en tu establo'});
+ if(fixp.length)fix.pets=fixp;
  if(dropped)fix.items=dropped;
  /* limpieza del registro: lo que ya no está en el guardado ni en el mercado deja de ser tuyo */
  const pendIds=new Set();for(const d of a.dl){if(d.item&&d.item.id)pendIds.add(d.item.id);if(d.pet&&d.pet.id)pendIds.add(d.pet.id)}
@@ -251,9 +266,9 @@ function audit(u,raw,ack){const a=acct(u),now=Date.now();let v;
  a.res.gold=v.g;a.res.bk=v.bk;a.res.g=v.i.slice();if(v.fd)a.res.fd=Object.assign({},v.fd);if(v.ec)a.res.ec=Object.assign({},v.ec);a.res.pot=v.p;a.res.pgs=v.pgs;if(v.mpp!=null){a.res.mpot=v.mpp;a.mpok=1}
  a.lv=lv;a.xp=xp;if(S.refSeen&&lv>=15&&!a.rfd)S.refSeen(u,a);if(typeof v.nm==='string'&&v.nm)a.pn=v.nm.replace(/[^\p{L}\p{N} '_-]/gu,'').slice(0,18);if(Array.isArray(v.sx))a.sx=v.sx.slice();a.ts=now;a.first=0;S.dirty();
  /* lo que sigue sin aplicar (entregas pendientes) se descuenta del esperado para que no se aplique dos veces */
- return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,cl:fix.cl,p:fix.pp,mp:fix.pm,bx:fix.bx?v.bx:undefined}:null,acked:acked.map(d=>d.id)}}
+ return{out:JSON.stringify(v),fix:Object.keys(fix).length?{g:v.g,bk:v.bk,i:v.i,lv:v.lv,xp:v.xp,fd:v.fd,ec:v.ec,sx:v.sx,items:dropped||0,bad,pets:fix.pets,cl:fix.cl,p:fix.pp,mp:fix.pm,bx:fix.bx?v.bx:undefined}:null,acked:acked.map(d=>d.id)}}
 /* migración única: el mismo aviso repetido cada 8 s sumaba decenas de strikes y sacaba a jugadores del ranking; se cuentan solo los motivos distintos */
 try{if(!ECO.fixDup){ECO.fixDup=1;let n=0;const nk=x=>String(x).replace(/[0-9+]/g,'').slice(0,60);for(const id in ECO.acc){const a=ECO.acc[id];if(!a||(a.strikes|0)<8)continue;const d=new Set((a.flags||[]).map(f=>nk(f&&f[1])));a.strikes=Math.min(a.strikes|0,Math.max(1,d.size));if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) con strikes repetidos corregidas')}}}catch(e){log('migración strikes: '+e.message)}
 /* migración única: quita los strikes falsos que el antitrampas daba por cocinar carne/pescado (ya no ocurre) */
 try{if(!ECO.fixCook){ECO.fixCook=1;let n=0;for(const id in ECO.acc){const a=ECO.acc[id];if(!a||!Array.isArray(a.flags)||!a.flags.length)continue;const bad=a.flags.filter(f=>/^provisi.n (cocida|coc\d|fc\d) /.test(String(f&&f[1])));if(!bad.length)continue;a.flags=a.flags.filter(f=>!bad.includes(f));a.strikes=Math.max(0,(a.strikes|0)-bad.length);if(a.strikes<3)a.notified=0;n++}if(n){S.dirty();log('[antitrampas] migración: '+n+' cuenta(s) sin strikes falsos por cocinar')}}}catch(e){log('migración cocinar: '+e.message)}
-return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,prim,CH_MAX,chIndex,chSlots,chCur,chList,chNew,chSel,chBlank,chView,chXfer,chSplit,chRoom,onSale,audit,deliver,grantBag,BAGT,BAGN,ENCN,ENCM,ENCL,FGQ,encCost,forgeCost,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,glAdd,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,CFG,xpNeed,rid,EVK,PRK,RM,BX}};
+return{reg:()=>ECO.reg,UPC,MNK,acct,ent,pushEnt,prim,CH_MAX,chIndex,chSlots,chCur,chList,chNew,chSel,chBlank,chView,chXfer,chSplit,chRoom,onSale,audit,deliver,grantBag,BAGT,BAGN,ENCN,ENCM,ENCL,FGQ,encCost,forgeCost,flushDl,avail,reserved,forceExpired,applyRes,resVal,spendGems,grantGems,glAdd,gTot,claimName,uidByName,flag,cleanItem,cleanPetS,cleanPG,petLock,petCount,PREMP,CFG,xpNeed,rid,EVK,PRK,RM,BX}};

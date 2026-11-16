@@ -1,5 +1,5 @@
 'use strict';
-/* Silk Road v350 — cálculo puro de tarifas del Bazar Global.
+/* Karavan Online v350 — cálculo puro de tarifas del Bazar Global.
  * No cobra ni transfiere fondos. No activa pagos reales.
  * Todo importe se procesa como enteros para evitar errores de coma flotante.
  */

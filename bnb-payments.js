@@ -1,5 +1,5 @@
 'use strict';
-/* Silk Road v348 — verificador BNB Smart Chain.
+/* Karavan Online v348 — verificador BNB Smart Chain.
  * Este módulo SOLO verifica un hash y devuelve evidencia; no acredita Gemas ni ejecuta pagos.
  * La acreditación debe ser idempotente y enlazada a una orden creada por el servidor.
  */

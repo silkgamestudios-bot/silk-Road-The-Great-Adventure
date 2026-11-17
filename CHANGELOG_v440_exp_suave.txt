@@ -1,0 +1,34 @@
+v440 — ⬆️ EXPERIENCIA MÁS SUAVE: cada nivel cuesta un 25 % menos de muertes en toda la escala (la misma curva, solo más corta). Incluye todo lo de v439.
+Manual Deploy en Render: SÍ (cambia economy.js, el margen del antitrampas de XP). Sin variables nuevas. Quien tenga el juego abierto debe recargar (Ctrl+F5 en PC) para que el service worker traiga sr-v440; un juego de versión vieja avisa y se actualiza solo.
+
+══════════════ CÓMO SUBIRLO ══════════════
+1) Descomprime Subir_a_GitHub_v440.zip y sube TODO a la raíz del repositorio (proyecto en la raíz del zip).
+2) En Render: Manual Deploy (Deploy latest commit). No hay que crear ninguna variable.
+3) Este paquete REEMPLAZA al de v439: es v439 + la curva de EXP 25 % más corta (solo cambian 6 archivos).
+
+══════════════ LO QUE PEDISTE ══════════════
+«Suavizar la curva de EXP: es muy dura, los niveles duran mucho; revísala y suavízala un 25 % en sentido general.»
+
+══════════════ QUÉ CAMBIÓ ══════════════
+1) EXPERIENCIA (play.html). La XP por muerte sale de «lo que cuesta el nivel ÷ cuántas muertes debe costar» (función KXK). KXP.ba 105 → 78,75 (−25 %) y, para los niveles 1–4, 42+14·Nv → 31,5+10,5·Nv (−25 %). La forma de la curva (ex 1,7) y todo lo demás quedan igual: lo que cuesta cada nivel (xpNeed), el bono de hasta +40 % por enemigos de más nivel, la rebaja por ir muy por encima, élites, hordas, boosts/VIP/servicios y las misiones (que pagan un porcentaje del nivel).
+   Muertes por nivel contra enemigos de tu mismo nivel, medidas con la fórmula real del juego (incluye su redondeo de la XP a pasos de 0,4): Nv 5: 105 → 78 · Nv 10: 346 → 257 · Nv 20: 1.124 → 830 · Nv 30: 2.236 → 1.653 · Nv 40: 3.567 → 2.675 · Nv 50: 5.316 → 3.941 · Nv 100: 17.076 → 12.807 · Nv 200: 55.705 → 41.704 · Nv 300: 110.539 → 82.904. En todos los niveles la baja es de 24,4 % a 26,7 % (el redondeo a 0,4 mueve un poco los niveles bajos). Del Nv 1 al 30: 23.651 → 17.709 muertes (−25,1 %). Al ritmo que se contó en v439 (≈5,6 s por muerte), un nivel a Nv 30 pasa de ≈3,5 h a ≈2,6 h.
+   Un Nv 30 contra los enemigos más fuertes del mapa (Nv 29) gana ≈18 XP por muerte (antes ≈14).
+   Un solo número manda: KXP.ba (y 31,5+10,5·Nv para Nv 1–4). Si quieres otro porcentaje: ba = 105 × (1 − porcentaje) (ej. 20 % → 84 · 30 % → 73,5), y ajusta xpLvSc en economy.js = 1,5 × 105 / ba.
+2) ANTITRAMPAS DE XP (economy.js, una línea). Como cada muerte da ×1,333 de XP, el margen que el servidor acepta entre dos sincronizaciones sube de ×1,5 a ×2 (1,5 × 105/78,75) en todos los niveles, para no recortar a quien sube de forma legítima (hordas, élites, grupos). Sigue recortando saltos imposibles. Si no se hiciera este ajuste, una horda grande podría recortarse por error.
+3) WIKI. Farmeo: tabla «Cuántas muertes cuesta cada nivel» (Nv 10 ≈ 260 · Nv 30 ≈ 1.650 · Nv 50 ≈ 3.950 · Nv 100 ≈ 12.800 · Nv 200 ≈ 41.700 · Nv 300 ≈ 82.900) y «XP base» de cada enemigo (Archidemonio 14 → 18, Súcubo 18, Goblin 18, Esqueleto/Gárgola/Espectro/Demonio cornudo 17, Murciélago 22, Rata guerrera 8); Novedades: entrada nueva v440 arriba.
+4) VERSIÓN. sw.js sr-v440, SR_V del juego y package.json 440.0.0 (así los celulares con v439 se actualizan solos).
+
+══════════════ ARCHIVOS ══════════════
+NUEVOS: este changelog. QUITADOS: el changelog de v439.
+CAMBIADOS (6): play.html (curva de EXP y SR_V) · economy.js (margen del antitrampas) · wiki.js y wiki-data.js (tabla, XP base y novedad) · sw.js · package.json.
+Los demás archivos son idénticos byte a byte a v439.
+
+══════════════ DECISIONES (las tomé yo; cámbialas si no te gustan) ══════════════
+1) «25 % en sentido general» = 25 % menos de muertes por nivel, parejo en toda la escala (no solo en un tramo), para no mover ninguna relación entre niveles, zonas ni boosts.
+2) Las misiones y recompensas que pagan un % del nivel no cambian (ya eran proporcionales); lo que se acorta es el farmeo de enemigos, que era lo que más tardaba. Si también quieres que suban más rápido las demás fuentes de XP, dímelo.
+3) Antitrampas ×2 (ver QUÉ CAMBIÓ 2).
+
+══════════════ PRUEBAS ══════════════
+ · Fórmulas reales del juego (KXK, xpNeed, redondeo a 0,4) evaluadas para Nv 1–300: la baja de muertes por nivel queda entre 24,4 % y 26,7 % en todos los niveles medidos; suma Nv 1→30 −25,1 %.
+ · Sintaxis correcta de los 16 bloques de script de play.html, economy.js, wiki.js, wiki-data.js y sw.js.
+LO QUE NO PUDE PROBAR: no corrí la regresión completa en navegador real (PC y celular) ni contra el servidor de Render, como en v439; el cambio es de constantes, pero conviene probar un par de niveles al jugarlo y avisarme. Tampoco medí horas reales de juego: el tiempo es una estimación con el ritmo de v439.

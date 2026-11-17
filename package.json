@@ -1,6 +1,6 @@
 {
   "name": "karavan-online-server",
-  "version": "438.0.0",
+  "version": "440.0.0",
   "private": true,
   "main": "server.js",
   "scripts": {

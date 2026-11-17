@@ -5359,7 +5359,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v438';let UPD=null,RSN=0;
+const SR_V='sr-v440';let UPD=null,RSN=0;
 /* v438 *//* v438: ACTUALIZACIÓN SEGURA. Un celular con versión vieja jugaba para siempre en modo local (sin ver a sus compañeros ni los mismos enemigos) porque el aviso se quitó en v360 y la actualización quedaba en «nunca».
    Ahora: aviso visible y se actualiza solo cuando no hay pelea (máx. 2 intentos cada 10 min para no caer en bucles). */
 const UPDV={w:0,tries(){try{return JSON.parse(localStorage.getItem('sr_updh')||'[]').filter(t=>Date.now()-t<6e5).length}catch(e){return 0}},
@@ -8765,7 +8765,7 @@ function ppBonus(n,cl){const d=new Set(cl||[]).size;if(n<3||d<3)return 0;return 
 function ppFactor(n,lv,maxLv,cl){let f=(1+ppBonus(n,cl))/n;if(maxLv-lv>=4)f*=1.2;return f}
 /* v393b: XP por kill según el NIVEL del bicho (antes: casi nada y no crecía con el nivel → 700 kills para pasar de Nv 1). Meta DIFÍCIL: ~300 kills el Nv 1 y tope 3+0,1×Nv XP efectivos por kill (máx 30)
    (el servidor admite XP/s sostenidos según economy.js CFG.xpRate). Si el héroe ya es mucho más fuerte que el bicho, baja. */
-const KXP={ba:40,ex:1.45,over:1.3,bon:.04,bmx:.4},KXK=L=>L<5?20+5*L:KXP.ba*Math.pow(L/5,KXP.ex);/* v438: curva más corta (tester: «a Nv 30 tardas 5 horas por nivel») *//* v394: kills por nivel contra mobs de TU nivel: 80 a 140 hasta Nv 4, ~490 en Nv 10, ~1.600 en Nv 20, ~3.200 en Nv 30, ~7.500 en Nv 50 (la XP por kill = xpNeed/KXK, sube con el nivel del mob; un mob más alto que tú da hasta +40%) */
+const KXP={ba:78.75,ex:1.7,over:1.3,bon:.04,bmx:.4},KXK=L=>L<5?31.5+10.5*L:KXP.ba*Math.pow(L/5,KXP.ex);/* v440: otro 25 % menos de bajas por nivel en toda la escala (Nv 30 ≈ 1.650 bajas; v439: 2.236). KXP.ba: 150 = v437 · 105 = v439 · 78,75 = v440 (Nv 1–4: 42+14·Nv → 31,5+10,5·Nv). Si lo cambias, ajusta xpLvSc en economy.js en proporción (105/ba · 1,5). *//* v394: kills por nivel contra mobs de TU nivel: 80 a 140 hasta Nv 4, ~490 en Nv 10, ~1.600 en Nv 20, ~3.200 en Nv 30, ~7.500 en Nv 50 (la XP por kill = xpNeed/KXK, sube con el nivel del mob; un mob más alto que tú da hasta +40%) */
 function killXp(e){const nv=Math.max(1,e.nv||REC(e.ty|0)),eff=xpNeed(nv)/KXK(nv),lim=nv*KXP.over+3,fac=P.lv<=lim?1:Math.max(.1,lim/P.lv),up=nv>P.lv?1+Math.min(KXP.bmx,KXP.bon*(nv-P.lv)):1,rw=e.dg?(e.elite?3:1):Math.min(4,Math.max(.3,e.rw||1));return Math.max(1,Math.round(eff*rw*fac*up/.4))}
 function ppKillXp(e,xp){if(!PP.pid||!DB||!UID)return xp;const near=ppMembers().filter(o=>!o.dg==!DG.f&&Math.hypot(o.x-e.x,o.y-e.y)<PPR);if(!near.length)return xp;const n=near.length+1,maxLv=Math.max(P.lv,...near.map(o=>o.l|0));
  try{const ref=DB.collection('pkill').doc();ref.set({pid:PP.pid,from:UID,xp:Math.round(xp),x:Math.round(e.x),y:Math.round(e.y),t:Date.now()}).catch(()=>{});setTimeout(()=>{try{ref.delete()}catch(x){}},25000)}catch(x){}

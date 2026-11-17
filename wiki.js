@@ -392,7 +392,7 @@ P.farmeo=()=>{
   +'<h2>XP y botín por tipo de enemigo</h2><p>Los valores son <b>base</b>: se multiplican por tus bonos de equipo y los servicios que actives. Los enemigos de élite y de horda dan más.</p>'
   +tbl(['Enemigo','Nivel ref.','XP base','Equipo','Poción de vida','Poción de maná','Carne'],f.map(x=>[x.ic+' '+esc(x.n),x.lv,x.xp,Math.round(x.pi*100)+'%',Math.round(x.pp*100)+'%',Math.round(x.pm*100)+'%',x.pc?Math.round(x.pc*100)+'%':'—']),[1,2,3,4,5,6])
   +'<h2>Cuántas muertes cuesta cada nivel</h2><p>Contra enemigos de tu mismo nivel y sin bonos, subir un nivel cuesta aproximadamente:</p>'
-  +tbl(['Tu nivel','Muertes por nivel'],[['10','≈ 110'],['30','≈ 540'],['50','≈ 1.130'],['100','≈ 3.080'],['200','≈ 8.400'],['300','≈ 15.100']],[1])
+  +tbl(['Tu nivel','Muertes por nivel'],[['10','≈ 260'],['30','≈ 1.650'],['50','≈ 3.950'],['100','≈ 12.800'],['200','≈ 41.700'],['300','≈ 82.900']],[1])
   +'<p>Un enemigo de <b>más nivel</b> que tú da hasta un 40 % extra (4 % por cada nivel de diferencia) y uno muy por debajo de tu nivel da cada vez menos. Los enemigos de élite y de horda dan más, y con tu equipo y tus servicios la cuenta baja.</p>'
   +'<p>El <b>equipo</b> de los monstruos se vende al NPC o a otros jugadores. Los enemigos de élite pueden soltar equipo de verdad, y los jefes y la Torre del Lago, el mejor.</p>'
   +'<h2>De dónde sale el oro</h2><ul>'
@@ -828,13 +828,35 @@ P.creditos=()=>head('Créditos','Quién hizo qué')
 /* ---------- Novedades (de las notas de cada versión) ---------- */
 NEWS.push(...[
 {
+"v": "v440",
+"ic": "⚖️",
+"c": "#ffb347",
+"t": "Subir de nivel un 25 % más rápido",
+"s": "Menos muertes por nivel en toda la escala, sin cambiar la forma del juego",
+"li": [
+"<b>⬆️ Un 25 % menos de muertes por nivel, en todos los niveles.</b> Contra enemigos de tu nivel y sin bonos: ≈ 260 muertes por nivel a Nv 10 (antes ≈ 350), ≈ 1.650 a Nv 30 (antes ≈ 2.240), ≈ 3.950 a Nv 50 (antes ≈ 5.300) y ≈ 12.800 a Nv 100 (antes ≈ 17.100). Un Archidemonio de nivel 29 pasa de dar ≈ 14 XP a dar ≈ 18 XP a un héroe de Nv 30. Ver <a href=\"#/farmeo\">Farmeo, oro y botín</a>."
+],
+"id": "v440"
+},
+{
+"v": "v439",
+"ic": "⚖️",
+"c": "#ffb347",
+"t": "Experiencia más equilibrada",
+"s": "Subir de nivel un 30 % más rápido que antes, sin cambiar la forma del juego",
+"li": [
+"<b>⬆️ Un 30 % menos de muertes por nivel, en toda la escala.</b> Contra enemigos de tu nivel y sin bonos: ≈ 350 muertes por nivel a Nv 10 (antes ≈ 490), ≈ 2.240 a Nv 30 (antes ≈ 3.150), ≈ 5.300 a Nv 50 (antes ≈ 7.500) y ≈ 17.100 a Nv 100 (antes ≈ 24.400). Un Archidemonio de nivel 29 pasa de dar 9 XP a dar ≈ 14 XP a un héroe de Nv 30. Ver <a href=\"#/farmeo\">Farmeo, oro y botín</a>."
+],
+"id": "v439"
+},
+{
 "v": "v438",
 "ic": "⚖️",
 "c": "#ffb347",
 "t": "Subir de nivel más rápido, radar en el minimapa y servicios premium más claros",
 "s": "Cambios a partir de lo que reportaron los probadores: experiencia, radar, botón Destruir, vender todo el loot, precios de planes y gremios",
 "li": [
-"<b>⬆️ Subir de nivel, mucho más rápido.</b> Contra enemigos de tu nivel: ≈ 110 muertes por nivel a Nv 10 (antes ≈ 490), ≈ 540 a Nv 30 (antes ≈ 3.150), ≈ 1.130 a Nv 50 (antes ≈ 7.500) y ≈ 3.080 a Nv 100 (antes ≈ 24.400). Un Archidemonio de nivel 29 pasa de dar 9 XP a dar ≈ 55 XP a un héroe de Nv 30. Ver <a href=\"#/farmeo\">Farmeo, oro y botín</a>.",
+"<b>⬆️ Subir de nivel un poco más rápido.</b> La cuenta final de muertes por nivel quedó en la versión v439 (arriba). Ver <a href=\"#/farmeo\">Farmeo, oro y botín</a>.",
 "<b>📡 Radar en el minimapa.</b> Vuelven los puntos rojos de los enemigos vivos a tu alrededor (18 casillas a la redonda), con un anillo de alcance y un contador abajo; alfas y jefes cercanos salen en naranja. El Halcón y el Búho siguen viendo más lejos.",
 "<b>🗑️ Destruir mascota.</b> Cada compañero tiene el botón Destruir en 🐾 Mascotas y en el Templo (doble toque para confirmar). Las alquiladas no se pueden destruir y el equipo que lleven vuelve a tu mochila.",
 "<b>💰 Vender todo el loot.</b> En la 🛡️ Armería: resumen con el total ya sin impuesto y confirmación. Conserva los objetos épicos, legendarios y mejorados; marcar uno a uno sigue igual.",

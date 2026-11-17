@@ -12,8 +12,9 @@ const CFG={slack:+(process.env.AUDIT_SLACK||1.5),mode:process.env.AUDIT_MODE||'e
  impGold:+(process.env.IMPORT_GOLD_PER_LV||150000),impOff:process.env.FIRST_IMPORT==='0',goodsCap:30000,goodsBase:[60,40,80,30,25],provCap:9999,provRate:2,ecRate:2,ecBurst:400,dlTtl:90e3};
 const RM=[1,1.6,2.4,3.5],EVK=['hl','nv','lu','am','nz'],PRK=['au','ap','lt','bl','es','pv','bh','tr'];
 const xpNeed=l=>Math.round((30+90*l+3*l*l)*(1.3+.05*l)*1.6);
-/* v438: la EXP por baja es ~6 veces mayor (el cliente ahora pide muchas menos bajas por nivel): el margen del antitrampas sube ×3 hasta Nv ~60 y crece con el nivel desde ahí, para no recortar a quien sube de forma legítima (hordas, élites, grupos). */
-const xpLvSc=l=>Math.max(3,Math.pow((+l||1)/30,1.6));
+/* v440: KXP.ba 105 → 78,75 (−25 % de bajas por nivel = ×1,333 de XP por baja): el margen sube de ×1,5 a ×2 (1,5 · 105/78,75) para no recortar a quien sube de forma legítima. */
+/* v439: la curva de EXP del cliente da ≈1,43 veces más XP por baja que la original (KXP.ba 150 → 105 en play.html; v438 la había subido ~6 veces y se moderó): el margen del antitrampas sube ×1,5 a todos los niveles para no recortar a quien sube de forma legítima (hordas, élites, grupos). Si cambias KXP.ba, ajusta este factor en proporción (150/ba). */
+const xpLvSc=l=>2;
 const xpTot=(lv,xp)=>{let t=xp;for(let l=1;l<lv;l++)t+=xpNeed(l);return t};
 const xpInv=t=>{let l=1;while(l<CFG.lvMax&&t>=xpNeed(l)){t-=xpNeed(l);l++}return[l,Math.floor(t)]};
 const rid=n=>crypto.randomBytes(n||8).toString('hex');

@@ -14,7 +14,7 @@ const RM=[1,1.6,2.4,3.5],EVK=['hl','nv','lu','am','nz'],PRK=['au','ap','lt','bl'
 const xpNeed=l=>Math.round((30+90*l+3*l*l)*(1.3+.05*l)*1.6);
 /* v440: KXP.ba 105 → 78,75 (−25 % de bajas por nivel = ×1,333 de XP por baja): el margen sube de ×1,5 a ×2 (1,5 · 105/78,75) para no recortar a quien sube de forma legítima. */
 /* v439: la curva de EXP del cliente da ≈1,43 veces más XP por baja que la original (KXP.ba 150 → 105 en play.html; v438 la había subido ~6 veces y se moderó): el margen del antitrampas sube ×1,5 a todos los niveles para no recortar a quien sube de forma legítima (hordas, élites, grupos). Si cambias KXP.ba, ajusta este factor en proporción (150/ba). */
-const xpLvSc=l=>2;
+const xpLvSc=l=>2*1.4/(l<=5?.7:l>=10?1.15:.7+.45*(l-5)/5);/* v442: mismo KXM de play.html (Nv1-5 ×0,7 · rampa · ×1,15) y 1,4 = bonus máximo por distancia */
 const xpTot=(lv,xp)=>{let t=xp;for(let l=1;l<lv;l++)t+=xpNeed(l);return t};
 const xpInv=t=>{let l=1;while(l<CFG.lvMax&&t>=xpNeed(l)){t-=xpNeed(l);l++}return[l,Math.floor(t)]};
 const rid=n=>crypto.randomBytes(n||8).toString('hex');

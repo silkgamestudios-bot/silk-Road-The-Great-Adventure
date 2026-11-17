@@ -45,8 +45,8 @@ N.onmsg=m=>{
 const PV={on:0,t:null,sent:0},G0={pvg:1,u:'',nm:'',x:0,y:0,hp:1,mx:1,dead:1e9,ty:0,stun:0,rw:0,nv:1,sp:0,mov:0,hx:0,hy:0};PVG.push(G0);
 /* v287: si alguien te ataca en PvP, el objetivo pasa al enemigo PvP más cercano (o al atacante si está igual de cerca) */
 function pvNear(by){if(!PV.on||AR.on)return;let b=null,bd=1e9,ad=1e9;for(const u in OT){const o=OT[u];if(!o.pvp||!(o.hp>0))continue;const d=Math.hypot(o.rx-P.x,o.ry-P.y);if(u===by)ad=d;if(d<bd){bd=d;b=u}}if(by&&OT[by]&&OT[by].pvp&&ad<=bd*1.35+30)b=by;if(!b||b===PV.t)return;if(Math.hypot(OT[b].rx-P.x,OT[b].ry-P.y)>700)return;PV.t=b;pvSync();toast('🎯 Te atacan: objetivo → '+OT[b].nm,1800)}
-function pvKillMsg(m){PV.t=null;pvSync();if(m.me){toast('☠️ '+m.by+' te venció en PvP. Sin penalización. Ve al 🏹 Gremio de Cazadores y pon una recompensa por su cabeza.',8000);vib([80,40,120]);return}
- const r=m.r||{};let t='⚔️ ¡Venciste a '+m.v+'!';if(r.n)t+=' 🎯 Recompensa cobrada:'+(r.g?' +'+fmt(r.g)+' 🪙':'')+(r.m?' +'+r.m+' 💎':'')+((r.its||[]).length?' 🎁 '+r.its.join(', '):'');toast(t,7000);vib([60,40,60,40,100])}
+function pvKillMsg(m){const _o=PV.t&&OT[PV.t];PV.t=null;pvSync();if(m.me){toast('☠️ '+m.by+' te venció en PvP. Sin penalización. Ve al 🏹 Gremio de Cazadores y pon una recompensa por su cabeza.',8000);vib([80,40,120]);return}
+ const r=m.r||{};let t='⚔️ ¡Venciste a '+m.v+'!';if(r.n)t+=' 🎯 Recompensa cobrada:'+(r.g?' +'+fmt(r.g)+' 🪙':'')+(r.m?' +'+r.m+' 💎':'')+((r.its||[]).length?' 🎁 '+r.its.join(', '):'');toast(t,7000);vib([60,40,60,40,100]);try{window.SRCP&&SRCP.hero&&SRCP.hero(_o?_o.rx:P.x,_o?_o.ry:P.y,_o?_o.lv:P.lv,m.v)}catch(e){}}
 function pvSync(){const o=PV.t&&OT[PV.t],Ln=PV.t&&PV.t[0]=='L'&&AR.lm&&AR.lm[PV.t.slice(1)];if(PV.on&&Ln&&Ln.hp>0){G0.u=PV.t;G0.nm='🦁 León';G0.x=Ln.rx;G0.y=Ln.ry;G0.hx=Ln.rx;G0.hy=Ln.ry;G0.hp=Ln.hp;G0.mx=Math.max(1,Ln.mhp);G0.dead=0}else if(PV.on&&o&&o.pvp&&o.hp>0){G0.u=PV.t;G0.nm=o.nm;G0.x=o.rx;G0.y=o.ry;G0.hx=o.rx;G0.hy=o.ry;G0.hp=o.hp;G0.mx=Math.max(1,o.mhp);G0.dead=0}else{G0.dead=1e9;if(PV.t&&!o&&!Ln)PV.t=null}pvBar()}
 function pvStrike(e,dm){if(!PV.on||e.u!==PV.t)return;const n=Date.now();if(n-PV.sent<110)return;PV.sent=n;N.send({t:'wph',u:e.u,w:Math.round(Math.min(4,Math.max(.3,dm/Math.max(1,dmg())))*100)/100})}
 function pvBtn(){const c=document.getElementById('rc')||document.getElementById('ctx');if(!c)return;let b=document.getElementById('pvb');if(!b){b=document.createElement('button');b.id='pvb';b.hidden=true;b.setAttribute('aria-label','Activar o desactivar PvP');b.addEventListener('click',()=>{if(!on){toast('El PvP necesita el mundo online conectado',2500);return}N.send({t:'wpv',on:PV.on?0:1})});const rw=document.querySelector('#rc .rrow'),mb=document.getElementById('mapb');if(rw&&mb)rw.insertBefore(b,mb);else c.appendChild(b)}
@@ -256,9 +256,14 @@ window.SRAR={prompt:arPrompt,on:()=>AR.on};window.SRARST=()=>AR.st;
 window.SRWORLD={on:()=>on,others:()=>OT,ofx:()=>OFX.length,fx:drawOFX};
 
 /* ===== v425: SAQUEO DE CADAVERES. Los cuerpos duran 60 s; con G (o el botón Tomar) cerca de uno se le registra el bolsillo. El servidor decide: 10% poción (HP o MP), 6% equipo común (nivel del mob +5), 0,006% equipo poco común. ===== */
-const CPW={};
-function corpseLoot(){const zz=LZ();let b=null,bd=75;for(const c of CORPSES){if(c.sid==null||c.lt||c.z!==zz||c.d<=Date.now())continue;const d=Math.hypot(c.x-P.x,c.y-P.y);if(d<bd){bd=d;b=c}}
- if(!b)return false;b.lt=1;CPW[b.sid]=b;try{N.send({t:'wl',id:b.sid})}catch(e){}if(FT.length<60)FT.push({x:b.x,y:b.y-24,t:1,d:0,o:0,k:'dm',s:'🔎',c:'#ffe9a8'});return true}
+const CPW={};let CPL=0;
+/* v441: el botón 🎁 y la tecla G saquean el cadáver más cercano (<75 px). Los cuerpos sincronizados con el servidor los resuelve el servidor; los locales (animales, emboscadas, mazmorras abiertas, héroes caídos en PvP) se resuelven aquí con el MISMO reparto (10 % poción, 6 % equipo común, 0,006 % poco común). Cada cuerpo se saquea una sola vez. */
+function corpseLoot(){const b=corpseNear();if(!b)return false;b.lt=1;
+ if(b.sid==null){const o={t:'wl',ok:1,mid:'L'+(++CPL),ty:b.ty|0,pot:0,mpt:0,eq:0};if(Math.random()<.10){if(Math.random()<.5)o.pot=1;else o.mpt=1}if(Math.random()<.00006)o.eq=2;else if(Math.random()<.06)o.eq=1;CPW[o.mid]=b;if(FT.length<60)FT.push({x:b.x,y:b.y-24,t:1,d:0,o:0,k:'dm',s:'🔎',c:'#ffe9a8'});corpseRes(o);return true}
+ CPW[b.sid]=b;try{N.send({t:'wl',id:b.sid})}catch(e){}if(FT.length<60)FT.push({x:b.x,y:b.y-24,t:1,d:0,o:0,k:'dm',s:'🔎',c:'#ffe9a8'});return true}
+/* héroe vencido en PvP: queda su tumba 60 s y se puede registrar (la víctima no pierde nada); máximo una vez cada 10 min por víctima */
+const CPH={};
+function heroCorpse(x,y,lv,nm){const n=Date.now(),k=String(nm||'?');if(n-(CPH[k]||0)<600000)return;CPH[k]=n;lv=Math.max(1,lv|0);CORPSES.push({x,y,key:null,tn:null,sc:2,rot:0,z:LZ(),d:n+60000,kd:{c:'120,8,8',a:.62},r:1.2,sid:null,hero:1,nv:lv,ty:Math.max(0,Math.min(8,Math.round((lv-1)/3.5)))});if(CORPSES.length>CPN)CORPSES.shift()}
 function corpseRes(m){const c=CPW[m.mid];delete CPW[m.mid];const x=c?c.x:P.x,y=c?c.y:P.y,PMX=typeof POTMAX=='number'?POTMAX:800,t=[];
  if(!m.ok){toast('🪦 Alguien ya lo saqueó o el cuerpo se deshizo',2200);return}
  if(m.pot&&typeof P.pot=='number'&&P.pot<PMX){P.pot++;t.push('+1 🧪 poción')}
@@ -266,8 +271,8 @@ function corpseRes(m){const c=CPW[m.mid];delete CPW[m.mid];const x=c?c.x:P.x,y=c
  if(m.eq){const ty=m.ty|0,nv=(c&&c.nv?c.nv:Math.max(1,ty*35))+5;let it;try{it=genJunk(0,ty,nv);if(m.eq==2){const k=Math.floor(Math.random()*8);it.r=1;it.k=k;delete it.junk;it.n=iname(k,it.sl,it.t,it.li);setSt(it,RM[1]*(1+it.t*.6))}}catch(e){it=null}
   if(it){if(P.lb&&P.lb.length<LCAP())P.lb.push(it);else LT.push({x:P.x+Math.random()*18-9,y:P.y+Math.random()*18-9,gd:0,it,l:120,z:LZ()});t.push((m.eq==2?'✨ ':'🎁 ')+it.n);if(m.eq==2)toast('✨ ¡Buena suerte! Encontraste equipo POCO COMÚN: '+it.n,4500)}}
  if(!t.length)t.push('Bolsillos vacíos');if(FT.length<60)FT.push({x,y:y-26,t:1.8,d:0,o:0,k:'xp',s:t.join(' · '),c:'#ffd666'});try{save()}catch(e){}}
-window.SRCP={loot:corpseLoot,res:corpseRes};
-{const _gr=grab;grab=function(rad,q){if(rad<9999&&corpseLoot())return;return _gr.apply(this,arguments)}}
+window.SRCP={loot:corpseLoot,res:corpseRes,hero:heroCorpse,near:()=>!!corpseNear()};
+{const _gr=grab;grab=function(rad,q){if(rad<9999){let c=false;try{c=corpseLoot()}catch(e){}const r=_gr.apply(this,arguments);return c?(r||1):r}return _gr.apply(this,arguments)}}
 })();
 /* ═══════════ v433 · MINI-JEFES (cliente) · parte 1: sprites y dibujo ═══════════
    Hojas de sprites propias (192×256 / 228×256 / 448×256) incrustadas en base64. Cuadros de 64×64 (necro 76×64); filas: abajo, izquierda, derecha, arriba.

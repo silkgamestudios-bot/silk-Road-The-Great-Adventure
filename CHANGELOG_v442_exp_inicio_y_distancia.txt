@@ -1,0 +1,9 @@
+v442 - EXP: inicio más fácil + más XP al alejarte (incluye v441 saqueo de cadáveres)
+- Nv 1 a 5: 30 % menos muertes por nivel (Nv1 ≈ 29, Nv5 ≈ 55).
+- Nv 5 a 10: dificultad creciente en rampa (Nv7 ≈ 123, Nv9 ≈ 227).
+- Nv 10+: misma fórmula de siempre con +15 % de muertes por nivel (Nv10 ≈ 294, Nv30 ≈ 1.905, Nv100 ≈ 14.750).
+- XP por enemigo: +5 % por cada tramo de distancia/zona (hasta +40 % en lo más lejano). Mazmorras sin cambio.
+- Antitrampas del servidor (economy.js) ajustado para no cortar XP legítima.
+- Wiki actualizada (tabla, XP por enemigo, novedad v442).
+- Incluye v441: botón 🔎 Saquear en cadáveres.
+Cambió economy.js => hace falta Manual Deploy del servidor.

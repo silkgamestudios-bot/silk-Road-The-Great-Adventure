@@ -99,7 +99,7 @@ function swStep(tg,L,dt,now){
 function swAssist(m,p){const t=Date.now();if(t-(m._as||0)<700)return;m._as=t;for(const o of near(m.x,m.y,CFG.assist)){if(o===m||o.dead||o.tg||o.dyn||o.sqr>t)continue;if(Math.hypot(o.x-m.x,o.y-m.y)<CFG.assist)o.tg=p.uid}}
 /* v390: BOTÍN IGUAL AL PROGRAMADO (tablas HC_* del juego, por nivel de monstruo): antes el servidor soltaba pociones al ~50% de lo programado (0% en los niveles 0-1), nunca poción de MP, y un objeto fijo */
 const HCIC=[.30,.31,.32,.32,.33,.34,.34,.35,.35],HCPC=[.05,.06,.07,.08,.08,.09,.09,.10,.11],HCMPC=[0,.03,.05,.06,.07,.07,.08,.09,.10],HCMC=[.6,.5,0,0,0,0,0,0,0];
-function kill(m){const _tg=m.tg;m.dead=1;m.hp=0;m.rt=Date.now()+(m.dyn?(m.rz||15000):CFG.rez);m.tg=null;m.cpT=Date.now();m.cpL=0;try{batKill(m)}catch(e){}let o=null,b=0;for(const u in m.dmg){const p=PL.get(u);if(p&&m.dmg[u]>b){b=m.dmg[u];o=p}}m.dmg={};if(_tg&&SW&&!m.dyn)try{sqCall(_tg,m)}catch(e){}if(!o)return;try{X.mk&&X.mk(o.uid,m.ty|0,m.k||'',m.dyn?1:0,m)}catch(e){}
+function kill(m){const _tg=m.tg;m.dead=1;m.hp=0;m.rt=Date.now()+(m.dyn?(m.rz||15000):CFG.rez);m.tg=null;m.cpT=Date.now();m.cpL=0;try{batKill(m)}catch(e){}let o=null,b=0;for(const u in m.dmg){const p=PL.get(u);if(p&&m.dmg[u]>b){b=m.dmg[u];o=p}}m.dmg={};m.cpO=o?o.uid:null;/* v447: quien más daño hizo tiene 5 s de prioridad para saquear */if(_tg&&SW&&!m.dyn)try{sqCall(_tg,m)}catch(e){}if(!o)return;try{X.mk&&X.mk(o.uid,m.ty|0,m.k||'',m.dyn?1:0,m)}catch(e){}
  const ty=Math.min(8,Math.max(0,m.ty|0)),TY=J.types[ty],t=TY.loot[Math.floor(Math.random()*TY.loot.length)],gd=MOB_GOLD?(m.gx?Math.round(m.gx*(.7+Math.random()*.6)):Math.round(t[0]*m.rw)):0,xp0=Math.max(1,Math.round(TY.xp*m.rw)),pd=pid(o.uid),E=[o];
  // Drop independiente de equipo común: 30% por monstruo. Se conserva el grupo de objetos propio de cada tipo; los dos tipos iniciales usan el primer grupo disponible.
  const itemPool=TY.loot.map(a=>a[1]).filter(it=>it&&it.r===0),fallbackPool=J.types[2].loot.map(a=>a[1]).filter(it=>it&&it.r===0),pool=itemPool.length?itemPool:fallbackPool,dropItem=Math.random()<Math.min(.6,HCIC[ty]*(m.rw>1?1.5:1))&&pool.length?JSON.parse(JSON.stringify(pool[Math.floor(Math.random()*pool.length)])):null;
@@ -240,11 +240,13 @@ function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
  if(m.t==='wpv')return pvSet(p,m);
  if(m.t==='wph')return p.ar?arHit(p,m):pvHit(p,m);
  if(m.t==='wdie')return pvDie(p);
- if(m.t==='wl'){/* v425: SAQUEO de cadaveres: el servidor valida (cuerpo reciente, cerca, sin saquear) y decide el botin: 10% pocion (HP o MP), 6% equipo comun, 0.006% poco comun */
+ if(m.t==='wl'){/* v425: SAQUEO de cadaveres: el servidor valida (cuerpo reciente, cerca, sin saquear) y decide el botin: v446 30% pocion (HP o MP), 18% equipo comun, 0.006% poco comun */
   if(now-(p.lpT||0)<400||p.city||p.dg||p.hp<=0)return;p.lpT=now;const mm=BY.get(m.id|0);if(!mm||!mm.dead||!mm.cpT||mm.cpL||now-mm.cpT>CP_MS||Math.hypot(p.x-mm.x,p.y-mm.y)>110){return send(p.ws,{t:'wl',ok:0,mid:m.id|0,gone:1})}
-  mm.cpL=1;const r=Math.random(),o={t:'wl',ok:1,mid:mm.id,ty:mm.ty|0,pot:0,mpt:0,eq:0};
-  if(Math.random()<.10){if(Math.random()<.5)o.pot=1;else o.mpt=1}
-  if(r<.00006)o.eq=2;else if(Math.random()<.06)o.eq=1;
+  if(mm.cpO&&mm.cpO!==p.uid&&now-mm.cpT<5000&&PL.has(mm.cpO)&&!(pid(p.uid)&&pid(p.uid)===pid(mm.cpO)))return send(p.ws,{t:'wl',ok:0,mid:m.id|0,wait:1});/* v447: reservado 5 s para quien lo mató */
+  mm.cpL=1;for(const q of PL.values()){if(q===p||q.dg||q.city)continue;if(Math.hypot(q.x-mm.x,q.y-mm.y)<2400)send(q.ws,{t:'wlx',id:mm.id})}/* v447: los demás ven el cuerpo ya saqueado */
+  const r=Math.random(),o={t:'wl',ok:1,mid:mm.id,ty:mm.ty|0,pot:0,mpt:0,eq:0};
+  if(Math.random()<.30){if(Math.random()<.5)o.pot=1;else o.mpt=1}
+  if(r<.00006)o.eq=2;else if(Math.random()<.18)o.eq=1;
   return send(p.ws,o)}
  if(m.t==='wa'){if(now-(p.atT||0)<80)return;p.atT=now;if(String(m.ty||'')==='pull'&&!p.city&&!p.dg&&p.hp>0&&now-(p.plT||0)>1500){p.plT=now;const hs=num(m.hs,30,140,54);for(const o of near(p.x,p.y,340)){if(o.dead||Math.hypot(o.x-p.x,o.y-p.y)>=340)continue;o.tg=p.uid;o.pu=now+5000;o.ph=hs}}AT.push([u,num(m.k,0,7,0)|0,Math.round(num(m.a,-7,7,0)*100)/100,Math.round(p.x),Math.round(p.y),p.dg?1:0,String(m.ty||'').replace(/[^a-z]/g,'').slice(0,8),num(m.r,0,400,0)|0,p.ar?1:0])}}   /* v145: también habilidades y también dentro de mazmorras (solo para tu party) */
 

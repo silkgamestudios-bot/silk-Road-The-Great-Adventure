@@ -128,6 +128,12 @@ ops['hunt.buy']=(u,m)=>{return err('Los lazos ya no se venden: se fabrican en el
 ops['hunt.craft']=(u,m)=>{const a=E.acct(u),q=Math.floor(+m.q);if(!(q>=1&&q<=20))return err('Cantidad de 1 a 20');
  const fee=4000*q,tl=200*q,cu=300*q;if(E.avail(a,'prov','tel')<tl)return err('Te faltan 🕸️ telas de araña: necesitas '+tl);if(E.avail(a,'prov','cur')<cu)return err('Te faltan 🟫 pieles de lobo: necesitas '+cu);if(E.avail(a,'gold')<fee)return err('⚠️ Oro insuficiente: te faltan '+(fee-E.avail(a,'gold'))+' 🪙');
  E.deliver(u,{gold:-fee,note:'🪢 Fabricaste '+q+' lazo'+(q>1?'s':'')+' (−'+tl+' telas, −'+cu+' pieles, −'+fee+' 🪙)'});E.deliver(u,{prov:{pk:'tel',q:-tl}});E.deliver(u,{prov:{pk:'cur',q:-cu}});E.deliver(u,{prov:{pk:'lazo',q}});S.dirty();return{ok:1}};
+/* v443: pergaminos del Gremio de Cazadores. Compra y consumo los valida el servidor (oro y existencias); la teletransportación la hace el cliente. */
+const SCR={tpg:[12000,'📜 Pergamino de Teletransporte'],esc:[30000,'🌀 Pergamino de Escape']};
+ops['hunt.scroll']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),s=SCR[k];if(!s)return err('Pergamino desconocido');const av=E.avail(a,'gold');if(av<s[0])return err('⚠️ Oro insuficiente: te faltan '+(s[0]-av)+' 🪙');
+ E.deliver(u,{gold:-s[0],note:s[1]+' comprado en el Gremio de Cazadores (−'+s[0]+' 🪙)'});E.deliver(u,{prov:{pk:k,q:1}});S.dirty();return{ok:1}};
+ops['scroll.use']=(u,m)=>{const a=E.acct(u),k=String(m.k||'');if(!SCR[k])return err('Pergamino desconocido');if(E.avail(a,'prov',k)<1)return err('No tienes '+SCR[k][1]);
+ E.deliver(u,{prov:{pk:k,q:-1},note:SCR[k][1]+' usado'});S.dirty();return{ok:1}};
 ops['tk.buy']=(u,m)=>{const a=E.acct(u),k=String(m.k||''),q=Math.floor(+m.q)||1;if(!TKN[k])return err('Boleto desconocido');if(!['vpf','vph','vmf','vmh'].includes(k))return err('Ese boleto ya no se vende: elige un plan');if(q<1||q>50)return err('Cantidad de 1 a 50');
  if(!(S.isMaster(u)||a.cls===0||tkRes(u)))return err('Los boletos los compran los Mercaderes y Revendedores');
  const cost=GEMP[k]*q;if(!E.spendGems(a,cost,false,'Boleto '+k+' ×'+q))return err('Te faltan '+(cost-E.gTot(a))+' 💎');

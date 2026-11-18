@@ -1,0 +1,4 @@
+v450 - Inframundo: XP según dureza de la criatura (incluye v441-v449)
+- uwXp ahora multiplica por uwm = raiz(vida x daño)/1,4066 (de x0,7 en espiritus a x1,4 en titanes/cerbero). El promedio del Inframundo queda igual.
+- v449: XP por muerte coherente en el mundo abierto (ver changelog anterior en wiki).
+- Solo cliente (play.html, sw.js, package.json) + wiki. Manual Deploy sigue pendiente por v449 (economy.js).

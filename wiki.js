@@ -392,7 +392,7 @@ P.farmeo=()=>{
   +'<h2>XP y botín por tipo de enemigo</h2><p>Los valores son <b>base</b>: se multiplican por tus bonos de equipo y los servicios que actives. Los enemigos de élite y de horda dan más.</p>'
   +tbl(['Enemigo','Nivel ref.','XP base','Equipo','Poción de vida','Poción de maná','Carne'],f.map(x=>[x.ic+' '+esc(x.n),x.lv,x.xp,Math.round(x.pi*100)+'%',Math.round(x.pp*100)+'%',Math.round(x.pm*100)+'%',x.pc?Math.round(x.pc*100)+'%':'—']),[1,2,3,4,5,6])
   +'<h2>Cuántas muertes cuesta cada nivel</h2><p>Contra enemigos de tu mismo nivel y sin bonos, subir un nivel cuesta aproximadamente:</p>'
-  +tbl(['Tu nivel','Muertes por nivel'],[['1 a 5','≈ 30 a 55 (30 % menos)'],['10','≈ 295'],['30','≈ 1.900'],['50','≈ 4.540'],['100','≈ 14.750'],['200','≈ 47.900'],['300','≈ 95.500']],[1])
+  +tbl(['Tu nivel','Muertes por nivel'],[['1 a 5','≈ 30 a 55 (30 % menos)'],['10','≈ 130'],['30','≈ 760'],['50','≈ 1.970'],['100','≈ 9.830'],['200','≈ 31.940'],['300','≈ 63.640']],[1])
   +'<p>Un enemigo de <b>más nivel</b> que tú da hasta un 40 % extra (4 % por cada nivel de diferencia) y uno muy por debajo de tu nivel da cada vez menos. Los enemigos de élite y de horda dan más, y con tu equipo y tus servicios la cuenta baja.</p>'
   +'<p>El <b>equipo</b> de los monstruos se vende al NPC o a otros jugadores. Los enemigos de élite pueden soltar equipo de verdad, y los jefes y la Torre del Lago, el mejor.</p>'
   +'<h2>De dónde sale el oro</h2><ul>'
@@ -679,7 +679,7 @@ P.monstruos=()=>head('Monstruos y jefes','Los nueve enemigos del camino, los jef
  +'<h2>Cómo pelean</h2><ul>'
  +'<li><b>Escuadras con líder:</b> los tres primeros enemigos van en escuadras de 8, los tres siguientes de 10 y los tres últimos de 12. Ocho te rodean, uno por casilla; los demás esperan su turno. El más fuerte lleva la marca <b>🚩 Líder</b> y, cuando cae un compañero, grita <b>📯 ¡Refuerzos!</b>. Desde el cuarto enemigo, algunos te rodean en arco para flanquearte.</li>'
  +'<li><b>Aviso local:</b> cada monstruo te ve por su cuenta (cono de visión y obstáculos) y solo avisa a los compañeros que tiene a unos 200 píxeles. Se quedan cerca de su «casa»: a veces patrullan entre dos o tres puntos y, si te alejas, vuelven y se curan.</li>'
- +'<li><b>Cadáveres que se pueden saquear:</b> al morir dejan su cuerpo sobre una mancha durante <b>60 segundos</b>. Si muestra 💰, acércate (menos de unos 75 píxeles) y pulsa <b>G</b> en PC o <b>Tomar</b> en el móvil: el primero que llegue se lo lleva. Sale una poción (10 %), equipo común del nivel del monstruo +5 (6 %) y, muy rara vez, equipo poco común (0,006 %). Solo cuenta en el mundo abierto.</li>'
+ +'<li><b>Cadáveres que se pueden saquear:</b> al morir dejan su cuerpo sobre una mancha durante <b>60 segundos</b>. Si muestra 💰, acércate (menos de unos 75 píxeles) y pulsa <b>G</b> en PC o <b>Tomar</b> en el móvil: el primero que llegue se lo lleva. Sale una poción (30 %), equipo común del nivel del monstruo +5 (18 %) y, muy rara vez, equipo poco común (0,006 %). Solo cuenta en el mundo abierto.</li>'
  +'<li><b>Reapariciones limitadas:</b> el mapa se divide en 305 celdas y cada una tiene su batería de reapariciones: solo el 45 % de los monstruos está despierto y, cuando muere uno, despierta otro y gasta 1 de batería. Sin batería no hay monstruos; se recarga en 90 días. Por eso conviene repartirse por el mapa.</li></ul>'
  +'<h2>Jefes del mundo</h2><p>Ocho colosos y señores con guaridas fijas en el mapa.</p><div class="mons">'+W.bosses.map(b=>'<div class="mon boss">'+spBase(BSP[b.n]||'iron-golem',4.4,1)+'<span><b>'+esc(b.n)+'</b><small>Nivel '+b.lv+' · '+fmt(b.hp)+' de vida</small></span></div>').join('')+'</div>'
  +tbl(['Jefe','Nivel','Vida','Daño','Velocidad'],W.bosses.map(b=>['👑 '+esc(b.n),b.lv,fmt(b.hp),fmt(b.dm),fmt(b.spd)]),[1,2,3,4])
@@ -827,6 +827,87 @@ P.creditos=()=>head('Créditos','Quién hizo qué')
 
 /* ---------- Novedades (de las notas de cada versión) ---------- */
 NEWS.push(...[
+{
+"v": "v450",
+"ic": "🔥",
+"c": "#ff7a5a",
+"t": "Inframundo: más XP a las criaturas más duras",
+"s": "La XP ahora depende de lo fuertes que son",
+"li": [
+"<b>🔥 Inframundo:</b> antes un Espíritu del Leteo y un Titán de Piedra del mismo nivel daban la misma XP aunque el titán tiene el triple de vida. Ahora las criaturas más duras (Titanes, Cerbero, Archidemonios) dan hasta un 40 % más y las más débiles (Espíritus, Escorpiones, Arácnidos) hasta un 30 % menos. El promedio no cambia."
+],
+"id": "v450"
+},
+{
+"v": "v449",
+"ic": "📈",
+"c": "#7bd88f",
+"t": "La XP por muerte ya nunca baja",
+"s": "Un enemigo de más nivel siempre da más XP",
+"li": [
+"<b>📈 Corregido:</b> antes un enemigo de Nv 10 daba menos XP que uno de Nv 5. Ahora la XP por muerte sube siempre con el nivel del enemigo (Rata Nv 1 ≈ 11 · Goblin Nv 8 ≈ 37 · Archidemonio Nv 29 ≈ 56).",
+"Entre los niveles 5 y 95 se necesitan menos muertes por nivel que antes: ≈ 130 a Nv 10, ≈ 760 a Nv 30, ≈ 1.970 a Nv 50. Del 95 en adelante sigue la misma fórmula."
+],
+"id": "v449"
+},
+{
+"v": "v448",
+"ic": "💰",
+"c": "#ffd27a",
+"t": "Vender todo: minerales, gemas y madera",
+"s": "Un solo botón en Materiales, minería y pesca",
+"li": [
+"<b>💰 Vender todo</b> en 🧵 Materiales, minería y pesca: vende de una vez todos tus minerales, gemas y madera. Muestra un resumen y pide confirmación. No vende patas ni telas de araña."
+],
+"id": "v448"
+},
+{
+"v": "v447",
+"ic": "🪦",
+"c": "#ffd27a",
+"t": "Cadáveres compartidos, más justos",
+"s": "Todos ven cuándo un cuerpo ya fue saqueado",
+"li": [
+"<b>👁️ Cuerpo saqueado = desaparece el 🔎</b> para los jugadores cercanos, así no caminas hasta uno ya vacío.",
+"<b>⏱️ 5 segundos de prioridad</b> para quien más daño hizo (y su grupo). Pasado ese tiempo, el primero que llegue se lo lleva."
+],
+"id": "v447"
+},
+{
+"v": "v446",
+"ic": "🔎",
+"c": "#ffd27a",
+"t": "Más botín en los cadáveres",
+"s": "Saquear ahora vale más la pena",
+"li": [
+"<b>🧪 Poción 30 %</b> (antes 10 %) y <b>⚔️ equipo común 18 %</b> (antes 6 %) al saquear un cadáver. El equipo poco común sigue en 0,006 %."
+],
+"id": "v446"
+},
+{
+"v": "v444",
+"ic": "⚔️",
+"c": "#ff9f5a",
+"t": "Los enemigos fuertes dan más XP",
+"s": "Cada nivel del enemigo suma un 1 % de XP",
+"li": [
+"<b>⬆️ Más nivel, más XP.</b> Cada enemigo da +1 % de XP por cada nivel que tiene (hasta +50 % desde el nivel 51). Un Archidemonio de nivel 29 pasa de ≈ 22 a ≈ 28 XP. Como suben las XP, las muertes por nivel bajan un poco: ≈ 270 a Nv 10, ≈ 1.480 a Nv 30, ≈ 3.050 a Nv 50."
+],
+"id": "v444"
+},
+{
+"v": "v443",
+"ic": "📜",
+"c": "#c9a0ff",
+"t": "Pergaminos de viaje en el Gremio de Cazadores",
+"s": "Teletransporte a la ciudad y escape de cuevas, por oro",
+"li": [
+"<b>📜 Pergamino de Teletransporte · 12.000 🪙.</b> Te lleva a la ciudad más cercana. Solo funciona al aire libre.",
+"<b>🌀 Pergamino de Escape · 30.000 🪙.</b> Te saca de una cueva y te deja en la ciudad más cercana a su entrada.",
+"Se compran en 🏹 Gremio de Cazadores › 🛠️ Fabricar. Los usas desde 🎒 Provisiones o con un atajo rápido. Cada uso gasta uno."
+],
+"id": "v443"
+},
 {
 "v": "v442",
 "ic": "🌱",
@@ -1057,7 +1138,7 @@ NEWS.push(...[
 "s": "Los cuerpos duran 60 segundos y se pueden saquear",
 "li": [
 "Los cuerpos duran <b>60 segundos</b>. Los que muestran 💰 se saquean con <b>G</b> (PC) o el botón <b>Tomar</b> (móvil) a menos de unos 75 píxeles; el primero que llegue se lo lleva.",
-"Sale una poción (10 %), equipo común del nivel del monstruo +5 (6 %) y, rarísimo, equipo poco común (0,006 %). Solo en el mundo abierto.",
+"Sale una poción (30 %), equipo común del nivel del monstruo +5 (18 %) y, rarísimo, equipo poco común (0,006 %). Solo en el mundo abierto.",
 "Corregido: el servidor seguía soltando oro de monstruos; ahora no suelta."
 ],
 "id": "v426"

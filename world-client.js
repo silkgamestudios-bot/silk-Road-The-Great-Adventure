@@ -40,7 +40,8 @@ N.onmsg=m=>{
  else if(m.t=='wubd'){try{window.SRUBD&&SRUBD(m)}catch(e){}}
  else if(m.t=='wc'||m.t=='wcs'||m.t=='wcd'||m.t=='wck'||m.t=='wcm'||m.t=='wch'||m.t=='wco'||m.t=='wce')arMsg(m);
  else if(m.t=='wk')reward(m);
- else if(m.t=='wl')try{corpseRes(m)}catch(e){}};
+ else if(m.t=='wl')try{corpseRes(m)}catch(e){}
+ else if(m.t=='wlx'){for(const c of CORPSES)if(c.sid===m.id)c.lt=1}};
 /* ===== PvP abierto (v148) ===== */
 const PV={on:0,t:null,sent:0},G0={pvg:1,u:'',nm:'',x:0,y:0,hp:1,mx:1,dead:1e9,ty:0,stun:0,rw:0,nv:1,sp:0,mov:0,hx:0,hy:0};PVG.push(G0);
 /* v287: si alguien te ataca en PvP, el objetivo pasa al enemigo PvP más cercano (o al atacante si está igual de cerca) */
@@ -259,13 +260,13 @@ window.SRWORLD={on:()=>on,others:()=>OT,ofx:()=>OFX.length,fx:drawOFX};
 const CPW={};let CPL=0;
 /* v441: el botón 🎁 y la tecla G saquean el cadáver más cercano (<75 px). Los cuerpos sincronizados con el servidor los resuelve el servidor; los locales (animales, emboscadas, mazmorras abiertas, héroes caídos en PvP) se resuelven aquí con el MISMO reparto (10 % poción, 6 % equipo común, 0,006 % poco común). Cada cuerpo se saquea una sola vez. */
 function corpseLoot(){const b=corpseNear();if(!b)return false;b.lt=1;
- if(b.sid==null){const o={t:'wl',ok:1,mid:'L'+(++CPL),ty:b.ty|0,pot:0,mpt:0,eq:0};if(Math.random()<.10){if(Math.random()<.5)o.pot=1;else o.mpt=1}if(Math.random()<.00006)o.eq=2;else if(Math.random()<.06)o.eq=1;CPW[o.mid]=b;if(FT.length<60)FT.push({x:b.x,y:b.y-24,t:1,d:0,o:0,k:'dm',s:'🔎',c:'#ffe9a8'});corpseRes(o);return true}
+ if(b.sid==null){const o={t:'wl',ok:1,mid:'L'+(++CPL),ty:b.ty|0,pot:0,mpt:0,eq:0};if(Math.random()<.30){if(Math.random()<.5)o.pot=1;else o.mpt=1}if(Math.random()<.00006)o.eq=2;else if(Math.random()<.18)o.eq=1;CPW[o.mid]=b;if(FT.length<60)FT.push({x:b.x,y:b.y-24,t:1,d:0,o:0,k:'dm',s:'🔎',c:'#ffe9a8'});corpseRes(o);return true}
  CPW[b.sid]=b;try{N.send({t:'wl',id:b.sid})}catch(e){}if(FT.length<60)FT.push({x:b.x,y:b.y-24,t:1,d:0,o:0,k:'dm',s:'🔎',c:'#ffe9a8'});return true}
 /* héroe vencido en PvP: queda su tumba 60 s y se puede registrar (la víctima no pierde nada); máximo una vez cada 10 min por víctima */
 const CPH={};
 function heroCorpse(x,y,lv,nm){const n=Date.now(),k=String(nm||'?');if(n-(CPH[k]||0)<600000)return;CPH[k]=n;lv=Math.max(1,lv|0);CORPSES.push({x,y,key:null,tn:null,sc:2,rot:0,z:LZ(),d:n+60000,kd:{c:'120,8,8',a:.62},r:1.2,sid:null,hero:1,nv:lv,ty:Math.max(0,Math.min(8,Math.round((lv-1)/3.5)))});if(CORPSES.length>CPN)CORPSES.shift()}
 function corpseRes(m){const c=CPW[m.mid];delete CPW[m.mid];const x=c?c.x:P.x,y=c?c.y:P.y,PMX=typeof POTMAX=='number'?POTMAX:800,t=[];
- if(!m.ok){toast('🪦 Alguien ya lo saqueó o el cuerpo se deshizo',2200);return}
+ if(!m.ok){if(m.wait){if(c)c.lt=0;toast('🪦 Reservado unos segundos para quien lo mató',1800)}else toast('🪦 Alguien ya lo saqueó o el cuerpo se deshizo',2200);return}
  if(m.pot&&typeof P.pot=='number'&&P.pot<PMX){P.pot++;t.push('+1 🧪 poción')}
  if(m.mpt&&typeof P.mpot=='number'&&P.mpot<PMX){P.mpot++;t.push('+1 💧 poción MP')}
  if(m.eq){const ty=m.ty|0,nv=(c&&c.nv?c.nv:Math.max(1,ty*35))+5;let it;try{it=genJunk(0,ty,nv);if(m.eq==2){const k=Math.floor(Math.random()*8);it.r=1;it.k=k;delete it.junk;it.n=iname(k,it.sl,it.t,it.li);setSt(it,RM[1]*(1+it.t*.6))}}catch(e){it=null}

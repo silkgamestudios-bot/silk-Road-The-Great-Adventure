@@ -14,7 +14,10 @@ const RM=[1,1.6,2.4,3.5],EVK=['hl','nv','lu','am','nz'],PRK=['au','ap','lt','bl'
 const xpNeed=l=>Math.round((30+90*l+3*l*l)*(1.3+.05*l)*1.6);
 /* v440: KXP.ba 105 → 78,75 (−25 % de bajas por nivel = ×1,333 de XP por baja): el margen sube de ×1,5 a ×2 (1,5 · 105/78,75) para no recortar a quien sube de forma legítima. */
 /* v439: la curva de EXP del cliente da ≈1,43 veces más XP por baja que la original (KXP.ba 150 → 105 en play.html; v438 la había subido ~6 veces y se moderó): el margen del antitrampas sube ×1,5 a todos los niveles para no recortar a quien sube de forma legítima (hordas, élites, grupos). Si cambias KXP.ba, ajusta este factor en proporción (150/ba). */
-const xpLvSc=l=>{const o=l<5?31.5+10.5*l:78.75*Math.pow(l/5,1.7),m=l<=5?.7:l>=10?1.15:.7+.45*(l-5)/5,nd=Math.round((30+90*l+3*l*l)*(1.3+.05*l)*2),n=l<5?o*m:Math.min(o*m,nd/31.2);return 2*1.4*1.5*o/n};/* v449: replica KXK de play.html (con el piso de XP por muerte) *//* v442: mismo KXM de play.html (Nv1-5 ×0,7 · rampa · ×1,15) y 1,4 = bonus máximo por distancia · 1,5 = bonus máximo por nivel del enemigo (KXL) */
+/* v451: REGLA ÚNICA DE EXP: misma tabla KXA que play.html. Margen = (muertes/hora generosas: 1.800 × XP base × peso máx. 4) ÷ lo que ya permite la config por hora. */
+const KXA=[[1,29],[5,55],[10,130],[20,300],[30,450],[50,650],[100,900],[200,1100],[400,1300],[800,1500],[1200,1700]];
+const kxk=L=>{L=Math.max(1,L);for(let i=1;i<KXA.length;i++)if(L<=KXA[i][0]){const a=KXA[i-1][0],ka=KXA[i-1][1],b=KXA[i][0],kb=KXA[i][1];return Math.exp(Math.log(ka)+Math.log(L/a)/Math.log(b/a)*Math.log(kb/ka))}return KXA[KXA.length-1][1]};
+const xpLvSc=l=>{const nd=Math.round((30+90*l+3*l*l)*(1.3+.05*l)*2);return Math.max(2,1800*4*nd/kxk(l)/((CFG.xpRate*3600+CFG.xpBurst*6)*CFG.slack))};
 const xpTot=(lv,xp)=>{let t=xp;for(let l=1;l<lv;l++)t+=xpNeed(l);return t};
 const xpInv=t=>{let l=1;while(l<CFG.lvMax&&t>=xpNeed(l)){t-=xpNeed(l);l++}return[l,Math.floor(t)]};
 const rid=n=>crypto.randomBytes(n||8).toString('hex');

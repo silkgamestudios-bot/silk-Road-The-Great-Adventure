@@ -1,0 +1,25 @@
+v452 - REGLA ÚNICA DE EXP para todo el juego (incluye v441-v450)
+
+LA REGLA (play.html, tabla KXA, y la misma tabla en economy.js)
+  XP por muerte = xpNeed(nivel de la criatura) / KXK(nivel de la criatura)
+                  x peso (elite x3, tipo e.rw, dureza e.uwm)
+                  x ajuste por diferencia de nivel (si tu nivel es mucho mayor, baja; si es menor, sube hasta +40 %).
+  KXK(L) = muertes que cuesta subir UN nivel contra criaturas de tu nivel (interpola entre hitos):
+    Nv 1: 29 · 5: 55 · 10: 130 · 20: 300 · 30: 450 · 50: 650 · 100: 900 · 200: 1.100 · 400: 1.300 · 800: 1.500 · 1200: 1.700
+  Resultado: la XP por muerte SIEMPRE sube con el nivel de la criatura (verificado Nv 1-1200, 0 bajadas),
+  y llegar a Nv 1200 son ~4.500 h a 6 muertes/min (~2.700 h a 10/min).
+
+PARA AGREGAR UNA ZONA NUEVA
+  Solo asignar e.nv (nivel) a sus criaturas. No hay que calcular XP: sale de la regla.
+  Para cambiar el ritmo de TODO el juego, editar los hitos de KXA (en play.html y en economy.js, iguales).
+
+QUÉ CAMBIÓ
+- Se eliminan los bonos aparte: por distancia (KXD), por nivel (KXL) y la rampa 5-10 (KXM). Las zonas lejanas dan más XP porque sus criaturas tienen más nivel.
+- El Inframundo y las criaturas "tpl" dejan de usar su fórmula propia (antes 700 muertes por nivel fijas) y siguen la misma regla (con su dureza e.uwm: x0,7 espíritus a x1,4 titanes).
+- Jefes, eventos y misiones siguen con su premio propio (no usan esta regla).
+- Antitrampas (economy.js): xpLvSc ahora escala con el nivel usando la misma tabla.
+- Wiki: tabla de muertes por nivel, XP por enemigo y novedad v451.
+- Mundo abierto Nv 1-5 sin cambio sustancial (30 % más fácil que antes), pero ahora Nv 10 = 130, Nv 30 = 450, Nv 100 = 900 muertes por nivel.
+Cambió economy.js: hace falta Manual Deploy del servidor.
+
+v452 (revision de zonas): se auditaron las 10.561 criaturas del mundo abierto (todas siguen la regla; pesos 1 en 95 %, 1,5-4 en especies raras/elite), cuevas/torres/templo (nivel por dgScale), Inframundo (e.nv por distancia + dureza). Excepciones con premio propio: jefes, evento Segador de las Cuatro Puertas (csb), misiones. Nuevas: SRXP.xp / SRXP.kills / SRXP.audit en la consola y aviso si una criatura de zona no trae e.nv.

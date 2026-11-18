@@ -392,7 +392,7 @@ P.farmeo=()=>{
   +'<h2>XP y botín por tipo de enemigo</h2><p>Los valores son <b>base</b>: se multiplican por tus bonos de equipo y los servicios que actives. Los enemigos de élite y de horda dan más.</p>'
   +tbl(['Enemigo','Nivel ref.','XP base','Equipo','Poción de vida','Poción de maná','Carne'],f.map(x=>[x.ic+' '+esc(x.n),x.lv,x.xp,Math.round(x.pi*100)+'%',Math.round(x.pp*100)+'%',Math.round(x.pm*100)+'%',x.pc?Math.round(x.pc*100)+'%':'—']),[1,2,3,4,5,6])
   +'<h2>Cuántas muertes cuesta cada nivel</h2><p>Contra enemigos de tu mismo nivel y sin bonos, subir un nivel cuesta aproximadamente:</p>'
-  +tbl(['Tu nivel','Muertes por nivel'],[['1 a 5','≈ 30 a 55 (30 % menos)'],['10','≈ 130'],['30','≈ 760'],['50','≈ 1.970'],['100','≈ 9.830'],['200','≈ 31.940'],['300','≈ 63.640']],[1])
+  +tbl(['Tu nivel','Muertes por nivel'],[['1 a 5','≈ 30 a 55'],['10','≈ 130'],['30','≈ 450'],['50','≈ 650'],['100','≈ 900'],['200','≈ 1.100'],['300','≈ 1.210'],['600','≈ 1.410'],['1200','≈ 1.700']],[1])
   +'<p>Un enemigo de <b>más nivel</b> que tú da hasta un 40 % extra (4 % por cada nivel de diferencia) y uno muy por debajo de tu nivel da cada vez menos. Los enemigos de élite y de horda dan más, y con tu equipo y tus servicios la cuenta baja.</p>'
   +'<p>El <b>equipo</b> de los monstruos se vende al NPC o a otros jugadores. Los enemigos de élite pueden soltar equipo de verdad, y los jefes y la Torre del Lago, el mejor.</p>'
   +'<h2>De dónde sale el oro</h2><ul>'
@@ -827,6 +827,19 @@ P.creditos=()=>head('Créditos','Quién hizo qué')
 
 /* ---------- Novedades (de las notas de cada versión) ---------- */
 NEWS.push(...[
+{
+"v": "v451",
+"ic": "⚖️",
+"c": "#7bd88f",
+"t": "Una sola regla de EXP para todo el juego",
+"s": "Igual para todos, en el mundo abierto, cuevas, Inframundo y zonas futuras",
+"li": [
+"<b>⚖️ Todo usa la misma regla:</b> cada criatura tiene un nivel y la XP que da depende solo de ese nivel (y de si es élite o más dura de lo normal). Un mob de Nv 100 da lo mismo en el mundo abierto, en una cueva o en el Inframundo.",
+"<b>📈 Hecha para llegar a Nv 1200:</b> subir un nivel cuesta 29 muertes en Nv 1, ≈ 130 en Nv 10, ≈ 450 en Nv 30, ≈ 900 en Nv 100 y ≈ 1.700 en Nv 1200. Nunca se dispara, y cada criatura de más nivel da siempre más XP.",
+"Quitamos los bonos aparte por distancia y por nivel: ahora las zonas más lejanas dan más XP porque sus criaturas tienen más nivel. El Inframundo ya no tiene su propia fórmula (antes 700 muertes fijas por nivel)."
+],
+"id": "v451"
+},
 {
 "v": "v450",
 "ic": "🔥",

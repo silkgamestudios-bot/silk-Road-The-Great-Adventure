@@ -1,0 +1,6 @@
+v458 — Puerta de fuego vivo + roca volcánica (incluye v453-v457)
+(solo cliente: NO hace falta Manual Deploy por esta versión)
+
+- Puerta del boss (Balor): ahora es una cortina de fuego vivo (llamas animadas en 3 capas, brasas que suben, ondas de calor, rostros demoníacos entre las llamas). Al abrirse con las 8 placas, el fuego se apaga desde el centro.
+- Marco nuevo: pilares de obsidiana con cadenas, calaveras y vetas de lava; arco con pinchos, calavera con cuernos y ojos rojos, lava goteando del dintel.
+- Paredes de roca volcánica (zonas Ríos de Fuego/Tártaro y toda la cámara del boss): columnas de basalto con facetas, juntas, destellos de obsidiana, fisuras de lava con luz, ceniza al pie y cascadas de lava por el muro.

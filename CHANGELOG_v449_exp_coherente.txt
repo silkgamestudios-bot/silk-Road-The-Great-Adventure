@@ -1,0 +1,6 @@
+v449 - EXP coherente (incluye v441-v448)
+- La XP BASE por muerte nunca baja de 31,2 (lo que da un mob Nv 5). Con el bono por nivel del mob y por zona, la XP total sube SIEMPRE con el nivel del mob (verificado 1-300 sin bajadas).
+- Entre Nv 5 y ~95 hacen falta menos muertes por nivel que en v444 (Nv10 ~130, Nv30 ~760, Nv50 ~1.970). Del ~95 en adelante manda la fórmula de siempre.
+- Nv 1-5 sin cambio (30% más fácil).
+- economy.js: antitrampas ajustado a la nueva curva (hace falta Manual Deploy).
+- Wiki: tabla, XP por enemigo, novedad v449.

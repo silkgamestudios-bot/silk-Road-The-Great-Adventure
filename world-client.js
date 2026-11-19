@@ -23,7 +23,7 @@ N.onmsg=m=>{
  if(m.t=='wsx'){try{xRecv(m)}catch(e){}return}
  if(m.t=='wss'){try{xState(m)}catch(e){}return}
  if(m.t=='wsp'){try{xPos(m)}catch(e){}return}
- if(m.t=='wi'){let sg=0,n=m.n|0;if(m.sg!=null&&n>0&&E.length>=n){for(let i=0;i<n;i++){const e=E[i];sg=(!e||SKIP(e)||e.dg)?(Math.imul(sg,31)+3)|0:(Math.imul(sg,31)+Math.round(e.hx)*7+Math.round(e.hy)*13+(e.ty|0)*17+1)|0}}
+ if(m.t=='wi'){let sg=0,n=m.n|0;if(m.sg!=null&&n>0&&E.length>=n){for(let i=0;i<n;i++){const e=E[i];sg=(!e||SKIP(e)||e.dg)?(Math.imul(sg,31)+3)|0:(Math.imul(sg,31)+Math.round(e.shx!==undefined?e.shx:e.hx)*7+Math.round(e.shy!==undefined?e.shy:e.hy)*13+(e.ty|0)*17+1)|0}}
   if(m.sg!=null&&(E.length<n||sg!==(m.sg|0))){on=0;WBAD=1;console.log('mundo: versión distinta',n,E.length,sg,m.sg);try{if(typeof UPDV!=='undefined')UPDV.wbad()}catch(e){}/* v268: aviso quitado; v438: AVISA y se actualiza solo (un celular con versión vieja no veía los mismos enemigos que sus compañeros) */}
   else{on=1;WBAD=0;freeze(n);toast('🌐 Mundo online conectado',2200)}}
  else if(m.t=='wx'){on=0;dynClr()}

@@ -1088,7 +1088,7 @@ function RF(e){const k=e.pk;if(NOWM<(k.rf||0)||e.tmp||(e.ty|0)>5||(e.ty|0)<2)ret
 var SWARM=1,HSAFE=0,BNR=[],BNT=0,ENG=[];try{if(localStorage.getItem('sr_sw')==='0')SWARM=0}catch(e){}
 const SWO=[[32,0],[32,32],[0,32],[-32,32],[-32,0],[-32,-32],[0,-32],[32,-32]],swo=k=>SWARM?SWO[k]:[Math.cos(k*Math.PI/4)*30,Math.sin(k*Math.PI/4)*30];
 const swOk=e=>!(e.dead>0||e.dyn||e.boss||e.guard||e.drg||e.ubs||e.pred||e.zb||e.zz||e.inv);   /* los enemigos de evento (hordas, cazadores: e.dyn) siguen como antes: no bloquean ni forman cerco */
-function bodyNear(){const n=performance.now();if(n-BNT<90)return BNR;BNT=n;BNR.length=0;const px=P.x,py=P.y;for(const e of EL()){const dx=e.x-px;if(dx>130||dx<-130)continue;const dy=e.y-py;if(dy>130||dy<-130)continue;if(swOk(e)&&(e.dg||!(inTown(e)||nmAt(e)||coSafe(e))))BNR.push(e)}return BNR}
+function bodyNear(){const n=performance.now();if(n-BNT<90)return BNR;BNT=n;BNR.length=0;const px=P.x,py=P.y;for(const e of EL()){if(e.ptx)continue;const dx=e.x-px;if(dx>130||dx<-130)continue;const dy=e.y-py;if(dy>130||dy<-130)continue;if(swOk(e)&&(e.dg||!(inTown(e)||nmAt(e)||coSafe(e))))BNR.push(e)}return BNR}
 function bodyBlk(nx,ny){if(!SWARM||HSAFE)return 0;const L=bodyNear(),R=DG.f?18:22,R2=R*R,RI=(R-2)*(R-2);for(let i=0;i<L.length;i++){const e=L[i];if(e.dead>0)continue;const ax=nx-e.x,ay=ny-e.y,dn=ax*ax+ay*ay;if(dn<R2){const bx=P.x-e.x,by=P.y-e.y,dc=bx*bx+by*by;if(dn<dc&&dc>=RI)return 1}}return 0}   /* un mob que ya está encima del héroe (a < R-2 px) no lo encierra: puede salir caminando */
 function swAssist(e){if(!SWARM||HSAFE||!swOk(e))return;const n=Date.now();if(n-(e.asT||0)<700)return;e.asT=n;for(const o of EL()){if(o===e||o.stun>0||!swOk(o))continue;if(Math.abs(o.x-e.x)>150||Math.abs(o.y-e.y)>150)continue;if(!(o.ch>0)){o.ch=7;o.cd=0;o.ex=0;o.fl=0}}}
 function swSep(e,dt){let px=0,py=0,n=0;for(let i=0;i<ENG.length;i++){const o=ENG[i];if(o===e||o.dead>0)continue;const dx=e.x-o.x,dy=e.y-o.y,d2=dx*dx+dy*dy;if(d2<.01){px+=Math.random()-.5;py+=Math.random()-.5;n++}else if(d2<400){const d=Math.sqrt(d2),f=(20-d)/20;px+=dx/d*f;py+=dy/d*f;n++}}if(n){const m=Math.hypot(px,py)||1,s=e.sp*.7*dt/m;mv(e,px*s,py*s,9)}}
@@ -1385,7 +1385,7 @@ function chk(){if(P.gold>=5000000&&!won){won=1;toast('🏆 ¡Eres el Gran Mercad
 function upd(dt){
  if(modal||ROT)return;
  if(P.hp<=0&&Date.now()-(window.__dg||0)>1500){window.__dg=Date.now();P.hp=0;die();return}
- wxTick(dt);fireTick(dt);dgTick(dt);uwTick(dt);tkTick(dt);predTick(dt);zbTick();drgTick(dt);zzTick(dt);ppTick(dt);NOWM=performance.now();NT-=dt;if(NT<=0){NT=.25;NR=E.concat(WL,PVG).filter(e=>Math.abs(e.x-P.x)<800&&Math.abs(e.y-P.y)<800)}
+ wxTick(dt);fireTick(dt);dgTick(dt);uwTick(dt);tkTick(dt);predTick(dt);zbTick();drgTick(dt);zzTick(dt);ppTick(dt);NOWM=performance.now();NT-=dt;if(NT<=0){NT=.25;NR=E.concat(WL,PVG).filter(e=>!e.ptx&&Math.abs(e.x-P.x)<800&&Math.abs(e.y-P.y)<800)}
  let ix=(K.d||K.arrowright?1:0)-(K.a||K.arrowleft?1:0)+jv.x,iy=(K.s||K.arrowdown?1:0)-(K.w||K.arrowup?1:0)+jv.y;
  {const aw=awStep(dt,ix,iy);if(aw){ix=aw[0];iy=aw[1]}}
  const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}
@@ -3672,14 +3672,8 @@ let TMP=null,PTP=null;const inTmpH=o=>!!TMP&&((o.x/T-TMP.x)/23)**2+((o.y/T-TMP.y
  seed=sv0}
 
 /* ===== v463: TEMPLO DE OSIRIS · entrenamiento de mascotas (esquina opuesta al Templo de las Ocho Sendas) ===== */
-{const sv0=seed;seed=8888;const gx=TMP?W-TMP.x:W-120,gy=TMP?H-TMP.y:60;
- for(let rad=0;rad<=96&&!PTP;rad+=3)for(let a=0;a<(rad?24:1)&&!PTP;a++){
-  const tx=Math.round(gx+Math.cos(a*.2618)*rad),ty=Math.round(gy+Math.sin(a*.2618)*rad);
-  if(tx<30||tx>W-30||ty<26||ty>H-30)continue;
-  if(ncity(tx,ty,60)||(TMP&&Math.hypot(TMP.x-tx,TMP.y-ty)<80)||CAVES.some(c=>Math.hypot(c.x-tx,c.y-ty)<45)||DZONES.some(c=>Math.hypot(c.x-tx,c.y-ty)<45)||LAIRS.some(l=>Math.hypot(l.x-tx,l.y-ty)<40)||ALTARS.some(l=>Math.hypot(l.x-tx,l.y-ty)<40)||BOSS.some(b=>Math.hypot(b.ax-tx,b.ay-ty)<45)||LM.some(l=>Math.hypot(l.tx-tx,l.ty-ty)<30)||CAMPS.some(c=>Math.hypot(c.x-tx,c.y-ty)<35))continue;
-  let bad=0;for(let dy=-19;dy<=22&&!bad;dy++)for(let dx=-24;dx<=24;dx++){const v=M[ty+dy]&&M[ty+dy][tx+dx];if(v==null||v==3||v==4||v==5||v==6||v==7){bad=1;break}}if(bad)continue;
-  for(let j=E.length-1;j>=0;j--){const e=E[j];if(e.boss||e.guard)continue;if(Math.hypot((e.hx||0)/T-tx,(e.hy||0)/T-ty)<30)E.splice(j,1)}
-  for(let dy=-18;dy<=18;dy++)for(let dx=-23;dx<=23;dx++)if((dx/23)**2+(dy/18)**2<=1)M[ty+dy][tx+dx]=8;
+{const sv0=seed;seed=8888;let PTB0=null;/* v466: NO se borran enemigos (el servidor compara la lista de enemigos con la del cliente: si no coincide, 'versión distinta' y recarga solo). Se elige un sitio sin enemigos. */
+ const PTMK=(tx,ty)=>{  for(let dy=-18;dy<=18;dy++)for(let dx=-23;dx<=23;dx++)if((dx/23)**2+(dy/18)**2<=1)M[ty+dy][tx+dx]=8;
   const fl=(x0,x1,y0,y1,v)=>{for(let dy=y0;dy<=y1;dy++)for(let dx=x0;dx<=x1;dx++)M[ty+dy][tx+dx]=v};
   fl(-10,10,-6,-6,9);fl(-10,-10,-5,2,9);fl(10,10,-5,2,9);fl(-10,-2,2,2,9);fl(2,10,2,2,9);
   const ni=[];for(const dx of [-8,-6,-4,4,6,8]){ni.push({x:(tx+dx)*T+16,y:(ty-5)*T+16});M[ty-5][tx+dx]=9}
@@ -3687,7 +3681,18 @@ let TMP=null,PTP=null;const inTmpH=o=>!!TMP&&((o.x/T-TMP.x)/23)**2+((o.y/T-TMP.y
   for(const dy of [7,10,13,16])for(const dx of [-4,4])M[ty+dy][tx+dx]=9;
   for(const dx of [-4,4])M[ty+4][tx+dx]=9;
   fl(8,12,9,11,9);fl(-12,-8,9,11,9);
-  PTP={x:tx,y:ty,ni,alt:{x:tx*T+16,y:(ty-2)*T+16},mx:tx*T+16,my:(ty+18)*T+16}}
+  PTP={x:tx,y:ty,ni,alt:{x:tx*T+16,y:(ty-2)*T+16},mx:tx*T+16,my:(ty+18)*T+16}};
+const gx=TMP?W-TMP.x:W-120,gy=TMP?H-TMP.y:60;
+ for(let rad=0;rad<=96&&!PTP;rad+=3)for(let a=0;a<(rad?24:1)&&!PTP;a++){
+  const tx=Math.round(gx+Math.cos(a*.2618)*rad),ty=Math.round(gy+Math.sin(a*.2618)*rad);
+  if(tx<30||tx>W-30||ty<26||ty>H-30)continue;
+  if(ncity(tx,ty,60)||(TMP&&Math.hypot(TMP.x-tx,TMP.y-ty)<80)||CAVES.some(c=>Math.hypot(c.x-tx,c.y-ty)<45)||DZONES.some(c=>Math.hypot(c.x-tx,c.y-ty)<45)||LAIRS.some(l=>Math.hypot(l.x-tx,l.y-ty)<40)||ALTARS.some(l=>Math.hypot(l.x-tx,l.y-ty)<40)||BOSS.some(b=>Math.hypot(b.ax-tx,b.ay-ty)<45)||LM.some(l=>Math.hypot(l.tx-tx,l.ty-ty)<30)||CAMPS.some(c=>Math.hypot(c.x-tx,c.y-ty)<35))continue;
+  let bad=0;for(let dy=-19;dy<=22&&!bad;dy++)for(let dx=-24;dx<=24;dx++){const v=M[ty+dy]&&M[ty+dy][tx+dx];if(v==null||v==3||v==4||v==5||v==6||v==7){bad=1;break}}if(bad)continue;
+  let cnt=0;for(const e of E){if(e.boss||e.guard)continue;const ex=(e.hx||0)/T-tx,ey=(e.hy||0)/T-ty;if((ex/23)**2+(ey/18)**2<=1)cnt++}if(cnt>0){if(!PTB0||cnt<PTB0.n)PTB0={n:cnt,tx,ty};continue}
+  PTMK(tx,ty)}
+ if(!PTP&&PTB0)PTMK(PTB0.tx,PTB0.ty)
+ /* v467: los enemigos que quedaban dentro de la plaza se reubican en un anillo JUSTO FUERA del templo (siguen existiendo para el servidor; su casa original se guarda en shx/shy para que la firma del mundo coincida) */
+ if(PTP){let k=0;for(const e of E){if(e.boss||e.guard)continue;const ex=(e.hx||0)/T-PTP.x,ey=(e.hy||0)/T-PTP.y;if((ex/23)**2+(ey/18)**2>1)continue;e.shx=e.hx;e.shy=e.hy;const a0=Math.atan2(ey/18,ex/23);let ok=0;for(let t=0;t<40&&!ok;t++){const a=a0+(t?(Math.random()-.5)*1.6:0),f=1.1+(t>>3)*.08+Math.random()*.06,tx=Math.round(PTP.x+Math.cos(a)*23*f),ty=Math.round(PTP.y+Math.sin(a)*18*f);if(tx<2||ty<2||tx>=W-2||ty>=H-2||solid(M[ty][tx])||TREE[ty*W+tx]||((tx-PTP.x)/23)**2+((ty-PTP.y)/18)**2<=1.02)continue;e.hx=e.x=tx*T+16;e.hy=e.y=ty*T+16;ok=1}if(!ok){e.ptx=1}k++}}
  seed=sv0}
 
 /* v463: arte procedural del Templo de Osiris (pixel art: 1 px de arte = 2 px de pantalla, igual que el de las Ocho Sendas) */
@@ -3844,7 +3849,7 @@ document.addEventListener('click',e=>{const el=$('pnm');if(!el||el.hidden||!el.c
  if(k=='x'){PNRES=null;PNS=-1;el.hidden=true;unm();return}if(k=='r'){PNRES=null;pnR();return}if(k=='out'){pnEnd(1);return}
  if(k[0]=='p'){PNS=+k.slice(1);pnR();return}if(k[0]=='s'){const a=k.slice(1).split('_');pnStart(PNS,+a[0],+a[1])}});
 setInterval(pnTick,1000);
-setTimeout(()=>{try{if(!PTP)return;for(let j=E.length-1;j>=0;j--){const e=E[j];if(e.boss||e.guard)continue;if(inTmpP({x:e.hx||e.x,y:e.hy||e.y})||inTmpP(e))E.splice(j,1)}for(let j=WL.length-1;j>=0;j--){const w=WL[j];if(inTmpP({x:w.hx||w.x,y:w.hy||w.y})||inTmpP(w))WL.splice(j,1)}}catch(x){}},0);
+setTimeout(()=>{try{if(!PTP)return;for(let j=WL.length-1;j>=0;j--){const w=WL[j];if(inTmpP({x:w.hx||w.x,y:w.hy||w.y})||inTmpP(w))WL.splice(j,1)}}catch(x){}},0);
 
 const HZR=(ty,s)=>({g:Math.round(12000*(ty+1)*(1+.25*(s-1))*.009),x:2500*(ty+1)*s}),hzXd=x=>Math.round(x*.016),hzStage=c=>Math.min(6,Math.floor(c.k/1000)),eimgKey=ty=>ET[ty][1]?ET[ty][0]+'-down-1':ET[ty][0]+'-1',eimg=(ty,z)=>'<img src="'+icon(eimgKey(ty))+'" width="'+z+'" height="'+z+'" style="image-rendering:pixelated">';
 function hzOdds(ty,s){const f=1+.08*ty,q=p=>Math.round(Math.min(.95,p*f)*10000)/100;return{rare:q(.005*s),epic:q(.001*s),leg:q(.00015*s),tk:q(.002*s)}}
@@ -5739,7 +5744,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v465';let UPD=null,RSN=0;
+const SR_V='sr-v467';let UPD=null,RSN=0;
 /* v438 *//* v438: ACTUALIZACIÓN SEGURA. Un celular con versión vieja jugaba para siempre en modo local (sin ver a sus compañeros ni los mismos enemigos) porque el aviso se quitó en v360 y la actualización quedaba en «nunca».
    Ahora: aviso visible y se actualiza solo cuando no hay pelea (máx. 2 intentos cada 10 min para no caer en bucles). */
 const UPDV={w:0,tries(){try{return JSON.parse(localStorage.getItem('sr_updh')||'[]').filter(t=>Date.now()-t<6e5).length}catch(e){return 0}},

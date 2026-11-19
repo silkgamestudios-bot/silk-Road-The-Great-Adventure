@@ -1,0 +1,4 @@
+v467 - Enemigos reubicados alrededor del Templo de Osiris
+- Los 13 enemigos que caian dentro de la plaza del templo se mueven a un anillo justo fuera de ella (casillas caminables). Siguen existiendo para el servidor: nada se borra ni se oculta.
+- Su casa original se guarda (shx/shy) y world-client.js la usa para la firma del mundo, asi que no vuelve el aviso «version distinta» ni el reinicio solo.
+- Incluye v466 (arreglo del reinicio ~30 s), v465, v464 y v463 (Templo de Osiris; economy.js requiere Manual Deploy).

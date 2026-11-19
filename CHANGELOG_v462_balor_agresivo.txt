@@ -1,0 +1,5 @@
+v462 - Balor mas agresivo y con mas magia
+- 6 ataques (antes 4), ciclo mas corto (3.8 s): onda de fuego, espiral de bolas de fuego (NUEVO), anillo con huecos, cruz infernal de rayos en 8 direcciones con segunda oleada girada (NUEVO), meteoros, rayos giratorios.
+- Modo furia bajo 50% de vida: aura roja pulsante, mas bolas en la espiral (34) y mas meteoros (16).
+- Orbe de carga sobre Balor antes de cada ataque y temblor de pantalla en los ataques nuevos.
+- Solo cliente. No requiere Manual Deploy.

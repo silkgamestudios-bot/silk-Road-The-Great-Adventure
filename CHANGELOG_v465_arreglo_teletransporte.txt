@@ -1,0 +1,4 @@
+v465 - ARREGLO URGENTE: te devolvia a la entrada de la Cueva de las Aranas
+- Error mio de la v460: la guardia que saca de una cueva sin piso armado trataba toda la zona de la cueva (es mapa normal del mundo) como "dentro de la cueva" y devolvia a la entrada a quien caminara por ahi (cada ~1-30 s).
+- Ahora solo actua si ademas estas atrapado en una casilla solida. Caminar por esa zona (y las de las demas cuevas) es normal otra vez.
+- Incluye v464 (guardia anti pantalla negra, menu GM «Mi personaje») y v463 (Templo de Osiris, mascotas Nv 600; economy.js requiere Manual Deploy).

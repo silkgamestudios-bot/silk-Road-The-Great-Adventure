@@ -153,7 +153,7 @@ function cleanItem(x){if(!x||typeof x!=='object')return null;if(x.pg!=null)retur
  for(const k of['dm','hp','sp','gd','mp']){if(x[k]==null||+x[k]===0)continue;const mx=itemMax(o,k);if(!mx||mx<=1&&k!=='hp')return null;const v=int(x[k],0,1e7,0);if(v>mx*(x.u?1:1))return null;if(v)o[k]=v}
  return o}
 function cleanPetS(x){if(!x||typeof x!=='object')return null;const t=String(x.t||'');if(!/^[a-z]{2,12}$/.test(t))return null;
- const o={t,nm:String(x.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t,lv:int(x.lv,1,30,1),xp:int(x.xp,0,1e8,0),q:int(x.q,0,3,0),fd:int(x.fd,0,100,80),ill:0,hp:num(x.hp,1,4e8,1),en:num(x.en,0,2e5,0)};
+ const o={t,nm:String(x.nm||'').replace(/[^\p{L}\p{N} '-]/gu,'').slice(0,18)||t,lv:int(x.lv,1,600,1),xp:int(x.xp,0,1e8,0),q:int(x.q,0,3,0),fd:int(x.fd,0,100,80),ill:0,hp:num(x.hp,1,4e8,1),en:num(x.en,0,2e5,0)};
  if(x.id!=null){const id=String(x.id);if(!/^[\w-]{6,24}$/.test(id))return null;o.id=id}
  if(o.id){const r=ECO.reg[o.id];if(r&&r.k==='p'){if(Array.isArray(r.psk)&&r.psk.some(n=>n>0))o.sk=r.psk.slice(0,4).map(n=>int(n,0,5,0));if(Array.isArray(r.gr)&&r.gr.some(Boolean))o.gr=r.gr.slice(0,4).map(g=>g?cleanPG(g):null);if(r.rent>0)o.rt=r.rent}}/* v428: lo que dice el cliente de habilidades, equipo y alquiler no cuenta */
  return o}

@@ -236,6 +236,7 @@ function handle(ws,m){const u=ws.uid,now=Date.now();let p=PL.get(u);
  if(m.t==='wh'){if(!p.dg)hits(p,m.h)}
  if(m.t==='wup'){if(p.uw){p.pl=num(m.p,-1,7,-1)|0;p.plT=now}return}
  if(m.t==='wub')return ubHit(p,m);
+ if(m.t==='wem')return emHit(p,m);
  if(m.t==='wmh'){try{X.mjHit&&X.mjHit(u,m)}catch(e){}return}   /* v434: daño de un participante al jefe de la arena (lo valida y suma el módulo de mini-jefes) */
  if(m.t==='wpv')return pvSet(p,m);
  if(m.t==='wph')return p.ar?arHit(p,m):pvHit(p,m);
@@ -374,8 +375,26 @@ function ubStep(now,dt){const ups=[];for(const p of PL.values())if(p.uw&&p.hp>0)
  if(UBS.dead&&now>UBS.cd){UBS.dead=0;ubReset()}
  if(!UBS.open&&!UBS.dead){if(popc(mask)>=UBN){UBS.hold+=dt;if(UBS.hold>=3){UBS.open=1;UBS.hold=0;UBS.hp=UBM;UBS.dmg=new Map();UBS.tOpen=now;log('mundo: el Portón de Fuego se abrió')}}else UBS.hold=Math.max(0,UBS.hold-dt*2)}
  if(UBS.open&&!UBS.dead&&now-UBS.tOpen>40*60*1000)ubReset()}
-const UBUD=now=>[UBS.mask,Math.round(UBS.hold*10),UBS.open?1:0,Math.round(UBS.hp),UBM,UBS.dead?1:0,UBS.dead?Math.max(0,Math.ceil((UBS.cd-now)/1000)):0];
-setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);try{ubStep(now,CFG.tick/1000)}catch(e){log('ub error '+e.message)}
+/* ===== v474: Empusa, la Señora del Espejismo — mini-jefe del Jardín de la Ilusión (vida compartida, como Balor) =====
+   Despierta con el primer golpe de alguien que esté en el jardín (Submundo, rectángulo 10..138 x 10..100 casillas). Al caer, el jardín arde 15 min y luego se restaura. EM_HP multiplica su vida. */
+const EMM=Math.round(6e7*(+process.env.EM_HP>0?+process.env.EM_HP:1)),EMCD=12*3600*1000,EMS={open:0,hp:EMM,dead:0,cd:0,tOpen:0,empty:0,dmg:new Map()};
+{const sv=DB.emp;if(sv&&+sv.cd>Date.now()){EMS.dead=1;EMS.open=1;EMS.cd=+sv.cd;EMS.hp=0}}   /* el reset de 12 h sobrevive a un reinicio del servidor */
+const inGarden=p=>!!(p.uw&&p.x>=320&&p.x<4416&&p.y>=320&&p.y<3200);
+function emHit(p,m){const now=Date.now();if(!inGarden(p)||EMS.dead||p.hp<=0)return;const d=num(m.d,0,6e5,0);if(!(d>0))return;if(now-(p.emT||0)<50)return;p.emT=now;
+ if(now-(p.emW||0)>1000){p.emW=now;p.emS=0}p.emS=(p.emS||0)+d;if(p.emS>3e6)return;
+ if(!EMS.open){EMS.open=1;EMS.tOpen=now;EMS.hp=EMM;EMS.dmg=new Map();log('mundo: Empusa despertó')}
+ EMS.hp-=d;EMS.dmg.set(p.uid,(EMS.dmg.get(p.uid)||0)+d);if(EMS.hp<=0){EMS.hp=0;emKill(now)}}
+function emKill(now){EMS.dead=1;EMS.open=1;EMS.cd=now+EMCD;DB.emp={cd:EMS.cd};try{X.dirty&&X.dirty()}catch(e){}
+ for(const [u,d] of EMS.dmg){if(d<EMM*.003)continue;let rw=null;try{rw=X.emRw?X.emRw(u):null}catch(e){log('em botin '+e.message)}const p=PL.get(u);if(p&&p.uw)send(p.ws,{t:'wemd',s:Math.round(d/EMM*1000)/10,rw:rw&&rw.t||'',ex:rw&&rw.x?1:0})}
+ log('mundo: Empusa derrotada ('+EMS.dmg.size+' participantes)');EMS.dmg=new Map()}
+function emReset(){EMS.open=0;EMS.hp=EMM;EMS.dmg=new Map()}
+function emStep(now){let n=0;for(const p of PL.values())if(inGarden(p)&&p.hp>0)n++;
+ if(n){EMS.empty=0}else if(!EMS.empty)EMS.empty=now;
+ if(EMS.open&&!EMS.dead&&!n&&now-EMS.empty>120000)emReset();
+ if(EMS.dead&&now>EMS.cd){EMS.dead=0;emReset()}
+ if(EMS.open&&!EMS.dead&&now-EMS.tOpen>30*60*1000)emReset()}
+const UBUD=now=>[UBS.mask,Math.round(UBS.hold*10),UBS.open?1:0,Math.round(UBS.hp),UBM,UBS.dead?1:0,UBS.dead?Math.max(0,Math.ceil((UBS.cd-now)/1000)):0,Math.round(EMS.hp),EMM,EMS.open?1:0,EMS.dead?1:0,EMS.dead?Math.max(0,Math.ceil((EMS.cd-now)/1000)):0];
+setInterval(()=>{const now=Date.now();step(CFG.tick/1000,now);try{ubStep(now,CFG.tick/1000)}catch(e){log('ub error '+e.message)}try{emStep(now)}catch(e){log('em error '+e.message)}
  for(const p of PL.values()){const pl=[];for(const q of PL.values()){if(q===p||(q.asp&&!q.ar))continue;const aa=(p.ar&&q.ar)||(p.asp&&q.ar);if(!aa&&Math.hypot(q.x-p.x,q.y-p.y)>CFG.pview)continue;if(!aa&&(!!q.dg!==!!p.dg||(q.dg&&!(p.uw&&q.uw)&&!(pid(q.uid)&&pid(q.uid)===pid(p.uid)))))continue;if(!aa&&q.dg&&p.dg&&(q.mj||'')!==(p.mj||''))continue;/* v435: en la Mansión Embrujada cada piso es otra escena: no se ve a quien está en otro (comparten coordenadas del mundo) */pl.push([q.uid,q.nm,q.c,q.lv,Math.round(q.x),Math.round(q.y),Math.round(q.hp),Math.round(q.mhp),pid(q.uid)?1:0,q.gt||'',q.bs||'',q.pvp?1:0,q.wn?1:0,q.bd||'',CO.champ&&CO.champ.uid===q.uid?1:0,q.mo||''])}
   const mb=[];let dd=null,dx=null;if(!p.dg){for(const m of near(p.x,p.y,CFG.sview+CFG.leash))if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview)mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?(m.gone?2:1):0]);
    for(const m of DYL)if(Math.hypot(m.x-p.x,m.y-p.y)<=CFG.sview){mb.push([m.id,Math.round(m.x),Math.round(m.y),Math.round(m.hp),m.dead?1:0]);if(!p.dk.has(m.id)){p.dk.add(m.id);(dd=dd||[]).push([m.id,m.v,m.nm||'',m.ty,m.mx,m.sc||0,Math.round(m.hx),Math.round(m.hy),Math.round(m.hp),Math.round(m.x),Math.round(m.y),m.k==='wave'?1:m.k==='hunt'?2:m.k==='mj'?4:3,m.nv|0])}}

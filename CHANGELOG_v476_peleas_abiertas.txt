@@ -1,0 +1,5 @@
+v476 - Mini jefes (Banshee, Necromancer, Velociraptor): PELEAS ABIERTAS (incluye v474-v475: Empusa + botin Nv150)
+- El jefe recorre toda la sala y persigue jugadores (turnos ~5 s, 3,6 s en fase 2); ataques avisados en el suelo: zarpazo, lluvia de circulos, onda con cobertura tras pilares, orbes y aura.
+- Camara centrada en tu heroe (menos "efecto pared"). Reloj, vida compartida, ofrenda, cola y botin: sin cambios (servidor igual).
+- Se pierden las mecanicas guionadas anteriores (ecos, espejos, carriles).
+- SERVIDOR (Empusa): world.js, server.js, economy.js, market.js, empusa.js -> Manual Deploy. minijefes.js/pay.js siguen pendientes de deploy.

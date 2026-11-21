@@ -254,7 +254,7 @@ module.exports=function(S,E,X){
   const b=g.b,c=B[b],A=AR[b];if(g.started)return null;
   if(!g.ready[g.lead]){dropGroup(g,'El líder no confirmó a tiempo: la Party pierde el turno y no se gastó ninguna ofrenda.');return null}
   let ok=[];
-  for(const u of g.mem){if(!g.ready[u])continue;const e=elig(u,b,u===g.lead);if(!e)ok.push(u);else push(u,{t:'mbq',b,st:'denied',id:g.id,why:e})}
+  for(const u of g.mem){if(!g.ready[u])continue;const e=elig(u,b,true);if(!e)ok.push(u);else push(u,{t:'mbq',b,st:'denied',id:g.id,why:e})}
   if(!ok.includes(g.lead)){dropGroup(g,'El líder ya no cumple los requisitos: no se gastó la ofrenda.');return null}
   /* v434: el SERVIDOR mete a los peleadores en el salón. Quien no se pueda colocar no participa; si no se puede colocar al líder no empieza nada y no se gasta la ofrenda. */
   if(ARN(b)&&useWorld()){
@@ -265,7 +265,7 @@ module.exports=function(S,E,X){
   const t0=now(),n=ok.length,mhp=bossHp(b,n);
   const en={id:nid('e'),b,gid:g.id,lead:g.lead,mem:ok.slice(),tok:{},t0,done:0,res:null,seed:crypto.randomBytes(4).readUInt32BE(0),n,mhp,hp:mhp,p2:0,fell:{},dmg:{},rt:{},out:{},bt:0,dh:0,mir:[],mr:{},burn:[],br:{}};
   /* UNA sola ofrenda por encuentro: la del líder, y se consume justo ahora que el servidor confirma el combate */
-  E.deliver(g.lead,{prov:{pk:c.of,q:-1},note:'🗝️ '+c.ofn+' entregada: combate contra '+c.n});
+  ok.forEach(u=>E.deliver(u,{prov:{pk:c.of,q:-1},note:'🗝️ '+c.ofn+' entregada: combate contra '+c.n}));   /* v471: CADA combatiente paga su ofrenda */
   ok.forEach(u=>{en.tok[u]=tokn();IN[u]=en.id});
   g.mem.forEach(u=>{if(!ok.includes(u)&&IN[u]===g.id)delete IN[u]});
   delete GR[g.id];A.cur=null;A.st='ACTIVE';A.enc=en;EN[en.id]=en;saveEnc(en);
@@ -416,24 +416,40 @@ module.exports=function(S,E,X){
    disc:m.d[b]?1:0,cd:Math.max(0,(m.cd[b]||0)-now()),lk:m.lk&&m.lk[b]||0,of:a?E.avail(a,'prov',c.of):0,tk:a?E.avail(a,'prov',c.tk):0,
    st:A.st,qn:A.q.length,pos:g&&g.b===b?(A.cur===g?0:posOf(b,g)):0,turn:g&&A.cur===g?1:0,dl:g&&A.cur===g?g.dl:0,
    party:g&&g.b===b?g.mem.map(nmOf):[],lead:g&&g.b===b?nmOf(g.lead):'',
-   open:isOpen(b)?1:0,
+   open:isOpen(b)?1:0,jn:(!id&&isOpen(b)&&!canJoinOpen(u,b))?1:0,jnn:A.enc&&!A.enc.done?A.enc.mem.length:0,
    fight:en&&en.b===b&&!en.done?en.id:null,tok:en&&en.b===b&&!en.done?en.tok[u]:null,
    fx:en&&en.b===b&&!en.done?{seed:en.seed,t0:en.t0,ts:now(),hp:Math.round(en.hp),mhp:en.mhp,p2:en.p2||0,fell:en.fell[u]?1:0,mem:en.mem.map(nmOf),lv:B[b].lv,mir:(en.mir||[]).map(x=>[x.k,x.at]),burn:(en.burn||[]).map(x=>[x.k,x.at])}:null,
    err:a?elig(u,b,true):'Sin cuenta',q:qView(u,b),geo:a?geo(a,b):null}};
  ops['mb.me']=(u,m)=>({ok:1,fights:IDS.some(isOpen)?1:0,now:now(),bosses:IDS.map(b=>myState(u,b))});
  /* ───────── cola, turnos y combate ───────── */
+ /* v470 · COMBATE ABIERTO: si ya hay un combate en curso contra este jefe, cualquiera que cumpla los requisitos (nivel, santuario, recarga, estar en el territorio) se UNE al mismo combate
+    sin cola ni ofrenda: todos atacan juntos al mismo jefe. La vida del jefe crece con cada integrante (igual que al empezar) y el que llega recibe el estado actual (vida, fase, espejos, fuego). */
+ const MAXJ=Math.round(envN('MJ_MAXJ',30,2,100));
+ const canJoinOpen=(u,b)=>{const A=AR[b],en=A&&A.enc;if(!en||en.done||A.st!=='ACTIVE')return'No hay combate en curso.';
+  if(en.mem.length>=MAXJ)return'El combate está lleno ('+MAXJ+' combatientes).';
+  if(en.hp<=en.mhp*.06)return'El jefe está a punto de caer.';
+  if(IN[u])return'Ya estás en una cola o en un combate.';
+  return elig(u,b,true)};
+ function joinOpen(u,b){
+  const en=AR[b].enc,n0=en.mem.length,add=bossHp(b,n0+1)-bossHp(b,n0);
+  E.deliver(u,{prov:{pk:B[b].of,q:-1},note:'🗝️ '+B[b].ofn+' entregada: te uniste al combate contra '+B[b].n});
+  en.mem.push(u);en.n=en.mem.length;en.tok[u]=tokn();IN[u]=en.id;en.mhp+=add;en.hp+=add;saveEnc(en);
+  const c=B[b];push(u,{t:'mbq',b,st:'start',id:en.id,tok:en.tok[u],lv:c.lv,mem:en.mem.map(nmOf),seed:en.seed,t0:en.t0,ts:now(),hp:Math.round(en.hp),mhp:en.mhp,p2:en.p2||0,sp:n0,mir:(en.mir||[]).map(x=>[x.k,x.at]),burn:(en.burn||[]).map(x=>[x.k,x.at]),late:1});
+  pushAll(en.mem.filter(x=>x!==u),{t:'mbq',b,st:'join',nm:nmOf(u),n:en.mem.length});
+  bcast(en,1);return{ok:1,joined:1,id:en.id}}
  ops['mb.join']=(u,m)=>{
   const b=String(m.b||'');if(!B[b])return err('Jefe no válido');
   if(!isOpen(b))return err('El combate contra '+B[b].n+' se abre en una próxima actualización.');
+  if(AR[b].st==='ACTIVE'&&AR[b].enc&&!AR[b].enc.done&&!(IN[u]&&GR[IN[u]]&&GR[IN[u]].b===b)){const w=canJoinOpen(u,b);if(w)return err(w);return joinOpen(u,b)}
   if(IN[u]){const g=GR[IN[u]];if(g&&g.b===b)return{ok:1,id:g.id,pos:posOf(b,g),again:1};return err('Ya estás en una cola o en un combate: termina o sal primero.')}
   const e=elig(u,b,true);if(e)return err(e);
   if(VA(b)&&process.env.MJ_ALTAR!=='0'&&sceneOf(u,b)!==TERR[b].va)return err('La ofrenda se hace en '+(B[b].alt||'el altar')+'.');   /* v435 · v436: el texto sale de la tabla de jefes */
   /* la Party la dice el servidor; solo su líder pide el turno */
-  const py=partyOf(u);if(py.pid&&py.leader!==u)return err('Solo el líder de la Party puede pedir turno y poner la ofrenda.');
+  const py=partyOf(u);if(py.pid&&py.leader!==u)return err('Solo el líder de la Party puede pedir turno. Cada integrante necesita su propia ofrenda.');
   const mem=[u],skip=[];
   for(const x of py.mem){if(x===u)continue;
    if(IN[x]){skip.push({n:nmOf(x),why:'ya está en otra cola o combate'});continue}
-   const w=elig(x,b,false);if(w){skip.push({n:nmOf(x),why:w});continue}
+   const w=elig(x,b,true);if(w){skip.push({n:nmOf(x),why:w});continue}
    mem.push(x)}
   if(AR[b].q.length>=QMAX)return err('La cola está llena. Inténtalo más tarde.');
   const g={id:nid('g'),b,lead:u,pid:py.pid,mem:mem.slice(0,MAXP),t:now(),ready:{},dl:0};GR[g.id]=g;setIn(g,1);AR[b].q.push(g);
@@ -451,7 +467,7 @@ module.exports=function(S,E,X){
   const g=GR[IN[u]];if(!g)return err('No tienes un turno pendiente.');
   const A=AR[g.b];if(A.cur!==g)return err('Todavía no es tu turno.');
   if(now()>g.dl)return err('Se acabó el tiempo para confirmar.');
-  const e=elig(u,g.b,u===g.lead);if(e)return err(e);
+  const e=elig(u,g.b,true);if(e)return err(e);
   g.ready[u]=1;pushAll(g.mem,{t:'mbq',b:g.b,st:'rdy',id:g.id,n:g.mem.filter(x=>g.ready[x]).length,of:g.mem.length});
   if(g.mem.every(x=>g.ready[x]))start(g);
   return{ok:1}};

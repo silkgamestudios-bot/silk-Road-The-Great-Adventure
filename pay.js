@@ -76,6 +76,21 @@ ops['pay.status']=(u,m)=>{const o=G().o[String(m.id||'')];if(!o||o.u!==u)return 
 ops['pay.mine']=(u)=>{const o=pending(u);return o?Object.assign({ok:1},view(o)):{ok:1,none:1}};
 ops['pay.packs']=(u)=>{const t=now();return{ok:1,on:ON,pid:PAY_ID,why:S.isMaster(u)?why():'',packs:Object.keys(PACKS).map(b=>{const c=calc(u,+b,t);return{b:+b,g:c.g,pb:c.pb}}).sort((x,y)=>x.b-y.b)}};
 
+/* ---------- v469: el jugador reporta un problema con su pago → alerta al GM ---------- */
+ops['pay.report']=(u,m)=>{
+ const t=now(),a=E.acct(u)||{},d=G();d.rp=Array.isArray(d.rp)?d.rp:[];
+ a.pyRp=(a.pyRp||[]).filter(x=>t-x<3600000);if(a.pyRp.length>=3)return err('Ya enviaste varios reportes: espera un rato, el GM los está revisando');
+ const note=String(m.note||'').replace(/[<>]/g,'').trim().slice(0,500),kind=String(m.kind||'').replace(/[^a-z]/g,'').slice(0,12)||'otro';
+ const mine=Object.values(d.o).filter(o=>o&&o.u===u).sort((x,y)=>y.t-x.t).slice(0,5).map(o=>({id:o.id,b:o.b,g:o.g,c:o.c,t:o.t,st:o.st,tx:o.tx||''}));
+ const r={id:'r'+E.rid(6),ts:t,u,nm:String(a.nm||a.pn||'').slice(0,40),gem:a.gem|0,kind,note,orders:mine,done:0};
+ d.rp.unshift(r);d.rp=d.rp.slice(0,200);a.pyRp.push(t);S.dirty();
+ log('[pay] REPORTE de pago '+r.id+' de '+(r.nm||u)+' ('+kind+')');
+ try{S.notify('🚨 KARAVAN ONLINE · Problema con un pago\nJugador: '+(r.nm||u)+'\nTipo: '+kind+'\nÓrdenes recientes: '+(mine.length?mine.map(o=>o.id+' '+fmt(o.c)+' USDT '+o.st).join(' | '):'ninguna')+'\nMensaje: '+(note||'(sin detalle)')+'\nRevísalo en Zona GM > Pagos por revisar.')}catch(e){}
+ return{ok:1,id:r.id,message:'Reporte enviado al GM. Te ayudará en cuanto lo vea.'}};
+ops['adm.pay.rp']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const l=G().rp||[];return{ok:1,n:l.filter(x=>!x.done).length,l:l.filter(x=>!x.done).slice(0,50)}};
+ops['adm.pay.rpn']=(u)=>{if(!S.isMaster(u))return{ok:1,n:0};return{ok:1,n:(G().rp||[]).filter(x=>!x.done).length}};
+ops['adm.pay.rpdone']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const r=(G().rp||[]).find(x=>x.id===String(m.id||''));if(!r)return err('No encontrado');r.done=1;r.by=u;r.at=now();S.dirty();return{ok:1}};
+
 /* ---------- lista de revisión manual (solo master) ---------- */
 ops['adm.pay.rv']=(u)=>{if(!S.isMaster(u))return err('Solo el master');const d=G();return{ok:1,l:d.rv.filter(x=>!x.done).slice(-100).reverse(),on:ON,last:lastOk||0,errn:lastErr||''}};
 ops['adm.pay.rvok']=(u,m)=>{if(!S.isMaster(u))return err('Solo el master');const d=G(),r=d.rv.find(x=>x.tx===String(m.tx||''));if(!r)return err('No encontrado');if(r.done)return err('Ya estaba resuelto');

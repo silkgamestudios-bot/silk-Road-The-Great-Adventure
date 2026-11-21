@@ -93,6 +93,7 @@ const SD=require('./seda')(S,E);
 const TB=require('./tablon')(S,E,{SO});   /* v398: Tablón de la Ruta (misiones globales «gana el primero») */
 const PY=require('./pay')(S,E,{PAY_ID});
 const UM=require('./usdtmkt')(S,E,{PY,MK,CM});CM.setPY(PY);   /* v410: Mercado USDT con garantía vía Binance Pay (sin MetaMask) */
+const EMP=require('./empusa')(S,E);   /* v475: botín de Empusa */
 const MJ=require('./minijefes')(S,E);   /* v433: MINI-JEFES (Banshee, Necromancer, Velociraptor): territorios, misiones, ofrendas, cola de arena y botín. Todo lo decide el servidor */
 const PE=require('./pets')(S,E);   /* v428: tienda de mascotas, Templo de habilidades, equipo de mascota y mercado de mascotas en gemas */
 const OPS=Object.assign({},ST.ops,MK.ops,GD.ops,SO.ops,TR.ops,SD.ops,AC.ops,CM.ops,TB.ops,PY.ops,UM.ops,PE.ops,MJ.ops);
@@ -224,6 +225,7 @@ const world=require('./world')(DB,log,{
  /* v391: ANTORCHA DE ESTACA: el mundo cobra la antorcha de la cuenta al clavarla (el servidor descuenta; el cliente solo recibe la entrega) */
  tch:u=>{const a=E.acct(u);if(!(E.avail(a,'prov','ant')>=1))return false;E.deliver(u,{prov:{pk:'ant',q:-1},note:'🔥 Clavaste una antorcha de estaca'});return true},tjoin:u=>{try{TR.join(u)}catch(e){log('terr join '+e.message)}},
  look:u=>{const a=E.acct(u);return{lv:a.lv,gt:GD.tagOf(u),sk:a.sk}},
+ emRw:u=>{try{return EMP.reward(u)}catch(e){log('empusa botin '+e.stack);return null}},
  mint:(u,it)=>{const c=E.cleanItem(Object.assign({},it,{id:'s'+E.rid(8)}));if(!c)return it;S.ECO.reg[c.id]={o:u,k:'i',t:Date.now()};dirty=1;return c}});
 S.world=world;try{TR.init()}catch(e){log('terr init '+e.stack)}
 function bc(c,id,o,n){for(const ws of wss.clients){if(!ws.uid)continue;for(const s in ws.subs){const b=ws.subs[s];if(b.c!==c)continue;const mo=match(o,b.w),mn=match(n,b.w);if(mo||mn)ws.send(JSON.stringify({t:'ch',sid:+s,id,d:mn?n:null}))}}}

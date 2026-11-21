@@ -38,6 +38,7 @@ N.onmsg=m=>{
  else if(m.t=='wsv'){try{window.SRSV&&SRSV(m)}catch(e){}}
  else if(m.t=='wtp'||m.t=='wts'||m.t=='wtd'){try{window.SRTZ&&SRTZ.msg(m)}catch(e){}}
  else if(m.t=='wubd'){try{window.SRUBD&&SRUBD(m)}catch(e){}}
+ else if(m.t=='wemd'){try{window.SREMD&&SREMD(m)}catch(e){}}
  else if(m.t=='wc'||m.t=='wcs'||m.t=='wcd'||m.t=='wck'||m.t=='wcm'||m.t=='wch'||m.t=='wco'||m.t=='wce')arMsg(m);
  else if(m.t=='wk')reward(m);
  else if(m.t=='wl')try{corpseRes(m)}catch(e){}
@@ -603,7 +604,7 @@ M.msg=function(m){try{
  if(m.t==='mbq2'&&bs(m.b)){const s=bs(m.b),o=s.q;s.q=m.q;if(o&&m.q){if(m.q.s>o.s){const c=M.curStep(m.b);toast('✅ Objetivo cumplido'+(c?' · Ahora: '+c.n:' · ¡Aventura completa!'),4200);if(!m.q.done&&(P.lv|0)>=0)load()}else if(m.q.s===o.s){const c=M.curStep(m.b);if(c&&c.k&&c.t!=='deliver')toast('📌 '+c.n+': '+c.p+'/'+c.k,2200)}}
   if(m.q&&m.q.done&&(!o||!o.done))load();redraw();return}
  if(m.t==='mbq'||m.t==='mbh'||m.t==='mbr'||m.t==='mbm'||m.t==='mbf'){if(window.MJA&&MJA.msg){MJA.msg(m);return}}   /* v434: cola, turno, pelea y resultado los lleva mjc5.js */
- if(m.t==='mbq'){if(m.why)toast('⚔️ '+m.why,4500);else if(m.st==='start')toast('⚔️ ¡Comienza el combate!',3000);return}
+ if(m.t==='mbq'){if(m.why)toast('⚔️ '+m.why,4500);else if(m.st==='start')toast(m.late?'⚔️ ¡Te uniste al combate!':'⚔️ ¡Comienza el combate!',3000);else if(m.st==='join')toast('👥 '+(m.nm||'Alguien')+' se unió al combate ('+(m.n|0)+' peleando)',3000);return}
  if(m.t==='mbr'){toast(m.lost?'💀 El combate terminó sin victoria':'🏆 '+(m.txt||'Combate terminado'),5000);load()}}catch(e){}};
 window.SRMJ={msg:M.msg};
 /* ── estilos ── */
@@ -736,15 +737,15 @@ function shrineHtml(b,s){let h='<div class="sec" id="mjsh">🕯️ Santuario de 
  const cd=cdLeft(s),ar=AS[s.st]||['—',''],ok=!s.err&&!cd;
  h+='<div class="grid"><div class="kv"><b>📍 Ubicación</b><small>'+H(s.arena)+(s.geo.va?(LOC[b]||''):'')+' · '+(ENT[b]||'entrada')+': X '+((s.geo.door||[])[0]||'?')+' · Y '+((s.geo.door||[])[1]||'?')+'</small></div>'
  +'<div class="kv"><b>📈 Niveles</b><small>Mínimo: Nv '+s.min+' · Jefe: Nv '+s.lv+'</small></div>'
- +'<div class="kv"><b>🗝️ Ofrenda</b><small>'+H(s.ofn)+' · tienes '+(s.of|0)+' (necesitas 1; la pone el líder)</small></div>'
+ +'<div class="kv"><b>🗝️ Ofrenda</b><small>'+H(s.ofn)+' · tienes '+(s.of|0)+' (cada combatiente necesita 1)</small></div>'
  +'<div class="kv"><b>💎 Token</b><small>'+H(s.tkn)+' · tienes '+(s.tk|0)+'</small></div>'
  +'<div class="kv"><b>⚔️ Equipo exclusivo</b><small>'+H(s.eq)+'</small></div>'
  +'<div class="kv"><b>🏟️ Arena</b><small><span class="st '+ar[1]+'">'+ar[0]+'</span> · cola: '+(s.qn|0)+(s.pos?' · tu posición: '+s.pos:'')+'</small></div>'
  +'<div class="kv"><b>⏳ Tu recarga</b><small>'+(cd?'<span class="st r">'+hm(cd)+'</span> (12 h por jefe)':'<span class="st">Disponible</span>')+'</small></div>'
  +'<div class="kv"><b>👥 Party</b><small>'+(s.party&&s.party.length?H(s.party.join(', '))+' · líder: '+H(s.lead):'En solitario')+'</small></div></div>'
- +(s.err&&!cd?'<div class="note">ℹ️ '+H(s.err)+'</div>':'')
- +'<div class="note">⚖️ Una ofrenda por combate (la pone el líder y se gasta al empezar). Recompensa: una sola tirada por encuentro, para <b>un</b> participante al azar.</div>'
- +'<div style="margin-top:10px">'+(s.fight?'<button disabled>⚔️ En combate</button>':(s.pos>0||s.turn)?'<button id="mjleave">✕ Salir de la cola</button> <small>'+(s.turn?'¡Es tu turno! Confirma en el aviso de arriba.':'Posición '+s.pos+' de la cola.')+'</small>':'<button class="go" id="mjjoin" '+(s.open&&ok&&(!s.geo.va||atAltar(b))?'':'disabled')+'>⚔️ Pedir turno</button> <small>'+(!s.open?'El combate contra '+H(s.n)+' se abre en una próxima actualización.':cd?'Tu recarga sigue activa: podrás volver en '+hm(cd)+'.':s.geo.va&&!atAltar(b)?(ALT[b]||ALT.ban):'Necesitas nivel, ofrenda y estar en el territorio. En Party, solo el líder pide turno.')+'</small>')+'</div>';return h}
+ +(s.err&&!cd&&!s.jn?'<div class="note">ℹ️ '+H(s.err)+'</div>':'')
+ +'<div class="note">⚖️ Cada combatiente paga su propia ofrenda (se gasta al empezar o al unirte); sin ofrenda no puedes entrar. Recompensa: una sola tirada por encuentro, para <b>un</b> participante al azar.</div>'
+ +'<div style="margin-top:10px">'+(s.fight?'<button disabled>⚔️ En combate</button>':(s.pos>0||s.turn)?'<button id="mjleave">✕ Salir de la cola</button> <small>'+(s.turn?'¡Es tu turno! Confirma en el aviso de arriba.':'Posición '+s.pos+' de la cola.')+'</small>':'<button class="go" id="mjjoin" '+(s.jn||(s.open&&ok&&(!s.geo.va||atAltar(b)))?'':'disabled')+'>'+(s.jn?'⚔️ Unirme al combate ('+(s.jnn|0)+' peleando)':'⚔️ Pedir turno')+'</button> <small>'+(s.jn?'Combate abierto: entras ya, sin cola, pagando tu ofrenda, y atacan todos juntos.':!s.open?'El combate contra '+H(s.n)+' se abre en una próxima actualización.':cd?'Tu recarga sigue activa: podrás volver en '+hm(cd)+'.':s.geo.va&&!atAltar(b)?(ALT[b]||ALT.ban):'Necesitas nivel, ofrenda y estar en el territorio. En Party, solo el líder pide turno.')+'</small>')+'</div>';return h}
 function craftHtml(b,s){const q=s.q;let h='<div class="sec">🔨 Encargo repetible · '+H(q.ec)+'</div>';
  if(!q.done)return h+'<div class="note">🔒 Se abre al terminar la aventura. Después podrás fabricar nuevas ofrendas con materiales del territorio.</div>';
  const ok=Object.keys(q.rec).every(k=>hv(k,q.have[k])>=q.rec[k]);
@@ -761,7 +762,7 @@ function redraw(){if(!open$())return;const s=bs(cur);
  const bb=dd.querySelector('.b');if(bb&&pf){bb.scrollTop=pf}}
 dd.addEventListener('scroll',e=>{if(e.target.classList&&e.target.classList.contains('b'))pf=e.target.scrollTop},true);
 dd.addEventListener('click',async e=>{const a=e.target.closest&&e.target.closest('button');if(!a)return;if(a.dataset.b){cur=a.dataset.b;pf=0;ST['o'+cur]=1;redraw();return}if(a.dataset.a==='x'){closeDiary();return}
- if(a.id==='mjjoin'){a.disabled=true;const r=await mop('mb.join',{b:cur});await load(1);if(r){const sk=r.skip&&r.skip.length?r.skip.map(x=>x.n+': '+x.why).join(' · '):'';closeDiary();toast('⚔️ Estás en la cola del santuario'+(sk?' · Sin turno: '+sk:''),sk?7000:3500)}else a.disabled=false;return}
+ if(a.id==='mjjoin'){a.disabled=true;const r=await mop('mb.join',{b:cur});await load(1);if(r&&r.joined){closeDiary();toast('⚔️ ¡Te uniste al combate en curso!',3500)}else if(r){const sk=r.skip&&r.skip.length?r.skip.map(x=>x.n+': '+x.why).join(' · '):'';closeDiary();toast('⚔️ Estás en la cola del santuario'+(sk?' · Sin turno: '+sk:''),sk?7000:3500)}else a.disabled=false;return}
  if(a.id==='mjleave'){a.disabled=true;await mop('mb.leave');await load(1);redraw()}});
 /* retrato animado del jefe en la ficha */
 function startPortrait(){cancelAnimationFrame(raf);const f=()=>{raf=requestAnimationFrame(f);const c=$('mjpc');if(!c||!M.FAMS)return;const x=c.getContext('2d'),fi={ban:3,nec:4,rap:5}[cur],F=M.FAMS[fi];if(!F||!F.cv)return;
@@ -2017,7 +2018,7 @@ A.camI=function(def){
  const vw=INT.vw,vh=INT.vh,rw=D.w*T,rh=D.h*T,b=A.boss;
  if(b&&b.x>-9000&&!b.hide)camB=[b.x,b.y];else if(!camB)camB=[INT.ox+rw/2,INT.oy+rh*.45];
  const one=(p,bp,V,lo,hi)=>{const span=hi-lo;if(V>=span)return lo+span/2-V/2;                 /* cabe: fija y centrada */
-  let o=(p*.55+bp*.45)-V/2;const m=Math.min(80,V*.3);o=Math.max(p-V+m,Math.min(p-m,o));        /* tu héroe siempre a ≥ m px del borde */
+  let o=(p*.82+bp*.18)-V/2;const m=Math.min(80,V*.3);o=Math.max(p-V+m,Math.min(p-m,o));        /* tu héroe siempre a ≥ m px del borde */
   return Math.max(lo,Math.min(hi-V,o))};
  const tx=one(P.x,camB[0],vw,INT.ox,INT.ox+rw),ty=one(P.y,camB[1],vh,INT.oy,INT.oy+rh);
  if(!camS)camS=[tx,ty];else{const k=1-Math.exp(-dt*7);camS[0]+=(tx-camS[0])*k;camS[1]+=(ty-camS[1])*k}
@@ -3866,4 +3867,63 @@ PFS.rap={id:'rap',nm:'Velociraptor',v:'mjVel',sc:1.2,spr:'mj5',st1:ST1,st2:ST2,N
  noHall:'⚠️ No se pudo preparar el Claro. Entra al Bosque de los Colmillos y sigue la senda hasta el Claro.',
  R:{wonH:'🏆 ¡Velociraptor derrotado!',wonP:'El bosque vuelve a respirar: el eco de sus pasos se apaga entre la hierba.',none:'El Velociraptor no dejó ningún botín esta vez.',lostH:'💀 El Velociraptor ha ganado',out:'Saldrás del bosque en'}};
 window.MJRF={gs,boss:bossInfo,plan,mvOf,anc,addBurn,patchSt,availP,lane,landOf,calcLane,TPOS,FP,RS,SND,rsnd,dbg:{PL,seq1,HT}};
+})();
+
+/* ═════════ v476 · PELEAS ABIERTAS: Banshee, Necromancer y Velociraptor como el mundo abierto ═════════
+   Antes cada jefe seguía un guion de «estaciones» y turnos; ahora el jefe RECORRE TODA LA SALA y persigue a los jugadores, y todos se mueven libres por la zona completa.
+   El reloj, la semilla, la vida compartida, la ofrenda, el botín y la cola siguen siendo los del servidor (no cambian). Cada turno (≈5 s, ≈3,6 s en fase 2) el jefe se desplaza a una nueva posición
+   (55 % hacia un jugador elegido con la semilla) y lanza ataques en el suelo avisados: zarpazo, lluvia de círculos, onda (con cobertura tras los pilares), orbes y aura. Los ataques usan los peligros del motor
+   (wave / circ / orb / zone), así que cada jugador recibe el daño sobre SU héroe. Se conservan el arte, los sonidos y los textos de cada jefe. */
+(function(){const A=window.MJA,K=A&&A.K,PFS=A&&A.PF;if(!A||!K||!PFS)return;
+const {hh,ez,cl,pickT,posOf,AXY,HZ,sn,bag}=K,TT=(typeof T!=='undefined'?T:32);
+const OS=[];
+/* límites de la zona del jefe (px locales del salón): todo el interior de cada escena menos un margen; en el bosque, el claro central */
+const bnd=()=>{try{const D=INT.d,o=AXY(),rw=D.w*TT,rh=D.h*TT,ox=INT.ox-o[0],oy=INT.oy-o[1],r=A.b==='rap',mx=r?344:96,mt=r?278:150,mb=r?278:96;return{x0:ox+mx,x1:ox+rw-mx,y0:oy+mt,y1:oy+rh-mb}}catch(e){return{x0:96,x1:736,y0:150,y1:470}}};
+const tgL=nm=>{const q=posOf(nm),o=AXY(),b=bnd();return q?[cl(q[0]-o[0],b.x0,b.x1),cl(q[1]-o[1],b.y0,b.y1)]:[(b.x0+b.x1)/2,(b.y0+b.y1)/2]};
+function ost(n){if(OS.seed!==A.seed||OS.b!==A.b){OS.length=0;OS.seed=A.seed;OS.b=A.b}if(n<0)n=0;if(OS[n])return OS[n];
+ const b=bnd();let p;
+ if(n===0)p=[(b.x0+b.x1)/2,b.y0+(b.y1-b.y0)*.4];
+ else{const pv=ost(n-1);
+  if(hh(A.seed,n,71)<.55){const q=tgL(pickT(n,72)),an=hh(A.seed,n,73)*6.283;p=[q[0]+Math.cos(an)*110,q[1]+Math.sin(an)*80]}
+  else p=[b.x0+hh(A.seed,n,74)*(b.x1-b.x0),b.y0+hh(A.seed,n,75)*(b.y1-b.y0)];
+  const dx=p[0]-pv[0],dy=p[1]-pv[1],d=Math.hypot(dx,dy);if(d>560)p=[pv[0]+dx/d*560,pv[1]+dy/d*560]}
+ p=[cl(p[0],b.x0,b.x1),cl(p[1],b.y0,b.y1)];OS[n]=p;return p}
+const gl=(a,b,k,amp)=>{k=cl(k,0,1);const e=ez(k),dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1,w=(amp||0)*Math.sin(Math.PI*k)*Math.sin(k*Math.PI*2.4);return[a[0]+dx*e-dy/d*w,a[1]+dy*e+dx/d*w]};
+const sw=(p,t,k)=>[p[0]+Math.sin(t/520+(k||0))*7,p[1]+Math.sin(t/390+(k||0)*1.7)*5];
+function openTurn(tr){const n=tr.n,s=tr.s0,len=tr.len,P2=tr.ph===2,B0=A.boss,p0=ost(n),p1=ost(n+1),bb=bnd();
+ tr.p0=p0;tr.p1=p1;tr.ti=pickT(n,1);tr.imgs=null;tr.inv=null;A.hz=A.hz.filter(z=>z.te>sn()-300);
+ const L=len,mvK=.5,tg=()=>tgL(pickT(n,2)),snd=[],shk=[];
+ const slam=(dx)=>{HZ({k:'circ',x:p1[0],y:p1[1]+24,R:P2?170:150,t0:s+L*.42,tf:s+L*.78,te:s+L*.78+600,dmg:P2?20:16,fix:1,big:1});snd.push([L*.42,'bell'],[L*.78,'pulse']);shk.push([L*.78,9])};
+ const rain=()=>{const N=P2?8:6,q=tg();for(let k=0;k<N;k++){const px=k===0?q[0]:bb.x0+hh(A.seed,n*13+k,81)*(bb.x1-bb.x0),py=k===0?q[1]:bb.y0+hh(A.seed,n*13+k,82)*(bb.y1-bb.y0),tf=s+L*.45+k*(L*.36/N);HZ({k:'circ',x:px,y:py+24,R:100,t0:tf-900,tf,te:tf+600,dmg:P2?13:11,fix:1})}snd.push([L*.4,'whoosh']);shk.push([L*.6,4])};
+ const wave=()=>{const tf=s+L*.4+1400;HZ({k:'wave',e:B0,t0:s+L*.4,tf,te:tf+1900,v:430,R:P2?560:500,th:28,dmg:P2?24:20,lock:0,rp:0,big:1});snd.push([L*.4,'screech',1,1.2],[1400+L*.4,'blast']);shk.push([1400+L*.4,9])};
+ const orbs=()=>{const N=P2?3:2;for(let i=0;i<N;i++){const dt=L*.5+i*520;HZ({k:'orbc',e:B0,t0:s+dt-500,te:s+dt,tf:s+dt,real:1});HZ({k:'orb',e:B0,real:1,t0:s+dt,tf:s+dt,te:s+dt+1700,ti:pickT(n,40+i),dmg:P2?15:13,v:340,r:17,vx:0,vy:0,ox:0,oy:0,arm:0});snd.push([dt,'orb'])}};
+ const zone=()=>{HZ({k:'zone',e:B0,t0:s+L*.3,ta:s+L*.5,te:s+L*.98,R:P2?135:115,dmg:6,tick:420,next:s+L*.5,wd:1});snd.push([L*.3,'wind'])};
+ const ring=()=>{HZ({k:'ring',x:p1[0],y:p1[1]+24,R:P2?340:260,t0:s+L*.3,te:s+L*.7,tf:0,c:'255,90,120'})};
+ let charge=[L*.4,L*.8];
+ switch(tr.mv){
+  case'intro':charge=[];ring();snd.push([300,'bell'],[500,'screech',1,.9]);break;
+  case'oSlam':ring();slam();break;
+  case'oRain':rain();break;
+  case'oWave':wave();break;
+  case'oOrbs':orbs();charge=[L*.45,L*.9];break;
+  case'oZone':zone();charge=[];break;
+  case'oUlt':ring();slam();wave();charge=[L*.3,L*.9];break;
+  case'oC1':rain();orbs();break;
+  case'oC2':slam();wave();break;
+  case'oC3':zone();orbs();break;
+  case'oC4':rain();slam();break;
+  default:break}
+ tr.snd=snd;tr.shake=shk;
+ tr.pose=u=>{const k=u/(L*mvK),moving=k<1;return{p:moving?gl(p0,p1,k,26):sw(p1,u,2),ch:(!moving&&charge.length&&u>=charge[0]&&u<charge[1])?(tr.mv==='oUlt'?2:1):0}};
+ tr.sdone=0;tr.bdone=0;tr.shd=0;return tr}
+const L1=['oSlam','oRain','oWave','oOrbs','oZone'],L2=['oC1','oC2','oC3','oC4'];
+const NMS={
+ ban:{intro:'👻 La Banshee despierta',oSlam:'🩸 Zarpazo Espectral · ¡sal del círculo!',oRain:'🌫️ Lluvia de Lamentos',oWave:'📢 Chillido del Lamento · ¡tras un pilar!',oOrbs:'🔮 Orbes del Dolor',oZone:'🌪️ Vendaval · ¡no te quedes cerca!',oUlt:'💀 Último Lamento',oC1:'💀 Lamentos y orbes',oC2:'💀 Zarpazo y chillido',oC3:'💀 Vendaval y orbes',oC4:'💀 Lluvia y zarpazo'},
+ nec:{intro:'🪞 El Necromancer despierta',oSlam:'💀 Zarpazo de Sombras · ¡sal del círculo!',oRain:'🪞 Lluvia de Espejos',oWave:'🌑 Onda del Réquiem · ¡tras un pilar!',oOrbs:'💀 Proyectiles de la Muerte',oZone:'☠️ Niebla Necrótica · ¡no te quedes cerca!',oUlt:'🕯️ Pacto de las Sombras',oC1:'🕯️ Pacto · espejos y proyectiles',oC2:'🕯️ Pacto · zarpazo y onda',oC3:'🕯️ Pacto · niebla y proyectiles',oC4:'🕯️ Pacto · espejos y zarpazo'},
+ rap:{intro:'🦖 El Velociraptor despierta',oSlam:'🩸 Zarpazo del Depredador · ¡sal del círculo!',oRain:'🌿 Pisadas en la Maleza',oWave:'🦖 Rugido · ¡tras un pilar!',oOrbs:'🟢 Escupitajos de Ácido',oZone:'🐾 Acecho · ¡no te quedes cerca!',oUlt:'🐺 Instinto Alfa',oC1:'🐺 Alfa · pisadas y ácido',oC2:'🐺 Alfa · zarpazo y rugido',oC3:'🐺 Alfa · acecho y ácido',oC4:'🐺 Alfa · pisadas y zarpazo'}};
+for(const b of['ban','nec','rap']){const p=PFS[b];if(!p)continue;
+ p.NM=Object.assign({},p.NM||{},NMS[b]);
+ p.pick=(n,ph,j)=>ph===1?(n===0?'intro':bag(L1,Math.floor((n-1)/5),5)[(n-1)%5]):(j===0?'oUlt':bag(L2,Math.floor((j-1)/4),9)[(j-1)%4]);
+ p.begin=openTurn;p.eval=null;p.frame=null;p.hint=null;p.draw=null;p.open=1}
+A.open=1;window.MJOPEN={ost,openTurn};
 })();

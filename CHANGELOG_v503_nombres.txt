@@ -1,0 +1,5 @@
+v503 - Nombres de los continentes
+- Primer continente (Mapa 1): SERICIA, Tierra de la Seda.
+- Continente Perdido: HRIMLAND, Tierra de la Escarcha.
+- Textos del juego y wiki actualizados; boton "Volver a Sericia (Mapa 1)".
+- Revision de las 41 islas: sin solapes, niveles ordenados por mar.

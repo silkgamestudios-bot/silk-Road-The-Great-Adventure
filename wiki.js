@@ -832,6 +832,346 @@ P.creditos=()=>head('Créditos','Quién hizo qué')
 /* ---------- Novedades (de las notas de cada versión) ---------- */
 NEWS.push(...[
 {
+"v": "v503",
+"ic": "🗺️",
+"c": "#bfeaff",
+"t": "Sericia y Hrímland",
+"s": "Los dos continentes ya tienen nombre",
+"li": [
+"El primer continente (Mapa 1) se llama Sericia, la Tierra de la Seda.",
+"El Continente Perdido se llama Hrímland, la Tierra de la Escarcha.",
+"Entre ambos, la Ruta Marítima: 41 islas en 6 mares, de Nv 15 a Nv 60."
+]
+},
+{
+"v": "v502",
+"ic": "🏛️",
+"c": "#ffd0a0",
+"t": "Arenas de los jefes ancestrales",
+"s": "Salas de combate propias, con escolta por oleadas",
+"li": [
+"El último piso de las cuevas ancestrales tiene una arena circular con pilares de cristal, braseros, círculos rúnicos y huesos gigantes.",
+"El Vampiro tiene su trono y el Esqueleto su calavera gigante.",
+"Los jefes llaman refuerzos al bajar de 75%, 50% y 25% de vida."
+]
+},
+{
+"v": "v501",
+"ic": "🔋",
+"c": "#bfeaff",
+"t": "Menos calor y más fluidez",
+"s": "El juego ya no recalienta el celular",
+"li": [
+"Se dibuja con menos píxeles en celulares de pantalla densa: se ve igual y exige mucho menos.",
+"Después de 6 minutos seguidos pasa a 30 cuadros por segundo para no calentarse ni trabarse."
+]
+},
+{
+"v": "v500",
+"ic": "🧱",
+"c": "#bfeaff",
+"t": "Colisiones entre mobs",
+"s": "Los mobs ya no se amontonan ni se atraviesan",
+"li": [
+"Cada mob ocupa su lugar: ninguno pasa a través de otro, y los grandes ocupan más espacio.",
+"Alrededor del héroe se forma el cerco de 8 y el resto espera afuera.",
+"El sistema de combate no cambia."
+]
+},
+{
+"v": "v499",
+"ic": "🛡️",
+"c": "#bfeaff",
+"t": "Cerco con mobs gigantes",
+"s": "Los mobs grandes ya no se montan unos sobre otros",
+"li": [
+"Los mobs grandes (dragones, osos y vampiros ancestrales) ocupan más espacio: forman el cerco a mayor distancia y no se atraviesan entre sí.",
+"Se mantiene el cerco de 8 con reserva afuera. El combate no cambia.",
+"Los dragones y los jefes ancestrales se ven más chicos y ya no tapan la pantalla."
+]
+},
+{
+"v": "v498",
+"ic": "🔥",
+"c": "#ffd0a0",
+"t": "Cueva de los Dragones y cofres del tesoro",
+"s": "Dragones de fuego en 4 colores y 100 cofres en las cuevas del Ártico",
+"li": [
+"Cueva de los Dragones de Ascuas (10 pisos): rojo, dorado, azul y obsidiana. Los pisos finales, Nv 500, son zona de farmeo.",
+"Los dragones lanzan aliento de fuego; el Dragón de Ascuas del mundo abierto ahora es Nv 380.",
+"100 cofres repartidos por las cuevas, con 10.000 a 25.000 de oro y objetos poco comunes, raros o épicos. Quedan vacíos tras abrirse."
+]
+},
+{
+"v": "v497",
+"ic": "🐉",
+"c": "#bfeaff",
+"t": "Serpientes y dragones en el Ártico",
+"s": "Dos mobs nuevos en el mundo abierto del Continente",
+"li": [
+"Serpiente Glacial (Nv 300): zonas medias del Ártico.",
+"Dragón de Ascuas (Nv 520): zonas profundas, poco frecuente."
+]
+},
+{
+"v": "v496",
+"ic": "🐻",
+"c": "#bfeaff",
+"t": "Los 3 Ancestrales del Ártico",
+"s": "Tres jefes diarios con su cueva, montaña y castillo",
+"li": [
+"Ursathor, Oso Ancestral (Nv 350): Caverna del Oso, 30 pisos. Botín Nv 250, botas Nv 200 y Mochila de 270 espacios.",
+"Skelethrax, Dragón de Huesos (Nv 425): Montaña de 45 pisos. Botín Nv 475, sombrero Nv 475 y Mochila de 270 espacios.",
+"Valdrak, Rey Vampiro Ancestral (Nv 650): Castillo de Hielo, 30 pisos. Botín Nv 500, coraza Nv 500 y Mochila Real de 340 espacios.",
+"Cada jefe está protegido por su especie, con rangos de color. En algunos pisos los ataques drenan maná.",
+"Cada jefe vuelve a las 24 horas de caer."
+]
+},
+{
+"v": "v495",
+"ic": "⚔️",
+"c": "#bfeaff",
+"t": "Ciudades vikingas del Ártico",
+"s": "Las 8 ciudades del Continente, con estilo nórdico",
+"li": [
+"Casas y tiendas de madera oscura con tejados nevados, calles de nieve y escudos vikingos en las casas.",
+"Nuevos nombres: Puerto Drakkar, Hrafnheim, Fortaleza Valgrim, Salón de Valhalla, Valle de Jotunheim, Skaldburgo, Niflheim y Refugio de Ragnarök."
+]
+},
+{
+"v": "v494",
+"ic": "🏛️",
+"c": "#bfeaff",
+"t": "Templos del Ártico",
+"s": "Los templos de Hrímland, en versión helada",
+"li": [
+"Templo de la Aurora Boreal: entrenamiento de habilidades de héroe, con arte helado.",
+"Templo del Lobo Blanco: entrenamiento de mascotas y monturas.",
+"Ambos mantienen las mismas reglas que en el Mapa 1."
+]
+},
+{
+"v": "v493",
+"ic": "🕳️",
+"c": "#bfeaff",
+"t": "Cuevas y zonas malditas del Ártico",
+"s": "Las cuevas del Continente ahora tienen criaturas y nombres helados",
+"li": [
+"Las cuevas de Hrímland se llenan de los mobs árticos, con un Guardián de nivel alto al fondo.",
+"Las zonas malditas también cambian: Cementerio Helado, Valle de los Espectros, Nido de Vampiros y más."
+]
+},
+{
+"v": "v492",
+"ic": "🧛",
+"c": "#bfeaff",
+"t": "Mobs árticos: niveles 125 a 585",
+"s": "10 criaturas nuevas en Hrímland, el Continente Perdido",
+"li": [
+"Vampiro Errante (125), Espectro de Escarcha (150), Banshee Helada (185), Cíclope de la Tundra (225), Elemental de Hielo (275).",
+"Vampiro de la Guardia Gélida (335), Yeti de las Cumbres (400), Troll de Hielo (470), Oso Vampiro Polar (530), Conde Vampiro Ancestral (585).",
+"Sueltan equipo común de nivel 60 a 110, según el nivel del mob."
+]
+},
+{
+"v": "v491",
+"ic": "🌍",
+"c": "#bfeaff",
+"t": "Continente Perdido: mundo ártico (beta)",
+"s": "Un clon del Mapa 1 en versión ártica, con 8 ciudades nuevas",
+"li": [
+"Desde la Costa Helada, el botón 🌍 Entrar al Continente abre el mundo ártico: mismo arte y mismas tiendas del Mapa 1, con 8 ciudades en otros lugares.",
+"Tu posición del Mapa 1 queda guardada aparte; el botón 🌍 Volver al Mapa 1 te devuelve.",
+"Es una beta: los mobs, cuevas y sprites árticos se irán cambiando en las próximas versiones."
+]
+},
+{
+"v": "v490",
+"ic": "🏙️",
+"c": "#ffd666",
+"t": "Continente Perdido: 8 ciudades árticas",
+"s": "Ciudades seguras con todas las tiendas del mapa 1",
+"li": [
+"8 ciudades nuevas: Puerto Drakkar, Hrafnheim, Fortaleza Valgrim, Salón de Valhalla, Valle de Jotunheim, Skaldburgo, Niflheim y Refugio de Ragnarök.",
+"Cada una tiene Herrería, Armería, Botica, Materiales, Posada, Establo, Iglesia, Almacén, Cocinero, Gemas y más: pisa la puerta y aparece el botón.",
+"Se entra desde la tarjeta de la Costa Helada. Son zonas seguras, sin monstruos."
+]
+},
+{
+"v": "v489",
+"ic": "🏛️",
+"c": "#9ad0f0",
+"t": "Continente Perdido: Glaciar y Ruinas",
+"s": "Dos zonas más, Nv 62 a 70",
+"li": [
+"Glaciar de los Ecos (necesitas 🏮 Linterna de aurora): espectros, gólems de hielo y el Eco Primigenio.",
+"Ruinas Congeladas (necesitas 🔩 Aleación del Umbral): una ciudad antigua bajo el hielo y el Rey Dormido.",
+"Materiales nuevos: 🧊 Eco de glaciar y 🏛️ Reliquia congelada. Se entra desde la tarjeta de la Costa Helada."
+]
+},
+{
+"v": "v488",
+"ic": "🦣",
+"c": "#8ad0ff",
+"t": "Continente Perdido: Tundra Profunda",
+"s": "Primera zona interior, Nv 60 a 66",
+"li": [
+"Con la 🧭 Brújula del continente (Forja de la Ruta) puedes cruzar de la Costa Helada a la Tundra Profunda.",
+"Yetis, mamuts, lobos de ventisca y el Rey de la Tundra. Misión repetible.",
+"Materiales nuevos: 🦣 Colmillo de mamut y 🐺 Piel de yeti."
+]
+},
+{
+"v": "v487",
+"ic": "🧊",
+"c": "#bfeaff",
+"t": "Continente Perdido: la costa",
+"s": "Primer desembarco ártico, Nv 60 a 66, y Forja de la Ruta",
+"li": [
+"Con la 🗝️ Llave de hielo (Isla Puerta Helada) puedes desembarcar en la costa de Hrímland.",
+"Campamento con jefe Mamut Ancestral y misión repetible.",
+"Forja de la Ruta: mezcla materiales de varias regiones y crea 🔩 Aleación del Umbral, 🧤 Traje polar, 🏮 Linterna de aurora y 🧭 Brújula del continente (comerciables).",
+"El resto del continente se abrirá en próximas versiones."
+]
+},
+{
+"v": "v486",
+"ic": "🧊",
+"c": "#7ac8f0",
+"t": "Hielos del Umbral: 6 islas más",
+"s": "Anillo 6 (último): tundra, ballenas, aurora y cristal, Nv 54 a 60",
+"li": [
+"Nuevas islas a pie: Escarcha, Ballena, Aurora, Ventisca, Cristal y Puerta Helada (necesitas un Galeón).",
+"Nieve cayendo, pinos helados, cuevas de cristal y el guardián de la puerta a Hrímland.",
+"Con esto quedan las 41 islas completas.",
+"6 materiales nuevos: ❄️ Cristal de escarcha, 🦴 Hueso de ballena, 🌌 Luz de aurora, 🧥 Cuero polar, 💎 Cristal puro, 🗝️ Llave de hielo."
+]
+},
+{
+"v": "v485",
+"ic": "⚓",
+"c": "#5a8a8a",
+"t": "Cementerio de Barcos: 7 islas más",
+"s": "Anillo 5: naufragios y fantasmas, Nv 46 a 54",
+"li": [
+"Nuevas islas a pie: Naufragio, Calavera, Ancla, Faro Fantasma, Coral Negro, Sirena y Kraken (necesitas una Carabela o mayor).",
+"Cada isla tiene su jefe, su NPC con misión repetible y su material propio.",
+"7 materiales nuevos comerciables: 🪵 Madera podrida, 💀 Hueso pirata, ⚓ Ancla maldita, 👻 Luz espectral, 🪸 Coral negro, 🧜 Escama de sirena, 🦑 Tinta de kraken."
+]
+},
+{
+"v": "v484",
+"ic": "🌋",
+"c": "#e8541c",
+"t": "Mares de Fuego: 7 islas más",
+"s": "Anillo 4: volcanes y desierto, Nv 38 a 46",
+"li": [
+"Nuevas islas a pie: Obsidiana, Brasa, Azufre, Ceniza, Magma, Dunas y Espejismo (necesitas un Velero o mayor).",
+"Lagos de lava y ácido, ceniza cayendo, ruinas de una ciudad enterrada, un cráter activo y dunas con espejismos.",
+"Isla Espejismo está ligada a Empusa: su NPC regala una Lágrima del Espejismo.",
+"7 materiales nuevos comerciables: ⬛ Obsidiana volcánica, 🔥 Brasa viva, 🟡 Azufre, 🌫️ Ceniza maldita, 🌋 Núcleo de magma, 🏜️ Arena de cristal y 🪞 Fragmento de espejismo."
+],
+"id": "v484"
+},
+{
+"v": "v483",
+"ic": "🌧️",
+"c": "#4a9a8a",
+"t": "Archipiélago del Monzón: 7 islas más",
+"s": "Anillo 3: pantanos, lluvia y niebla, Nv 30 a 38",
+"li": [
+"Nuevas islas a pie: Monzón, Cieno, Manglar, Niebla, Orquídea, Caimán y Loto (necesitas un Velero o mayor).",
+"Lluvia eterna en el Monzón, niebla cerrada en Isla Niebla y pantanos con lagunas en el resto. Cada isla con su jefe y NPC con misión (cada 12 h).",
+"Muchas serpientes y arañas: los NPC regalan antídotos (araña, víbora, cobra negra y hasta un Universal en Isla Cieno).",
+"7 materiales nuevos comerciables: 💧 Agua de tormenta, 🟢 Cieno venenoso, 🌳 Madera de manglar, 🍄 Musgo plateado, 💠 Orquídea azul, 🐊 Cuero de caimán y 🪷 Loto sagrado."
+],
+"id": "v483"
+},
+{
+"v": "v482",
+"ic": "🌶️",
+"c": "#e8a020",
+"t": "Mar de las Especias: 7 islas más",
+"s": "Anillo 2, mobs de Nv 22 a 30",
+"li": [
+"Nuevas islas a pie: Clavo, Canela, Pimienta, Azafrán, Nuez Moscada, Sándalo y Cardamomo (necesitas un Velero o mayor).",
+"Selvas, plantaciones, campos de flores, un templo escondido y bazares, cada una con mobs propios, 👑 jefe y NPC con misión (cada 12 h).",
+"Las arañas y serpientes de estas islas envenenan: lleva antídotos de araña y de coral (los regalan los NPC de Clavo y Canela).",
+"7 materiales nuevos comerciables: 🌰 Clavo, 🟤 Corteza de canela, ⚫ Pimienta negra, 🌺 Hilos de azafrán, 🥜 Nuez moscada, 🪵 Madera de sándalo y 🌿 Vainas de cardamomo."
+],
+"id": "v482"
+},
+{
+"v": "v481",
+"ic": "🏝️",
+"c": "#4aa3ff",
+"t": "Costa de Jade completa: 7 islas a pie",
+"s": "Cada isla con su mapa, mobs, jefe y misión",
+"li": [
+"Ya puedes desembarcar en las 7 islas del anillo 1: Arrozal, Bambú, Perla, Jengibre, Té, Cinabrio y Farol.",
+"Cada una tiene su paisaje (bosque de bambú, laguna, huertos, terrazas de té, mina roja, faro), mobs propios de Nv 15–22 y un 👑 jefe.",
+"Cada NPC paga por limpiar la isla (cada 12 h): oro, 10 del material de la isla y, en las islas con víboras, antídotos.",
+"7 materiales nuevos comerciables: 🌾 Arroz dorado, 🎋 Bambú, 🦪 Perla, 🫚 Raíz de jengibre, 🍃 Hoja de té, 🔴 Cinabrio y 🔦 Lente de faro."
+],
+"id": "v481"
+},
+{
+"v": "v480",
+"ic": "🌾",
+"c": "#7ed957",
+"t": "Isla Arrozal: primera isla a pie",
+"s": "Baja del barco y explora con combate real",
+"li": [
+"En el mar, acércate a la Isla Arrozal y toca 🥾 Explorar a pie: aldea de pescadores, arrozales y muelle.",
+"Ratas gigantes y víboras del arrozal (Nv 15–17) y el 👑 Rey Rata. Las víboras envenenan: lleva antídotos de víbora.",
+"Don Tao paga por 12 ratas muertas: 6.000 🪙, 2 antídotos de víbora y arroz dorado (cada 12 h).",
+"Nuevo material comerciable: 🌾 Arroz dorado, que cae de las ratas. Desde el muelle puedes zarpar de nuevo."
+],
+"id": "v480"
+},
+{
+"v": "v479",
+"ic": "⛵",
+"c": "#4aa3ff",
+"t": "El mar navegable: las 41 islas",
+"s": "Zarpa desde el Astillero y descubre la Ruta Marítima",
+"li": [
+"Astillero → ⛵ Zarpar: navega con WASD/flechas o arrastrando el dedo. El mar se abre el 21 de julio de 2027.",
+"41 islas en 6 anillos (Costa de Jade, Mar de las Especias, Monzón, Mares de Fuego, Cementerio de Barcos y Hielos del Umbral), con mobs de Nv 15 a 60 que suben al alejarte.",
+"Cada barco llega hasta cierto anillo: Bote 2, Velero 4, Carabela 6, Galeón todo el mar.",
+"Descubre islas, mira su ficha (tema, material, misión) y sigue tu progreso en el minimapa. La exploración a pie llega en las próximas versiones."
+],
+"id": "v479"
+},
+{
+"v": "v478",
+"ic": "⚓",
+"c": "#4aa3ff",
+"t": "Astillero: tu barco para el Mapa 2",
+"s": "Primer paso hacia el Gran Terremoto del 21 de julio de 2027",
+"li": [
+"Herrería → pestaña ⚓ Astillero: encarga un Bote, Velero, Carabela o Galeón.",
+"Tú juntas los materiales y los aportas de a poco, las veces que quieras; el Astillero guarda el avance.",
+"Con la lista completa empieza la obra: Bote 4 h, Velero 1 día, Carabela 2 días, Galeón 5 días. Corre aunque estés desconectado.",
+"Los barcos se usarán para navegar cuando se abra el mar el 21 de julio de 2027."
+],
+"id": "v478"
+},
+{
+"v": "v477",
+"ic": "🧪",
+"c": "#7ed957",
+"t": "Antídotos y venenos distintos",
+"s": "Cada bicho tiene su veneno y su antídoto en la Botica",
+"li": [
+"6 venenos: 🦂 escorpión (frena y paraliza), 🕷️ araña (telaraña, te frena mucho), 🐍 víbora (hemotoxina: más daño), 🪱 coral (neurotóxico), 🐍 cobra negra (letal) y 🐉 dragón de amatista.",
+"Arañas y serpientes ahora también envenenan (con cuidado: la Viuda, la Reina y la Cobra negra son las peores).",
+"Botica → pestaña 🧪 Antídotos: uno por veneno (2.500 a 9.000 🪙) y el Antídoto Universal (12.000 🪙) que cura cualquiera. Máx. 99 de cada uno.",
+"El antídoto se usa solo al llegar a veneno ×3, o tocando ☠️ en pantalla. Cura y da 3 minutos de inmunidad a ese veneno. Con el antídoto equivocado solo bajas 2 niveles. La poción de vida sigue curando."
+],
+"id": "v477"
+},
+{
 "v": "v476",
 "ic": "⚔️",
 "c": "#4cd964",

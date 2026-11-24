@@ -1249,7 +1249,7 @@ for(let k=0,tr=0;k<60&&tr<8000;tr++){const tx=12+Math.floor(R()*(W-24)),ty=12+Ma
   const n=3+Math.floor(r2()*3),pk={al:0,big:0};made++;
   for(let j=0;j<n;j++){const e={pk};placeE(e,tx+Math.round((r2()-.5)*6),ty+Math.round((r2()-.5)*6),0);const r=r2();if(r<.2)applyVar(e,'jackal');else if(r<.32)applyVar(e,'rdog');else if(r<.38)applyVar(e,'bat');
    const lv=1+Math.floor(r2()*4);e.nv=lv;e.nvz=1;e.mx=e.hp=Math.round(e.mx*HM[lv-1]);if(!blk(e.hx,e.hy,9))E.push(e)}}}
-const cv=$('c');let g=cv.getContext('2d'),VW=0,VH=0;
+const cv=$('c');let g=cv.getContext('2d',{alpha:false}),VW=0,VH=0;
 /* v445: resolución del lienzo máx. ×2 (antes hasta ×3-×4 en celulares: 2,25-4 veces más píxeles que pintar) y baja de a 0,5 si el equipo va lento */
 let DS=1,DSM=(devicePixelRatio||1)>=2?1.5:2,FCAP=0;/* v501: en celulares (pantalla densa) se dibuja a 1.5x en vez de 2x = 44% menos pixeles; y tras 6 min seguidos se limita a 30 cuadros para que no se caliente */const rs=()=>{DS=Math.max(1,Math.min(DSM,Math.round(devicePixelRatio||1)));VW=cv.clientWidth;VH=cv.clientHeight;cv.width=Math.round(VW*DS);cv.height=Math.round(VH*DS)};
 addEventListener('resize',rs);rs();
@@ -6097,7 +6097,7 @@ const chUn=()=>Object.values(CHT.s.dm||{}).reduce((a,d)=>a+(d.un|0),0)+((CHT.s.r
 const chNm=(u,n,gt)=>'<b class="chn" data-u="'+hx(u)+'" data-n="'+hx(n)+'">'+(gt?'<i>['+hx(gt)+']</i> ':'')+hx(n)+'</b>';
 const chTime=t=>{const d=new Date(t||Date.now());return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')};
 /* ===== v154: versión, conectados, reinicio y actualización suave ===== */
-const SR_V='sr-v506';let UPD=null,RSN=0;
+const SR_V='sr-v507';let UPD=null,RSN=0;
 /* v438 *//* v438: ACTUALIZACIÓN SEGURA. Un celular con versión vieja jugaba para siempre en modo local (sin ver a sus compañeros ni los mismos enemigos) porque el aviso se quitó en v360 y la actualización quedaba en «nunca».
    Ahora: aviso visible y se actualiza solo cuando no hay pelea (máx. 2 intentos cada 10 min para no caer en bucles). */
 const UPDV={w:0,tries(){try{return JSON.parse(localStorage.getItem('sr_updh')||'[]').filter(t=>Date.now()-t<6e5).length}catch(e){return 0}},
@@ -7995,7 +7995,7 @@ let SRB=0,SRP=0;
 function srGuard(){try{if(!P.chosen||!P.name||!$('ttl').hidden||document.hidden)return;
  if(!isFinite(P.x)||!isFinite(P.y)||P.x<0||P.y<0||P.x>W*T||P.y>H*T){srCity();toast('🛟 Te devolví a la ciudad (posición inválida)',4000);return}
  if(!srInside()){try{if(dgRescue())return}catch(_){}const tx=Math.floor(P.x/T),ty=Math.floor(P.y/T);if(M[ty]&&solid(M[ty][tx])&&!(FLY.on&&gmIsM())){if(++SRP>=2){SRP=0;srCity();toast('🛟 Estabas atrapado en roca: te devolví a la ciudad',4000);return}}else SRP=0}else SRP=0;
- let blk0=1;const w=cv.width,h=cv.height;if(w<50||h<50)return;for(let i=1;i<=5&&blk0;i++)for(let j=1;j<=5;j++){const d=g.getImageData(Math.floor(w*i/6),Math.floor(h*j/6),1,1).data;if(d[0]+d[1]+d[2]>12){blk0=0;break}}
+ if((window.__sgn=(window.__sgn||0)+1)%5)return;/* v507: la lectura de píxeles del lienzo (GPU->CPU) solo cada 10 s, no cada 2 s */ let blk0=1;const w=cv.width,h=cv.height;if(w<50||h<50)return;for(let i=1;i<=5&&blk0;i++)for(let j=1;j<=5;j++){const d=g.getImageData(Math.floor(w*i/6),Math.floor(h*j/6),1,1).data;if(d[0]+d[1]+d[2]>12){blk0=0;break}}
  if(!blk0){SRB=0;return}if(++SRB<3)return;SRB=0;
  let n=0;try{n=+sessionStorage.getItem('sr_bw')||0;sessionStorage.setItem('sr_bw',n+1)}catch(_){}
  if(n>=2){toast('🛟 Pantalla negra persistente: abre el menú ☰ › 👑 Zona GM › 🧍 Mi personaje › Rescatar',9000);return}
@@ -8006,7 +8006,7 @@ function srRescueNow(){try{P.sno=0;P.evo=0;P.dbo=0;P.wxo=0}catch(_){}try{session
 function loopErr(w,e){SRERR.n++;const m=w+': '+((e&&e.message)||e),st=((e&&e.stack)||'').split('\n').slice(0,3).join(' | ');SRERR.last=m+' @ '+st;if(!SRERR.seen[m]){SRERR.seen[m]=1;try{console.log('SR error',SRERR.last)}catch(_){}if(Object.keys(SRERR.seen).length<=3)try{toast('⚠️ Error corregido sobre la marcha ('+m.slice(0,70)+'). Si se repite, avísale a Maic.',5000)}catch(_){}}}function loop(t){const raw=t-last;if(raw<9||(FCAP&&raw<FCAP)){requestAnimationFrame(loop);return}/* v445: pantallas de 120/144 Hz iban al doble de trabajo sin verse mejor: se limita a ~60-72 cuadros *//* v258: el juego va a velocidad normal aunque el celular baje de FPS (sub-pasos de simulación) y baja la resolución del lienzo si va lento */
  const dt=Math.min(.3,raw/1e3),n=Math.max(1,Math.ceil(dt/.1));last=t;
  if(raw<500){EMA+=(raw-EMA)*.06;if(EMA>(FCAP?48:30)&&DS>1)LOWT+=raw;else LOWT=0;if(LOWT>1500){LOWT=0;EMA=16;DSM=Math.max(1,DS-.5);rs()}}
- if(!P.tn&&!NOCON){try{for(let k=0;k<n;k++)upd(dt/n)}catch(e){loopErr('upd',e)}}try{draw();DRERR=0}catch(e){loopErr('draw',e);if(++DRERR==30)loopHeal()}fr++;if(t-HUDT>130){HUDT=t;hud()}if(t-SAVT>5000){if(SAVT)save();SAVT=t}requestAnimationFrame(loop)}
+ if(!P.tn&&!NOCON){try{for(let k=0;k<n;k++)upd(dt/n)}catch(e){loopErr('upd',e)}}try{draw();DRERR=0}catch(e){loopErr('draw',e);if(++DRERR==30)loopHeal()}fr++;if(t-HUDT>250){HUDT=t;hud()}if(t-SAVT>5000){if(SAVT)save();SAVT=t}requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 setTimeout(()=>{try{if(!/[?&]fps60/.test(location.search)){FCAP=29;toast('🔋 Ahorro de batería: el juego pasa a 30 cuadros para no calentar el celular',4000)}}catch(_){}},360000);/* v501 */
 /* v425: MURO DE CONEXION. Sin conexion con el servidor no se juega: tras 4 s el juego se pausa con un aviso y, si no vuelve en 60 s, se cierra la sesion (vuelve a la pantalla de entrada).

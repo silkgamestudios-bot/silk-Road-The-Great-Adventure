@@ -1,0 +1,4 @@
+v507 - Rendimiento (reportes de lentitud/calentamiento)
+- Lienzo opaco (alpha:false).
+- Guardia de pantalla negra: lectura de pixeles cada 10 s en vez de 2 s.
+- HUD: refresco cada 250 ms en vez de 130 ms.

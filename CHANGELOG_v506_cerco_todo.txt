@@ -1,0 +1,2 @@
+v506 - Cerco en todas las zonas
+- Hordas y cazadores de evento ahora tambien rodean (8 casillas + 2 reserva), como el resto de mobs.

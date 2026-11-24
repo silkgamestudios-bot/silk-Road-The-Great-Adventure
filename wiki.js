@@ -831,6 +831,9 @@ P.creditos=()=>head('Créditos','Quién hizo qué')
 
 /* ---------- Novedades (de las notas de cada versión) ---------- */
 NEWS.push(...[
+{v:506,ic:'🛡️',c:'fix',t:'Cerco en todas las zonas',s:'Hordas y cazadores de evento también te rodean en orden: 8 casillas y 2 de reserva.',li:[]},
+{v:505,ic:'🛡️',c:'fix',t:'Cerco con reservas',s:'8 monstruos rodean al héroe y 2 esperan cerca; al morir uno, el reserva ocupa su casilla al instante.',li:[]},
+{v:504,ic:'⚡',c:'fix',t:'Mucho más rápido',s:'Optimización general: el juego solo procesa las criaturas cercanas, menos carga en el HUD y sin desenfoques pesados. Más fps y menos calor.',li:[]},
 {
 "v": "v503",
 "ic": "🗺️",

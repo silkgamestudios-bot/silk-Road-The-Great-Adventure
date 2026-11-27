@@ -1,23 +1,15 @@
 {
   "name": "karavan-online-server",
-  "version": "507.0.0",
+  "version": "530.0.0",
   "private": true,
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "node --test usdt-market-config.test.js",
-    "test:escrow": "hardhat test",
-    "compile:escrow": "hardhat compile",
-    "deploy:escrow:testnet": "hardhat run scripts/deploy-escrow.js --network bscTestnet"
+    "start": "node server.js"
   },
-  "dependencies": { "ws": "^8.18.0" },
-  "devDependencies": {
-    "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
-    "@nomicfoundation/hardhat-ethers": "^3.0.8",
-    "chai": "^4.5.0",
-    "dotenv": "^16.4.5",
-    "ethers": "^6.13.4",
-    "hardhat": "^2.22.17"
+  "dependencies": {
+    "ws": "^8.18.0"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }

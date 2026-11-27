@@ -1,0 +1,19 @@
+CAMBIOS RECIENTES (v519 - v529)
+
+v519 · Mercado del pueblo: vender mascotas, monturas y objetos por gemas
+- Al publicar un objeto, mascota o montura en el Mercado del pueblo hay una casilla "💎 Cobrar en gemas": el precio pasa a ser en gemas (máximo 100.000).
+- El comprador paga exactamente ese precio en gemas, sin comisión extra. El vendedor recibe el 95% (5% de comisión).
+- Se ve el precio con 💎 en la lista, en el detalle y en el botón de compra. Oro y USDT siguen igual.
+- Servidor: market.js (offer.new / offer.buy). Hay que subir también market.js.
+v520: sprites nuevos kv-nord.png (oso y lobo de escarcha), mobs aw12/aw13 en Hrímland, getter nkGet.
+v521: Templo de Osiris con 2 altares (P.pn + P.pm): un compañero y una montura entrenan a la vez.
+v524: 16 imagenes grandes (3.9 MB) sacadas de play.html a archivos i_*.png/jpg; play.html pasa de 9.4 MB a 5.5 MB (carga mas rapida, las imagenes se cachean aparte).
+v525: items pop (piel de oso polar), gpo (garra polar), cld (colmillo de lobo); icono nuevo de cur (piel de lobo). Drops: aw8/aw12 osos, aw13 lobo, wolf* del mapa 1. Iconos m_*.png.
+v526 - Dragón de Escarcha (hielo) con sprite propio
+- dz-hielo.png: hoja nueva (frente, lado izq/der, espalda) reemplaza el recoloreado del dragón de hielo
+- play.html: dzSheet usa la hoja propia para 'hielo'; drawDragon/drSp leen el tamaño de celda (240)
+v527 - Dragón de hielo: pose de aliento (filas 4-5 de dz-hielo.png) durante el telégrafo del aliento
+v528 - Oso/lobo del norte: embestida procedural al atacar (sin cuadros nuevos)
+
+v529 - Tamaños: vampiros = tamaño héroe, osos x1.5, dragones/serpiente x1.7, lobo x1.2, jefes nórdicos = tamaño Banshee. Menos de 100 archivos para GitHub.
+v530 - Ancestrales (an0-an2) limitados al tamaño de la Banshee en el mapa 2

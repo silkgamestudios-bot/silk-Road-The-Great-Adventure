@@ -17,3 +17,9 @@ v528 - Oso/lobo del norte: embestida procedural al atacar (sin cuadros nuevos)
 
 v529 - Tamaños: vampiros = tamaño héroe, osos x1.5, dragones/serpiente x1.7, lobo x1.2, jefes nórdicos = tamaño Banshee. Menos de 100 archivos para GitHub.
 v530 - Ancestrales (an0-an2) limitados al tamaño de la Banshee en el mapa 2
+v531 - Escenarios temáticos: escenarios.js (pisos de Valdrak/Oso/Dragón de Huesos/Ascuas por zona, arenas con utilería, 8 zonas de jefes nórdicos)
+v532 - Escenarios rehechos en pixel art con el estilo del juego (tumbas, picos de hielo, costillas, obeliscos de lava, huevos, velas), escala acorde al héroe
+v533 - Instalable como app (PWA/APK): manifest.webmanifest, iconos 512 y maskable, pantalla completa horizontal
+v534 - Botón "Instalar app" en la página de inicio (Android: instalación directa; iOS: guía Compartir → Añadir a inicio)
+v535 - Encargos del Astillero: 5 encargos nuevos (visitar el Astillero, aportar materiales, terminar un barco); cada día sale uno hasta que el jugador lo conoce
+v536 - Astillero del Desierto: lugar fisico (mapa 1, abajo a la derecha junto a la laguna), presagios del terremoto que abre el mar (7/21/2027), cadena Presagios en el Gremio de Cazadores; la pestana Astillero sale de la Herreria
